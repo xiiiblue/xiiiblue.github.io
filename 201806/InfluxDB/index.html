@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="官网https:&#x2F;&#x2F;www.influxdata.com&#x2F;time-series-platform&#x2F;influxdb&#x2F; InfluxDB是InfluxData的核心产品。InfluxDB是一个开源分布式时序、时间和指标数据库，使用Go语言编写，无需外部依赖。其设计目标是实现分布式和水平伸缩扩展。 教程https:&#x2F;&#x2F;jasper-zhang1.gitbooks.io&#x2F;influxdb&#x2F;conten">
+<meta property="og:type" content="article">
+<meta property="og:title" content="InfluxDB学习笔记">
+<meta property="og:url" content="http://blog.bluexiii.com/201806/InfluxDB/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="官网https:&#x2F;&#x2F;www.influxdata.com&#x2F;time-series-platform&#x2F;influxdb&#x2F; InfluxDB是InfluxData的核心产品。InfluxDB是一个开源分布式时序、时间和指标数据库，使用Go语言编写，无需外部依赖。其设计目标是实现分布式和水平伸缩扩展。 教程https:&#x2F;&#x2F;jasper-zhang1.gitbooks.io&#x2F;influxdb&#x2F;conten">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-06-29T06:58:40.479Z">
+<meta property="article:modified_time" content="2018-11-06T07:27:04.695Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201806/InfluxDB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>InfluxDB学习笔记 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201806/InfluxDB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          InfluxDB学习笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-06-29 14:58:40" itemprop="dateCreated datePublished" datetime="2018-06-29T14:58:40+08:00">2018-06-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:27:04" itemprop="dateModified" datetime="2018-11-06T15:27:04+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://www.influxdata.com/time-series-platform/influxdb/">https://www.influxdata.com/time-series-platform/influxdb/</a></p>
+<p>InfluxDB是InfluxData的核心产品。InfluxDB是一个开源分布式时序、时间和指标数据库，使用Go语言编写，无需外部依赖。其设计目标是实现分布式和水平伸缩扩展。</p>
+<h2 id="教程"><a href="#教程" class="headerlink" title="教程"></a>教程</h2><p><a target="_blank" rel="noopener" href="https://jasper-zhang1.gitbooks.io/influxdb/content/Concepts/key_concepts.html">https://jasper-zhang1.gitbooks.io/influxdb/content/Concepts/key_concepts.html</a><br><a target="_blank" rel="noopener" href="https://docs.influxdata.com/influxdb/v1.5/">https://docs.influxdata.com/influxdb/v1.5/</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/48104975d60a">https://www.jianshu.com/p/48104975d60a</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a373784c0bf9">https://www.jianshu.com/p/a373784c0bf9</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/b51ba7f88fb0">https://www.jianshu.com/p/b51ba7f88fb0</a><br><a target="_blank" rel="noopener" href="https://jkzhao.github.io/2017/12/15/%E6%97%B6%E5%BA%8F%E6%95%B0%E6%8D%AE%E5%BA%93InfluxDB/">https://jkzhao.github.io/2017/12/15/时序数据库InfluxDB/</a><br><a target="_blank" rel="noopener" href="http://www.ywnds.com/?p=10763">http://www.ywnds.com/?p=10763</a><br><a target="_blank" rel="noopener" href="https://anyof.me/articles/390">https://anyof.me/articles/390</a><br><a target="_blank" rel="noopener" href="https://xtutu.gitbooks.io/influxdb-handbook/content/an_zhuang_shi_yong.html">https://xtutu.gitbooks.io/influxdb-handbook/content/an_zhuang_shi_yong.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a1344ca86e9b">https://www.jianshu.com/p/a1344ca86e9b</a><br><a target="_blank" rel="noopener" href="https://code-examples.net/zh-CN/docs/influxdata/influxdb/v1.3/troubleshooting/frequently-asked-questions/index">https://code-examples.net/zh-CN/docs/influxdata/influxdb/v1.3/troubleshooting/frequently-asked-questions/index</a></p>
+<h2 id="安装方式"><a href="#安装方式" class="headerlink" title="安装方式"></a>安装方式</h2><p><a target="_blank" rel="noopener" href="https://influxdata.com/downloads/">https://influxdata.com/downloads/</a></p>
+<h3 id="macOS"><a href="#macOS" class="headerlink" title="macOS"></a>macOS</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew update</span><br><span class="line">brew install influxdb</span><br></pre></td></tr></table></figure>
+<p>或</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;dl.influxdata.com&#x2F;influxdb&#x2F;releases&#x2F;influxdb-1.5.4_darwin_amd64.tar.gz</span><br><span class="line">tar zxvf influxdb-1.5.4_darwin_amd64.tar.gz</span><br></pre></td></tr></table></figure>
+<h3 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull influxdb</span><br></pre></td></tr></table></figure>
+<h3 id="Ubuntu"><a href="#Ubuntu" class="headerlink" title="Ubuntu"></a>Ubuntu</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;dl.influxdata.com&#x2F;influxdb&#x2F;releases&#x2F;influxdb_1.5.4_amd64.deb</span><br><span class="line">sudo dpkg -i influxdb_1.5.4_amd64.deb</span><br></pre></td></tr></table></figure>
+<h3 id="CentOS"><a href="#CentOS" class="headerlink" title="CentOS"></a>CentOS</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;dl.influxdata.com&#x2F;influxdb&#x2F;releases&#x2F;influxdb-1.5.4.x86_64.rpm</span><br><span class="line">sudo yum localinstall influxdb-1.5.4.x86_64.rpm</span><br></pre></td></tr></table></figure>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h3 id="配置文件路径"><a href="#配置文件路径" class="headerlink" title="配置文件路径"></a>配置文件路径</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;usr&#x2F;local&#x2F;etc&#x2F;influxdb.conf</span><br><span class="line">或</span><br><span class="line">&#x2F;etc&#x2F;influxdb&#x2F;influxdb.conf</span><br></pre></td></tr></table></figure>
+<h3 id="生成默认配置"><a href="#生成默认配置" class="headerlink" title="生成默认配置"></a>生成默认配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">influxd config &gt; &#x2F;etc&#x2F;influxdb&#x2F;influxdb.generated.conf</span><br></pre></td></tr></table></figure>
+
+<h2 id="名词"><a href="#名词" class="headerlink" title="名词"></a>名词</h2><table>
+<thead>
+<tr>
+<th>name</th>
+<th>desc</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>database</td>
+<td>数据库</td>
+</tr>
+<tr>
+<td>measurement</td>
+<td>数据库中的表</td>
+</tr>
+<tr>
+<td>points</td>
+<td>表里面的一行数据</td>
+</tr>
+<tr>
+<td>time</td>
+<td>每个数据记录时间，是数据库中的主索引(会自动生成)</td>
+</tr>
+<tr>
+<td>fields</td>
+<td>各种记录值（没有索引的属性）也就是记录的值：温度， 湿度</td>
+</tr>
+<tr>
+<td>tags</td>
+<td>各种有索引的属性：地区，海拔</td>
+</tr>
+<tr>
+<td>series</td>
+<td>tags的组合，类似复合索引</td>
+</tr>
+</tbody></table>
+<h2 id="命令行方式登入"><a href="#命令行方式登入" class="headerlink" title="命令行方式登入"></a>命令行方式登入</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">influx</span><br><span class="line">influx -precision rfc3339  # 显示标准时间</span><br></pre></td></tr></table></figure>
+<h2 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">show databases</span><br><span class="line">create database mydb</span><br><span class="line">use mydb</span><br></pre></td></tr></table></figure>
+<h2 id="显示所有表"><a href="#显示所有表" class="headerlink" title="显示所有表"></a>显示所有表</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show measurements</span><br></pre></td></tr></table></figure>
+<h2 id="新建表-插入数据"><a href="#新建表-插入数据" class="headerlink" title="新建表/插入数据"></a>新建表/插入数据</h2><p>无建表语句，第一次insert后自动创建 p</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">INSERT cpu,host&#x3D;serverA,region&#x3D;us_west value&#x3D;0.64</span><br><span class="line">INSERT temperature,machine&#x3D;unit42,type&#x3D;assembly external&#x3D;25,internal&#x3D;37</span><br><span class="line"></span><br><span class="line">其中:  </span><br><span class="line">cpu  # 表名</span><br><span class="line">host&#x3D;serverA,region&#x3D;us_west  # tag</span><br><span class="line">value&#x3D;0.64  # field</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="删除表"><a href="#删除表" class="headerlink" title="删除表"></a>删除表</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">drop measurement weather </span><br></pre></td></tr></table></figure>
+<h2 id="series操作"><a href="#series操作" class="headerlink" title="series操作"></a>series操作</h2><p>series表示这个表里面的数据，可以在图表上画成几条线，series主要通过tags排列组合算出来。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show series from weather</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="查询数据"><a href="#查询数据" class="headerlink" title="查询数据"></a>查询数据</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM &#x2F;.*&#x2F; LIMIT 1</span><br><span class="line">SELECT * FROM cpu_load_short</span><br><span class="line">SELECT * FROM cpu_load_short WHERE value &gt; 0.9</span><br></pre></td></tr></table></figure>
+<h2 id="查询-修改RETENTION"><a href="#查询-修改RETENTION" class="headerlink" title="查询/修改RETENTION"></a>查询/修改RETENTION</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SHOW RETENTION POLICIES ON &quot;mydb&quot;</span><br><span class="line">单位有 w&#x2F;d&#x2F;h&#x2F;s</span><br><span class="line">ALTER RETENTION POLICY &quot;autogen&quot; ON &quot;mydb&quot; DURATION 100d DEFAULT</span><br><span class="line">ALTER RETENTION POLICY &quot;autogen&quot; ON &quot;mydb&quot; DURATION 0s DEFAULT</span><br></pre></td></tr></table></figure>
+<h2 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">显示用户</span><br><span class="line">SHOW USERS</span><br><span class="line">创建用户</span><br><span class="line">CREATE USER &quot;username&quot; WITH PASSWORD &#39;password&#39;</span><br><span class="line">创建管理员权限的用户</span><br><span class="line">CREATE USER &quot;username&quot; WITH PASSWORD &#39;password&#39; WITH ALL PRIVILEGES</span><br><span class="line">删除用户</span><br><span class="line">DROP USER &quot;username&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="HTTP创建和删除数据库"><a href="#HTTP创建和删除数据库" class="headerlink" title="HTTP创建和删除数据库"></a>HTTP创建和删除数据库</h2><p>curl -i -XPOST <a target="_blank" rel="noopener" href="http://localhost:8086/query">http://localhost:8086/query</a> –data-urlencode “q=CREATE DATABASE mydb”<br>curl -POST <a target="_blank" rel="noopener" href="http://localhost:8086/query">http://localhost:8086/query</a> –data-urlencode “q=DROP DATABASE mydb”</p>
+<h2 id="HTTP添加数据"><a href="#HTTP添加数据" class="headerlink" title="HTTP添加数据"></a>HTTP添加数据</h2><p>单条</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -i -XPOST &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;write?db&#x3D;mydb&#39; --data-binary &#39;cpu_load_short,host&#x3D;server01,region&#x3D;us-west value&#x3D;0.64 1434055562000000000&#39;</span><br></pre></td></tr></table></figure>
+<p>多条</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -i -XPOST &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;write?db&#x3D;mydb&#39; --data-binary &#39;cpu_load_short,host&#x3D;server02 value&#x3D;0.67</span><br><span class="line">cpu_load_short,host&#x3D;server02,region&#x3D;us-west value&#x3D;0.55 1422568543702900257</span><br><span class="line">cpu_load_short,direction&#x3D;in,host&#x3D;server01,region&#x3D;us-west value&#x3D;2.0 1422568543702900257&#39;</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用HTTP查询数据"><a href="#使用HTTP查询数据" class="headerlink" title="使用HTTP查询数据"></a>使用HTTP查询数据</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -GET &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query?pretty&#x3D;true&#39; --data-urlencode &quot;db&#x3D;mydb&quot; --data-urlencode &quot;q&#x3D;show measurements&quot;</span><br></pre></td></tr></table></figure>
+<p>或直接在浏览器中:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;localhost:8086&#x2F;query?pretty&#x3D;true&amp;db&#x3D;mydb&amp;q&#x3D;show%20measurements</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -G &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query?pretty&#x3D;true&#39; --data-urlencode &quot;db&#x3D;mydb&quot; --data-urlencode &quot;q&#x3D;SELECT \&quot;value\&quot; FROM \&quot;cpu_load_short\&quot; WHERE \&quot;region\&quot;&#x3D;&#39;us-west&#39;&quot;</span><br></pre></td></tr></table></figure>
+<p>查询多条用分号分割：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -GET &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query?db&#x3D;_internal&#39; --data-urlencode &quot;q&#x3D;show databases;show measurements&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="时间格式"><a href="#时间格式" class="headerlink" title="时间格式"></a>时间格式</h3><p>epoch=[h,m,s,ms,u,ns]</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -G &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query&#39; --data-urlencode &quot;db&#x3D;mydb&quot; --data-urlencode &quot;epoch&#x3D;s&quot; --data-urlencode &quot;q&#x3D;SELECT value FROM cpu_load_short WHERE region&#x3D;&#39;us-west&#39;&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="指定每次查询数据大小"><a href="#指定每次查询数据大小" class="headerlink" title="指定每次查询数据大小"></a>指定每次查询数据大小</h3><p>chunk_size</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -G &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query&#39; --data-urlencode &quot;db&#x3D;mydb&quot; --data-urlencode &quot;chunk_size&#x3D;200&quot; --data-urlencode &quot;q&#x3D;SELECT value FROM cpu_load_short WHERE region&#x3D;&#39;us-west&#39;&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="WEB控制台"><a href="#WEB控制台" class="headerlink" title="WEB控制台"></a>WEB控制台</h2><p>1.3内置8086WEB管理已经移除，需要使用TICK工具栈中的Chronograf来进行管理。</p>
+<p>下载安装说明：<br><a target="_blank" rel="noopener" href="https://portal.influxdata.com/downloads">https://portal.influxdata.com/downloads</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install chronograf</span><br></pre></td></tr></table></figure>
+<p>使用:<br><a target="_blank" rel="noopener" href="http://localhost:8888/">http://localhost:8888</a></p>
+<h2 id="测试数据导入"><a href="#测试数据导入" class="headerlink" title="测试数据导入"></a>测试数据导入</h2><p><a target="_blank" rel="noopener" href="https://docs.influxdata.com/influxdb/v1.6/query_language/data_download/">https://docs.influxdata.com/influxdb/v1.6/query_language/data_download/</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE DATABASE NOAA_water_database</span><br><span class="line"></span><br><span class="line">curl https:&#x2F;&#x2F;s3.amazonaws.com&#x2F;noaa.water-database&#x2F;NOAA_data.txt -o NOAA_data.txt</span><br><span class="line">influx -import -path&#x3D;NOAA_data.txt -precision&#x3D;s -database&#x3D;NOAA_water_database</span><br><span class="line"></span><br><span class="line">influx -precision rfc3339 -database NOAA_water_database</span><br></pre></td></tr></table></figure>
+<h2 id="数据查询详细语法"><a href="#数据查询详细语法" class="headerlink" title="数据查询详细语法"></a>数据查询详细语法</h2><p><a target="_blank" rel="noopener" href="https://jasper-zhang1.gitbooks.io/influxdb/content/Query_language/data_exploration.html">https://jasper-zhang1.gitbooks.io/influxdb/content/Query_language/data_exploration.html</a></p>
+<h2 id="备份"><a href="#备份" class="headerlink" title="备份"></a>备份</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 全量</span></span><br><span class="line">influxd backup -portable /mnt/disk/bak/influxdb/total</span><br><span class="line"><span class="comment"># 指定库</span></span><br><span class="line">influxd backup -portable -database heimdall /mnt/disk/bak/influxdb/heimdall</span><br><span class="line"><span class="comment"># 指定时间</span></span><br><span class="line">influxd backup -portable -database heimdall -start 2018-09-01T00:00:00Z -end 2018-09-30T23:59:59Z  /mnt/disk/bak/influxdb/heimdall</span><br></pre></td></tr></table></figure>
+
+<h2 id="恢复"><a href="#恢复" class="headerlink" title="恢复"></a>恢复</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 恢复到名为heimdall_bak的库</span></span><br><span class="line">influxd restore -portable -db heimdall -newdb heimdall_bak /mnt/disk/bak/influxdb/heimdall</span><br><span class="line"></span><br><span class="line"><span class="comment"># 移动库</span></span><br><span class="line">create database heimdall_new </span><br><span class="line">use heimdall_bak</span><br><span class="line">SELECT * INTO heimdall_new..:MEASUREMENT FROM /.*/ GROUP BY *</span><br><span class="line">drop heimdall_bak</span><br></pre></td></tr></table></figure>
+<h2 id="连续查询"><a href="#连续查询" class="headerlink" title="连续查询"></a>连续查询</h2><p>自动缩小取样存储到新的measurement中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CREATE CONTINUOUS QUERY &quot;cq_basic&quot; ON &quot;transportation&quot;</span><br><span class="line">BEGIN</span><br><span class="line">  SELECT mean(&quot;passengers&quot;) INTO &quot;average_passengers&quot; FROM &quot;bus_data&quot; GROUP BY time(1h)</span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201806/macOS%E4%B8%8B%E5%AE%89%E8%A3%85%E5%A4%9A%E4%B8%AAJDK%E5%B9%B6%E5%88%87%E6%8D%A2/" rel="prev" title="macOS下安装多个JDK并切换">
+      <i class="fa fa-chevron-left"></i> macOS下安装多个JDK并切换
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201806/BrewServices/" rel="next" title="使用brew services管理服务">
+      使用brew services管理服务 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E7%BD%91"><span class="nav-number">1.</span> <span class="nav-text">官网</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%99%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">教程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E6%96%B9%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">安装方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#macOS"><span class="nav-number">3.1.</span> <span class="nav-text">macOS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Docker"><span class="nav-number">3.2.</span> <span class="nav-text">Docker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ubuntu"><span class="nav-number">3.3.</span> <span class="nav-text">Ubuntu</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CentOS"><span class="nav-number">3.4.</span> <span class="nav-text">CentOS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84"><span class="nav-number">4.1.</span> <span class="nav-text">配置文件路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E9%BB%98%E8%AE%A4%E9%85%8D%E7%BD%AE"><span class="nav-number">4.2.</span> <span class="nav-text">生成默认配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8D%E8%AF%8D"><span class="nav-number">5.</span> <span class="nav-text">名词</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%96%B9%E5%BC%8F%E7%99%BB%E5%85%A5"><span class="nav-number">6.</span> <span class="nav-text">命令行方式登入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">7.</span> <span class="nav-text">创建数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%89%80%E6%9C%89%E8%A1%A8"><span class="nav-number">8.</span> <span class="nav-text">显示所有表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B0%E5%BB%BA%E8%A1%A8-%E6%8F%92%E5%85%A5%E6%95%B0%E6%8D%AE"><span class="nav-number">9.</span> <span class="nav-text">新建表&#x2F;插入数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E8%A1%A8"><span class="nav-number">10.</span> <span class="nav-text">删除表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#series%E6%93%8D%E4%BD%9C"><span class="nav-number">11.</span> <span class="nav-text">series操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE"><span class="nav-number">12.</span> <span class="nav-text">查询数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2-%E4%BF%AE%E6%94%B9RETENTION"><span class="nav-number">13.</span> <span class="nav-text">查询&#x2F;修改RETENTION</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86"><span class="nav-number">14.</span> <span class="nav-text">用户管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP%E5%88%9B%E5%BB%BA%E5%92%8C%E5%88%A0%E9%99%A4%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">15.</span> <span class="nav-text">HTTP创建和删除数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP%E6%B7%BB%E5%8A%A0%E6%95%B0%E6%8D%AE"><span class="nav-number">16.</span> <span class="nav-text">HTTP添加数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8HTTP%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE"><span class="nav-number">17.</span> <span class="nav-text">使用HTTP查询数据</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E6%A0%BC%E5%BC%8F"><span class="nav-number">17.1.</span> <span class="nav-text">时间格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E6%AF%8F%E6%AC%A1%E6%9F%A5%E8%AF%A2%E6%95%B0%E6%8D%AE%E5%A4%A7%E5%B0%8F"><span class="nav-number">17.2.</span> <span class="nav-text">指定每次查询数据大小</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WEB%E6%8E%A7%E5%88%B6%E5%8F%B0"><span class="nav-number">18.</span> <span class="nav-text">WEB控制台</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE%E5%AF%BC%E5%85%A5"><span class="nav-number">19.</span> <span class="nav-text">测试数据导入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%9F%A5%E8%AF%A2%E8%AF%A6%E7%BB%86%E8%AF%AD%E6%B3%95"><span class="nav-number">20.</span> <span class="nav-text">数据查询详细语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%87%E4%BB%BD"><span class="nav-number">21.</span> <span class="nav-text">备份</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%81%A2%E5%A4%8D"><span class="nav-number">22.</span> <span class="nav-text">恢复</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9E%E7%BB%AD%E6%9F%A5%E8%AF%A2"><span class="nav-number">23.</span> <span class="nav-text">连续查询</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

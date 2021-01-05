@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="qiniu-imgup简介qiniu-imgup是一个七牛云图片上传工具，目标是简化MarkDown写作中的贴图的繁琐步骤，可以快速将剪贴板中的图片上传至七牛云，并返回MarkDown格式的链接。适用人群：使用七牛云做为图床的MarkDown编写者。   由于平时工作主要是用macOS 10.12及Ubuntu 16.04两台笔记本，macOS下之前一直在用一个名为iPic的收费软件（30RMB&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="qiniu-imgup七牛云图片上传工具分享">
+<meta property="og:url" content="http://blog.bluexiii.com/201703/%E4%B8%83%E7%89%9B%E4%BA%91%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%B7%A5%E5%85%B7/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="qiniu-imgup简介qiniu-imgup是一个七牛云图片上传工具，目标是简化MarkDown写作中的贴图的繁琐步骤，可以快速将剪贴板中的图片上传至七牛云，并返回MarkDown格式的链接。适用人群：使用七牛云做为图床的MarkDown编写者。   由于平时工作主要是用macOS 10.12及Ubuntu 16.04两台笔记本，macOS下之前一直在用一个名为iPic的收费软件（30RMB&#x2F;">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://oss.bluexiii.com/k6cwa.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/oknvx.jpg">
+<meta property="article:published_time" content="2017-03-23T01:47:40.000Z">
+<meta property="article:modified_time" content="2019-07-31T00:56:53.634Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://oss.bluexiii.com/k6cwa.jpg">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201703/%E4%B8%83%E7%89%9B%E4%BA%91%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%B7%A5%E5%85%B7/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>qiniu-imgup七牛云图片上传工具分享 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201703/%E4%B8%83%E7%89%9B%E4%BA%91%E5%9B%BE%E7%89%87%E4%B8%8A%E4%BC%A0%E5%B7%A5%E5%85%B7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          qiniu-imgup七牛云图片上传工具分享
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-03-23 09:47:40" itemprop="dateCreated datePublished" datetime="2017-03-23T09:47:40+08:00">2017-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-07-31 08:56:53" itemprop="dateModified" datetime="2019-07-31T08:56:53+08:00">2019-07-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="qiniu-imgup简介"><a href="#qiniu-imgup简介" class="headerlink" title="qiniu-imgup简介"></a>qiniu-imgup简介</h2><p>qiniu-imgup是一个七牛云图片上传工具，目标是简化MarkDown写作中的贴图的繁琐步骤，可以快速将剪贴板中的图片上传至七牛云，并返回MarkDown格式的链接。<br>适用人群：使用七牛云做为图床的MarkDown编写者。  </p>
+<p>由于平时工作主要是用macOS 10.12及Ubuntu 16.04两台笔记本，macOS下之前一直在用一个名为iPic的收费软件（30RMB/年，UX做的非常好），Ubuntu下直接找不到类似工具，于是分别针对两个平台各写了一个小工具。  </p>
+<p>两个版本在思路及实现上的差异还是比较大的，Mac版偏重于用Python原生实现，Linux版则借用了一些第三方系统工具，下面简单做一下分享，有需要的同学可以直接拿去用。  </p>
+<blockquote>
+<p>Linux版本的整体思路及部分代码来自 博客 <a target="_blank" rel="noopener" href="http://nfeng.cc/2016/07/19/markdown-img-tool/">77695的自留地</a> ，侵删  </p>
+</blockquote>
+<h2 id="使用方法介绍"><a href="#使用方法介绍" class="headerlink" title="使用方法介绍"></a>使用方法介绍</h2><p>在编写MarkDown文档时，如果使用七牛云做图床，插入一张图片需要以下几个繁琐的步骤：</p>
+<ol>
+<li>截图</li>
+<li>保存为文件</li>
+<li>打开浏览器，在七牛云后台上传图片</li>
+<li>复制图片的HTTP URL</li>
+<li>在编辑器中将URL拼接为MarkDown的链接格式</li>
+<li>粘帖链接</li>
+</ol>
+<p>mac版本将整个操作简化为了3个快捷键操作：</p>
+<ol>
+<li><code>cmd+shift+ctrl+4</code>  -  截图到剪贴板</li>
+<li><code>cmd+shift+u</code>  -  使用自定义热键，上传并获取MarkDown链接</li>
+<li><code>cmd+v</code>  -  粘帖MarkDown链接</li>
+</ol>
+<p>linux版本整个操作简化为了2个快捷键操作：</p>
+<ul>
+<li><code>alt+shift+s</code>  调用<code>simg</code>截图</li>
+<li><code>alt+shift+u</code>  调用<code>uimg</code>上传并自动粘帖MarkDown链接</li>
+</ul>
+<h2 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h2><h3 id="Mac版实现思路"><a href="#Mac版实现思路" class="headerlink" title="Mac版实现思路"></a>Mac版实现思路</h3><ol>
+<li>使用系统自带截图工具，或QQ截图工具，截图至剪贴板</li>
+<li>使用PIL库中的ImageGrab，将剪贴板中的图片保存</li>
+<li>使用qiniu库，生成token，并上传图片</li>
+<li>将七牛云返回的URL拼接为MarkDown格式链接</li>
+<li>使用clipboard库，将链接放到剪贴板中</li>
+<li>使用os.system库，调用<code>osascript</code>发送系统通知，在屏幕右上角提示成功/失败</li>
+<li>CMD+V粘帖链接至编辑器</li>
+</ol>
+<blockquote>
+<p>其中2-6步，是由qiniu-imgup来实现的。<br>可以用Automator工具，将shell脚本封装成一个APP，在系统设置中就可以指定一个快捷键了。  </p>
+</blockquote>
+<h3 id="Linux版实现思路"><a href="#Linux版实现思路" class="headerlink" title="Linux版实现思路"></a>Linux版实现思路</h3><ol>
+<li>使用shell脚本，调用第三方截图工具shutter，并将图片保存至临时目录。  </li>
+<li>使用qiniu库，生成token，并上传图片</li>
+<li>将七牛云返回的URL拼接为MarkDown格式链接</li>
+<li>直接使用print打印链接至console</li>
+<li>调用libnotify-bin，发送系统通知，在屏幕右上角提示成功/失败</li>
+<li>使用shell脚本，将Python输出结果传递给第三方工具xclip，复制到剪贴板</li>
+<li>使用shell脚本，调用第三方工具xdotool，模拟键盘Ctrl+V操作，直接进行粘帖</li>
+</ol>
+<blockquote>
+<p>其中2-5步，是由qiniu-imgup来实现的。<br>过程中使用到了第三方工具shutter、xclip及xdotool。<br>由于使用了xdotool，无须手工Ctrl+V粘帖了，节省了一个操作步骤。  </p>
+</blockquote>
+<h2 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a>安装与配置</h2><h3 id="Mac版安装与配置"><a href="#Mac版安装与配置" class="headerlink" title="Mac版安装与配置"></a>Mac版安装与配置</h3><ol>
+<li>安装依赖<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 install -r requirement.txt</span><br></pre></td></tr></table></figure></li>
+<li>配置<code>config.py</code>，填入七牛云的AK、SK等参数</li>
+<li>使用Automator将shell脚本uimg封装为APP<br><img src="http://oss.bluexiii.com/k6cwa.jpg"></li>
+<li>在系统设置中（System Preference-&gt;Keyboard-&gt;Shortcuts-&gt;App Shortcuts），为APP分配快捷键<br><img src="http://oss.bluexiii.com/oknvx.jpg"></li>
+</ol>
+<h3 id="Linux版安装与配置"><a href="#Linux版安装与配置" class="headerlink" title="Linux版安装与配置"></a>Linux版安装与配置</h3><ol>
+<li>依赖及工具安装<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 install qiniu</span><br><span class="line">sudo apt-get install shutter</span><br><span class="line">sudo apt-get install xclip</span><br><span class="line">sudo apt-get install parcellite</span><br><span class="line">sudo apt-get install xdotool</span><br><span class="line">sudo apt-get install libnotify-bin</span><br></pre></td></tr></table></figure></li>
+<li>将程序目录拷贝至/opt/qimg下</li>
+<li>设置环境变量 <code>export PATH=/opt/qimg:$PATH</code></li>
+<li>在Shutter设置中，将图片自动保存位置设为<code>/tmp/snap_shutter</code></li>
+<li>在System Setting - Keyboard中，设置快捷键分别指向<code>simg</code>截图和<code>uimg</code>上传</li>
+</ol>
+<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><ul>
+<li><p>macOS版本GitHub源码：<br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/qiniu-imgup-mac.git">https://github.com/xiiiblue/qiniu-imgup-mac.git</a>  </p>
+<blockquote>
+<p>目前只支持macOS，有时间会把这个改成for Mac &amp; Win双平台的，先挖个坑  </p>
+</blockquote>
+</li>
+<li><p>Linux版本GitHub源码：<br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/qiniu-imgup-linux.git">https://github.com/xiiiblue/qiniu-imgup-linux.git</a>  </p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201703/crontab%E9%85%8D%E7%BD%AE%E5%8F%8A%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/" rel="prev" title="crontab配置及简单应用">
+      <i class="fa fa-chevron-left"></i> crontab配置及简单应用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201703/%E8%AE%B0%E4%B8%80%E6%AC%A1root%E7%94%A8%E6%88%B7su%E6%8A%A5%E9%94%99%E7%9A%84%E5%A4%84%E7%90%86/" rel="next" title="记一次root用户su报错的处理过程">
+      记一次root用户su报错的处理过程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#qiniu-imgup%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">qiniu-imgup简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95%E4%BB%8B%E7%BB%8D"><span class="nav-number">2.</span> <span class="nav-text">使用方法介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-number">3.</span> <span class="nav-text">实现思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mac%E7%89%88%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-number">3.1.</span> <span class="nav-text">Mac版实现思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Linux%E7%89%88%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-number">3.2.</span> <span class="nav-text">Linux版实现思路</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">安装与配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mac%E7%89%88%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="nav-number">4.1.</span> <span class="nav-text">Mac版安装与配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Linux%E7%89%88%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="nav-number">4.2.</span> <span class="nav-text">Linux版安装与配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A0%81"><span class="nav-number">5.</span> <span class="nav-text">源码</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

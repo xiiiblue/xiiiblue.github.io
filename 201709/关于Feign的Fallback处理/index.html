@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Feign的不恰当的fallbackFeign的坑不少，特别与Hystrix集成之后。在微服务引入Feign后，上线不久后便发现，对于一个简单的查询类调用，在下游返回正常的”404-资源不存在”这种业务异常时，Feign也做了fallback，最终导致circuit break，引发平台告警。 REST接口的设计为了解释这个问题，首先还是要从REST接口开始谈起。 REST的一个缺点（也有人认为是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于Feign的Fallback处理">
+<meta property="og:url" content="http://blog.bluexiii.com/201709/%E5%85%B3%E4%BA%8EFeign%E7%9A%84Fallback%E5%A4%84%E7%90%86/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="Feign的不恰当的fallbackFeign的坑不少，特别与Hystrix集成之后。在微服务引入Feign后，上线不久后便发现，对于一个简单的查询类调用，在下游返回正常的”404-资源不存在”这种业务异常时，Feign也做了fallback，最终导致circuit break，引发平台告警。 REST接口的设计为了解释这个问题，首先还是要从REST接口开始谈起。 REST的一个缺点（也有人认为是">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://oss.bluexiii.com/sgqvj.jpg">
+<meta property="article:published_time" content="2017-09-16T01:51:24.000Z">
+<meta property="article:modified_time" content="2019-07-31T00:56:53.579Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://oss.bluexiii.com/sgqvj.jpg">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201709/%E5%85%B3%E4%BA%8EFeign%E7%9A%84Fallback%E5%A4%84%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>关于Feign的Fallback处理 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201709/%E5%85%B3%E4%BA%8EFeign%E7%9A%84Fallback%E5%A4%84%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关于Feign的Fallback处理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-09-16 09:51:24" itemprop="dateCreated datePublished" datetime="2017-09-16T09:51:24+08:00">2017-09-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-07-31 08:56:53" itemprop="dateModified" datetime="2019-07-31T08:56:53+08:00">2019-07-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Feign的不恰当的fallback"><a href="#Feign的不恰当的fallback" class="headerlink" title="Feign的不恰当的fallback"></a>Feign的不恰当的fallback</h2><p>Feign的坑不少，特别与Hystrix集成之后。<br>在微服务引入Feign后，上线不久后便发现，对于一个简单的查询类调用，在下游返回正常的”404-资源不存在”这种业务异常时，Feign也做了fallback，最终导致circuit break，引发平台告警。</p>
+<h2 id="REST接口的设计"><a href="#REST接口的设计" class="headerlink" title="REST接口的设计"></a>REST接口的设计</h2><p>为了解释这个问题，首先还是要从REST接口开始谈起。</p>
+<p>REST的一个缺点（也有人认为是优势），它只是一种依赖于HTTP的”风格”，而没有明确的”规范”，所以客户端和服务端之间，要自行达成某种”约定”。<br>例如返回码，就要硬往HTTP STATUS上靠。</p>
+<p>关于返回码，公认的”最佳实践”大概是这样的：</p>
+<ol>
+<li>如果业务处理成功，http status返回200、204等。如果有内容，BODY中直接返回内容（对象或数组都可以），不再有RPC时代的code/message这样的状态描述。如果没有内容，BODY直接空白，No News Is Good News。</li>
+<li>如果业务处理失败，业务逻辑导致的，则http status返回4XX，BODY中返回报错信息，报错信息的统一格式大概是这样的：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;status&quot;: 409,  &#x2F;&#x2F; 冗余字段，把http status再重复一遍</span><br><span class="line">  &quot;code&quot;: 888,  &#x2F;&#x2F; 自定义的错误码</span><br><span class="line">  &quot;message&quot;: &quot;foobar&quot;  &#x2F;&#x2F; 错误描述</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>如果是其它未知错误，抛5XX，认为是服务器内部错误，而不是逻辑错误。</li>
+</ol>
+<p>所以对于APP/WEB等客户端来说，很简单，如果发现2XX，则认为成功，直接获取数据。如果非2XX，则是失败，直接取code和message，展现到前台。</p>
+<p>但是对于微服务之间的调用，就要区分是”4XX-业务逻辑异常”，还是”5XX-服务器异常”了。。。</p>
+<h2 id="REST返回码的选择"><a href="#REST返回码的选择" class="headerlink" title="REST返回码的选择"></a>REST返回码的选择</h2><p>下面详细讲一下HTTP STATUS的选择问题。</p>
+<p>关于HTTP返回码，看了很多参考（论战），”大概”可以这样选择：</p>
+<p>成功： 2XX系列  </p>
+<ul>
+<li>200 OK  // 查询、删除成功用这个</li>
+<li>201 CREATED  // 新增、修改时用这个。且返回BODY中无任何信息。</li>
+</ul>
+<p>业务异常： 4XX系列  </p>
+<ul>
+<li>400 BAD_REQUEST  // 现在有很多人在业务异常时抛这个错。但400要慎重使用。稍后解释。</li>
+<li>404 NOT_FOUND  // 查询不到结果时用这个</li>
+<li>403 FORBIDDEN  // 这个也慎重使用。</li>
+<li>409 CONFLICT   // 业务异常时，可以用这个。</li>
+</ul>
+<p>主机异常：5XX系列  </p>
+<ul>
+<li>500 INTERNAL_SERVER_ERROR // 对于未知异常，统一用这个了</li>
+<li>503 SERVICE_UNAVAILABLE  // Hystrix异常用这个</li>
+</ul>
+<h2 id="什么时候应该Fallback"><a href="#什么时候应该Fallback" class="headerlink" title="什么时候应该Fallback"></a>什么时候应该Fallback</h2><p>2XX，成功，这个不用再讨论。<br>5XX，也相当明确，直接Fallback，这个也不用讨论。<br>4XX，可以一律认为是业务逻辑异常（或者更精确的说，可以认为4XX中的某几个是业务异常）。这时候，应该是用if/else来处理这个异常，而不应该动用Hystrix来Fallback。  </p>
+<p>Feign在默认情况下，对于非2XX，都认为是异常。这个地方是有问题的。特别是对于404这种非常容易抛出的业务异常来说，没两下就circuit break了。</p>
+<p>Feign的Issue里已经有人提过这个问题，后面的版本中已经提供了一个参数:<code>decode404</code>。</p>
+<p>可以看一下Feign的代码，位置在：<br>~/.m2/repository/io/github/openfeign/feign-core/9.5.0/feign-core-9.5.0.jar!/feign/SynchronousMethodHandler.class<br><img src="http://oss.bluexiii.com/sgqvj.jpg"></p>
+<p>所以在Client上可以这样设置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@FeignClient(name &#x3D; &quot;marathon-lb&quot;, fallback &#x3D; FooBarClientFallback.class, decode404 &#x3D; true)</span><br><span class="line">@RequestMapping(value &#x3D; &quot;&#x2F;foo&#x2F;bar&quot;)</span><br><span class="line">public interface FooBarClient &#123;</span><br><span class="line">    ... ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>只需要加入<code>decode404 = true</code>这一个参数，Feign对于2XX和404 ，都不会走Fallback了。<br>排除404，已经基本上够用了，如果想把409、400等status也加到例外中，可以重写一下Feign的errorDecoder。</p>
+<h2 id="关于4XX错误"><a href="#关于4XX错误" class="headerlink" title="关于4XX错误"></a>关于4XX错误</h2><p>刚才提到的，如果把2XX，另外加上4XX，全部认为是正常业务逻辑，都不走Fallback，可不可行？ 我想最好不要这样很笼统的设置，要看情况。</p>
+<p>因为http status不全是服务端给出的，如果服务端与消费者之间隔着一些Nginx、HA、Kong这样的网关，那么情况可能就复杂了，网关也有可能抛出status。</p>
+<p>例如当某个微服务宕机之后，Kong网关会直接返回400，这种情况下，很明显是应当Fallback的。</p>
+<p>所以，在定义错误码时，要尽量避开400、403这种很溃常见的码，像409这样小众的，差不多可以放心使用。<br>这样，调用方就可以有针对性的对某几个4XX的status进行单独配置，配置为业务异常。  </p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201611/Docker%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="Docker学习笔记">
+      <i class="fa fa-chevron-left"></i> Docker学习笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201709/feign%E5%A3%B0%E6%98%8E%E5%BC%8FREST%E8%B0%83%E7%94%A8/" rel="next" title="Feign-声明式REST调用">
+      Feign-声明式REST调用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Feign%E7%9A%84%E4%B8%8D%E6%81%B0%E5%BD%93%E7%9A%84fallback"><span class="nav-number">1.</span> <span class="nav-text">Feign的不恰当的fallback</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#REST%E6%8E%A5%E5%8F%A3%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.</span> <span class="nav-text">REST接口的设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#REST%E8%BF%94%E5%9B%9E%E7%A0%81%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-number">3.</span> <span class="nav-text">REST返回码的选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%BA%94%E8%AF%A5Fallback"><span class="nav-number">4.</span> <span class="nav-text">什么时候应该Fallback</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E4XX%E9%94%99%E8%AF%AF"><span class="nav-number">5.</span> <span class="nav-text">关于4XX错误</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

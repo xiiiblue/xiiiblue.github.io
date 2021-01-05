@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="参考文档http:&#x2F;&#x2F;www.ruanyifeng.com&#x2F;blog&#x2F;2016&#x2F;03&#x2F;systemd-tutorial-commands.html systemctl重启1systemctl reboot 关闭1systemctl poweroff CPU停止工作1systemctl halt 暂停系统1systemctl suspend 休眠1systemctl hibernate 交互式休眠1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="systemd学习笔记">
+<meta property="og:url" content="http://blog.bluexiii.com/201907/20190731systemd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="参考文档http:&#x2F;&#x2F;www.ruanyifeng.com&#x2F;blog&#x2F;2016&#x2F;03&#x2F;systemd-tutorial-commands.html systemctl重启1systemctl reboot 关闭1systemctl poweroff CPU停止工作1systemctl halt 暂停系统1systemctl suspend 休眠1systemctl hibernate 交互式休眠1">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-10-25T03:24:00.484Z">
+<meta property="article:modified_time" content="2019-07-30T16:00:00.000Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201907/20190731systemd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>systemd学习笔记 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201907/20190731systemd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          systemd学习笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-10-25 11:24:00" itemprop="dateCreated datePublished" datetime="2018-10-25T11:24:00+08:00">2018-10-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-07-31 00:00:00" itemprop="dateModified" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a></p>
+<h2 id="systemctl"><a href="#systemctl" class="headerlink" title="systemctl"></a>systemctl</h2><h3 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl reboot</span><br></pre></td></tr></table></figure>
+<h3 id="关闭"><a href="#关闭" class="headerlink" title="关闭"></a>关闭</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl poweroff</span><br></pre></td></tr></table></figure>
+<h3 id="CPU停止工作"><a href="#CPU停止工作" class="headerlink" title="CPU停止工作"></a>CPU停止工作</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl halt</span><br></pre></td></tr></table></figure>
+<h3 id="暂停系统"><a href="#暂停系统" class="headerlink" title="暂停系统"></a>暂停系统</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl suspend</span><br></pre></td></tr></table></figure>
+<h3 id="休眠"><a href="#休眠" class="headerlink" title="休眠"></a>休眠</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hibernate</span><br></pre></td></tr></table></figure>
+<h3 id="交互式休眠"><a href="#交互式休眠" class="headerlink" title="交互式休眠"></a>交互式休眠</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hybrid-sleep</span><br></pre></td></tr></table></figure>
+<p>###单用户状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl rescue</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="systemd-analyze"><a href="#systemd-analyze" class="headerlink" title="systemd-analyze"></a>systemd-analyze</h2><h3 id="启动耗时"><a href="#启动耗时" class="headerlink" title="启动耗时"></a>启动耗时</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze                                                                                       </span><br></pre></td></tr></table></figure>
+<h3 id="每个服务的启动耗时"><a href="#每个服务的启动耗时" class="headerlink" title="每个服务的启动耗时"></a>每个服务的启动耗时</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze blame</span><br></pre></td></tr></table></figure>
+<h3 id="瀑布状的启动过程流"><a href="#瀑布状的启动过程流" class="headerlink" title="瀑布状的启动过程流"></a>瀑布状的启动过程流</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze critical-chain</span><br></pre></td></tr></table></figure>
+<h3 id="显示指定服务的启动流"><a href="#显示指定服务的启动流" class="headerlink" title="显示指定服务的启动流"></a>显示指定服务的启动流</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze critical-chain atd.service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="hostnamect"><a href="#hostnamect" class="headerlink" title="hostnamect"></a>hostnamect</h2><h3 id="显示当前主机的信息"><a href="#显示当前主机的信息" class="headerlink" title="显示当前主机的信息"></a>显示当前主机的信息</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostnamectl</span><br></pre></td></tr></table></figure>
+<h3 id="设置主机名"><a href="#设置主机名" class="headerlink" title="设置主机名"></a>设置主机名</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostnamectl set-hostname xxxx</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="localectl"><a href="#localectl" class="headerlink" title="localectl"></a>localectl</h2><h3 id="查看本地化设置"><a href="#查看本地化设置" class="headerlink" title="查看本地化设置"></a>查看本地化设置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">localectl</span><br></pre></td></tr></table></figure>
+<h3 id="设置本地化参数"><a href="#设置本地化参数" class="headerlink" title="设置本地化参数"></a>设置本地化参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">localectl set-locale LANG&#x3D;en_GB.utf8</span><br><span class="line">localectl set-keymap en_GB</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="timedatectl"><a href="#timedatectl" class="headerlink" title="timedatectl"></a>timedatectl</h2><h3 id="查看当前时区设置"><a href="#查看当前时区设置" class="headerlink" title="查看当前时区设置"></a>查看当前时区设置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">timedatectl</span><br></pre></td></tr></table></figure>
+<h3 id="显示所有可用的时区"><a href="#显示所有可用的时区" class="headerlink" title="显示所有可用的时区"></a>显示所有可用的时区</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">timedatectl list-timezones                                                                                   </span><br></pre></td></tr></table></figure>
+<h3 id="设置当前时区"><a href="#设置当前时区" class="headerlink" title="设置当前时区"></a>设置当前时区</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">timedatectl set-timezone America&#x2F;New_York</span><br><span class="line">timedatectl set-time 2018-10-25 </span><br><span class="line">timedatectl set-time 11:32:00</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="loginctl"><a href="#loginctl" class="headerlink" title="loginctl"></a>loginctl</h2><h3 id="列出当前session"><a href="#列出当前session" class="headerlink" title="列出当前session"></a>列出当前session</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loginctl list-sessions</span><br></pre></td></tr></table></figure>
+<h3 id="列出当前登录用户"><a href="#列出当前登录用户" class="headerlink" title="列出当前登录用户"></a>列出当前登录用户</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loginctl list-users</span><br></pre></td></tr></table></figure>
+<h3 id="列出显示指定用户的信息"><a href="#列出显示指定用户的信息" class="headerlink" title="列出显示指定用户的信息"></a>列出显示指定用户的信息</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loginctl show-user root</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="查询状态"><a href="#查询状态" class="headerlink" title="查询状态"></a>查询状态</h2><h3 id="列出正在运行的-Unit"><a href="#列出正在运行的-Unit" class="headerlink" title="列出正在运行的 Unit"></a>列出正在运行的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units</span><br></pre></td></tr></table></figure>
+<h3 id="列出所有Unit，包括没有找到配置文件的或者启动失败的"><a href="#列出所有Unit，包括没有找到配置文件的或者启动失败的" class="headerlink" title="列出所有Unit，包括没有找到配置文件的或者启动失败的"></a>列出所有Unit，包括没有找到配置文件的或者启动失败的</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --all</span><br></pre></td></tr></table></figure>
+<h3 id="列出所有没有运行的-Unit"><a href="#列出所有没有运行的-Unit" class="headerlink" title="列出所有没有运行的 Unit"></a>列出所有没有运行的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --all --state&#x3D;inactive</span><br></pre></td></tr></table></figure>
+<h3 id="列出所有加载失败的-Unit"><a href="#列出所有加载失败的-Unit" class="headerlink" title="列出所有加载失败的 Unit"></a>列出所有加载失败的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --failed</span><br></pre></td></tr></table></figure>
+<h3 id="列出所有正在运行的、类型为-service-的-Unit"><a href="#列出所有正在运行的、类型为-service-的-Unit" class="headerlink" title="列出所有正在运行的、类型为 service 的 Unit"></a>列出所有正在运行的、类型为 service 的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --type&#x3D;service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="查询状态-1"><a href="#查询状态-1" class="headerlink" title="查询状态"></a>查询状态</h2><h3 id="显示系统状态"><a href="#显示系统状态" class="headerlink" title="显示系统状态"></a>显示系统状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status</span><br></pre></td></tr></table></figure>
+<h3 id="显示单个-Unit-的状态"><a href="#显示单个-Unit-的状态" class="headerlink" title="显示单个 Unit 的状态"></a>显示单个 Unit 的状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status bluetooth.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示远程主机的某个-Unit-的状态"><a href="#显示远程主机的某个-Unit-的状态" class="headerlink" title="显示远程主机的某个 Unit 的状态"></a>显示远程主机的某个 Unit 的状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl -H root@rhel7.example.com status httpd.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-是否正在运行"><a href="#显示某个-Unit-是否正在运行" class="headerlink" title="显示某个 Unit 是否正在运行"></a>显示某个 Unit 是否正在运行</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl is-active application.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-是否处于启动失败状态"><a href="#显示某个-Unit-是否处于启动失败状态" class="headerlink" title="显示某个 Unit 是否处于启动失败状态"></a>显示某个 Unit 是否处于启动失败状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl is-failed application.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-服务是否建立了启动链接"><a href="#显示某个-Unit-服务是否建立了启动链接" class="headerlink" title="显示某个 Unit 服务是否建立了启动链接"></a>显示某个 Unit 服务是否建立了启动链接</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl is-enabled application.service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="服务管理"><a href="#服务管理" class="headerlink" title="服务管理"></a>服务管理</h2><h3 id="立即启动一个服务"><a href="#立即启动一个服务" class="headerlink" title="立即启动一个服务"></a>立即启动一个服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="立即停止一个服务"><a href="#立即停止一个服务" class="headerlink" title="立即停止一个服务"></a>立即停止一个服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="重启一个服务"><a href="#重启一个服务" class="headerlink" title="重启一个服务"></a>重启一个服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="杀死一个服务的所有子进程"><a href="#杀死一个服务的所有子进程" class="headerlink" title="杀死一个服务的所有子进程"></a>杀死一个服务的所有子进程</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl kill apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="重新加载一个服务的配置文件"><a href="#重新加载一个服务的配置文件" class="headerlink" title="重新加载一个服务的配置文件"></a>重新加载一个服务的配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl reload apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="重载所有修改过的配置文件"><a href="#重载所有修改过的配置文件" class="headerlink" title="重载所有修改过的配置文件"></a>重载所有修改过的配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-的所有底层参数"><a href="#显示某个-Unit-的所有底层参数" class="headerlink" title="显示某个 Unit 的所有底层参数"></a>显示某个 Unit 的所有底层参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl show httpd.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-的指定属性的值"><a href="#显示某个-Unit-的指定属性的值" class="headerlink" title="显示某个 Unit 的指定属性的值"></a>显示某个 Unit 的指定属性的值</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl show -p CPUShares httpd.service</span><br></pre></td></tr></table></figure>
+<h3 id="设置某个-Unit-的指定属性"><a href="#设置某个-Unit-的指定属性" class="headerlink" title="设置某个 Unit 的指定属性"></a>设置某个 Unit 的指定属性</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl set-property httpd.service CPUShares&#x3D;500</span><br></pre></td></tr></table></figure>
+<h3 id="列出一个-Unit-的所有依赖"><a href="#列出一个-Unit-的所有依赖" class="headerlink" title="列出一个 Unit 的所有依赖"></a>列出一个 Unit 的所有依赖</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-dependencies --all nginx.service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="配置文件的状态"><a href="#配置文件的状态" class="headerlink" title="配置文件的状态"></a>配置文件的状态</h2><h3 id="列出所有配置文件"><a href="#列出所有配置文件" class="headerlink" title="列出所有配置文件"></a>列出所有配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-unit-files</span><br></pre></td></tr></table></figure>
+<h3 id="列出指定类型的配置文件"><a href="#列出指定类型的配置文件" class="headerlink" title="列出指定类型的配置文件"></a>列出指定类型的配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-unit-files --type&#x3D;service</span><br></pre></td></tr></table></figure>
+<h3 id="查看配置文件"><a href="#查看配置文件" class="headerlink" title="查看配置文件"></a>查看配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl cat atd.service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="日志管理"><a href="#日志管理" class="headerlink" title="日志管理"></a>日志管理</h2><h3 id="查看所有日志（默认情况下-，只保存本次启动的日志）"><a href="#查看所有日志（默认情况下-，只保存本次启动的日志）" class="headerlink" title="查看所有日志（默认情况下 ，只保存本次启动的日志）"></a>查看所有日志（默认情况下 ，只保存本次启动的日志）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl</span><br></pre></td></tr></table></figure>
+<h3 id="查看内核日志（不显示应用日志）"><a href="#查看内核日志（不显示应用日志）" class="headerlink" title="查看内核日志（不显示应用日志）"></a>查看内核日志（不显示应用日志）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -k</span><br></pre></td></tr></table></figure>
+<h3 id="查看系统本次启动的日志"><a href="#查看系统本次启动的日志" class="headerlink" title="查看系统本次启动的日志"></a>查看系统本次启动的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">journalctl -b</span><br><span class="line">journalctl -b -0</span><br></pre></td></tr></table></figure>
+<h3 id="查看上一次启动的日志（需更改设置）"><a href="#查看上一次启动的日志（需更改设置）" class="headerlink" title="查看上一次启动的日志（需更改设置）"></a>查看上一次启动的日志（需更改设置）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl -b -1</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定时间的日志"><a href="#查看指定时间的日志" class="headerlink" title="查看指定时间的日志"></a>查看指定时间的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">journalctl --since&#x3D;&quot;2012-10-30 18:17:16&quot;</span><br><span class="line">journalctl --since &quot;20 min ago&quot;</span><br><span class="line">journalctl --since yesterday</span><br><span class="line">journalctl --since &quot;2015-01-10&quot; --until &quot;2015-01-11 03:00&quot;</span><br><span class="line">journalctl --since 09:00 --until &quot;1 hour ago&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="显示尾部的最新10行日志"><a href="#显示尾部的最新10行日志" class="headerlink" title="显示尾部的最新10行日志"></a>显示尾部的最新10行日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -n</span><br></pre></td></tr></table></figure>
+<h3 id="显示尾部指定行数的日志"><a href="#显示尾部指定行数的日志" class="headerlink" title="显示尾部指定行数的日志"></a>显示尾部指定行数的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -n 20</span><br></pre></td></tr></table></figure>
+<h3 id="实时滚动显示最新日志"><a href="#实时滚动显示最新日志" class="headerlink" title="实时滚动显示最新日志"></a>实时滚动显示最新日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -f</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定服务的日志"><a href="#查看指定服务的日志" class="headerlink" title="查看指定服务的日志"></a>查看指定服务的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;systemd</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定进程的日志"><a href="#查看指定进程的日志" class="headerlink" title="查看指定进程的日志"></a>查看指定进程的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl _PID&#x3D;1</span><br></pre></td></tr></table></figure>
+<h3 id="查看某个路径的脚本的日志"><a href="#查看某个路径的脚本的日志" class="headerlink" title="查看某个路径的脚本的日志"></a>查看某个路径的脚本的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl &#x2F;usr&#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定用户的日志"><a href="#查看指定用户的日志" class="headerlink" title="查看指定用户的日志"></a>查看指定用户的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl _UID&#x3D;33 --since today</span><br></pre></td></tr></table></figure>
+<h3 id="查看某个-Unit-的日志"><a href="#查看某个-Unit-的日志" class="headerlink" title="查看某个 Unit 的日志"></a>查看某个 Unit 的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u nginx.service</span><br><span class="line">journalctl -u nginx.service --since today</span><br></pre></td></tr></table></figure>
+<h3 id="实时滚动显示某个-Unit-的最新日志"><a href="#实时滚动显示某个-Unit-的最新日志" class="headerlink" title="实时滚动显示某个 Unit 的最新日志"></a>实时滚动显示某个 Unit 的最新日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u nginx.service -f</span><br></pre></td></tr></table></figure>
+<h3 id="合并显示多个-Unit-的日志"><a href="#合并显示多个-Unit-的日志" class="headerlink" title="合并显示多个 Unit 的日志"></a>合并显示多个 Unit 的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u nginx.service -u php-fpm.service --since today</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定优先级（及其以上级别）的日志，共有8级"><a href="#查看指定优先级（及其以上级别）的日志，共有8级" class="headerlink" title="查看指定优先级（及其以上级别）的日志，共有8级"></a>查看指定优先级（及其以上级别）的日志，共有8级</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0: emerg 1: alert 2: crit 3: err 4: warning 5: notice 6: info 7: debug</span><br><span class="line">journalctl -p err -b</span><br></pre></td></tr></table></figure>
+<h3 id="日志默认分页输出，–no-pager-改为正常的标准输出"><a href="#日志默认分页输出，–no-pager-改为正常的标准输出" class="headerlink" title="日志默认分页输出，–no-pager 改为正常的标准输出"></a>日志默认分页输出，–no-pager 改为正常的标准输出</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl --no-pager</span><br></pre></td></tr></table></figure>
+<h3 id="以-JSON-格式（单行）输出"><a href="#以-JSON-格式（单行）输出" class="headerlink" title="以 JSON 格式（单行）输出"></a>以 JSON 格式（单行）输出</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -b -u nginx.service -o json</span><br></pre></td></tr></table></figure>
+<h3 id="以-JSON-格式（多行）输出，可读性更好"><a href="#以-JSON-格式（多行）输出，可读性更好" class="headerlink" title="以 JSON 格式（多行）输出，可读性更好"></a>以 JSON 格式（多行）输出，可读性更好</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -b -u nginx.service -o json-pretty</span><br></pre></td></tr></table></figure>
+<h3 id="显示日志占据的硬盘空间"><a href="#显示日志占据的硬盘空间" class="headerlink" title="显示日志占据的硬盘空间"></a>显示日志占据的硬盘空间</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl --disk-usage</span><br></pre></td></tr></table></figure>
+<h3 id="指定日志文件占据的最大空间"><a href="#指定日志文件占据的最大空间" class="headerlink" title="指定日志文件占据的最大空间"></a>指定日志文件占据的最大空间</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl --vacuum-size&#x3D;1G</span><br></pre></td></tr></table></figure>
+<h3 id="指定日志文件保存多久"><a href="#指定日志文件保存多久" class="headerlink" title="指定日志文件保存多久"></a>指定日志文件保存多久</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl --vacuum-time&#x3D;1years</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201907/20190731macOS%E4%B8%8B%E6%89%B9%E9%87%8Fgbk%E8%BD%ACutf8/" rel="prev" title="macOS下批量gbk转utf8">
+      <i class="fa fa-chevron-left"></i> macOS下批量gbk转utf8
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201811/Oracle+MySQL+InfluxDB%E7%AE%80%E6%98%93%E5%A4%87%E4%BB%BD%E8%84%9A%E6%9C%AC/" rel="next" title="Oracle+MySQL+InfluxDB简易备份脚本">
+      Oracle+MySQL+InfluxDB简易备份脚本 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">1.</span> <span class="nav-text">参考文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#systemctl"><span class="nav-number">2.</span> <span class="nav-text">systemctl</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E5%90%AF"><span class="nav-number">2.1.</span> <span class="nav-text">重启</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%97%AD"><span class="nav-number">2.2.</span> <span class="nav-text">关闭</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CPU%E5%81%9C%E6%AD%A2%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.3.</span> <span class="nav-text">CPU停止工作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9A%82%E5%81%9C%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.4.</span> <span class="nav-text">暂停系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%91%E7%9C%A0"><span class="nav-number">2.5.</span> <span class="nav-text">休眠</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92%E5%BC%8F%E4%BC%91%E7%9C%A0"><span class="nav-number">2.6.</span> <span class="nav-text">交互式休眠</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#systemd-analyze"><span class="nav-number">3.</span> <span class="nav-text">systemd-analyze</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E8%80%97%E6%97%B6"><span class="nav-number">3.1.</span> <span class="nav-text">启动耗时</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AF%8F%E4%B8%AA%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%90%AF%E5%8A%A8%E8%80%97%E6%97%B6"><span class="nav-number">3.2.</span> <span class="nav-text">每个服务的启动耗时</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%80%91%E5%B8%83%E7%8A%B6%E7%9A%84%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B%E6%B5%81"><span class="nav-number">3.3.</span> <span class="nav-text">瀑布状的启动过程流</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%8C%87%E5%AE%9A%E6%9C%8D%E5%8A%A1%E7%9A%84%E5%90%AF%E5%8A%A8%E6%B5%81"><span class="nav-number">3.4.</span> <span class="nav-text">显示指定服务的启动流</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hostnamect"><span class="nav-number">4.</span> <span class="nav-text">hostnamect</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E5%BD%93%E5%89%8D%E4%B8%BB%E6%9C%BA%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="nav-number">4.1.</span> <span class="nav-text">显示当前主机的信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E4%B8%BB%E6%9C%BA%E5%90%8D"><span class="nav-number">4.2.</span> <span class="nav-text">设置主机名</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#localectl"><span class="nav-number">5.</span> <span class="nav-text">localectl</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%9C%AC%E5%9C%B0%E5%8C%96%E8%AE%BE%E7%BD%AE"><span class="nav-number">5.1.</span> <span class="nav-text">查看本地化设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E6%9C%AC%E5%9C%B0%E5%8C%96%E5%8F%82%E6%95%B0"><span class="nav-number">5.2.</span> <span class="nav-text">设置本地化参数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#timedatectl"><span class="nav-number">6.</span> <span class="nav-text">timedatectl</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E6%97%B6%E5%8C%BA%E8%AE%BE%E7%BD%AE"><span class="nav-number">6.1.</span> <span class="nav-text">查看当前时区设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%89%80%E6%9C%89%E5%8F%AF%E7%94%A8%E7%9A%84%E6%97%B6%E5%8C%BA"><span class="nav-number">6.2.</span> <span class="nav-text">显示所有可用的时区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%BD%93%E5%89%8D%E6%97%B6%E5%8C%BA"><span class="nav-number">6.3.</span> <span class="nav-text">设置当前时区</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#loginctl"><span class="nav-number">7.</span> <span class="nav-text">loginctl</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E5%BD%93%E5%89%8Dsession"><span class="nav-number">7.1.</span> <span class="nav-text">列出当前session</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E5%BD%93%E5%89%8D%E7%99%BB%E5%BD%95%E7%94%A8%E6%88%B7"><span class="nav-number">7.2.</span> <span class="nav-text">列出当前登录用户</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%98%BE%E7%A4%BA%E6%8C%87%E5%AE%9A%E7%94%A8%E6%88%B7%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="nav-number">7.3.</span> <span class="nav-text">列出显示指定用户的信息</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E7%8A%B6%E6%80%81"><span class="nav-number">8.</span> <span class="nav-text">查询状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%AD%A3%E5%9C%A8%E8%BF%90%E8%A1%8C%E7%9A%84-Unit"><span class="nav-number">8.1.</span> <span class="nav-text">列出正在运行的 Unit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89Unit%EF%BC%8C%E5%8C%85%E6%8B%AC%E6%B2%A1%E6%9C%89%E6%89%BE%E5%88%B0%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%9A%84%E6%88%96%E8%80%85%E5%90%AF%E5%8A%A8%E5%A4%B1%E8%B4%A5%E7%9A%84"><span class="nav-number">8.2.</span> <span class="nav-text">列出所有Unit，包括没有找到配置文件的或者启动失败的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E6%B2%A1%E6%9C%89%E8%BF%90%E8%A1%8C%E7%9A%84-Unit"><span class="nav-number">8.3.</span> <span class="nav-text">列出所有没有运行的 Unit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E5%8A%A0%E8%BD%BD%E5%A4%B1%E8%B4%A5%E7%9A%84-Unit"><span class="nav-number">8.4.</span> <span class="nav-text">列出所有加载失败的 Unit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E6%AD%A3%E5%9C%A8%E8%BF%90%E8%A1%8C%E7%9A%84%E3%80%81%E7%B1%BB%E5%9E%8B%E4%B8%BA-service-%E7%9A%84-Unit"><span class="nav-number">8.5.</span> <span class="nav-text">列出所有正在运行的、类型为 service 的 Unit</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2%E7%8A%B6%E6%80%81-1"><span class="nav-number">9.</span> <span class="nav-text">查询状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E7%B3%BB%E7%BB%9F%E7%8A%B6%E6%80%81"><span class="nav-number">9.1.</span> <span class="nav-text">显示系统状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E5%8D%95%E4%B8%AA-Unit-%E7%9A%84%E7%8A%B6%E6%80%81"><span class="nav-number">9.2.</span> <span class="nav-text">显示单个 Unit 的状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA%E7%9A%84%E6%9F%90%E4%B8%AA-Unit-%E7%9A%84%E7%8A%B6%E6%80%81"><span class="nav-number">9.3.</span> <span class="nav-text">显示远程主机的某个 Unit 的状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%9F%90%E4%B8%AA-Unit-%E6%98%AF%E5%90%A6%E6%AD%A3%E5%9C%A8%E8%BF%90%E8%A1%8C"><span class="nav-number">9.4.</span> <span class="nav-text">显示某个 Unit 是否正在运行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%9F%90%E4%B8%AA-Unit-%E6%98%AF%E5%90%A6%E5%A4%84%E4%BA%8E%E5%90%AF%E5%8A%A8%E5%A4%B1%E8%B4%A5%E7%8A%B6%E6%80%81"><span class="nav-number">9.5.</span> <span class="nav-text">显示某个 Unit 是否处于启动失败状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%9F%90%E4%B8%AA-Unit-%E6%9C%8D%E5%8A%A1%E6%98%AF%E5%90%A6%E5%BB%BA%E7%AB%8B%E4%BA%86%E5%90%AF%E5%8A%A8%E9%93%BE%E6%8E%A5"><span class="nav-number">9.6.</span> <span class="nav-text">显示某个 Unit 服务是否建立了启动链接</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="nav-number">10.</span> <span class="nav-text">服务管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AB%8B%E5%8D%B3%E5%90%AF%E5%8A%A8%E4%B8%80%E4%B8%AA%E6%9C%8D%E5%8A%A1"><span class="nav-number">10.1.</span> <span class="nav-text">立即启动一个服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AB%8B%E5%8D%B3%E5%81%9C%E6%AD%A2%E4%B8%80%E4%B8%AA%E6%9C%8D%E5%8A%A1"><span class="nav-number">10.2.</span> <span class="nav-text">立即停止一个服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E5%90%AF%E4%B8%80%E4%B8%AA%E6%9C%8D%E5%8A%A1"><span class="nav-number">10.3.</span> <span class="nav-text">重启一个服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%80%E6%AD%BB%E4%B8%80%E4%B8%AA%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%89%80%E6%9C%89%E5%AD%90%E8%BF%9B%E7%A8%8B"><span class="nav-number">10.4.</span> <span class="nav-text">杀死一个服务的所有子进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E6%96%B0%E5%8A%A0%E8%BD%BD%E4%B8%80%E4%B8%AA%E6%9C%8D%E5%8A%A1%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">10.5.</span> <span class="nav-text">重新加载一个服务的配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E8%BD%BD%E6%89%80%E6%9C%89%E4%BF%AE%E6%94%B9%E8%BF%87%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">10.6.</span> <span class="nav-text">重载所有修改过的配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%9F%90%E4%B8%AA-Unit-%E7%9A%84%E6%89%80%E6%9C%89%E5%BA%95%E5%B1%82%E5%8F%82%E6%95%B0"><span class="nav-number">10.7.</span> <span class="nav-text">显示某个 Unit 的所有底层参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%9F%90%E4%B8%AA-Unit-%E7%9A%84%E6%8C%87%E5%AE%9A%E5%B1%9E%E6%80%A7%E7%9A%84%E5%80%BC"><span class="nav-number">10.8.</span> <span class="nav-text">显示某个 Unit 的指定属性的值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E6%9F%90%E4%B8%AA-Unit-%E7%9A%84%E6%8C%87%E5%AE%9A%E5%B1%9E%E6%80%A7"><span class="nav-number">10.9.</span> <span class="nav-text">设置某个 Unit 的指定属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E4%B8%80%E4%B8%AA-Unit-%E7%9A%84%E6%89%80%E6%9C%89%E4%BE%9D%E8%B5%96"><span class="nav-number">10.10.</span> <span class="nav-text">列出一个 Unit 的所有依赖</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E7%9A%84%E7%8A%B6%E6%80%81"><span class="nav-number">11.</span> <span class="nav-text">配置文件的状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">11.1.</span> <span class="nav-text">列出所有配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E5%87%BA%E6%8C%87%E5%AE%9A%E7%B1%BB%E5%9E%8B%E7%9A%84%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">11.2.</span> <span class="nav-text">列出指定类型的配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">11.3.</span> <span class="nav-text">查看配置文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86"><span class="nav-number">12.</span> <span class="nav-text">日志管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%89%80%E6%9C%89%E6%97%A5%E5%BF%97%EF%BC%88%E9%BB%98%E8%AE%A4%E6%83%85%E5%86%B5%E4%B8%8B-%EF%BC%8C%E5%8F%AA%E4%BF%9D%E5%AD%98%E6%9C%AC%E6%AC%A1%E5%90%AF%E5%8A%A8%E7%9A%84%E6%97%A5%E5%BF%97%EF%BC%89"><span class="nav-number">12.1.</span> <span class="nav-text">查看所有日志（默认情况下 ，只保存本次启动的日志）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E5%86%85%E6%A0%B8%E6%97%A5%E5%BF%97%EF%BC%88%E4%B8%8D%E6%98%BE%E7%A4%BA%E5%BA%94%E7%94%A8%E6%97%A5%E5%BF%97%EF%BC%89"><span class="nav-number">12.2.</span> <span class="nav-text">查看内核日志（不显示应用日志）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E7%B3%BB%E7%BB%9F%E6%9C%AC%E6%AC%A1%E5%90%AF%E5%8A%A8%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">12.3.</span> <span class="nav-text">查看系统本次启动的日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E4%B8%8A%E4%B8%80%E6%AC%A1%E5%90%AF%E5%8A%A8%E7%9A%84%E6%97%A5%E5%BF%97%EF%BC%88%E9%9C%80%E6%9B%B4%E6%94%B9%E8%AE%BE%E7%BD%AE%EF%BC%89"><span class="nav-number">12.4.</span> <span class="nav-text">查看上一次启动的日志（需更改设置）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%8C%87%E5%AE%9A%E6%97%B6%E9%97%B4%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">12.5.</span> <span class="nav-text">查看指定时间的日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E5%B0%BE%E9%83%A8%E7%9A%84%E6%9C%80%E6%96%B010%E8%A1%8C%E6%97%A5%E5%BF%97"><span class="nav-number">12.6.</span> <span class="nav-text">显示尾部的最新10行日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E5%B0%BE%E9%83%A8%E6%8C%87%E5%AE%9A%E8%A1%8C%E6%95%B0%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">12.7.</span> <span class="nav-text">显示尾部指定行数的日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E6%97%B6%E6%BB%9A%E5%8A%A8%E6%98%BE%E7%A4%BA%E6%9C%80%E6%96%B0%E6%97%A5%E5%BF%97"><span class="nav-number">12.8.</span> <span class="nav-text">实时滚动显示最新日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%8C%87%E5%AE%9A%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">12.9.</span> <span class="nav-text">查看指定服务的日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%8C%87%E5%AE%9A%E8%BF%9B%E7%A8%8B%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">12.10.</span> <span class="nav-text">查看指定进程的日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%9F%90%E4%B8%AA%E8%B7%AF%E5%BE%84%E7%9A%84%E8%84%9A%E6%9C%AC%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">12.11.</span> <span class="nav-text">查看某个路径的脚本的日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%8C%87%E5%AE%9A%E7%94%A8%E6%88%B7%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">12.12.</span> <span class="nav-text">查看指定用户的日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%9F%90%E4%B8%AA-Unit-%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">12.13.</span> <span class="nav-text">查看某个 Unit 的日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E6%97%B6%E6%BB%9A%E5%8A%A8%E6%98%BE%E7%A4%BA%E6%9F%90%E4%B8%AA-Unit-%E7%9A%84%E6%9C%80%E6%96%B0%E6%97%A5%E5%BF%97"><span class="nav-number">12.14.</span> <span class="nav-text">实时滚动显示某个 Unit 的最新日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%88%E5%B9%B6%E6%98%BE%E7%A4%BA%E5%A4%9A%E4%B8%AA-Unit-%E7%9A%84%E6%97%A5%E5%BF%97"><span class="nav-number">12.15.</span> <span class="nav-text">合并显示多个 Unit 的日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%8C%87%E5%AE%9A%E4%BC%98%E5%85%88%E7%BA%A7%EF%BC%88%E5%8F%8A%E5%85%B6%E4%BB%A5%E4%B8%8A%E7%BA%A7%E5%88%AB%EF%BC%89%E7%9A%84%E6%97%A5%E5%BF%97%EF%BC%8C%E5%85%B1%E6%9C%898%E7%BA%A7"><span class="nav-number">12.16.</span> <span class="nav-text">查看指定优先级（及其以上级别）的日志，共有8级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E9%BB%98%E8%AE%A4%E5%88%86%E9%A1%B5%E8%BE%93%E5%87%BA%EF%BC%8C%E2%80%93no-pager-%E6%94%B9%E4%B8%BA%E6%AD%A3%E5%B8%B8%E7%9A%84%E6%A0%87%E5%87%86%E8%BE%93%E5%87%BA"><span class="nav-number">12.17.</span> <span class="nav-text">日志默认分页输出，–no-pager 改为正常的标准输出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A5-JSON-%E6%A0%BC%E5%BC%8F%EF%BC%88%E5%8D%95%E8%A1%8C%EF%BC%89%E8%BE%93%E5%87%BA"><span class="nav-number">12.18.</span> <span class="nav-text">以 JSON 格式（单行）输出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A5-JSON-%E6%A0%BC%E5%BC%8F%EF%BC%88%E5%A4%9A%E8%A1%8C%EF%BC%89%E8%BE%93%E5%87%BA%EF%BC%8C%E5%8F%AF%E8%AF%BB%E6%80%A7%E6%9B%B4%E5%A5%BD"><span class="nav-number">12.19.</span> <span class="nav-text">以 JSON 格式（多行）输出，可读性更好</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E7%A4%BA%E6%97%A5%E5%BF%97%E5%8D%A0%E6%8D%AE%E7%9A%84%E7%A1%AC%E7%9B%98%E7%A9%BA%E9%97%B4"><span class="nav-number">12.20.</span> <span class="nav-text">显示日志占据的硬盘空间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E5%8D%A0%E6%8D%AE%E7%9A%84%E6%9C%80%E5%A4%A7%E7%A9%BA%E9%97%B4"><span class="nav-number">12.21.</span> <span class="nav-text">指定日志文件占据的最大空间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E6%97%A5%E5%BF%97%E6%96%87%E4%BB%B6%E4%BF%9D%E5%AD%98%E5%A4%9A%E4%B9%85"><span class="nav-number">12.22.</span> <span class="nav-text">指定日志文件保存多久</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

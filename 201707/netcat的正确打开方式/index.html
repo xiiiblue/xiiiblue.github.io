@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="netcat的正确打开方式简介nc(netcat)是一个能通过TCP和UDP读写数据的工具，很多Linux发行版已经预装。最近发现了关于nc的很多有趣的应用场景，果然名副其实，很是牛叉。。。于是简单梳理了一下。   参数说明 -g &lt;网关&gt; 设置路由器跃程通信网关，最丢哦可设置8个。 -G &lt;指向器数目&gt; 设置来源路由指向器，其数值为4的倍数。 -h 在线帮助。 -i &amp;l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BlueXIII&#39;s Blog">
+<meta property="og:url" content="http://blog.bluexiii.com/201707/netcat%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%89%93%E5%BC%80%E6%96%B9%E5%BC%8F/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="netcat的正确打开方式简介nc(netcat)是一个能通过TCP和UDP读写数据的工具，很多Linux发行版已经预装。最近发现了关于nc的很多有趣的应用场景，果然名副其实，很是牛叉。。。于是简单梳理了一下。   参数说明 -g &lt;网关&gt; 设置路由器跃程通信网关，最丢哦可设置8个。 -G &lt;指向器数目&gt; 设置来源路由指向器，其数值为4的倍数。 -h 在线帮助。 -i &amp;l">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-07-28T08:44:14.000Z">
+<meta property="article:modified_time" content="2017-07-28T08:44:14.000Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201707/netcat%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%89%93%E5%BC%80%E6%96%B9%E5%BC%8F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title> | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201707/netcat%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%89%93%E5%BC%80%E6%96%B9%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-07-28 16:44:14" itemprop="dateCreated datePublished" datetime="2017-07-28T16:44:14+08:00">2017-07-28</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="netcat的正确打开方式"><a href="#netcat的正确打开方式" class="headerlink" title="netcat的正确打开方式"></a>netcat的正确打开方式</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>nc(netcat)是一个能通过TCP和UDP读写数据的工具，很多Linux发行版已经预装。最近发现了关于nc的很多有趣的应用场景，果然名副其实，很是牛叉。。。于是简单梳理了一下。  </p>
+<h2 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明"></a>参数说明</h2><ul>
+<li>-g &lt;网关&gt; 设置路由器跃程通信网关，最丢哦可设置8个。</li>
+<li>-G &lt;指向器数目&gt; 设置来源路由指向器，其数值为4的倍数。</li>
+<li>-h 在线帮助。</li>
+<li>-i &lt;延迟秒数&gt; 设置时间间隔，以便传送信息及扫描通信端口。</li>
+<li>-l 使用监听模式，管控传入的资料。</li>
+<li>-n 直接使用IP地址，而不通过域名服务器。</li>
+<li>-o &lt;输出文件&gt; 指定文件名称，把往来传输的数据以16进制字码倾倒成该文件保存。</li>
+<li>-p &lt;通信端口&gt; 设置本地主机使用的通信端口。</li>
+<li>-r 乱数指定本地与远端主机的通信端口。</li>
+<li>-s &lt;来源位址&gt; 设置本地主机送出数据包的IP地址。</li>
+<li>-u 使用UDP传输协议。</li>
+<li>-v 显示指令执行过程。</li>
+<li>-w &lt;超时秒数&gt; 设置等待连线的时间。</li>
+<li>-z 使用0输入/输出模式，只在扫描通信端口时使用。</li>
+</ul>
+<h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><h3 id="测试端口连通性"><a href="#测试端口连通性" class="headerlink" title="测试端口连通性"></a>测试端口连通性</h3><p>使用<code>nc -z</code>可以测试远程主机端口的连通性。<br>以前我们测试某台远程主机的某个端口是否能连通，通常都是用<code>telnet ip port</code>，现在可以用nc来替代了。</p>
+<p>示例：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nc -z 192.168.1.60 19011</span><br><span class="line">Connection to 192.168.1.60 port 19011 [tcp&#x2F;*] succeeded!</span><br></pre></td></tr></table></figure>
+
+<h3 id="端口扫描"><a href="#端口扫描" class="headerlink" title="端口扫描"></a>端口扫描</h3><p>使用<code>-z</code>参数时，还可以指定一个端口范围进行扫描。<br>以后简单场景下，就不需要动用<code>nmap</code>这种专业工具了。  </p>
+<p>示例：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">TCP:</span><br><span class="line">nc -z -v 192.168.1.60 19000-19100 2&gt;&amp;1 | grep succeeded</span><br><span class="line"></span><br><span class="line">UDP:</span><br><span class="line">nc -z -v -u 192.168.1.60 19000-19100 2&gt;&amp;1 | grep succeeded</span><br></pre></td></tr></table></figure>
+
+<h3 id="启监听端口"><a href="#启监听端口" class="headerlink" title="启监听端口"></a>启监听端口</h3><p>很多时候，如果拜托网管为我们做一个NAT映射，或新配置了一个防火墙策略后，通常要启一个临时的tomcat/apache/nginx行测试，非常麻烦。<br>如果只是临时测试的话，直接使用<code>nc -l 端口号</code>就可以启一个监听了，如果早点知道的话就可以省去很多时间了。  </p>
+<p>示例：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -l 33333</span><br></pre></td></tr></table></figure>
+<h3 id="HTTP服务健康监控"><a href="#HTTP服务健康监控" class="headerlink" title="HTTP服务健康监控"></a>HTTP服务健康监控</h3><p><code>nc</code>配合<code>echo</code>来使用，可以模拟发送一段HTTP请求报文，对一个HTTP服务进行健康度检测。<br>如果服务支持HEAD方法的话，可以尽量使用HEAD以减轻测试时对服务端的压力。<br>于是简单场景下，我们又可以抛弃<code>wget</code>和<code>curl</code>了。。。</p>
+<p>示例：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo -e &quot;GET &#x2F;mobsale-service&#x2F;health HTTP&#x2F;1.0\r\n\r\n&quot; |nc -t 192.168.1.60 19011</span><br><span class="line">echo -e &quot;HEAD &#x2F;mobsale-service&#x2F;client HTTP&#x2F;1.0\r\n\r\n&quot; |nc -t 192.168.1.60 19011</span><br></pre></td></tr></table></figure>
+
+<h3 id="文件传输"><a href="#文件传输" class="headerlink" title="文件传输"></a>文件传输</h3><p>通常，我们在两台服务器之前传递文件，首选都是<code>sftp</code>/<code>scp</code>，或者<code>ftp</code>，或者更古老的<code>sz</code>/<code>rz</code>。<br>但如果这些方式都被禁用的话怎么办呢？可以用nc来自己铺路，只要能连网，就能传文件！  </p>
+<p>示例：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">传递方：</span><br><span class="line">cat readme.txt | nc -l 33333</span><br><span class="line"></span><br><span class="line">收接方：</span><br><span class="line">nc 192.168.1.61 33333 &gt; readme.txt</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>如果要传递目录的话，需要配合tar/zip等工具进行打包。  </p>
+</blockquote>
+<h3 id="聊天工具"><a href="#聊天工具" class="headerlink" title="聊天工具"></a>聊天工具</h3><p>还可以使用nc来进行单方向聊天，这貌似是一个然并卵的东西。。。<br>和文件传输的原理其实是一样的。  </p>
+<p>示例：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">接收方：</span><br><span class="line">nc -l 33333</span><br><span class="line"></span><br><span class="line">发送方：</span><br><span class="line">nc 192.168.1.61 33333</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>发送发输入内容回车之后，接收方就会显示了</p>
+</blockquote>
+<h3 id="简易WEB服务器"><a href="#简易WEB服务器" class="headerlink" title="简易WEB服务器"></a>简易WEB服务器</h3><p>不借助<code>tomcat</code>/<code>nginx</code>/<code>httpd</code>等WEB容器，仅用nc就可以用快速搭建一个单页面的WEB服务器。  </p>
+<p>首先新建一个index.html文件：  </p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;utf-8&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">title</span>&gt;</span>Test Page<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">h1</span>&gt;</span>It Works!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>执行以下脚本，将一个简单的HEAD与index.html中的BODY拼接并输出：  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">while true;do &#123; printf &#x27;%b\r\n&#x27; &#x27;HTTP/1.1 200 OK&#x27; &#x27;%b\r\n&#x27;;cat index.html; &#125;|nc -l 33333;done</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在浏览器上输入<a href="http://ip:port/whatever">http://ip:port/whatever</a> 就可以看到刚才的页面了</p>
+</blockquote>
+<h3 id="远程桌面"><a href="#远程桌面" class="headerlink" title="远程桌面"></a>远程桌面</h3><p>设想如下场景：<br>如果某台远程主机禁用了某用户（例如root）的SSH远程登录权限，只能通过低权限的管理用户登录，再用<code>su -</code>的方式切换过去进行操作。如果觉得不爽，有没有可能绕过这个限制呢？<br>使用nc就可以在远程新开一个任意监听端口，然后在本地就可以模拟SSH登录了，可以说是命令行版的”远程桌面”吧。  </p>
+<p>原理如下：  </p>
+<ol>
+<li>从网络收到命令写入fifo文件中</li>
+<li>cat命令读取fifo文件，并且发送到bash命令</li>
+<li>bash执行完的结果发送给nc</li>
+<li>nc通过网络把内容发送给客户端</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">远程：  </span><br><span class="line">mkfifo /tmp/tmp_fifo; cat /tmp/tmp_fifo | /bin/bash -i 2&gt;&amp;1 | nc -l 33333 &gt; /tmp/tmp_fifo</span><br><span class="line"></span><br><span class="line">本地：  </span><br><span class="line">nc -n 192.168.1.60 33333</span><br></pre></td></tr></table></figure>
+<h3 id="四层反向代理"><a href="#四层反向代理" class="headerlink" title="四层反向代理"></a>四层反向代理</h3><p>与上面的”模拟SSH登录”原理类似，nc的另一个场景是可以充当一个4层的反向代理，这个比较实用了，LVS/HA/Nginx统统都可以下岗了。。。</p>
+<p>示例：  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkfifo backpipe; nc -l 33333  0&lt;backpipe | nc 192.168.1.60 19011 1&gt;backpipe</span><br></pre></td></tr></table></figure>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>大体先写这么多了，以后的使用过程中如果还有新的发现，随时补充。  </p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91RDS&DRDS%E5%88%9D%E6%8E%A2/" rel="prev" title="阿里云RDS&DRDS初探">
+      <i class="fa fa-chevron-left"></i> 阿里云RDS&DRDS初探
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201707/%E9%80%9A%E8%BF%87Cookie%20Insertion%E5%AE%9E%E7%8E%B0Nginx%E4%BC%9A%E8%AF%9D%E4%BF%9D%E6%8C%81/" rel="next" title="通过Cookie Insertion实现Nginx会话保持">
+      通过Cookie Insertion实现Nginx会话保持 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#netcat%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%89%93%E5%BC%80%E6%96%B9%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">netcat的正确打开方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E8%AF%B4%E6%98%8E"><span class="nav-number">1.2.</span> <span class="nav-text">参数说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">1.3.</span> <span class="nav-text">使用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%AB%AF%E5%8F%A3%E8%BF%9E%E9%80%9A%E6%80%A7"><span class="nav-number">1.3.1.</span> <span class="nav-text">测试端口连通性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F"><span class="nav-number">1.3.2.</span> <span class="nav-text">端口扫描</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E7%9B%91%E5%90%AC%E7%AB%AF%E5%8F%A3"><span class="nav-number">1.3.3.</span> <span class="nav-text">启监听端口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP%E6%9C%8D%E5%8A%A1%E5%81%A5%E5%BA%B7%E7%9B%91%E6%8E%A7"><span class="nav-number">1.3.4.</span> <span class="nav-text">HTTP服务健康监控</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93"><span class="nav-number">1.3.5.</span> <span class="nav-text">文件传输</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%8A%E5%A4%A9%E5%B7%A5%E5%85%B7"><span class="nav-number">1.3.6.</span> <span class="nav-text">聊天工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E6%98%93WEB%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">1.3.7.</span> <span class="nav-text">简易WEB服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9C%E7%A8%8B%E6%A1%8C%E9%9D%A2"><span class="nav-number">1.3.8.</span> <span class="nav-text">远程桌面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9B%E5%B1%82%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86"><span class="nav-number">1.3.9.</span> <span class="nav-text">四层反向代理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number">1.4.</span> <span class="nav-text">后记</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="简介RDS 阿里云关系型数据库（Relational Database Service，简称 RDS）是一种稳定可靠、可弹性伸缩的在线数据库服务。基于阿里云分布式文件系统和高性能存储，RDS 支持 MySQL、SQL Server、PostgreSQL 和 PPAS（Postgre Plus Advanced Server，一种高度兼容 Oracle 的数据库）引擎，并且提供了容灾、备份、恢复、监">
+<meta property="og:type" content="article">
+<meta property="og:title" content="阿里云RDS&amp;DRDS初探">
+<meta property="og:url" content="http://blog.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91RDS&DRDS%E5%88%9D%E6%8E%A2/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="简介RDS 阿里云关系型数据库（Relational Database Service，简称 RDS）是一种稳定可靠、可弹性伸缩的在线数据库服务。基于阿里云分布式文件系统和高性能存储，RDS 支持 MySQL、SQL Server、PostgreSQL 和 PPAS（Postgre Plus Advanced Server，一种高度兼容 Oracle 的数据库）引擎，并且提供了容灾、备份、恢复、监">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://oss.bluexiii.com/98xvs.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/etmui.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/e34py.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/d3t0z.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/seljp.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/dnf0x.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/murxc.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/2anc1.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/pk7r3.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/3yyc2.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/a083z.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/3aiuf.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/gfi7s.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/e2o0b.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/b0klv.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/3wmvn.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/0n8ti.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/rbjed.jpg">
+<meta property="article:published_time" content="2017-07-26T09:02:32.000Z">
+<meta property="article:modified_time" content="2019-07-31T00:56:53.579Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://oss.bluexiii.com/98xvs.jpg">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91RDS&DRDS%E5%88%9D%E6%8E%A2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>阿里云RDS&DRDS初探 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91RDS&DRDS%E5%88%9D%E6%8E%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          阿里云RDS&DRDS初探
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-07-26 17:02:32" itemprop="dateCreated datePublished" datetime="2017-07-26T17:02:32+08:00">2017-07-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-07-31 08:56:53" itemprop="dateModified" datetime="2019-07-31T08:56:53+08:00">2019-07-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h3 id="RDS"><a href="#RDS" class="headerlink" title="RDS"></a>RDS</h3><blockquote>
+<p>阿里云关系型数据库（Relational Database Service，简称 RDS）是一种稳定可靠、可弹性伸缩的在线数据库服务。基于阿里云分布式文件系统和高性能存储，RDS 支持 MySQL、SQL Server、PostgreSQL 和 PPAS（Postgre Plus Advanced Server，一种高度兼容 Oracle 的数据库）引擎，并且提供了容灾、备份、恢复、监控、迁移等方面的全套解决方案，彻底解决数据库运维的烦恼。</p>
+</blockquote>
+<p><strong>RDS for MySQL</strong> 可以认为是云上的MySQL。目前可选的版本有5.5/5.6，部分区域可选择5.7。  </p>
+<h3 id="DRDS"><a href="#DRDS" class="headerlink" title="DRDS"></a>DRDS</h3><blockquote>
+<p>分布式关系型数据库服务（Distributed Relational Database Service，简称 DRDS）是阿里巴巴致力于解决单机数据库服务瓶颈问题而自主研发推出的分布式数据库产品。DRDS 高度兼容 MySQL 协议和语法，支持自动化水平拆分、在线平滑扩缩容、弹性扩展、透明读写分离，具备数据库全生命周期运维管控能力。DRDS 前身为淘宝 TDDL，是近千核心应用首选组件。</p>
+</blockquote>
+<p><strong>DRDS</strong> 可以认为是云上的TDDL中间件。DRDS必须依赖RDS。  </p>
+<h2 id="相关文档"><a href="#相关文档" class="headerlink" title="相关文档"></a>相关文档</h2><h3 id="RDS首页"><a href="#RDS首页" class="headerlink" title="RDS首页"></a>RDS首页</h3><p><a target="_blank" rel="noopener" href="https://www.aliyun.com/product/rds/mysql">https://www.aliyun.com/product/rds/mysql</a></p>
+<h3 id="RDS控制台"><a href="#RDS控制台" class="headerlink" title="RDS控制台"></a>RDS控制台</h3><p><a target="_blank" rel="noopener" href="https://rdsnew.console.aliyun.com/">https://rdsnew.console.aliyun.com</a></p>
+<h3 id="RDS文档"><a href="#RDS文档" class="headerlink" title="RDS文档"></a>RDS文档</h3><p><a target="_blank" rel="noopener" href="https://help.aliyun.com/product/26090.html">https://help.aliyun.com/product/26090.html</a></p>
+<h3 id="DRDS首页"><a href="#DRDS首页" class="headerlink" title="DRDS首页"></a>DRDS首页</h3><p><a target="_blank" rel="noopener" href="https://www.aliyun.com/product/drds">https://www.aliyun.com/product/drds</a></p>
+<h3 id="DRDS控制台"><a href="#DRDS控制台" class="headerlink" title="DRDS控制台"></a>DRDS控制台</h3><p><a target="_blank" rel="noopener" href="https://drds.console.aliyun.com/prectrl/home/index">https://drds.console.aliyun.com/prectrl/home/index</a></p>
+<blockquote>
+<p>DRDS控制台不在左侧快捷菜单中，可以直接通过链接进入</p>
+</blockquote>
+<h3 id="DRDS文档"><a href="#DRDS文档" class="headerlink" title="DRDS文档"></a>DRDS文档</h3><p><a target="_blank" rel="noopener" href="https://help.aliyun.com/product/29657.html">https://help.aliyun.com/product/29657.html</a></p>
+<h2 id="RDS初探"><a href="#RDS初探" class="headerlink" title="RDS初探"></a>RDS初探</h2><ol>
+<li><p>进入控制台，点击右侧的”创建实例”<br><img src="http://oss.bluexiii.com/98xvs.jpg">  </p>
+<blockquote>
+<p>创建RDS实例需要几分钟的时间</p>
+</blockquote>
+</li>
+<li><p>按量付费，最低配置的RDS实例，目前为0.324元/小时<br><img src="http://oss.bluexiii.com/etmui.jpg"></p>
+<blockquote>
+<p>这里选择5.6版本，猜测在工具的支持上BUG会少一些    </p>
+</blockquote>
+</li>
+<li><p>在实例列表中可以看到已创建的实例<br><img src="http://oss.bluexiii.com/e34py.jpg"><br>点击进入详情页可以进行实例状态查看以及管理<br><img src="http://oss.bluexiii.com/d3t0z.jpg">  </p>
+</li>
+<li><p>创建数据库、创建帐号的操作比较简单，不再赘述。  </p>
+</li>
+<li><p>添加IP白名单<br>首先，在数据安全性中，将default分组中的127.0.0.1临时改为0.0.0.0/0，允许所有地址访问<br><img src="http://oss.bluexiii.com/seljp.jpg"><br>登录数据库：<br>mysql -hrm-xxxxxxxxxxx.mysql.rds.aliyuncs.com -P3306 -utestuser -p<br>查询当前IP：<br>show processlist;<br>在数据安全性中，尽快将default分组中的IP由0.0.0.0/0改回当前的真实的IP。  </p>
+</li>
+<li><p>登录数据库<br>接下来可以用命令行或第三方工具进行登录。RDS不提供root用户。  </p>
+</li>
+<li><p>其它功能<br>另外可以添加只读实例、灾备实例，按需购买即可，猜测原理应该是基于主从复制的。<br>另外可以在WEB界面中进行数据迁移、导入等操作。<br>WEB控制台中提供了比较完善的日志查询、慢SQL分析、监控与告警功能点，有时间可以慢慢探索。  </p>
+</li>
+</ol>
+<h2 id="DRDS初探"><a href="#DRDS初探" class="headerlink" title="DRDS初探"></a>DRDS初探</h2><ol>
+<li><p>进入控制台，点击右侧的”创建实例”。<br><img src="http://oss.bluexiii.com/dnf0x.jpg">  </p>
+</li>
+<li><p>按量付费，共享实例的DRDS，目前价格为0.2元/小时。<br><img src="http://oss.bluexiii.com/murxc.jpg">  </p>
+<blockquote>
+<p>按量后付费的需要提前向帐户中充值  </p>
+</blockquote>
+</li>
+<li><p>购买后创建过程非常快，马上就可以在概览中看到。<br><img src="http://oss.bluexiii.com/2anc1.jpg">  </p>
+</li>
+<li><p>进入”详情”页面后，目前DRDS下还没有数据库，可以点击下方链接进行创建。<br><img src="http://oss.bluexiii.com/pk7r3.jpg">  </p>
+<blockquote>
+<p>请注意： 此步骤依赖于RDS，需要先进行RDS的购买。<br>RDS购买时，请注意需要在同一个区域中，尽量不要跨区。  </p>
+</blockquote>
+</li>
+<li><p>如果已经购买过RDS，并创建了一个实例，就在左侧的实例清单中就可以选择到了。<br><img src="http://oss.bluexiii.com/3yyc2.jpg">  </p>
+</li>
+<li><p>填写基本信息，创建类型这里选择”拆分”。设置好数据库名及密码。<br><img src="http://oss.bluexiii.com/a083z.jpg">  </p>
+<blockquote>
+<p>拆分：即分库分表，将数据按照拆分规则分拆到多个库表中，由 DRDS 代理 SQL 执行。拆分涉及到数据导入导出、SQL 功能/性能测试和改造，对应用功能和性能会有一定的影响。  </p>
+<p>非拆分：将已有的 RDS 数据库交由 DRDS 进行代理访问，实现读写分离的功能。无需进行数据导入，无需修改程序代码，修改数据库连接串和用户名密码即可。  </p>
+</blockquote>
+</li>
+<li><p>系统会自动在RDS实例上创建8个分库，直接点”下一步”创建成功。<br><img src="http://oss.bluexiii.com/3aiuf.jpg">  </p>
+<blockquote>
+<p>创建数据库需要几分钟的时间  </p>
+</blockquote>
+</li>
+<li><p>创建完成后，可以在DRDS数库列表中看到<br><img src="http://oss.bluexiii.com/gfi7s.jpg"><br>在RDS控制台中也可以看到自动创建的8+1个库，绑定帐号名随机生成，密码与DRDS密码是不同的，估计也是随机生成，所以无法直接登录查看RDS库，只能在DRDS中统一管理。<br><img src="http://oss.bluexiii.com/e2o0b.jpg"></p>
+</li>
+<li><p>点击”管理”，可以查看详情页面<br><img src="http://oss.bluexiii.com/b0klv.jpg"></p>
+</li>
+<li><p>WEB界面登录<br>详情页面，点击上方的”登录数据库”按钮，有一个WEB图形化控制台<br><img src="http://oss.bluexiii.com/3wmvn.jpg"><br>但点击登录后，会报错：Access denied for user ‘ xx’@’xx.xx.xx.xx’<br>原因未知，有可能是IP限制。官方文档中也未给出示例。  </p>
+</li>
+<li><p>命令行登录<br>可以使用命令行登录<br><code>mysql -hdrdsxxxxxxxxpublic.drds.aliyuncs.com -P3306 -uyourname -p</code><br>版本显示为 5.6.29-TDDL-5.1.27-1217986  </p>
+</li>
+<li><p>第三方客户端登录<br>可以使用第三方客户端登录，如Sequel Pro，也可以正常登录。<br>（之前用过的的Cobar/MyCat都是比较挑客户端的）<br><img src="http://oss.bluexiii.com/0n8ti.jpg">  </p>
+</li>
+<li><p>在DRDS执行一个简单的建表语句测试  </p>
+<p>建一个普通表：  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> normal_table(</span><br><span class="line">id <span class="type">int</span>,</span><br><span class="line">name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line"><span class="keyword">primary</span> <span class="keyword">key</span>(id)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br></pre></td></tr></table></figure>
+<p>建一个分库表：  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> shard_table(</span><br><span class="line">id <span class="type">int</span>,</span><br><span class="line">name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line"><span class="keyword">primary</span> <span class="keyword">key</span>(id)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8 dbpartition <span class="keyword">by</span> hash(id) tbpartition <span class="keyword">by</span> hash(id) tbpartitions <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+<p>在WEB控制台中可以查看表的基本信息：<br><img src="http://oss.bluexiii.com/rbjed.jpg"></p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91OSS%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E7%A4%BA%E4%BE%8B/" rel="prev" title="阿里云OSS对象存储示例">
+      <i class="fa fa-chevron-left"></i> 阿里云OSS对象存储示例
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201707/netcat%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%89%93%E5%BC%80%E6%96%B9%E5%BC%8F/" rel="next" title="">
+       <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RDS"><span class="nav-number">1.1.</span> <span class="nav-text">RDS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DRDS"><span class="nav-number">1.2.</span> <span class="nav-text">DRDS</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E6%96%87%E6%A1%A3"><span class="nav-number">2.</span> <span class="nav-text">相关文档</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RDS%E9%A6%96%E9%A1%B5"><span class="nav-number">2.1.</span> <span class="nav-text">RDS首页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDS%E6%8E%A7%E5%88%B6%E5%8F%B0"><span class="nav-number">2.2.</span> <span class="nav-text">RDS控制台</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RDS%E6%96%87%E6%A1%A3"><span class="nav-number">2.3.</span> <span class="nav-text">RDS文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DRDS%E9%A6%96%E9%A1%B5"><span class="nav-number">2.4.</span> <span class="nav-text">DRDS首页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DRDS%E6%8E%A7%E5%88%B6%E5%8F%B0"><span class="nav-number">2.5.</span> <span class="nav-text">DRDS控制台</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DRDS%E6%96%87%E6%A1%A3"><span class="nav-number">2.6.</span> <span class="nav-text">DRDS文档</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RDS%E5%88%9D%E6%8E%A2"><span class="nav-number">3.</span> <span class="nav-text">RDS初探</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DRDS%E5%88%9D%E6%8E%A2"><span class="nav-number">4.</span> <span class="nav-text">DRDS初探</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="这是个什么东西？简单来说，我们要做一台比较特别的”路由器” 什么是树莓派？Raspberry Pi，中文名为“树莓派”，可以认为是一个功能强大的ARM单片机开发板，也可以认为是一台只有信用卡大小的电脑。因为可以安装嵌入式Linux，所以扩展性极强。 这里是树莓派的官网 这里是树莓派的WIKI 这里是树莓派在知乎上的问答 外观大概是这个样子，只是一块电路版，但是麻雀虽小，五脏俱全： 下面是3代Mod">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用树莓派搭建SOCKS5透明网关">
+<meta property="og:url" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="这是个什么东西？简单来说，我们要做一台比较特别的”路由器” 什么是树莓派？Raspberry Pi，中文名为“树莓派”，可以认为是一个功能强大的ARM单片机开发板，也可以认为是一台只有信用卡大小的电脑。因为可以安装嵌入式Linux，所以扩展性极强。 这里是树莓派的官网 这里是树莓派的WIKI 这里是树莓派在知乎上的问答 外观大概是这个样子，只是一块电路版，但是麻雀虽小，五脏俱全： 下面是3代Mod">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/images/913XYU1VtjL._SL1500_.jpg">
+<meta property="og:image" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/images/markdown-img-paste-20161124093334647.png">
+<meta property="og:image" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/images/98b2620baa5d63a815caf0565fa2a02d_b.jpg">
+<meta property="og:image" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/images/41886c07243cb518287279c69ba8ad85_b.png">
+<meta property="og:image" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/images/20150102_234407_53.jpg">
+<meta property="og:image" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/images/markdown-img-paste-20161124103859429.png">
+<meta property="og:image" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/images/markdown-img-paste-20161124104202535.png">
+<meta property="og:image" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/images/markdown-img-paste-20161124104313544.png">
+<meta property="article:published_time" content="2016-11-24T06:20:38.000Z">
+<meta property="article:modified_time" content="2018-11-06T07:52:31.864Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/images/913XYU1VtjL._SL1500_.jpg">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>使用树莓派搭建SOCKS5透明网关 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201611/%E4%BD%BF%E7%94%A8%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BASOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用树莓派搭建SOCKS5透明网关
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-11-24 14:20:38" itemprop="dateCreated datePublished" datetime="2016-11-24T14:20:38+08:00">2016-11-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:52:31" itemprop="dateModified" datetime="2018-11-06T15:52:31+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="这是个什么东西？"><a href="#这是个什么东西？" class="headerlink" title="这是个什么东西？"></a>这是个什么东西？</h2><p>简单来说，我们要做一台比较特别的”路由器”</p>
+<h2 id="什么是树莓派？"><a href="#什么是树莓派？" class="headerlink" title="什么是树莓派？"></a>什么是树莓派？</h2><p>Raspberry Pi，中文名为“树莓派”，可以认为是一个功能强大的ARM单片机开发板，也可以认为是一台只有信用卡大小的电脑。因为可以安装嵌入式Linux，所以扩展性极强。</p>
+<p><a target="_blank" rel="noopener" href="https://www.raspberrypi.org/">这里是树莓派的官网</a></p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/zh/%E6%A0%91%E8%8E%93%E6%B4%BE">这里是树莓派的WIKI</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/20859055">这里是树莓派在知乎上的问答</a></p>
+<p>外观大概是这个样子，只是一块电路版，但是麻雀虽小，五脏俱全：<br><img src="images/913XYU1VtjL._SL1500_.jpg" alt="外观"></p>
+<p>下面是3代ModelB的硬件配置，可以用奢侈来形容了：<br><img src="images/markdown-img-paste-20161124093334647.png" alt="硬件配置"></p>
+<p>树莓派因为有强大的硬件做为支撑，还提供了CPIO、摄像头等丰富的接口，我们可以随意发挥想像力去折腾了。<br>和外部硬件的结合也很方便，只需要用Python就可以控制CPIO引脚的电平，从而控制外围硬件，再也不用像51单片机时代一样去写汇编或者C了。</p>
+<p>树莓派可以这样玩：</p>
+<p><img src="images/98b2620baa5d63a815caf0565fa2a02d_b.jpg" alt="玩法1"></p>
+<p>也可以这样玩：</p>
+<p><img src="images/41886c07243cb518287279c69ba8ad85_b.png" alt="玩法2"></p>
+<p>还可以这样玩：</p>
+<p><img src="images/20150102_234407_53.jpg" alt="玩法3"></p>
+<h2 id="什么是SOCKS5透明网关？"><a href="#什么是SOCKS5透明网关？" class="headerlink" title="什么是SOCKS5透明网关？"></a>什么是SOCKS5透明网关？</h2><p>还是先扔几个名词解释出来：</p>
+<ul>
+<li>代理服务器：ProxyServer，其功能就是代理用户去取得网络信息，它是网络信息的中转站。按类型分，有HTTP、HTTPS、FTP、SOCKS等。我们使用浏览器在内网环境中上网时，大概都会接触到它，应该并不陌生。</li>
+<li>SOCKS代理：SOCKS是”SOCKetS”的缩写。它是一种网络传输协议，主要用于客户端与外网服务器之间通讯的中间传递。当防火墙后的客户端要访问外部的服务器时，就跟SOCKS代理服务器连接。这个代理服务器控制客户端访问外网的资格，允许的话，就将客户端的请求发往外部的服务器。它分SOCKS4和SOCKS5两种类型，SOCKS4只支持TCP协议而SOCKS5支持TCP/UDP协议，还支持各种身份验证机制等协议。其标准端口为1080。但这里注意一下，SOCKS5仍然是不支持ICMP的，这就意味着我们接下来做的网关有一个硬伤：没办法ping了。。。不过还好影响不大。</li>
+<li>透明网关： 透明网关，也可以叫透明代理，它的意思是客户端根本不需要知道有代理服务器的存在，你只需要把网关的IP改成它的IP，对客户端来说，它就是一台路由器。</li>
+</ul>
+<p>所以综合来说，我们如果想要在内网环境中，以直连的方式访问Internet，但又不想在每个客户端上手工配置SOCKS5代理的话，就需要搭建这样一台透明网关，它把SOCKS5变得透明化，从而让客户端们意识不到是在使用代理服务器在上网。</p>
+<p>其实，如果把这个工作（代理透明化）放在客户端（PC/Mac）上来做的话，办法还是很多的，例如像Proxifier这样的商业软件，还有Linux下的proxychains这样的小工具。<br>但现在我们要制做一台”路由器”，使其下的所有设备，包括PC、也包括手机、iPad等移动设备，无须设置，就可以直连上网。</p>
+<h2 id="搞这么麻烦，目的是什么？"><a href="#搞这么麻烦，目的是什么？" class="headerlink" title="搞这么麻烦，目的是什么？"></a>搞这么麻烦，目的是什么？</h2><p>因为在山东联通办公区的DCN内网中，正常来说，是无法连接到Internet的，唯一合法的途径是使用一台已知的代理服务器（非法途径也有很多，暂且不表）。<br>我们目前的营销助手项目中，有两个APP客户端，经常需要安装到手机中进行真机调试，而调试是需要直连Internet的。<br>在开发资源有限，局方不提供WIFI的情况下，使用我们自已的SIM卡流量费用太高负担不起，所以搭建一台合法的透明网关几乎成了唯一的选择。</p>
+<h2 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h2><ul>
+<li>使用iptables，将本机所有TCP流量转发到RedSocks的端口</li>
+<li>RedSocks将所有流量转发到内网的SOCKS5代理服务器</li>
+<li>使用dnsmasq对外提供DNS服务</li>
+</ul>
+<h2 id="还有其它的方案吗？"><a href="#还有其它的方案吗？" class="headerlink" title="还有其它的方案吗？"></a>还有其它的方案吗？</h2><p>有。其实之前已经使用小米路由器mini，将固件刷成OpenWrt（PandoraBox），配置了一台透明网关，里面跑了一个RedSocks。<br>但无奈路由器的性能太差，CPU常常跑满，连接设备过多的时候会进程还会挂掉。<br>正好手头有一个树莓派，顺势折腾一下吧。因为有Raspbian系统，比起OpenWrt来还是要简单不少的。</p>
+<h2 id="正式开始，首先，你需要购买一台树莓派"><a href="#正式开始，首先，你需要购买一台树莓派" class="headerlink" title="正式开始，首先，你需要购买一台树莓派"></a>正式开始，首先，你需要购买一台树莓派</h2><p>在马云家搜索树莓派即可，最新的型号是3代ModelB，价格大约200RMB左右。<br>另外需要买一张TF卡，或者用以前淘汰下来的卡也行，容量不用太大，8G以上就可以。<br>电源基本上不用另配，使用普通的手机充电器。另外买一个亚克力的盒子，稍微保护一下电路版即可。<br>因为3代的SOC发热量比较大，夏天可以考虑加装一个风扇，可以在CPIO口上取5V的电。</p>
+<h2 id="点亮树莓派"><a href="#点亮树莓派" class="headerlink" title="点亮树莓派"></a>点亮树莓派</h2><p>树莓派的官方支持非常好，目前已经有多个Linux系统可以选，官方主推的是Raspbian，一个基于Debian的发行版。<br>如果之前玩过Ubuntu的话，上手应该非常容易了。如果之前常用RedHat/CentOS/Fedora的话，大概要适应一会儿，毕竟是不同派系。</p>
+<p><a target="_blank" rel="noopener" href="https://www.raspberrypi.org/downloads/noobs/">这里是Raspbian的NOOBS的下载地址</a></p>
+<p>这个NOOBS是一个傻瓜版的安装镜像，将它放到SD卡的根目录（SD卡可以使用FAT32格式化），记得接上鼠标和键盘，用HDMI连接显示器。<br>然后，开机，自动运行安装程序，图形界面点两下鼠标，不能再简单。这也是树莓派比其它类似产品，比如香蕉派好的地方：官方良好的支持，还有非常活跃的社区，出了问题很容易找到答案。</p>
+<p>安装过程大概是这个样子，10分钟左右就结束了：<br><img src="images/markdown-img-paste-20161124103859429.png" alt="安装过程"></p>
+<h2 id="运行系统设置工具"><a href="#运行系统设置工具" class="headerlink" title="运行系统设置工具"></a>运行系统设置工具</h2><p>进入系统之后，第一件事当然是运行<code>sudo raspi-config</code>，进行一些基本的设置，例如初始化密码，设置时区等<br><img src="images/markdown-img-paste-20161124104202535.png" alt="raspi-config界面"></p>
+<p>在这里可以顺便改改runlevel，选第一项。修改/etc/inittab，也可以达到同样目的。<br><img src="images/markdown-img-paste-20161124104313544.png" alt="cli"></p>
+<p>另外建议将语言改为英文，因为你会发现中文报错才是真心看不懂，而且出了问题不方便在社区或google中搜索。</p>
+<h2 id="配置网络连接"><a href="#配置网络连接" class="headerlink" title="配置网络连接"></a>配置网络连接</h2><p>vi /etc/network/interfaces</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">auto eth0</span><br><span class="line">iface eth0 inet static</span><br><span class="line">address xxx.xxx.xxx.xxx</span><br><span class="line">netmask 255.255.xxx.xxx</span><br><span class="line">gateway xxx.xxx.xxx.xxx</span><br><span class="line">dns-nameservers xxx.xxx.xxx.xxx</span><br></pre></td></tr></table></figure>
+<p>记得一定加上auto eth0，否则重启后，网卡不会自动启动，如果没有接显示器就麻烦了。</p>
+<p>手工启动网卡：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ifup eth0</span><br></pre></td></tr></table></figure>
+<p>手工重启网络服务：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo &#x2F;etc&#x2F;init.d&#x2F;networking restart</span><br></pre></td></tr></table></figure>
+<p>配置好网络后，终于可以将显示器、键盘鼠标拨掉了。从现在开始，可以把树莓派单独扔到一个小角落里，用SSH远程连接了。</p>
+<h2 id="SSH远程连接"><a href="#SSH远程连接" class="headerlink" title="SSH远程连接"></a>SSH远程连接</h2><p>默认用户名是pi</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh pi@xxx.xxx.xxx.xxx</span><br></pre></td></tr></table></figure>
+<p>另外还可以建立信任关系，免密码登录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br><span class="line">ssh-copy-id -i pi@xxx.xxx.xxx.xxx</span><br></pre></td></tr></table></figure>
+<p>还可以建一个别外，SSH连IP都不用输了，直接<code>ssh raspi</code>登录<br>vi ~/.ssh/config</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Host raspi</span><br><span class="line">  HostName xxx.xxx.xxx.xxx</span><br><span class="line">  User pi</span><br></pre></td></tr></table></figure>
+<h2 id="修复ping权限"><a href="#修复ping权限" class="headerlink" title="修复ping权限"></a>修复ping权限</h2><p>目前最新版本的Raspbian中，有一个BUG，非ROOT用户无法使用ping，通过chmod改下权限即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls -lsa &#x2F;bin&#x2F;ping</span><br><span class="line">sudo chmod 4711 &#x2F;bin&#x2F;ping</span><br></pre></td></tr></table></figure>
+<h2 id="设置代理服务器"><a href="#设置代理服务器" class="headerlink" title="设置代理服务器"></a>设置代理服务器</h2><p>由于我们的PI目前是处在内网环境的，如果想连网更新软件包，或者wget下载的话，就需要先设置代理</p>
+<ul>
+<li>设置环境变量：<br>sudo vi /etc/environment<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy&#x3D;&quot;http:&#x2F;&#x2F;xxx.xxx.xxx.xxx:xxxx&quot;</span><br><span class="line">export https_proxy&#x3D;&quot;http:&#x2F;&#x2F;xxx.xxx.xxx.xxx:xxxx&quot;</span><br></pre></td></tr></table></figure></li>
+<li>设置apt代理：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo vi &#x2F;etc&#x2F;apt&#x2F;apt.conf.d&#x2F;10proxy</span><br><span class="line">Acquire::http::Proxy &quot;http:&#x2F;&#x2F;xxx.xxx.xxx.xxx:xxxx&#x2F;&quot;;</span><br><span class="line">Acquire::https::Proxy &quot;http:&#x2F;&#x2F;xxx.xxx.xxx.xxx:xxxx&#x2F;&quot;;</span><br></pre></td></tr></table></figure>
+从现在开始，我们就可以愉快的使用apt-get下载安装软件包了。</li>
+</ul>
+<h2 id="apt-get使用阿里云镜像"><a href="#apt-get使用阿里云镜像" class="headerlink" title="apt-get使用阿里云镜像"></a>apt-get使用阿里云镜像</h2><p>因为国情关系，我们访问apt源时总会被各种干扰，DNS污染和一定概率的丢包等。<br>这里可以把apt源的地址指向阿里云的镜像，阿里云速度还是很快的，同步也很及时。感谢阿里为开源社区所做的贡献。</p>
+<p>sudo vi /etc/apt/sources.list</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">deb http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;raspbian&#x2F;raspbian&#x2F; wheezy main non-free contrib</span><br><span class="line">deb-src http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;raspbian&#x2F;raspbian&#x2F; wheezy main non-free contrib</span><br></pre></td></tr></table></figure>
+<h2 id="用apt安装一些常用工具吧"><a href="#用apt安装一些常用工具吧" class="headerlink" title="用apt安装一些常用工具吧"></a>用apt安装一些常用工具吧</h2><p>这里推荐一下oh-my-zsh，来替代bash，可以让接下来操作酸爽无比。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install zsh git wget</span><br><span class="line">wget --no-check-certificate https:&#x2F;&#x2F;github.com&#x2F;robbyrussell&#x2F;oh-my-zsh&#x2F;raw&#x2F;master&#x2F;tools&#x2F;install.sh -O - | sh</span><br></pre></td></tr></table></figure>
+<p>其它的，比如build-essential,pip,node之类的按需安装即可。</p>
+<h2 id="开启IPV4转发"><a href="#开启IPV4转发" class="headerlink" title="开启IPV4转发"></a>开启IPV4转发</h2><p>Linux系统实现路由功能简单的很，内核默认就支持，只要开启路由转发功能可以了。</p>
+<p>临时修改：<code>sudo echo &quot;1&quot; &gt; /proc/sys/net/ipv4/ip_forward</code></p>
+<p>永久修改：<code>sudo vi /etc/sysctl.conf</code><br>添加一行：<code>net.ipv4.ip_forward=1</code><br>使其生效：<code>sysctl -p /etc/sysctl.conf</code></p>
+<h2 id="编译安装redsocks"><a href="#编译安装redsocks" class="headerlink" title="编译安装redsocks"></a>编译安装redsocks</h2><p>接下来终于轮到我们这次实现透明网关的主角：redsocks<br><a target="_blank" rel="noopener" href="https://github.com/darkk/redsocks">这里是redsocks的GitHub主页</a><br>直接贴简介，懒得翻译了：<br>This tool allows you to redirect any TCP connection to SOCKS or HTTPS<br>proxy using your firewall, so redirection is system-wide.</p>
+<p>PI上的apt源里的redsocks版本可能比较老，最好不要通过apt安装，可以直接在github上下载源码编译安装。</p>
+<ul>
+<li>首先将源码克隆到本地：<br>git clone <a target="_blank" rel="noopener" href="https://github.com/darkk/redsocks">https://github.com/darkk/redsocks</a></li>
+<li>编译<br>没有configure，直接<code>make</code>即可。如果缺少依赖的话，使用apt安装即可。</li>
+<li>安装<br>将编译出来的redsocks二进制文件扔到/usr/local/bin下</li>
+<li>配置<br>sudo vi /etc/redsocks.conf<br>下面是一个最简配置，注意一下local_port = 3128是在本机开的端口，接下来配置iptables时要用到<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">base &#123;</span><br><span class="line">	log_debug &#x3D; off;</span><br><span class="line">	log_info &#x3D; on;</span><br><span class="line">	log &#x3D; &quot;file:&#x2F;home&#x2F;pi&#x2F;redsocks&#x2F;logs&#x2F;redsocks.log&quot;;</span><br><span class="line">	daemon &#x3D; off;</span><br><span class="line">	redirector &#x3D; iptables;</span><br><span class="line">&#125;</span><br><span class="line">redsocks &#123;</span><br><span class="line">	local_ip &#x3D; xxx.xxx.xxx.xxx;</span><br><span class="line">	local_port &#x3D; 3128;</span><br><span class="line">	ip &#x3D; xxx.xxx.xxx.xxx;</span><br><span class="line">	port &#x3D; 1080;</span><br><span class="line">	type &#x3D; socks5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="将redsocks做成系统服务"><a href="#将redsocks做成系统服务" class="headerlink" title="将redsocks做成系统服务"></a>将redsocks做成系统服务</h2>可以顺便写一下init.d脚本，将redsocks做成系统服务。配置成开机自启就可以了。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;sh</span><br><span class="line"></span><br><span class="line">### BEGIN INIT INFO</span><br><span class="line"># Provides:          redsocks</span><br><span class="line"># Required-Start:    $network</span><br><span class="line"># Required-Stop:     $network</span><br><span class="line"># Default-Start:     2 3 4 5</span><br><span class="line"># Default-Stop:      0 1 6</span><br><span class="line"># Short-Description: Start redsocks daemon.</span><br><span class="line">### END INIT INFO</span><br><span class="line"></span><br><span class="line">SERVICE_NAME&#x3D;redsocks</span><br><span class="line">SERVICE_PATH&#x3D;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;redsocks</span><br><span class="line">SERVICE_PARAM&#x3D;&quot;-c &#x2F;etc&#x2F;redsocks.conf&quot;</span><br><span class="line">SERVICE_HOME&#x3D;&#x2F;home&#x2F;pi</span><br><span class="line">SERVICE_USER&#x3D;pi</span><br><span class="line">SERVICE_PID_FILE&#x3D;&#x2F;var&#x2F;run&#x2F;$&#123;SERVICE_NAME&#125;.pid</span><br><span class="line"></span><br><span class="line">start() &#123;</span><br><span class="line">    start-stop-daemon --start \</span><br><span class="line">    --chdir  &quot;$&#123;SERVICE_HOME&#125;&quot; \</span><br><span class="line">    --chuid &quot;$&#123;SERVICE_USER&#125;&quot; \</span><br><span class="line">    --user &quot;$&#123;SERVICE_USER&#125;&quot; \</span><br><span class="line">    -b -m -p &quot;$&#123;SERVICE_PID_FILE&#125;&quot; \</span><br><span class="line">    --exec $&#123;SERVICE_PATH&#125; -- $&#123;SERVICE_PARAM&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">stop() &#123;</span><br><span class="line">    start-stop-daemon --stop \</span><br><span class="line">    --chdir &quot;$&#123;SERVICE_HOME&#125;&quot; \</span><br><span class="line">    --chuid &quot;$&#123;SERVICE_USER&#125;&quot; \</span><br><span class="line">    --user &quot;$&#123;SERVICE_USER&#125;&quot; \</span><br><span class="line">    -p &quot;$&#123;SERVICE_PID_FILE&#125;&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">case &quot;$1&quot; in</span><br><span class="line">    start)</span><br><span class="line">       start</span><br><span class="line">       ;;</span><br><span class="line">    stop)</span><br><span class="line">       stop</span><br><span class="line">       ;;</span><br><span class="line">    restart)</span><br><span class="line">       stop</span><br><span class="line">       start</span><br><span class="line">       ;;</span><br><span class="line">    status)</span><br><span class="line">       # code to check status of app comes here</span><br><span class="line">       # example: status program_name</span><br><span class="line">       ;;</span><br><span class="line">    *)</span><br><span class="line">       echo &quot;Usage: $0 &#123;start|stop|status|restart&#125;&quot;</span><br><span class="line">esac</span><br><span class="line"></span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+<h2 id="配置iptables规则"><a href="#配置iptables规则" class="headerlink" title="配置iptables规则"></a>配置iptables规则</h2>然后是iptables实现NAT的配置。<br>iptables的东西太多太复杂了，好多东西我都是一知半解。<br>下面贴一下最简配置吧：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">iptables -F</span><br><span class="line">iptables -X</span><br><span class="line">iptables -Z</span><br><span class="line"></span><br><span class="line">iptables -P INPUT DROP</span><br><span class="line">iptables -P OUTPUT ACCEPT</span><br><span class="line">iptables -P FORWARD ACCEPT</span><br><span class="line"></span><br><span class="line">iptables -A INPUT -m state --state NEW,ESTABLISHED -j ACCEPT</span><br><span class="line">iptables -A INPUT -p icmp -j ACCEPT</span><br><span class="line">iptables -A INPUT -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT</span><br><span class="line">iptables -A INPUT -p tcp --dport 3128 -m state --state NEW,ESTABLISHED -j ACCEPT</span><br><span class="line"></span><br><span class="line">iptables -t nat -A POSTROUTING -s 192.168.1.0&#x2F;24 -j MASQUERADE</span><br><span class="line">iptables -t nat -N REDSOCKS</span><br><span class="line"></span><br><span class="line">iptables -t nat -A REDSOCKS -d 127.0.0.1 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 10.0.0.0&#x2F;8 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 172.0.0.0&#x2F;8 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 192.168.0.0&#x2F;16 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 132.0.0.0&#x2F;8 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 134.0.0.0&#x2F;8 -j RETURN</span><br><span class="line"></span><br><span class="line">iptables -t nat -A SS -p tcp -j REDIRECT --to-port 3128</span><br><span class="line"></span><br><span class="line">iptables -t nat -A PREROUTING -p tcp -j SS</span><br><span class="line">iptables -t nat -A OUTPUT -p tcp -j SS</span><br></pre></td></tr></table></figure>
+注意：</li>
+<li>使用<code>iptables -t nat -A REDSOCKS -d 134.0.0.0/8 -j RETURN</code>，将不需要走代理的网段剔除</li>
+<li>使用<code>iptables -t nat -A SS -p tcp -j REDIRECT --to-port 3128</code>，将TCP包指向刚才redsocks的3128端口</li>
+<li>尽量不要在rc.local中使用iptables-restore方式自动执行，做成shell脚本手工启动比较保险。如果是在没有外接显示器的路由器openwrt中，配错了iptables，就等于变砖了，只能重刷。</li>
+</ul>
+<h2 id="使用dnsmasq架设DNS服务器"><a href="#使用dnsmasq架设DNS服务器" class="headerlink" title="使用dnsmasq架设DNS服务器"></a>使用dnsmasq架设DNS服务器</h2><p>额外想提供一下DNS服务的话，装一个dnsmasq即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install dnsmasq</span><br></pre></td></tr></table></figure>
+<p>如果想翻填，对付GFW的污染，dnsmasq具体配置还是比较麻烦的。但现在只需要向上级DNS转发即可，不需要配置，装好后直接启服务。</p>
+<h2 id="大功告成"><a href="#大功告成" class="headerlink" title="大功告成"></a>大功告成</h2><p>接下来，把我们自已的PC上的网关，改为树莓派的IP，就可以透明上网了。<br>类似的，可以将无线路由器的WAN口配置成static，网关IP填成树莓派的IP，手机就可以使用WIFI了。</p>
+<h2 id="接下来还能玩什么"><a href="#接下来还能玩什么" class="headerlink" title="接下来还能玩什么"></a>接下来还能玩什么</h2><ul>
+<li>使用openvpn并配置iptables规则，不需要在PC上使用VPN客户端拨号，直接连入公司172.X内网。</li>
+<li>使用shadowsocks客户端，并配合国外VPS上的搭建的服务端翻墙。加入iptables规则后，可以只针对国外IP段，有选择性的翻墙。</li>
+<li>使用chinadns配合dnsmasq解决GFW的DNS污染问题。</li>
+<li>使用ssh隧道进行内网渗透，绕过4A平台限制（这个貌似非法，暂不尝试了）</li>
+<li>使用ngrok实现内网穿透（这个风险太大，千万不要尝试）</li>
+</ul>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a target="_blank" rel="noopener" href="https://www.amazon.cn/gp/product/B00L0WLUGA/ref=kinw_myk_ro_title">Raspberry Pi入门指南</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.amazon.cn/gp/product/B014ITVKJI/ref=kinw_myk_ro_title">TCP/IP入门经典</a></p>
+<h2 id="关于作者"><a href="#关于作者" class="headerlink" title="关于作者"></a>关于作者</h2><p><strong>BlueXIII</strong>，一枚喜欢折腾软硬件的小Geek，ACG死宅，懂点汽车驾驶以及摩托车维修，能写代码，会修电脑。<br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue">GitHub</a><br><a target="_blank" rel="noopener" href="http://www.jianshu.com/users/33ee7cc0c2bd">简书</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201611/Tuxedo%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" rel="prev" title="Tuxedo常用命令">
+      <i class="fa fa-chevron-left"></i> Tuxedo常用命令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201612/Git%E5%86%85%E9%83%A8%E5%9F%B9%E8%AE%AD%E8%AF%BE%E4%BB%B6-%E5%85%AC%E5%BC%80%E7%89%88/" rel="next" title="Git内部培训课件">
+      Git内部培训课件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%99%E6%98%AF%E4%B8%AA%E4%BB%80%E4%B9%88%E4%B8%9C%E8%A5%BF%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">这是个什么东西？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%A0%91%E8%8E%93%E6%B4%BE%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">什么是树莓派？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFSOCKS5%E9%80%8F%E6%98%8E%E7%BD%91%E5%85%B3%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">什么是SOCKS5透明网关？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%90%9E%E8%BF%99%E4%B9%88%E9%BA%BB%E7%83%A6%EF%BC%8C%E7%9B%AE%E7%9A%84%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">4.</span> <span class="nav-text">搞这么麻烦，目的是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF"><span class="nav-number">5.</span> <span class="nav-text">实现思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%98%E6%9C%89%E5%85%B6%E5%AE%83%E7%9A%84%E6%96%B9%E6%A1%88%E5%90%97%EF%BC%9F"><span class="nav-number">6.</span> <span class="nav-text">还有其它的方案吗？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E5%BC%8F%E5%BC%80%E5%A7%8B%EF%BC%8C%E9%A6%96%E5%85%88%EF%BC%8C%E4%BD%A0%E9%9C%80%E8%A6%81%E8%B4%AD%E4%B9%B0%E4%B8%80%E5%8F%B0%E6%A0%91%E8%8E%93%E6%B4%BE"><span class="nav-number">7.</span> <span class="nav-text">正式开始，首先，你需要购买一台树莓派</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%82%B9%E4%BA%AE%E6%A0%91%E8%8E%93%E6%B4%BE"><span class="nav-number">8.</span> <span class="nav-text">点亮树莓派</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E7%B3%BB%E7%BB%9F%E8%AE%BE%E7%BD%AE%E5%B7%A5%E5%85%B7"><span class="nav-number">9.</span> <span class="nav-text">运行系统设置工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5"><span class="nav-number">10.</span> <span class="nav-text">配置网络连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SSH%E8%BF%9C%E7%A8%8B%E8%BF%9E%E6%8E%A5"><span class="nav-number">11.</span> <span class="nav-text">SSH远程连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E5%A4%8Dping%E6%9D%83%E9%99%90"><span class="nav-number">12.</span> <span class="nav-text">修复ping权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">13.</span> <span class="nav-text">设置代理服务器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#apt-get%E4%BD%BF%E7%94%A8%E9%98%BF%E9%87%8C%E4%BA%91%E9%95%9C%E5%83%8F"><span class="nav-number">14.</span> <span class="nav-text">apt-get使用阿里云镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8apt%E5%AE%89%E8%A3%85%E4%B8%80%E4%BA%9B%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E5%90%A7"><span class="nav-number">15.</span> <span class="nav-text">用apt安装一些常用工具吧</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%90%AFIPV4%E8%BD%AC%E5%8F%91"><span class="nav-number">16.</span> <span class="nav-text">开启IPV4转发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85redsocks"><span class="nav-number">17.</span> <span class="nav-text">编译安装redsocks</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%86redsocks%E5%81%9A%E6%88%90%E7%B3%BB%E7%BB%9F%E6%9C%8D%E5%8A%A1"><span class="nav-number">18.</span> <span class="nav-text">将redsocks做成系统服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEiptables%E8%A7%84%E5%88%99"><span class="nav-number">19.</span> <span class="nav-text">配置iptables规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8dnsmasq%E6%9E%B6%E8%AE%BEDNS%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">20.</span> <span class="nav-text">使用dnsmasq架设DNS服务器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%A7%E5%8A%9F%E5%91%8A%E6%88%90"><span class="nav-number">21.</span> <span class="nav-text">大功告成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A5%E4%B8%8B%E6%9D%A5%E8%BF%98%E8%83%BD%E7%8E%A9%E4%BB%80%E4%B9%88"><span class="nav-number">22.</span> <span class="nav-text">接下来还能玩什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">23.</span> <span class="nav-text">参考文献</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E4%BD%9C%E8%80%85"><span class="nav-number">24.</span> <span class="nav-text">关于作者</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

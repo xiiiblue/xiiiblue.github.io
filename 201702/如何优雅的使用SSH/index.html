@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="引子SSH连接是我们与服务器交互的主要手段，每个程序员每天都会用到，就像喝白开水一样普通。就是这样一个简单而又高频的动作，如果配置得当，或许能极大的提高我们工作的幸福感吧。   前不久一个同事刚从Windows切换到macOS平台，问我SecureCRT有没有mac下的版本，我说即然都用上了基于BSD的mac了，应该不再需要SecureCRT这样的东西了才对，SSH如果配置好了，体验应该完爆Win">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何优(zhe)雅(teng)的使用SSH">
+<meta property="og:url" content="http://blog.bluexiii.com/201702/%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8SSH/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="引子SSH连接是我们与服务器交互的主要手段，每个程序员每天都会用到，就像喝白开水一样普通。就是这样一个简单而又高频的动作，如果配置得当，或许能极大的提高我们工作的幸福感吧。   前不久一个同事刚从Windows切换到macOS平台，问我SecureCRT有没有mac下的版本，我说即然都用上了基于BSD的mac了，应该不再需要SecureCRT这样的东西了才对，SSH如果配置好了，体验应该完爆Win">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://oss.bluexiii.com/dtu48.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/6rl7i.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/a4e4b.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/cl4f4.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/7t5al.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/uf00l.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/akhn0.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/70dnw.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/swlk8.jpg">
+<meta property="article:published_time" content="2017-03-13T02:49:17.000Z">
+<meta property="article:modified_time" content="2019-07-31T00:56:53.580Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://oss.bluexiii.com/dtu48.jpg">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201702/%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8SSH/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>如何优(zhe)雅(teng)的使用SSH | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201702/%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8SSH/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何优(zhe)雅(teng)的使用SSH
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-03-13 10:49:17" itemprop="dateCreated datePublished" datetime="2017-03-13T10:49:17+08:00">2017-03-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-07-31 08:56:53" itemprop="dateModified" datetime="2019-07-31T08:56:53+08:00">2019-07-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="引子"><a href="#引子" class="headerlink" title="引子"></a>引子</h2><p>SSH连接是我们与服务器交互的主要手段，每个程序员每天都会用到，就像喝白开水一样普通。<br>就是这样一个简单而又高频的动作，如果配置得当，或许能极大的提高我们工作的幸福感吧。  </p>
+<p>前不久一个同事刚从Windows切换到macOS平台，问我SecureCRT有没有mac下的版本，我说即然都用上了基于BSD的mac了，应该不再需要SecureCRT这样的东西了才对，SSH如果配置好了，体验应该完爆Windows。于是就有了写下这篇文章的念头，填一下之前的坑。  </p>
+<h2 id="选择终端GUI工具"><a href="#选择终端GUI工具" class="headerlink" title="选择终端GUI工具"></a>选择终端GUI工具</h2><p>首先第一步是选择一个好用的GUI工具，毕竟大多数人都是在DE下工作，极少人会喜欢工作在tty1这样的文字介面下。  </p>
+<h3 id="Windows平台"><a href="#Windows平台" class="headerlink" title="Windows平台"></a>Windows平台</h3><p>Windows平台下的工具比较多，下面捡几个主要的来说一说优缺点：  </p>
+<ul>
+<li>SecureCRT - 老牌的商业软件，同时也提供Mac和Linux版本，功能强大，费用昂贵，但貌似身边所有人都在用盗版，PASS  </li>
+<li>Xshell - 有免费的License，但只允许非商业场景下使用，这个也PASS  </li>
+<li>Putty - 好吧，只能是它了，免费，功能简单，但是也足够用了  </li>
+<li>Cygwin - 差点把这个忘了，严格来说它并不仅仅是一个SSH工具，也值得推荐  </li>
+</ul>
+<h3 id="macOS平台"><a href="#macOS平台" class="headerlink" title="macOS平台"></a>macOS平台</h3><p>macOS平台的终端工具比较好选，公认的只有iTerm2一个：  </p>
+<ul>
+<li>原生Terminal - 开箱即用，功能上也不过不失，但抛弃它，只是因为有更好的iTerm2。。。  </li>
+<li>iTerm2 - 免费，支持众多的自定义选项，可以完全替代原生Terminal，没得选，就是它了</li>
+</ul>
+<h3 id="Ubuntu平台"><a href="#Ubuntu平台" class="headerlink" title="Ubuntu平台"></a>Ubuntu平台</h3><p>Ubuntu默认自带一个gnome-terminal，虽然不像iTerm2那样讨喜，但胜在简洁，个人认为是最优的选择吧：  </p>
+<ul>
+<li>Terminator - 支持窗口拆分，但界面丑，不能忍，PASS  </li>
+<li>Guake - 支持下拉式的呼出，但界面更丑，PASS  </li>
+<li>原生Terminal - 界面简洁，功能够用，最终还是用回了它</li>
+</ul>
+<h2 id="iTerm2使用简介"><a href="#iTerm2使用简介" class="headerlink" title="iTerm2使用简介"></a>iTerm2使用简介</h2><p>Putty和gnome-terminal的配置都比较简单，记住几个快捷键就可以了，macOS下的iTerm2配置和使用都要麻烦些，这里单独拿出来写一下。   </p>
+<h3 id="配置呼出快捷键"><a href="#配置呼出快捷键" class="headerlink" title="配置呼出快捷键"></a>配置呼出快捷键</h3><p>使用<code>Cmd+,</code>打开设置界面，切换到<code>Keys</code>一栏<br><img src="http://oss.bluexiii.com/dtu48.jpg"><br>在左下方可以设置 <strong>呼出/隐藏</strong> iTerm2的快捷键，这里我设置成了<code>Cmd+ESC</code>，瞬间呼出，比Alfred/Spotlight还要方便。<br>另外还可以在Profile一栏中修改窗口为全屏+半透明，完美。  </p>
+<h3 id="选中即复制"><a href="#选中即复制" class="headerlink" title="选中即复制"></a>选中即复制</h3><p>使用鼠标选中一段文字后，默认就已经复制到剪贴板了，直接用<code>Cmd+V</code>粘帖即可。  </p>
+<h3 id="Profile设置"><a href="#Profile设置" class="headerlink" title="Profile设置"></a>Profile设置</h3><p>使用<code>Cmd+,</code>打开设置界面，切换到<code>Profile</code>一栏<br>在这里可以配置远程服务器的连接参数<br><img src="http://oss.bluexiii.com/6rl7i.jpg"></p>
+<p>配合sshpass这个命令，可以实现类似SecureCRT的Session管理的功能。<br>注意，sshpass直接使用明文保存密码（SecureCRT是加密后存在本地），已经不推荐使用，下面会介绍一个更好的方式。  </p>
+<h3 id="分屏"><a href="#分屏" class="headerlink" title="分屏"></a>分屏</h3><p>分屏功能相当好用，例如我们可以在屏幕左侧查看日志，右侧进行常规操作<br><code>Cmd+D</code> 垂直分割<br><code>Cmd+Shift+D </code>水平分割<br><img src="http://oss.bluexiii.com/a4e4b.jpg">  </p>
+<h3 id="自动完成"><a href="#自动完成" class="headerlink" title="自动完成"></a>自动完成</h3><p>输入前几个关键字后，按<code>Cmd+;</code>，会有一个自动补全功能<br><img src="http://oss.bluexiii.com/cl4f4.jpg"></p>
+<h3 id="命令历史记录"><a href="#命令历史记录" class="headerlink" title="命令历史记录"></a>命令历史记录</h3><p>使用<code>Cmd+shift+H</code>可以打开命令历史记录<br><img src="http://oss.bluexiii.com/7t5al.jpg"></p>
+<h2 id="使用Tmux窗口管理工具"><a href="#使用Tmux窗口管理工具" class="headerlink" title="使用Tmux窗口管理工具"></a>使用Tmux窗口管理工具</h2><p>GUI工具有了，我们还缺一个通用的窗口管理工具–<strong>Tmux</strong>。  </p>
+<p>Tmux是一个终端复用器，它可以激活多个终端或窗口, 还可以将屏幕水平或纵向切分成多个窗口。<br>类似于screen，它可以关闭窗口将程序放在后台运行，需要的时候再重新连接。  </p>
+<p>其实iTerm2等GUI工具也可以实现类似的功能，但Tmux的好处是:  </p>
+<ol>
+<li>它是一个字符终端软件，不需要任何GUI的支持，通用性更好  </li>
+<li>tmux可以 <strong>保持多个会话</strong> ，只要不关机，就可以随时恢复Session  </li>
+</ol>
+<p>macOS下的安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install tmux</span><br></pre></td></tr></table></figure>
+<p>Ubuntu下的安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install tmux</span><br></pre></td></tr></table></figure>
+<p>tmux的主要元素分为三层：</p>
+<ul>
+<li>Session 一组窗口的集合，通常用来概括同一个任务</li>
+<li>Window 单个可见窗口，和ITerm2中的Tab类似</li>
+<li>Pane 窗格，被划分成小块的窗口</li>
+</ul>
+<p><img src="http://oss.bluexiii.com/uf00l.jpg"></p>
+<p>tmux默认的前置操作是<code>CTRL+b</code>。例如，我们想要新建一个窗体，就需要先在键盘上摁下CTRL+b，松开后再摁下n键。<br>下面所有的<code>prefix</code>均代表<code>CTRL+b</code></p>
+<ul>
+<li>查看/切换session    <code>prefix s</code>  </li>
+<li>离开Session    <code>prefix d</code>  </li>
+<li>重命名当前Session    <code>prefix $</code>  </li>
+</ul>
+<ul>
+<li>新建窗口    <code>prefix c</code>  </li>
+<li>切换到上一个活动的窗口     <code>prefix space</code>  </li>
+<li>关闭一个窗口    <code>prefix &amp;</code>  </li>
+<li>使用窗口号切换    <code>prefix 窗口号</code>  </li>
+</ul>
+<ul>
+<li>切换到下一个窗格    <code>prefix o</code></li>
+<li>查看所有窗格的编号    <code>prefix q</code></li>
+<li>垂直拆分出一个新窗格    <code>prefix “</code></li>
+<li>水平拆分出一个新窗格    <code>prefix %</code></li>
+<li>暂时把一个窗体放到最大    <code>prefix z</code></li>
+</ul>
+<h2 id="使用oh-my-zsh"><a href="#使用oh-my-zsh" class="headerlink" title="使用oh my zsh"></a>使用oh my zsh</h2><p>工具已经齐全，但攘外必先安内，在连接远程服务器之前，我们先优化一下本机的Shell。  </p>
+<p>Linux系统中已经内置了几种shell，一般默认的是bash<br><img src="http://oss.bluexiii.com/akhn0.jpg">  </p>
+<p>zsh比bash更加好用，且完全兼容bash，但它配置繁琐。幸亏有了oh-my-zsh，让zsh的配置难度大大降低。  </p>
+<p>首先安装一下zsh，mac系统无需安装，Ubuntu可以通过apt安装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install zsh</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="http://ohmyz.sh/">这里是oh my zsh官网</a></p>
+<p>根据官网的介绍，安装相当的简单，只需要一行命令即可</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sh -c &quot;$(curl -fsSL https:&#x2F;&#x2F;raw.github.com&#x2F;robbyrussell&#x2F;oh-my-zsh&#x2F;master&#x2F;tools&#x2F;install.sh)&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>zsh的配置文件是<code>~/.zshrc</code>，各项配置都有对应的注释，非常清晰，在这里可以修改主题，其实默认的已经很好看了<br><img src="http://oss.bluexiii.com/70dnw.jpg"></p>
+<p>以下是zsh的一些使用技巧，请尽量记住，因为都很常用：</p>
+<ul>
+<li>连按两次Tab会列出所有的补全列表并直接开始选择，补全项可以使用 ctrl+n/p/f/b上下左右切换</li>
+<li>命令选项补全。在zsh中只需要键入 tar -<tab> 就会列出所有的选项和帮助说明</li>
+<li>命令参数补全。键入 kill <tab> 就会列出所有的进程名和对应的进程号</li>
+<li>更智能的历史命令。在用或者方向上键查找历史命令时，zsh支持限制查找。比如，输入ls,然后再按方向上键，则只会查找用过的ls命令。而此时使用则会仍然按之前的方式查找，忽略 ls</li>
+<li>智能跳转，安装了 autojump 之后，zsh 会自动记录你访问过的目录，通过 <code>j 目录名</code> 可以直接进行目录跳转，而且目录名支持模糊匹配和自动补全，例如你访问过 hadoop-1.0.0 目录，输入<code>j hado</code> 即可正确跳转。<code>j --stat</code> 可以看你的历史路径库。</li>
+<li>目录浏览和跳转：输入 <code>d</code>，即可列出你在这个会话里访问的目录列表，输入列表前的序号，即可直接跳转。</li>
+<li>在当前目录下输入 <code>..</code> 或 <code>...</code> ，或直接输入当前目录名都可以跳转，你甚至不再需要输入 <code>cd</code> 命令了。在你知道路径的情况下，比如 /usr/local/bin 你可以输入 <code>cd /u/l/b</code> 然后按进行补全快速输入</li>
+<li>通配符搜索：<code>ls -l **/*.sh</code>，可以递归显示当前目录下的 shell 文件，文件少时可以代替 find。使用 <code>**/</code> 来递归搜索</li>
+<li>扩展环境变量，输入环境变量然后按 就可以转换成表达的值</li>
+</ul>
+<h2 id="使用config记录远程连接"><a href="#使用config记录远程连接" class="headerlink" title="使用config记录远程连接"></a>使用config记录远程连接</h2><p>现在开始，我们再看一下如何连接远程服务器。</p>
+<p>如果要管理几十台至上百台的主机，那么有没有什么方法能实现类似SecureCRT中Session管理那样的功能呢？  </p>
+<p>最简单的是使用iTerm2中的profile功能，它可以配置多台主机的连接，并可以使用tag进行归类。<br>但这种方式首先太依赖于GUI工具，离开了iTerm2就完全用不了。<br>其次是通用性不够好，配置文件不能跨平台，我们辛辛苦苦在Mac上配好了一份主机清单，但回家扔到Ubuntu下就没法用了。  </p>
+<p>有没有一种更为通用的方法呢？答案是直接使用openssh自带的config功能</p>
+<p>配置文件的路径是：<code>~/.ssh/config</code>，如果不存在，可以新建一个</p>
+<p>内容非常简单</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host demohost</span><br><span class="line">  HostName 192.168.1.1</span><br><span class="line">  User username</span><br><span class="line">  Port 10022</span><br></pre></td></tr></table></figure>
+<p>第一行<code>Host</code>后面，可以为这个连接起一个简单的名字<br>后面几行记得缩进，<code>HostName</code>后面是IP地址，<code>User</code>后面是用户名，这两项是必填的。如果端口不是标准的22，还可以用<code>Port</code>指定端口。</p>
+<p>配置好后，我们只需要输入<code>ssh demohost</code>，即可快速打开SSH连接了。</p>
+<p>如果记不清连接名也没有关系，利用zsh的自动补全功能，输入<code>ssh 关键字</code>，再按一下<code>TAB</code>键，会列出所有包含关键字的连接，使用方向键选择后，回车确认即可。<br><img src="http://oss.bluexiii.com/swlk8.jpg">  </p>
+<h2 id="使用ssh-copy-id免密码登录"><a href="#使用ssh-copy-id免密码登录" class="headerlink" title="使用ssh-copy-id免密码登录"></a>使用ssh-copy-id免密码登录</h2><p>接着再看一下，如何实现免密码登录远程主机。</p>
+<p>之前我们提到过使用sshpass这个工具，可以直接将密码写进命令行中，从而实现非交互式的免密码登录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sshpass -p password ssh demouser@92.168.1.1</span><br></pre></td></tr></table></figure>
+<p>但这种方式使用明文保存密码，非常不安全，不建议使用。</p>
+<p>其实还有一种更好更直接的方式，那就是使用<code>ssh-copy-id</code>建立ssh信任关系，从而免密码登录。</p>
+<ol>
+<li><p>首先，在本地机器上使用ssh-keygen产生公钥私钥对</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen</span><br></pre></td></tr></table></figure>
+<p>一路回车即可，会在<code>~/.ssh</code>目录下生成公钥私钥对。此命令只需执行一次即可。  </p>
+</li>
+<li><p>然后，用ssh-copy-id将公钥复制到远程机器中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-copy-id -i demouser@192.168.1.1</span><br></pre></td></tr></table></figure>
+<p>按提示输入一次密码，ssh-copy-id就会自动将刚才生成的公钥<code>id_rsa.pub</code>追加到远程主机的<code>~/.ssh/authorized_keys</code>后面了，以后的 <strong>ssh</strong> 以及 <strong>sftp</strong> 连接，都不用输入密码了。  </p>
+</li>
+</ol>
+<p>至此，我们只要输入<code>ssh demouser</code>或<code>sftp demouser</code>，回车，就可以直接登录远程主机了。  </p>
+<h2 id="安利一个小工具"><a href="#安利一个小工具" class="headerlink" title="安利一个小工具"></a>安利一个小工具</h2><p>最后的最后，再介绍一个很恶搞，但相当有用的小工具，<strong>thefuck</strong>  <a target="_blank" rel="noopener" href="https://github.com/nvbn/thefuck">GitHub页面</a>  </p>
+<p>当我们敲错了命令，比如忘记加<code>sudo</code>时，只需要输入<code>fuck</code>并大力敲下回车，它就会非常智能的帮助我们更正了，非常有趣。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">➜ apt-get install vim</span><br><span class="line">E: Could not open lock file &#x2F;var&#x2F;lib&#x2F;dpkg&#x2F;lock - open (13: Permission denied)</span><br><span class="line">E: Unable to lock the administration directory (&#x2F;var&#x2F;lib&#x2F;dpkg&#x2F;), are you root?</span><br><span class="line"></span><br><span class="line">➜ fuck</span><br><span class="line">sudo apt-get install vim [enter&#x2F;↑&#x2F;↓&#x2F;ctrl+c]</span><br><span class="line">[sudo] password for nvbn:</span><br><span class="line">Reading package lists... Done</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="http://cenalulu.github.io/linux/tmux/">http://cenalulu.github.io/linux/tmux/</a><br><a target="_blank" rel="noopener" href="http://harttle.com/2015/11/06/tmux-startup.html">http://harttle.com/2015/11/06/tmux-startup.html</a><br><a target="_blank" rel="noopener" href="http://wulfric.me/2015/08/iterm2/">http://wulfric.me/2015/08/iterm2/</a><br><a target="_blank" rel="noopener" href="http://yijiebuyi.com/blog/e310fc437f32006eb6aa42cad1783587.html">http://yijiebuyi.com/blog/e310fc437f32006eb6aa42cad1783587.html</a><br><a target="_blank" rel="noopener" href="http://wdxtub.com/2016/02/18/oh-my-zsh/">http://wdxtub.com/2016/02/18/oh-my-zsh/</a>  </p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201611/%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BA%E7%AC%94%E8%AE%B0/" rel="prev" title="">
+      <i class="fa fa-chevron-left"></i> 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201703/%E4%BD%BF%E7%94%A8virtualenv%E9%9A%94%E7%A6%BBPython%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83/" rel="next" title="使用virtualenv创建Python虚拟环境">
+      使用virtualenv创建Python虚拟环境 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E5%AD%90"><span class="nav-number">1.</span> <span class="nav-text">引子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E6%8B%A9%E7%BB%88%E7%AB%AFGUI%E5%B7%A5%E5%85%B7"><span class="nav-number">2.</span> <span class="nav-text">选择终端GUI工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Windows%E5%B9%B3%E5%8F%B0"><span class="nav-number">2.1.</span> <span class="nav-text">Windows平台</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#macOS%E5%B9%B3%E5%8F%B0"><span class="nav-number">2.2.</span> <span class="nav-text">macOS平台</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Ubuntu%E5%B9%B3%E5%8F%B0"><span class="nav-number">2.3.</span> <span class="nav-text">Ubuntu平台</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iTerm2%E4%BD%BF%E7%94%A8%E7%AE%80%E4%BB%8B"><span class="nav-number">3.</span> <span class="nav-text">iTerm2使用简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%91%BC%E5%87%BA%E5%BF%AB%E6%8D%B7%E9%94%AE"><span class="nav-number">3.1.</span> <span class="nav-text">配置呼出快捷键</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%89%E4%B8%AD%E5%8D%B3%E5%A4%8D%E5%88%B6"><span class="nav-number">3.2.</span> <span class="nav-text">选中即复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Profile%E8%AE%BE%E7%BD%AE"><span class="nav-number">3.3.</span> <span class="nav-text">Profile设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E5%B1%8F"><span class="nav-number">3.4.</span> <span class="nav-text">分屏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E5%AE%8C%E6%88%90"><span class="nav-number">3.5.</span> <span class="nav-text">自动完成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E5%8E%86%E5%8F%B2%E8%AE%B0%E5%BD%95"><span class="nav-number">3.6.</span> <span class="nav-text">命令历史记录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Tmux%E7%AA%97%E5%8F%A3%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7"><span class="nav-number">4.</span> <span class="nav-text">使用Tmux窗口管理工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8oh-my-zsh"><span class="nav-number">5.</span> <span class="nav-text">使用oh my zsh</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8config%E8%AE%B0%E5%BD%95%E8%BF%9C%E7%A8%8B%E8%BF%9E%E6%8E%A5"><span class="nav-number">6.</span> <span class="nav-text">使用config记录远程连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8ssh-copy-id%E5%85%8D%E5%AF%86%E7%A0%81%E7%99%BB%E5%BD%95"><span class="nav-number">7.</span> <span class="nav-text">使用ssh-copy-id免密码登录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%88%A9%E4%B8%80%E4%B8%AA%E5%B0%8F%E5%B7%A5%E5%85%B7"><span class="nav-number">8.</span> <span class="nav-text">安利一个小工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">9.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="导入前准备建立导入用户CREATE USER YYBS_IMP  IDENTIFIED BY YYBS_IMP  DEFAULT TABLESPACE USERS  TEMPORARY TABLESPACE TEMP  PROFILE DEFAULTACCOUNT UNLOCK;GRANT RESOURCE TO YYBS_IMP;GRANT CONNECT TO YYBS_IMP;GRANT I">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Oracle使用dump导入数据">
+<meta property="og:url" content="http://blog.bluexiii.com/201611/OracleDump/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="导入前准备建立导入用户CREATE USER YYBS_IMP  IDENTIFIED BY YYBS_IMP  DEFAULT TABLESPACE USERS  TEMPORARY TABLESPACE TEMP  PROFILE DEFAULTACCOUNT UNLOCK;GRANT RESOURCE TO YYBS_IMP;GRANT CONNECT TO YYBS_IMP;GRANT I">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2016-11-22T06:53:38.000Z">
+<meta property="article:modified_time" content="2018-11-06T07:51:27.452Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201611/OracleDump/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Oracle使用dump导入数据 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201611/OracleDump/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Oracle使用dump导入数据
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-11-22 14:53:38" itemprop="dateCreated datePublished" datetime="2016-11-22T14:53:38+08:00">2016-11-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:51:27" itemprop="dateModified" datetime="2018-11-06T15:51:27+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="导入前准备"><a href="#导入前准备" class="headerlink" title="导入前准备"></a>导入前准备</h1><h2 id="建立导入用户"><a href="#建立导入用户" class="headerlink" title="建立导入用户"></a>建立导入用户</h2><p>CREATE USER YYBS_IMP<br>  IDENTIFIED BY YYBS_IMP<br>  DEFAULT TABLESPACE USERS<br>  TEMPORARY TABLESPACE TEMP<br>  PROFILE DEFAULT<br>ACCOUNT UNLOCK;<br>GRANT RESOURCE TO YYBS_IMP;<br>GRANT CONNECT TO YYBS_IMP;<br>GRANT IMP_FULL_DATABASE TO YYBS_IMP;<br>ALTER USER YYBS_IMP DEFAULT ROLE ALL;<br>GRANT UNLIMITED TABLESPACE TO YYBS_IMP;</p>
+<h2 id="确认数据库"><a href="#确认数据库" class="headerlink" title="确认数据库"></a>确认数据库</h2><p>tnsping stakfdb<br>export ORACLE_SID=stakfdb<br>sqlplus / as sysdba<br>select name,log_mode from v$database;  –确认SID<br>select utl_inaddr.get_host_address from dual;   –确认IP地址</p>
+<h2 id="杀进程"><a href="#杀进程" class="headerlink" title="杀进程"></a>杀进程</h2><p>select sid,serial#,username,status,osuser,machine,terminal,program from v$session;<br>alter system kill session ‘861,21309’;<br>强杀进程：<br>select spid, osuser, s.program from v$session s,v$process p where s.paddr=p.addr and s.sid=144<br>kill -9 spid<br>锁用户：<br>select ‘alter user ‘||USERNAME||’ account lock;’ from dba_users where username like ‘U%’ and created&gt;to_date(‘20110926’,’yyyymmdd’) order by CREATED;<br>DEMO:alter user UCR_CEN1 ACCOUNT LOCK;</p>
+<h2 id="清库"><a href="#清库" class="headerlink" title="清库"></a>清库</h2><p>select user_id,USERNAME,ACCOUNT_STATUS,CREATED from dba_users  order by CREATED;<br>select ‘drop user ‘||USERNAME||’ cascade;’ from dba_users where username like ‘U%’ and created&gt;to_date(‘20110926’,’yyyymmdd’) order by CREATED;<br>demo:drop user UOP_UIF2 cascade;</p>
+<h2 id="建立Directory"><a href="#建立Directory" class="headerlink" title="建立Directory"></a>建立Directory</h2><p>sqlplus system/oracle@STAKFDB<br>CREATE OR REPLACE DIRECTORY imp930sta_dir AS ‘/app/imp930/sta’;<br>sqlplus system/oracle@CRMKFDB<br>CREATE OR REPLACE DIRECTORY imp930crm_dir AS ‘/app/imp930/crm’;<br>CREATE OR REPLACE DIRECTORY imp930cen_dir AS ‘/app/imp930/center’;<br>CREATE OR REPLACE DIRECTORY imp930oth_dir AS ‘/app/imp930/other’;</p>
+<h2 id="导入脚本"><a href="#导入脚本" class="headerlink" title="导入脚本"></a>导入脚本</h2><p>impdp system/oracle@csngstat831 dumpfile=Usta_full.dump logfile=Usta_full.log job_name=Usta_full full=y directory=imp930sta_dir TABLE_EXISTS_ACTION=replace parallel=1<br>impdp system/oracle@csngstat831 dumpfile=sUCR_STA4.dump logfile=sUCR_STA4.log job_name=sUCR_STA4 schemas=UCR_STA4 directory=imp930sta_dir TABLE_EXISTS_ACTION=replace parallel=1</p>
+<h1 id="导入过程监控"><a href="#导入过程监控" class="headerlink" title="导入过程监控"></a>导入过程监控</h1><h2 id="监控主机性能"><a href="#监控主机性能" class="headerlink" title="监控主机性能"></a>监控主机性能</h2><p>nmon<br>vmstat<br>iostat</p>
+<h2 id="查看导入进度"><a href="#查看导入进度" class="headerlink" title="查看导入进度"></a>查看导入进度</h2><p>select count(0) from all_objects where CREATED &gt; sysdate-1;<br>select * from tab where tname like ‘CRM_FULL’;</p>
+<h2 id="查看IMPDP进度"><a href="#查看IMPDP进度" class="headerlink" title="查看IMPDP进度"></a>查看IMPDP进度</h2><p>select * from dba_datapump_jobs;<br>impdp system/oracle@crmkfdb attach=UCR_CRM3<br>help<br>status<br>start_jo<br>stop_job<br>kill_job<br>parallel=4</p>
+<h1 id="导入后工作"><a href="#导入后工作" class="headerlink" title="导入后工作"></a>导入后工作</h1><h2 id="重置密码"><a href="#重置密码" class="headerlink" title="重置密码"></a>重置密码</h2><p>select ‘alter user ‘||USERNAME||’ identified by test123456;’ from dba_users where username like ‘U%’ and created&gt;to_date(‘20110926’,’yyyymmdd’) order by CREATED;<br>alter user uif_act1_sta1 identified by test123456;</p>
+<h2 id="解锁用户："><a href="#解锁用户：" class="headerlink" title="解锁用户："></a>解锁用户：</h2><p>alter user UCR_CEN1 ACCOUNT UNLOCK;</p>
+<h2 id="安全策略修改"><a href="#安全策略修改" class="headerlink" title="安全策略修改"></a>安全策略修改</h2><p>select * from  dba_profiles   WHERE profile = ‘DEFAULT’ AND resource_type = ‘PASSWORD’;<br>alter profile DEFAULT limit password_verify_function null;<br>alter profile DEFAULT limit FAILED_LOGIN_ATTEMPTS UNLIMITED;<br>alter user XXXX profile DEFAULT;</p>
+<h1 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h1><h2 id="重新导入同义词"><a href="#重新导入同义词" class="headerlink" title="重新导入同义词"></a>重新导入同义词</h2><p>table_exists_action=skip content=metadata_only<br>impdp system/oracle@csngcrm831 dumpfile=cUCR_CRM3.dump logfile=cUCR_CRM3.log job_name=cUCR_CRM3 schemas=UCR_CRM3 directory=imp930crm_dir TABLE_EXISTS_ACTION=skip content=metadata_only parallel=1</p>
+<h2 id="重建同义词："><a href="#重建同义词：" class="headerlink" title="重建同义词："></a>重建同义词：</h2><p>select  ‘create or replace synonym UCR_CRM3.’||synonym_name||’ for UCR_CEN1.’||table_name||’;’<br>from dba_synonyms where table_owner=’UCR_CEN1’  and owner=’UCR_CRM4’;</p>
+<h2 id="查看更改表空间"><a href="#查看更改表空间" class="headerlink" title="查看更改表空间"></a>查看更改表空间</h2><p>select tablespace_name, file_id, file_name,<br>round(bytes/(1024*1024),0) total_space<br>from dba_data_files<br>where tablespace_name like ‘TBS_CRM_DUSR3’<br>order by tablespace_name;  –查看表空间</p>
+<p>CREATE TABLESPACE TBS_ACT_DEF<br>DATAFILE ‘/csoradata/csngcrm/TBS_ACT_DEF.dbf’ SIZE 1024M<br>UNIFORM SIZE 128k;  –建立表空间</p>
+<p>CREATE TABLESPACE “TBS_ACT_HIACT07” DATAFILE ‘/oradata/ngcrm/TBS_ACT_HIACT07.dbf’ SIZE 10485760 AUTOEXTEND ON NEXT 10485760 MAXSIZE 32767M LOGGING ONLINE PERMANENT BLOCKSIZE 8192 EXTENT MANAGEMENT LOCAL AUTOALLOCATE SEGMENT SPACE MANAGEMENT AUTO;  –建立表空间2</p>
+<p>ALTER TABLESPACE “TBS_CRM_IUSR5” ADD DATAFILE ‘/oradata/ngbil/crm/TBS_CRM_IUSR5_2.dbf’ SIZE 10485760 AUTOEXTEND ON NEXT 10485760 MAXSIZE 32767M ;   –增加表空间文件</p>
+<p>ALTER DATABASE DATAFILE ‘/csoradata/csngcrm/TBS_ACT_DEF.dbf’<br>AUTOEXTEND ON NEXT 100M<br>MAXSIZE 24576M;  –设定自动扩展</p>
+<p>CREATE TEMPORARY TABLESPACE temp_data<br>TEMPFILE ‘/oracle/oradata/db/TEMP_DATA.dbf’ SIZE 50M  –建立临时表空间</p>
+<p>ALTER DATABASE DATAFILE ‘/oradata/ngcrm/TBS_CRM_DUSR3.dbf’<br>RESIZE 12288M;  –调表空间<br>ALTER DATABASE TEMPFILE ‘/oradata/ngcrm/temp1.dbf’<br>RESIZE 12288M;  –调临时表空间</p>
+<p>移动表空间：<br>alter tablespace TBS_ACT_DEF offline;<br>alter tablespace TBS_ACT_DEF rename datafile ‘/oradata/ngbil/crm/TBS_ACT_DEF_2.dbf’ to ‘/oradata/ngcrm/TBS_ACT_DEF_2.dbf’;<br>alter tablespace TBS_ACT_DEF online;<br>select * from dba_tablespaces where tablespace_name=’TBS_ACT_DEF’;<br>select * from dba_data_files where tablespace_name=’TBS_CRM_DUSR1’;</p>
+<h2 id="查锁"><a href="#查锁" class="headerlink" title="查锁"></a>查锁</h2><p>select * from v$locked_object<br>select * from dba_objects where object_id=286655<br>select * from v$session where sid=822;<br>alter system kill session ‘822,94’;</p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201611/%E5%B0%8F%E7%B1%B3%E8%B7%AF%E7%94%B1%E5%99%A8%E5%88%B7openwrt/" rel="prev" title="小米路由器刷openwrt">
+      <i class="fa fa-chevron-left"></i> 小米路由器刷openwrt
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201611/Oracle%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86/" rel="next" title="Oracle用户管理">
+      Oracle用户管理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5%E5%89%8D%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">导入前准备</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B%E5%AF%BC%E5%85%A5%E7%94%A8%E6%88%B7"><span class="nav-number">1.1.</span> <span class="nav-text">建立导入用户</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A1%AE%E8%AE%A4%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.2.</span> <span class="nav-text">确认数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%80%E8%BF%9B%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">杀进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E5%BA%93"><span class="nav-number">1.4.</span> <span class="nav-text">清库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BDirectory"><span class="nav-number">1.5.</span> <span class="nav-text">建立Directory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5%E8%84%9A%E6%9C%AC"><span class="nav-number">1.6.</span> <span class="nav-text">导入脚本</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5%E8%BF%87%E7%A8%8B%E7%9B%91%E6%8E%A7"><span class="nav-number">2.</span> <span class="nav-text">导入过程监控</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%91%E6%8E%A7%E4%B8%BB%E6%9C%BA%E6%80%A7%E8%83%BD"><span class="nav-number">2.1.</span> <span class="nav-text">监控主机性能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E5%AF%BC%E5%85%A5%E8%BF%9B%E5%BA%A6"><span class="nav-number">2.2.</span> <span class="nav-text">查看导入进度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8BIMPDP%E8%BF%9B%E5%BA%A6"><span class="nav-number">2.3.</span> <span class="nav-text">查看IMPDP进度</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5%E5%90%8E%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">导入后工作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E7%BD%AE%E5%AF%86%E7%A0%81"><span class="nav-number">3.1.</span> <span class="nav-text">重置密码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E9%94%81%E7%94%A8%E6%88%B7%EF%BC%9A"><span class="nav-number">3.2.</span> <span class="nav-text">解锁用户：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E7%AD%96%E7%95%A5%E4%BF%AE%E6%94%B9"><span class="nav-number">3.3.</span> <span class="nav-text">安全策略修改</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E5%AE%83"><span class="nav-number">4.</span> <span class="nav-text">其它</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E6%96%B0%E5%AF%BC%E5%85%A5%E5%90%8C%E4%B9%89%E8%AF%8D"><span class="nav-number">4.1.</span> <span class="nav-text">重新导入同义词</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E5%BB%BA%E5%90%8C%E4%B9%89%E8%AF%8D%EF%BC%9A"><span class="nav-number">4.2.</span> <span class="nav-text">重建同义词：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%9B%B4%E6%94%B9%E8%A1%A8%E7%A9%BA%E9%97%B4"><span class="nav-number">4.3.</span> <span class="nav-text">查看更改表空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E9%94%81"><span class="nav-number">4.4.</span> <span class="nav-text">查锁</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

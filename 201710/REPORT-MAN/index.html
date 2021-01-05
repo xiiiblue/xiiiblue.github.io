@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="简介report-man:一个轻量级的报表自动化工具 对于中小型企业系统，一般没有配套的报表与经分系统进行支撑，但运维过程中经常会有各种报表的需求，报表一般为Excel格式，且内容经常发生变化，需要一套简单灵活的解决方案。 REPORT-MAN的程序本体只有一个可执行jar包，直接使用Excel模板进行配置，可以自动生成报表并发送邮件。支持3种启动方式，简单易用。 功能特性 支持桌面&#x2F;命令行&#x2F;WE">
+<meta property="og:type" content="article">
+<meta property="og:title" content="REPORT-MAN">
+<meta property="og:url" content="http://blog.bluexiii.com/201710/REPORT-MAN/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="简介report-man:一个轻量级的报表自动化工具 对于中小型企业系统，一般没有配套的报表与经分系统进行支撑，但运维过程中经常会有各种报表的需求，报表一般为Excel格式，且内容经常发生变化，需要一套简单灵活的解决方案。 REPORT-MAN的程序本体只有一个可执行jar包，直接使用Excel模板进行配置，可以自动生成报表并发送邮件。支持3种启动方式，简单易用。 功能特性 支持桌面&#x2F;命令行&#x2F;WE">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://oss.bluexiii.com/sltzo.png">
+<meta property="og:image" content="http://oss.bluexiii.com/2vazt.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/uneap.png">
+<meta property="og:image" content="http://oss.bluexiii.com/s63cr.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/59ohk.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/iufpu.jpg">
+<meta property="article:published_time" content="2017-10-30T06:10:54.000Z">
+<meta property="article:modified_time" content="2019-07-31T00:56:53.634Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://oss.bluexiii.com/sltzo.png">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201710/REPORT-MAN/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>REPORT-MAN | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201710/REPORT-MAN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          REPORT-MAN
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-10-30 14:10:54" itemprop="dateCreated datePublished" datetime="2017-10-30T14:10:54+08:00">2017-10-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-07-31 08:56:53" itemprop="dateModified" datetime="2019-07-31T08:56:53+08:00">2019-07-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>report-man:一个轻量级的报表自动化工具</p>
+<p>对于中小型企业系统，一般没有配套的报表与经分系统进行支撑，但运维过程中经常会有各种报表的需求，报表一般为Excel格式，且内容经常发生变化，需要一套简单灵活的解决方案。</p>
+<p>REPORT-MAN的程序本体只有一个可执行jar包，直接使用Excel模板进行配置，可以自动生成报表并发送邮件。支持3种启动方式，简单易用。</p>
+<h2 id="功能特性"><a href="#功能特性" class="headerlink" title="功能特性"></a>功能特性</h2><ul>
+<li>支持桌面/命令行/WEB应用3种运行模式</li>
+<li>无配置文件，在Excel模板中配置全部参数</li>
+<li>可以在模版中定义各种复杂的汇总、公式、图表等</li>
+<li>以任务为基本单位，配置灵活，支撑不断变化的需求</li>
+<li>支持连接多个数据源</li>
+<li>支持邮除发送，可使用代理服务器</li>
+<li>丰富的自定义参数</li>
+</ul>
+<h2 id="技术特性"><a href="#技术特性" class="headerlink" title="技术特性"></a>技术特性</h2><ul>
+<li>Java实现，基于SpringBoot</li>
+<li>使用Gradle构建</li>
+<li>使用ApachePOI-XSSF处理Excel2007文件</li>
+<li>使用JavaMailSender发送邮件</li>
+<li>支持使用SOCKS5代理服务器</li>
+<li>全部参数使用Excel配置</li>
+<li>使用JdbcTemplate，动态生成数据源</li>
+<li>支持查询/更新/删除及建表、建索引等操作</li>
+<li>跨平台，多种运行模式</li>
+<li>对外提供REST接口，可以配合其它系统使用</li>
+</ul>
+<h2 id="使用简介"><a href="#使用简介" class="headerlink" title="使用简介"></a>使用简介</h2><p>report-man针对不同的使用场景，提供了3种启动模式</p>
+<h3 id="桌面模式"><a href="#桌面模式" class="headerlink" title="桌面模式"></a>桌面模式</h3><p>桌面环境下使用，提供一个Swing界面，用于手工生成报表。</p>
+<p><img src="http://oss.bluexiii.com/sltzo.png"></p>
+<p>界面中可以选择模板路径、报表输出路径，点击按钮直接运行即可。</p>
+<p>桌面模式，一般用于对SQL语句进行微调后（例如修改起止时间），手工执行生成报表的场景。</p>
+<h3 id="命令行模式"><a href="#命令行模式" class="headerlink" title="命令行模式"></a>命令行模式</h3><p>服务器环境下，提供了一个命令行模式，用于后台静默执行。</p>
+<p><img src="http://oss.bluexiii.com/2vazt.jpg"></p>
+<p>一般会配合crontab定时生成报表并发送邮件。</p>
+<p>crontab示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">每天23:40执行</span><br><span class="line">40 23 * * * cd &#x2F;foo&#x2F;bar &amp;&amp; .&#x2F;reportman.sh 模版名称</span><br><span class="line"></span><br><span class="line">每周三23:45执行</span><br><span class="line">45 23 * * 3 cd &#x2F;foo&#x2F;bar &amp;&amp; .&#x2F;reportman.sh 模版名称</span><br></pre></td></tr></table></figure>
+
+<h3 id="WEB模式"><a href="#WEB模式" class="headerlink" title="WEB模式"></a>WEB模式</h3><p>WEB模式对外提供了一个开放的REST接口。可以在其它系统中开发一个简单的界面，调用report-man的REST接口，生成报表并发送邮件。</p>
+<p><img src="http://oss.bluexiii.com/uneap.png"></p>
+<p>应用默认端口为19090，内嵌一个Swagger-UI界面可以方便的进行测试。</p>
+<p>示例参数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;file.prefix&quot;: &quot;demo&quot;,</span><br><span class="line">  &quot;mail.to.list&quot;: &quot;foo@bar.com&quot;,</span><br><span class="line">  &quot;sql.start_date&quot;: &quot;2017-10-1&quot;,</span><br><span class="line">  &quot;sql.end_date&quot;: &quot;2017-10-31&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>成功响应：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;code&quot;: &quot;0000&quot;,</span><br><span class="line">  &quot;message&quot;: &quot;报表生成中，稍后会发送至您的邮箱。请不要重复点击生成报表。&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>说明</strong></p>
+<ol>
+<li>file.prefix为必填，指定了基础的模板名称</li>
+<li>其它参数可以灵活添加。会追加在Sheet2的参数配置中。如果参数名称相同，则会覆盖Sheet2中的参数。</li>
+<li>接口是异步的，调用后会立即返回成功消息。如果SQL较复杂，可能会后台运行一段时间。</li>
+</ol>
+<h2 id="启动脚本"><a href="#启动脚本" class="headerlink" title="启动脚本"></a>启动脚本</h2><p>为了方便使用，report-man提供了两个启动脚本</p>
+<h3 id="Windows环境-启动脚本"><a href="#Windows环境-启动脚本" class="headerlink" title="Windows环境 启动脚本"></a>Windows环境 启动脚本</h3><p>Windows环境下，只提供了一个桌面版本的启动入口，直接点击<code>reportman.cmd</code>即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;reportman.cmd</span><br></pre></td></tr></table></figure>
+<h3 id="Linux-macOS环境-启动脚本"><a href="#Linux-macOS环境-启动脚本" class="headerlink" title="Linux/macOS环境 启动脚本"></a>Linux/macOS环境 启动脚本</h3><p>Linux以及macOS下，提供了一个全功能的启动脚本，可以支持3种启动方式。</p>
+<p>直接输入<code>./reportman.sh</code>可以查看帮助信息</p>
+<p>以下为示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;reportman.sh gui        #启动桌面版本</span><br><span class="line">.&#x2F;reportman.sh cli demo   #启动命令行版本，其中demo为模版名称</span><br><span class="line">.&#x2F;reportman.sh web start  #启动WEB版本</span><br><span class="line">.&#x2F;reportman.sh web stop   #停止WEB版本</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="运行流程"><a href="#运行流程" class="headerlink" title="运行流程"></a>运行流程</h2><p>程序启动后，会首先载入模板文件，根据模版中提前定义好的各种参数，连接数据库读取结果集，并将结果填充到模板的指定区域。最终生成完整的Excel报表，并发送邮件。</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>载入模板文件</td>
+</tr>
+<tr>
+<td>2</td>
+<td>读取Sheet1的任务配置</td>
+</tr>
+<tr>
+<td>3</td>
+<td>读取Sheet2的参数配置</td>
+</tr>
+<tr>
+<td>4</td>
+<td>循环执行全部任务</td>
+</tr>
+<tr>
+<td>5</td>
+<td>删除前2个配置Sheet页</td>
+</tr>
+<tr>
+<td>6</td>
+<td>刷新Excel公式</td>
+</tr>
+<tr>
+<td>7</td>
+<td>保存Excel</td>
+</tr>
+<tr>
+<td>8</td>
+<td>发送邮件</td>
+</tr>
+</tbody></table>
+<h2 id="配置详解"><a href="#配置详解" class="headerlink" title="配置详解"></a>配置详解</h2><p>模板中的前2个Sheet页为配置专用。<br>Sheet1任务配置，用于定义需要执行SQL语句，对应的数据源，以及结果集显示的区域等。<br>Sheet2参数配置，用于定义各种参数，如邮件收件人、代理服务器、数据源的用户名密码等。<br>从第3个Sheet页开始是内容页面，可以有多个Sheet页，需要提前定义好表头、样式、汇总函数、图表等。将需要填充内容的区域留空。  </p>
+<h3 id="Sheet1-任务配置"><a href="#Sheet1-任务配置" class="headerlink" title="Sheet1-任务配置"></a>Sheet1-任务配置</h3><p>任务配置，存放于Sheet1中</p>
+<p><strong>表样截图</strong></p>
+<p><img src="http://oss.bluexiii.com/s63cr.jpg"></p>
+<p><strong>字段解释</strong></p>
+<table>
+<thead>
+<tr>
+<th>名称</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>任务名称</td>
+<td>任务的中文说明</td>
+</tr>
+<tr>
+<td>生效标识</td>
+<td>Y-生效/N-失效。</td>
+</tr>
+<tr>
+<td>数据源</td>
+<td>数据源名称。数据源的详细参数需要在Sheet2中配置。</td>
+</tr>
+<tr>
+<td>SQL</td>
+<td>查询SQL语句。</td>
+</tr>
+<tr>
+<td>SHEET页</td>
+<td>结果集显示的Sheet页。因为前两页是配置专用，所以数值需要从3开始。</td>
+</tr>
+<tr>
+<td>横向坐标</td>
+<td>结果集起始的横向X轴坐标。数值从1开始。</td>
+</tr>
+<tr>
+<td>纵向坐标</td>
+<td>结果集起始的纵向Y轴坐标。数值从1开始。</td>
+</tr>
+<tr>
+<td>单元格样式</td>
+<td>LEFT-左对齐/CENTER-居中对齐</td>
+</tr>
+</tbody></table>
+<p><strong>配置示例</strong></p>
+<table>
+<thead>
+<tr>
+<th>任务名称</th>
+<th>生效标识</th>
+<th>数据源</th>
+<th>SQL</th>
+<th>SHEET页</th>
+<th>横向坐标</th>
+<th>纵向坐标</th>
+<th>单元格样式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>预计使用人数</td>
+<td>N</td>
+<td>mobsale</td>
+<td>select foo from bar</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>CENTER</td>
+</tr>
+<tr>
+<td>累计登录次数</td>
+<td>N</td>
+<td>mobsale</td>
+<td>select foo from bar</td>
+<td>3</td>
+<td>5</td>
+<td>3</td>
+<td>CENTER</td>
+</tr>
+<tr>
+<td>累计登录人数</td>
+<td>N</td>
+<td>mobsale</td>
+<td>select foo from bar</td>
+<td>3</td>
+<td>6</td>
+<td>3</td>
+<td>CENTER</td>
+</tr>
+<tr>
+<td>本日登录次数</td>
+<td>Y</td>
+<td>mobsale</td>
+<td>select foo from bar</td>
+<td>3</td>
+<td>7</td>
+<td>3</td>
+<td>CENTER</td>
+</tr>
+<tr>
+<td>本日登录人数</td>
+<td>N</td>
+<td>mobsale</td>
+<td>select foo from bar</td>
+<td>3</td>
+<td>8</td>
+<td>3</td>
+<td>CENTER</td>
+</tr>
+<tr>
+<td>使用清单</td>
+<td>N</td>
+<td>mobsale</td>
+<td>select foo from bar</td>
+<td>4</td>
+<td>1</td>
+<td>2</td>
+<td>LEFT</td>
+</tr>
+<tr>
+<td>工号使用情况</td>
+<td>N</td>
+<td>mobsale</td>
+<td>select foo from bar</td>
+<td>5</td>
+<td>1</td>
+<td>2</td>
+<td>LEFT</td>
+</tr>
+</tbody></table>
+<p><strong>说明</strong></p>
+<ol>
+<li>spider-man会读取所有”生效标识”为Y的任务，并依次执行</li>
+<li>对于select语句，执行后会生成一个x行y列的结果集</li>
+<li>结果集会写入Excel的特定的Sheet页的特定区域，具体可以配置”SHEET页”、”横向坐标”、”纵向坐标”3个参数</li>
+<li>单元格样式可以配置成”LEFT”（左对齐）或”CENTER”（居中对齐）</li>
+<li>支持update/insert/create table/create index等语句，一般用于生成中间表。此类语句不需要指定Sheet页及坐标。</li>
+<li>SQL语句中可以插入参数占位符，格式为<code>$&#123;param_name&#125;</code>。参数的值可以在Sheet2中定义。</li>
+</ol>
+<h3 id="Sheet2-邮箱配置"><a href="#Sheet2-邮箱配置" class="headerlink" title="Sheet2-邮箱配置"></a>Sheet2-邮箱配置</h3><p>邮箱配置，存放于Sheet2中</p>
+<p><strong>表样截图</strong></p>
+<p><img src="http://oss.bluexiii.com/59ohk.jpg"></p>
+<p><strong>配置示例</strong><br>参数名称|键|值<br>–|–|–<br>邮件-发送开关|mail.enable|Y<br>邮件-收件人|mail.to.list|foo@bar.com<br>邮件-抄送人|mail.cc.list|yourname@qq.com<br>邮件-标题|mail.subject|XXX系统业务日报表<br>邮件-附件名|mail.attachment|业务报表<br>邮件-正文|mail.message|您好：<br>邮件-服务器IP|mail.smtp.host|smtp.qq.com<br>邮件-服务器端口|mail.smtp.port|465<br>邮件-用户名|mail.sender.username|yourname@qq.com<br>邮件-密码|mail.sender.password|blablablablabla<br>邮件-发件人|mail.from|yourname@qq.com<br>邮件-代理服务器开关|mail.proxy.enable|Y<br>邮件-代理服务器IP|mail.proxy.host|127.0.0.1<br>邮件-代理服务器端口|mail.proxy.port|1080</p>
+<p><strong>说明</strong></p>
+<ol>
+<li>注意键的命名<code>mail.xxx</code>是固定的，请不要随意增删。</li>
+<li>代理服务器类型必须为SOCKS4/5</li>
+<li>附件名称如果为中文，最好不要超过4个汉字</li>
+</ol>
+<h3 id="Sheet2-数据源配置"><a href="#Sheet2-数据源配置" class="headerlink" title="Sheet2-数据源配置"></a>Sheet2-数据源配置</h3><p>数据源配置，存放于Sheet2中</p>
+<p><strong>MySQL数据源示例</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数名称</th>
+<th>键</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据源类型</td>
+<td>db.testdb.driver</td>
+<td>com.mysql.jdbc.Driver</td>
+</tr>
+<tr>
+<td>数据源地址</td>
+<td>db.testdb.url</td>
+<td>jdbc:mysql://127.0.0.1:3306/dbname</td>
+</tr>
+<tr>
+<td>数据源用户名</td>
+<td>db.testdb.username</td>
+<td>yourname</td>
+</tr>
+<tr>
+<td>数据源密码</td>
+<td>db.testdb.password</td>
+<td>yourpass</td>
+</tr>
+</tbody></table>
+<p><strong>Oracle数据源示例</strong></p>
+<table>
+<thead>
+<tr>
+<th>参数名称</th>
+<th>键</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据源类型</td>
+<td>db.testdb.driver</td>
+<td>oracle.jdbc.driver.OracleDriver</td>
+</tr>
+<tr>
+<td>数据源地址</td>
+<td>db.testdb.url</td>
+<td>jdbc:oracle:thin:@127.0.0.1:1521:sid</td>
+</tr>
+<tr>
+<td>数据源用户名</td>
+<td>db.testdb.username</td>
+<td>yourname</td>
+</tr>
+<tr>
+<td>数据源密码</td>
+<td>db.testdb.password</td>
+<td>yourpass</td>
+</tr>
+</tbody></table>
+<p><strong>说明</strong></p>
+<ol>
+<li>键的格式为：<code>db.xxx.yyy</code>。xxx是自定义的数据源名称。yyy是固定的，不要随意修改。</li>
+</ol>
+<h3 id="Sheet2-SQL参数配置"><a href="#Sheet2-SQL参数配置" class="headerlink" title="Sheet2-SQL参数配置"></a>Sheet2-SQL参数配置</h3><p>SQL参数配置，存放于Sheet2中</p>
+<p><strong>配置示例</strong><br>参数名称|键|值<br>–|–|–<br>SQL参数|sql.start_date|2010-1-1<br>SQL参数|sql.end_date|2012-1-1</p>
+<p><strong>说明</strong></p>
+<ol>
+<li>SQL参数的格式为<code>sql.xxx</code>，其中<code>xxx</code>为参数名。</li>
+<li>SQL参数的值，会替换Sheet1中SQL语句中的占位符，从而拼成完整的的SQL语句。</li>
+<li>例如：<code>sql.end_date = 2012-1-1</code>这一行配置，会将Sheet1中SQL语句里的<code>$&#123;end_date&#125;</code>这个占位符替换为<code>2012-1-1</code></li>
+</ol>
+<h3 id="Sheet3-SheetN-模版配置详解"><a href="#Sheet3-SheetN-模版配置详解" class="headerlink" title="Sheet3~SheetN 模版配置详解"></a>Sheet3~SheetN 模版配置详解</h3><p><strong>表样截图</strong><br><img src="http://oss.bluexiii.com/iufpu.jpg"></p>
+<p>模版配置非常灵活，可以根据需求配置多个Sheet页。</p>
+<p>模版Sheet页中中主要是预先定义好表头、颜色、Excel公式等。数据部分留空，等待程序运行后填入。</p>
+<p>一般而言，可以分为详单页、汇总页、函数页这3类。</p>
+<p><strong>详单页</strong></p>
+<p>展示一个详单，行数不确定。<br>只需要定义好一个表头即可，从每二行开始，都是自动填充的详单数据。</p>
+<p><strong>汇总页</strong></p>
+<p>行数、列数是固定的，用于展示SUM出来的汇总数据。</p>
+<blockquote>
+<p>汇总页的提取，如果SQL比较复杂，可以分开配置多个任务，每个任务只填充特定的一列数据。</p>
+</blockquote>
+<p><strong>函数页</strong></p>
+<p>与汇总页类似，但本身并没有填充数据，而是填接使用Excel函数，获取其它Sheet页的原始数据，并进行加工与展示。</p>
+<blockquote>
+<p>注意，如果报表中存在SUMPRODUCT函数，POI正常情况下不会计算最终结果，需要打开Excel后手工执行<code>Ctrl+Alt+F9</code>进行刷新。<br>但可以在函数后面加入<code>+(NOW()*0)</code>参数,强制POI计算结果。<br>例如： <code>=SUMPRODUCT((&#39;业务发展-按个人&#39;!$A$2:A$9999=O4)*(&#39;业务发展-按个人&#39;!$B$2:B$9999=&quot;营维经理&quot;)*&#39;业务发展-按个人&#39;!H$2:H$9999)+(NOW()*0)</code></p>
+</blockquote>
+<h2 id="服务器部署"><a href="#服务器部署" class="headerlink" title="服务器部署"></a>服务器部署</h2><ul>
+<li>运行环境要求：JRE版本1.7及以上。</li>
+<li>在本机执行<code>gradle build</code>构建项目，将生成的<code>build/libs/report-man-1.0.jar</code>上传至服务器。</li>
+<li>在jar包所在路径下新建template及report两个目录。其中template中存放模板，report目录用于存放生成的报表。</li>
+<li>可以使用<code>crontab -e</code>配置定时执行</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201710/ELK%E5%88%86%E5%B8%83%E5%BC%8F%E6%97%A5%E5%BF%97%E5%B9%B3%E5%8F%B0%E5%88%9D%E6%AD%A5%E9%85%8D%E7%BD%AE/" rel="prev" title="ELK分布式日志平台初步配置">
+      <i class="fa fa-chevron-left"></i> ELK分布式日志平台初步配置
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201710/ZEN-SC-SAMPLE/" rel="next" title="ZEN-SC-SAMPLE">
+      ZEN-SC-SAMPLE <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD%E7%89%B9%E6%80%A7"><span class="nav-number">2.</span> <span class="nav-text">功能特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E7%89%B9%E6%80%A7"><span class="nav-number">3.</span> <span class="nav-text">技术特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E7%AE%80%E4%BB%8B"><span class="nav-number">4.</span> <span class="nav-text">使用简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A1%8C%E9%9D%A2%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.1.</span> <span class="nav-text">桌面模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E8%A1%8C%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.2.</span> <span class="nav-text">命令行模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WEB%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.3.</span> <span class="nav-text">WEB模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E8%84%9A%E6%9C%AC"><span class="nav-number">5.</span> <span class="nav-text">启动脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Windows%E7%8E%AF%E5%A2%83-%E5%90%AF%E5%8A%A8%E8%84%9A%E6%9C%AC"><span class="nav-number">5.1.</span> <span class="nav-text">Windows环境 启动脚本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Linux-macOS%E7%8E%AF%E5%A2%83-%E5%90%AF%E5%8A%A8%E8%84%9A%E6%9C%AC"><span class="nav-number">5.2.</span> <span class="nav-text">Linux&#x2F;macOS环境 启动脚本</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="nav-number">6.</span> <span class="nav-text">运行流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3"><span class="nav-number">7.</span> <span class="nav-text">配置详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Sheet1-%E4%BB%BB%E5%8A%A1%E9%85%8D%E7%BD%AE"><span class="nav-number">7.1.</span> <span class="nav-text">Sheet1-任务配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sheet2-%E9%82%AE%E7%AE%B1%E9%85%8D%E7%BD%AE"><span class="nav-number">7.2.</span> <span class="nav-text">Sheet2-邮箱配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sheet2-%E6%95%B0%E6%8D%AE%E6%BA%90%E9%85%8D%E7%BD%AE"><span class="nav-number">7.3.</span> <span class="nav-text">Sheet2-数据源配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sheet2-SQL%E5%8F%82%E6%95%B0%E9%85%8D%E7%BD%AE"><span class="nav-number">7.4.</span> <span class="nav-text">Sheet2-SQL参数配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Sheet3-SheetN-%E6%A8%A1%E7%89%88%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3"><span class="nav-number">7.5.</span> <span class="nav-text">Sheet3~SheetN 模版配置详解</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%83%A8%E7%BD%B2"><span class="nav-number">8.</span> <span class="nav-text">服务器部署</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

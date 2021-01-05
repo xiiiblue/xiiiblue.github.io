@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="引言起因是某个同事接到了领导安排下来的一个需求，要在一个Web应用（Java+Tomcat）中，记录用户登录时的IP地址和MAC地址，用于安全审计，于是咨询我如何实现。   第一反应是，这个需求本身是不成立的，根据以往的了解，MAC地址应该是过不了路由器的才对。以往做开发，都是用engineer的思维：先动手做，遇到问题再解决问题。但这个需求，应当用scientist的思维去思考：首先确定能不能做">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WEB服务器为什么取不到用户的MAC地址">
+<meta property="og:url" content="http://blog.bluexiii.com/201702/WEB%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%96%E4%B8%8D%E5%88%B0%E7%94%A8%E6%88%B7%E7%9A%84MAC%E5%9C%B0%E5%9D%80/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="引言起因是某个同事接到了领导安排下来的一个需求，要在一个Web应用（Java+Tomcat）中，记录用户登录时的IP地址和MAC地址，用于安全审计，于是咨询我如何实现。   第一反应是，这个需求本身是不成立的，根据以往的了解，MAC地址应该是过不了路由器的才对。以往做开发，都是用engineer的思维：先动手做，遇到问题再解决问题。但这个需求，应当用scientist的思维去思考：首先确定能不能做">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://oss.bluexiii.com/um3vu.gif">
+<meta property="og:image" content="http://oss.bluexiii.com/9kstc.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/xifqu.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/48yqg.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/w3bim.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/5ad0a.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/18783.jpg">
+<meta property="og:image" content="http://oss.bluexiii.com/js6ab.jpg">
+<meta property="article:published_time" content="2017-03-01T06:00:42.000Z">
+<meta property="article:modified_time" content="2019-07-31T00:56:53.580Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://oss.bluexiii.com/um3vu.gif">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201702/WEB%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%96%E4%B8%8D%E5%88%B0%E7%94%A8%E6%88%B7%E7%9A%84MAC%E5%9C%B0%E5%9D%80/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>WEB服务器为什么取不到用户的MAC地址 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201702/WEB%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%96%E4%B8%8D%E5%88%B0%E7%94%A8%E6%88%B7%E7%9A%84MAC%E5%9C%B0%E5%9D%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          WEB服务器为什么取不到用户的MAC地址
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-03-01 14:00:42" itemprop="dateCreated datePublished" datetime="2017-03-01T14:00:42+08:00">2017-03-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-07-31 08:56:53" itemprop="dateModified" datetime="2019-07-31T08:56:53+08:00">2019-07-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>起因是某个同事接到了领导安排下来的一个需求，要在一个Web应用（Java+Tomcat）中，记录用户登录时的IP地址和MAC地址，用于安全审计，于是咨询我如何实现。  </p>
+<p>第一反应是，这个需求本身是不成立的，根据以往的了解，MAC地址应该是过不了路由器的才对。<br>以往做开发，都是用engineer的思维：先动手做，遇到问题再解决问题。但这个需求，应当用scientist的思维去思考：首先确定能不能做，然后才是怎么做。  </p>
+<p>翻查了一些资料，想来证实”<strong>为什么WEB服务器，可以获取到客户端的IP地址，但获取不到MAC地址</strong>“，看着看着才发现，这是个挺大的命题，够写一篇BLOG了。   </p>
+<p>PS：由于个人对这块内容了解的不够彻底，<strong>本文很可能会有谬误</strong>，请读者先不要太当真，另外希望平台组的同事给予指证。  </p>
+<h2 id="先说结论"><a href="#先说结论" class="headerlink" title="先说结论"></a>先说结论</h2><p>我所认为的结论应该是这样的：  </p>
+<ol>
+<li>获取远程主机的IP地址是可行的（先不讨论使用代理的情况）  </li>
+<li>本地网络下，当我们已知一个IPv4地址后，可以通过ARP请求，获取对应的MAC地址。换句话说，MAC地址，只在本地网络下才有意义。  </li>
+<li>但我们无法透过路由器，获取其它网络下的IPv4节点的MAC地址。  </li>
+</ol>
+<p>下面一步步解释一下。  </p>
+<h2 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h2><p>先从HTTP说起。<br>HTTP是一个应用层的协议，它建立在TCP协议之上。<br>HTTP请求就是用来发送一段文本。关于这段文本如何组织，第一行写什么，第二行写什么，哪里加一个空行，就是HTTP协议所要规范的内容。<br>举个直接的例子，下面是一个简单的HTTP GET请求，有兴趣可以用telnet模拟一下。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GET http:&#x2F;&#x2F;www.fiddler2.com&#x2F;UpdateCheck.aspx?isBeta&#x3D;False HTTP&#x2F;1.1</span><br><span class="line">User-Agent: Fiddler&#x2F;4.6.3.50306 (.NET 4.0; WinNT 5.1.2600 SP3; zh-CN; 2xx86; Auto Update; Full Instance; Extensions: Geoedge, AutoSaveExt, HostsFile, SAZClipboardFactory, EventLog, SimpleFilter, Timeline, APITesting)</span><br><span class="line">Pragma: no-cache</span><br><span class="line">Host: www.fiddler2.com</span><br><span class="line">Accept-Language: zh-CN</span><br><span class="line">Referer: http:&#x2F;&#x2F;fiddler2.com&#x2F;client&#x2F;4.6.3.50306</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Connection: close</span><br></pre></td></tr></table></figure>
+<p>我们可以看到，HTTP的这段请求中，完全找不到客户端的MAC地址，甚至连IP地址都没有描述。<br>那IP地址是从哪里取到的呢？接下来我们再深入一点，看下一个内容：Socket  </p>
+<h2 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h2><p>HTTP的客户端和服务端，是通过Socket进行连接的。  </p>
+<p>Socket是什么呢？<strong>Socket是对OSI模型第4层-传输层中的TCP/IP协议的封装</strong>。Socket本身并不是协议，而<strong>是一个调用接口</strong>(API)。Socket和TCP/IP协议没有必然的联系。但通过Socket，我们才能使用TCP/IP协议。应用层不必了解TCP/IP协议细节，直接通过对Socket接口函数的调用完成数据在IP网络的传输。  </p>
+<p>Socket包含了网络通信必须的五种信息：<strong>连接使用的协议，本地主机的IP地址，本地进程的协议端口，远地主机的IP地址，远地进程的协议端口</strong>。</p>
+<p>所以，因为有了Socket，客户端和服务端完全不需要了解底层细节，直接通过调用Socket来实现就可以了。</p>
+<p>这也就是为什么服务器端<strong>可以获取到客户端的IP地址</strong>的原因，因为Socket中包含了远地主机的IP地址。（当然，通过代理服务器进行访问的除外，这种要依靠HTTP协议的X-Forwarded-For头来确认IP，不在本次的讨论范围中）  </p>
+<p>那为什么<strong>无法获取到客户端的MAC地址</strong>呢？很简单，同理，因为Socket中无法取到MAC地址。。。</p>
+<p>如果继续发问，为什么Socket中都既然都包含IP地址了，为什么偏偏不包含MAC地址信息呢？看来我们还要更深入一点，看一下OSI模型吧。  </p>
+<h2 id="OSI七层模型"><a href="#OSI七层模型" class="headerlink" title="OSI七层模型"></a>OSI七层模型</h2><p>首先祭出这张经典的OSI七层模型图，计算机网络的基石，请先盯着看一会儿，认真复习一下<br><img src="http://oss.bluexiii.com/um3vu.gif"></p>
+<p>这里还有一张OSI七层模型与TCP/IP四层模型的对照图<br><img src="http://oss.bluexiii.com/9kstc.jpg"></p>
+<p>为了方便理解，再放上一张更直观的，每一层对应的数据型式和主要协议的示意图<br><img src="http://oss.bluexiii.com/xifqu.jpg">  </p>
+<p>通过上图大体可以知道：  </p>
+<ul>
+<li>MAC地址是记录在第2层-数据链路层的  </li>
+<li>IP地址是记录在第3层-网络层的  </li>
+<li>端口号（TCP/UDP）是位于于第4层-传输层的  </li>
+<li>HTTP请求报文是记录在第7层-应用层的  </li>
+</ul>
+<h2 id="当打开一个URL时，究竟发生了什么"><a href="#当打开一个URL时，究竟发生了什么" class="headerlink" title="当打开一个URL时，究竟发生了什么"></a>当打开一个URL时，究竟发生了什么</h2><p>下面举个栗子，当我们在浏览器中打开一个链接后，看看OSI各层倒底发生了什么：<br>这里撇开DNS解析之类东西，只说一下HTTP报文的发送  </p>
+<h3 id="1、发送端"><a href="#1、发送端" class="headerlink" title="1、发送端"></a>1、发送端</h3><p>首先来看一下发送端（浏览器所在的主机）。参照第一张OSI模型图，按照从上向下的顺序来看。应用层数据其实只有那么几行文本，然后往下，每过一层，都要被加上首部/尾部。<strong>这个过程就像是一层一层的穿衣服</strong>。   </p>
+<p>HTTP请求文本：<br><img src="http://oss.bluexiii.com/48yqg.jpg"><br>最后到了数据链路层之后，数据就变成了这个肥肥的样子，最后转换成0和1的电信号发出：  </p>
+<p><img src="http://oss.bluexiii.com/w3bim.jpg"><br>下面看看，现实中，每一层都做了些什么（现实中的分层和OSI模型还是有区别的）：  </p>
+<ul>
+<li><p>第7,6,5层，也就是OSI中的应用层,表示层,会话层（也是TCP/IP分层中的应用层），它创建了一个HTTP请求(例如 GET / HTTP/1.1)，并交给下一层。一个普通的HTTP GET请求就是几行纯文本。<br>处理这三层，是<strong>浏览器</strong>和<strong>WEB服务器</strong>所要做的工作，浏览器发出请求，WEB服务器做出响应。  </p>
+</li>
+<li><p>第4,3层，也就是传输层/网络层。TCP/IP栈将上层的数据分成包（packets），并将它送往下一层-数据链路层。  </p>
+</li>
+</ul>
+<p><strong>IP地址、端口号记录在这两层中</strong>。<br>处理这两层，是<strong>操作系统</strong>要做的工作，操作系统将这两层封装为了Socket，方便调用。  </p>
+<ul>
+<li>第2层，数据链路层，将包（package）封装成帧（frame），并将它送到下一层物理层。  </li>
+</ul>
+<p><strong>MAC地址记录在这一层中</strong>。<br>这一层的工作，交由<strong>网卡</strong>来处理。  </p>
+<ul>
+<li>第1层，物理层，使用电信号来传送0和1。<br>最后这一层就是<strong>传输介质</strong>的工作了，例如双绞线、光纤、同轴电缆。  </li>
+</ul>
+<h3 id="2、数据流转"><a href="#2、数据流转" class="headerlink" title="2、数据流转"></a>2、数据流转</h3><p>数据发出去后，再看一下数据在网络上的流转。<br>数据一般要经过交换机、路由器等网络设备，层层转发，这些设备所做的事情就像是： <strong>脱掉一件或几件衣服，做一些修修补补，然后再重新穿回去</strong>。  </p>
+<ul>
+<li>这里先以L2交换机为例看一下，因为L2交换机会认别到帧这一层，记录/学习MAC地址，并将帧发送到目的地。<br><img src="http://oss.bluexiii.com/5ad0a.jpg">  </li>
+</ul>
+<p>通过上面这张图，我们就可以理解，MAC地址在本地网络下的重要作用了。也理解了，本地网络下，是可以查出每个节点的MAC地址的。  </p>
+<ul>
+<li>下面，再来看一下路由器。当一个LAN希望连接到另一个LAN时，就必须使用路由器设备了。当然，可以通过构建超大型的LAN，来避免使用路由器，但这时，交换机就需要管理大量的MAC地址，同时进行大量的广播通信，设备的负担就会相当大。路由器会进行路由选择，让数据达到下一跳。<br><img src="http://oss.bluexiii.com/18783.jpg">  </li>
+</ul>
+<p>经过路由器后，为了能到达下一跳，数据链路层中的MAC地址就被篡改了，下面这张图很能说明问题：<br><img src="http://oss.bluexiii.com/js6ab.jpg">  </p>
+<h3 id="3、接收端"><a href="#3、接收端" class="headerlink" title="3、接收端"></a>3、接收端</h3><p>最后看一下接收端（WEB服务器所在的主机）。参照第一张OSI模型图，按照从下至上的顺序来看，它要做的事情是： <strong>将衣服一件一件全部脱掉</strong> ，最后WEB服务器就取到了最初的应用层数据。  </p>
+<h3 id="4、结论"><a href="#4、结论" class="headerlink" title="4、结论"></a>4、结论</h3><p>所以，当一个以太网帧到达目的主机后，其中的MAC地址早已经不是原来客户端的MAC了，操作系统的Socket自然也无法获取原始的MAC地址了。  </p>
+<h2 id="可不可以通过其它方式获取MAC地址"><a href="#可不可以通过其它方式获取MAC地址" class="headerlink" title="可不可以通过其它方式获取MAC地址"></a>可不可以通过其它方式获取MAC地址</h2><p>上面已经证明了，WEB服务端，是无法获取客户端的MAC地址的。<br>那么，能不能通过一些trick来绕道实现呢？<br>想了想，大概可以有如下的思路：</p>
+<ol>
+<li>通过JavaScrip获取客户端的某块网卡的MAC地址，最好还要同时获取路由表，挑选出走默认路由的那块网卡。  </li>
+<li>将MAC地址，偷偷写入应用层的HTTP协议的Header中（类似Content-Type和User-Agent）</li>
+<li>服务端直接读Header，就可以取到Mac地址了</li>
+</ol>
+<p>那么这个思路可不可行呢？  </p>
+<ul>
+<li>如果客户端是浏览器的话，首先第一步就会被打脸，我想也没有哪个浏览器会允许这种不安全的操作的。但如果硬要通过IE下的ActiveX来取的话，貌似也不是不可以。。。  </li>
+<li>但如果客户端是APP的话，通过WebView+JS Bridge方式调用私有的API，应该也是可行的。。。</li>
+</ul>
+<h2 id="记录MAC地址的意义"><a href="#记录MAC地址的意义" class="headerlink" title="记录MAC地址的意义"></a>记录MAC地址的意义</h2><p>最后的最后，不禁思考，获取MAC的意义在哪里呢？<br>如果单纯是为了取证和审计，我想意义是不大的，甚至不如直接记录IP地址。<br>因为：    </p>
+<ul>
+<li>对于普通的正常用户而言，通过IP地址，是可以直接定位操作人的，即使IP是动态的。  </li>
+<li>对于初级以上Hacker来说，伪造MAC地址和伪造IP地址一样简单，甚至更简单。  </li>
+</ul>
+<p>所以，一般的安全管控要求下，还是只记录IP吧。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.amazon.cn/%E5%9B%BE%E8%A7%A3%E7%BD%91%E7%BB%9C%E7%A1%AC%E4%BB%B6-%E6%97%A5-%E4%B8%89%E8%BD%AE%E8%B4%A4%E4%B8%80/dp/B01531731E/ref=sr_1_1?s=digital-text&ie=UTF8&qid=1488177601&sr=1-1&keywords=%E5%9B%BE%E8%A7%A3%E7%BD%91%E7%BB%9C%E7%A1%AC%E4%BB%B6">https://www.amazon.cn/图解网络硬件-日-三轮贤一/dp/B01531731E/ref=sr_1_1?s=digital-text&amp;ie=UTF8&amp;qid=1488177601&amp;sr=1-1&amp;keywords=图解网络硬件</a>  </li>
+<li><a target="_blank" rel="noopener" href="https://www.amazon.cn/TCP-IP%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8-%E7%BE%8E-Joe-Casad/dp/B00L0WLUGA/ref=sr_1_1?s=digital-text&ie=UTF8&qid=1488177636&sr=1-1&keywords=tcp/ip%E5%85%A5%E9%97%A8">https://www.amazon.cn/图解网络硬件-日-三轮贤一/dp/B01531731E/ref=sr_1_1?s=digital-text&amp;ie=UTF8&amp;qid=1488177601&amp;sr=1-1&amp;keywords=图解网络硬件</a>  </li>
+<li><a target="_blank" rel="noopener" href="https://www.amazon.cn/HTTP%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97-%E7%BE%8E-David-Gourley-Brian-Totty-Marjorie-Sayer-Sailu-Reddy-Aushu-Aggarwal/dp/B00M2DKYRC/ref=sr_1_1?s=digital-text&ie=UTF8&qid=1488178503&sr=1-1&keywords=HTTP%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97">https://www.amazon.cn/HTTP权威指南-美-David-Gourley-Brian-Totty-Marjorie-Sayer-Sailu-Reddy-Aushu-Aggarwal/dp/B00M2DKYRC/ref=sr_1_1?s=digital-text&amp;ie=UTF8&amp;qid=1488178503&amp;sr=1-1&amp;keywords=HTTP权威指南</a>  </li>
+<li><a target="_blank" rel="noopener" href="http://superuser.com/questions/801788/role-of-osi-layers-when-we-open-a-url-in-browser">http://superuser.com/questions/801788/role-of-osi-layers-when-we-open-a-url-in-browser</a>  </li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201702/Python3%E4%B8%AA%E4%BA%BA%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="Python3个人学习笔记">
+      <i class="fa fa-chevron-left"></i> Python3个人学习笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201702/%E4%BD%BF%E7%94%A8IntelliJIDEA%E6%9B%BF%E4%BB%A3Eclipse/" rel="next" title="使用IntelliJ IDEA替代Eclipse">
+      使用IntelliJ IDEA替代Eclipse <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E8%AF%B4%E7%BB%93%E8%AE%BA"><span class="nav-number">2.</span> <span class="nav-text">先说结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP"><span class="nav-number">3.</span> <span class="nav-text">HTTP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Socket"><span class="nav-number">4.</span> <span class="nav-text">Socket</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OSI%E4%B8%83%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="nav-number">5.</span> <span class="nav-text">OSI七层模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%93%E6%89%93%E5%BC%80%E4%B8%80%E4%B8%AAURL%E6%97%B6%EF%BC%8C%E7%A9%B6%E7%AB%9F%E5%8F%91%E7%94%9F%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">6.</span> <span class="nav-text">当打开一个URL时，究竟发生了什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E5%8F%91%E9%80%81%E7%AB%AF"><span class="nav-number">6.1.</span> <span class="nav-text">1、发送端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E6%95%B0%E6%8D%AE%E6%B5%81%E8%BD%AC"><span class="nav-number">6.2.</span> <span class="nav-text">2、数据流转</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81%E6%8E%A5%E6%94%B6%E7%AB%AF"><span class="nav-number">6.3.</span> <span class="nav-text">3、接收端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4%E3%80%81%E7%BB%93%E8%AE%BA"><span class="nav-number">6.4.</span> <span class="nav-text">4、结论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E4%B8%8D%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87%E5%85%B6%E5%AE%83%E6%96%B9%E5%BC%8F%E8%8E%B7%E5%8F%96MAC%E5%9C%B0%E5%9D%80"><span class="nav-number">7.</span> <span class="nav-text">可不可以通过其它方式获取MAC地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95MAC%E5%9C%B0%E5%9D%80%E7%9A%84%E6%84%8F%E4%B9%89"><span class="nav-number">8.</span> <span class="nav-text">记录MAC地址的意义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">9.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

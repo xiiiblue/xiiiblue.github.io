@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Nginx负载均衡的几种策略使用开源版本的Nginx可以轻松实现7层（HTTP）或4层（TCP）的负载均衡。   当做为7层负载时，最常用的有以下几种策略：    轮询 round-robin — requests to the application servers are distributed in a round-robin fashion 依次把客户端的请求分发到不同的后端服务器上 最少">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通过Cookie Insertion实现Nginx会话保持">
+<meta property="og:url" content="http://blog.bluexiii.com/201707/%E9%80%9A%E8%BF%87Cookie%20Insertion%E5%AE%9E%E7%8E%B0Nginx%E4%BC%9A%E8%AF%9D%E4%BF%9D%E6%8C%81/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="Nginx负载均衡的几种策略使用开源版本的Nginx可以轻松实现7层（HTTP）或4层（TCP）的负载均衡。   当做为7层负载时，最常用的有以下几种策略：    轮询 round-robin — requests to the application servers are distributed in a round-robin fashion 依次把客户端的请求分发到不同的后端服务器上 最少">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-07-29T04:20:24.000Z">
+<meta property="article:modified_time" content="2018-11-06T07:36:54.063Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/201707/%E9%80%9A%E8%BF%87Cookie%20Insertion%E5%AE%9E%E7%8E%B0Nginx%E4%BC%9A%E8%AF%9D%E4%BF%9D%E6%8C%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>通过Cookie Insertion实现Nginx会话保持 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201707/%E9%80%9A%E8%BF%87Cookie%20Insertion%E5%AE%9E%E7%8E%B0Nginx%E4%BC%9A%E8%AF%9D%E4%BF%9D%E6%8C%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          通过Cookie Insertion实现Nginx会话保持
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-07-29 12:20:24" itemprop="dateCreated datePublished" datetime="2017-07-29T12:20:24+08:00">2017-07-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:36:54" itemprop="dateModified" datetime="2018-11-06T15:36:54+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Nginx负载均衡的几种策略"><a href="#Nginx负载均衡的几种策略" class="headerlink" title="Nginx负载均衡的几种策略"></a>Nginx负载均衡的几种策略</h2><p>使用开源版本的Nginx可以轻松实现7层（HTTP）或4层（TCP）的负载均衡。  </p>
+<p>当做为7层负载时，最常用的有以下几种策略：  </p>
+<ul>
+<li>轮询 round-robin — requests to the application servers are distributed in a round-robin fashion 依次把客户端的请求分发到不同的后端服务器上</li>
+<li>最少连接 least-connected — next request is assigned to the server with the least number of active connections  请求会被转发到连接数最少的服务器上</li>
+<li>IP哈希 ip-hash — a hash-function is used to determine what server should be selected for the next request (based on the client’s IP address)  同一客户端（IP）的连续的请求都会被分发到固定的一台后端服务器上</li>
+</ul>
+<p>前两种方案（轮询和最少连接）同一客户端的请求会被随机分配后不同的后端服务器上，如果后端是传统的有状态的WEB应用，则需要在后端WEB容器上配置Session共享，非常麻烦。</p>
+<p>后一种方案（IP哈希）可以识别请求端的IP，固定将其分配到某一台后端服务器上，轻松解决了会话保持的问题。但IP哈希存在一个比较严重缺陷，即：客户端必须能够直连Nginx服务器，他们之间不能再插入其它层级，否则Nginx就识别不到客户端的IP了。  </p>
+<p>那除了IP HASH外，还有没有其它方式能够进行会话保持呢？  </p>
+<h2 id="Cookie-Insertion"><a href="#Cookie-Insertion" class="headerlink" title="Cookie Insertion"></a>Cookie Insertion</h2><p>以下是官网的关于Cookie Insertion的介绍：  </p>
+<blockquote>
+<p>Cookie Insertion：NGINX Plus adds a session cookie to the first response from the upstream group to a given client, identifying which server generated the response (in an encoded fashion). Subsequent requests from the client include the cookie value and NGINX Plus uses it to route the request to the same upstream server:</p>
+</blockquote>
+<p>Cookie植入:  </p>
+<ol>
+<li>客户端第一次访问时，负载均衡服务在返回请求中植入cookie（在HTTP/HTTPS响应报文中插入）</li>
+<li>下次客户端携带此cookie访问，负载均衡服务会将请求定向转发给之前记录到的后端服务器上。</li>
+</ol>
+<p>Cookie植入原理上就是劫持HTTP请求，伪造cookie，它可以在Nginx无法获取客户端IP时，也依然能够完成会话保持的功能，只要客户端支持Cookie即可。</p>
+<h2 id="购买并使用Nginx-Plus"><a href="#购买并使用Nginx-Plus" class="headerlink" title="购买并使用Nginx Plus"></a>购买并使用Nginx Plus</h2><p>要使用Cookie Insertion，最简便的方式是使用商业版本的Nginx Plus，默认支持。  </p>
+<p>以下是官网关于会话保持的介绍：<br><a target="_blank" rel="noopener" href="https://www.nginx.com/products/session-persistence/">https://www.nginx.com/products/session-persistence/</a></p>
+<p>Cookie Insertion的配置非常简单：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">upstream backend &#123;</span><br><span class="line">    server webserver1;</span><br><span class="line">    server webserver2;</span><br><span class="line">    sticky cookie srv_id expires&#x3D;1h domain&#x3D;.example.com path&#x3D;&#x2F;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>于是顺道了解了一下Nginx Plus的来龙去脉：  </p>
+<ul>
+<li>2002年，来自俄罗斯的Igor Sysoev使用C语言开发了NGINX；</li>
+<li>2004年，NGINX开放源码，基于BSD开源许可。</li>
+<li>2006年 - 2016年，NIGNX Rlease版本历经0.5, 0.6, 0.7, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 1.9, 1.10, 1.11, 当前最新版本为1.11.3；</li>
+<li>2011年，Sysoev成立了NGINX公司，NGINX PLUS是其第一款产品，也是NGINX的商业版本；</li>
+<li>2013年 - 2016年，自NGINX Plus Initial Release (R1)版本发布以来，NGINX商业版本已更新至NGINX Plus Release 9 (R9)；</li>
+</ul>
+<blockquote>
+<p>NGINX Plus is the all-in-one application delivery platform for the modern web.<br>All-In-One的NGINX PLUS对比开源版本重点增加了若干企业特性，包括更完善的七层、四层负载均衡，会话保持，健康检查，实时监控和管理等。</p>
+</blockquote>
+<p>可看了一下最便宜的BASIC版本也要2500刀每年，泪奔，果断PASS。<br><a target="_blank" rel="noopener" href="https://www.nginx.com/products/buy-nginx-plus/">https://www.nginx.com/products/buy-nginx-plus/</a></p>
+<h2 id="使用第三方模块nginx-sticky-module"><a href="#使用第三方模块nginx-sticky-module" class="headerlink" title="使用第三方模块nginx-sticky-module"></a>使用第三方模块nginx-sticky-module</h2><p>阿里云SLB的Cookie植入功能，猜测应该是自已在Nginx基础上实现的，貌似没有开源。  </p>
+<p>流传最广的是一个名为 <strong>nginx-sticky-module</strong> 的第3方的模块 ，不过已经有多年没有维护。</p>
+<p>GoogleCode页面(需扶墙): <a target="_blank" rel="noopener" href="https://code.google.com/archive/p/nginx-sticky-module/downloads">https://code.google.com/archive/p/nginx-sticky-module/downloads</a></p>
+<p>下载 <strong>nginx-sticky-module-1.1.tar.gz</strong> ，看看能否配合较新的 <strong>nginx-1.12.1</strong> 使用。</p>
+<p>Nginx下载地址： <a target="_blank" rel="noopener" href="https://nginx.org/en/download.html">https://nginx.org/en/download.html</a>  </p>
+<blockquote>
+<p>选择Stable version中的nginx-1.12.1</p>
+</blockquote>
+<p>简单编译一下试试：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;configure --prefix&#x3D;&#x2F;nginx&#x2F;nginx-1.12.1 --add-module&#x3D;&#x2F;nginx&#x2F;src&#x2F;nginx-sticky-module-1.1  </span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+<p>果然报错：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;nginx&#x2F;src&#x2F;nginx-sticky-module-1.1&#x2F;ngx_http_sticky_module.c: In function ‘ngx_http_get_sticky_peer’:</span><br><span class="line">&#x2F;nginx&#x2F;src&#x2F;nginx-sticky-module-1.1&#x2F;ngx_http_sticky_module.c:333: error: assignment makes pointer from integer without a cast</span><br><span class="line">make[1]: *** [objs&#x2F;addon&#x2F;nginx-sticky-module-1.1&#x2F;ngx_http_sticky_module.o] Error 1</span><br><span class="line">make[1]: Leaving directory &#96;&#x2F;nginx&#x2F;src&#x2F;nginx-1.12.1&#39;</span><br><span class="line">make: *** [build] Error 2</span><br></pre></td></tr></table></figure>
+<p>代码太老旧，没有细查的必要了，弃用。  </p>
+<h2 id="使用第三方模块nginx-sticky-module-ng"><a href="#使用第三方模块nginx-sticky-module-ng" class="headerlink" title="使用第三方模块nginx-sticky-module-ng"></a>使用第三方模块nginx-sticky-module-ng</h2><p>另外还有一个比较新的模块 <strong>nginx-sticky-module-ng</strong> ，源码托管在BitBucket上：<br><a target="_blank" rel="noopener" href="https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/">https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/</a>  </p>
+<p>在Downloads/Tags下，找到1.2.6的源码并下载，或者直接下载Master分支上最新的代码。</p>
+<p>在编译之前，首先来动手修复一个BUG。。。<br>找到<code>ngx_http_sticky_misc.c</code>，添加以下两个include:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;openssl&#x2F;sha.h&gt;</span><br><span class="line">#include &lt;openssl&#x2F;md5.h&gt;</span><br></pre></td></tr></table></figure>
+<p>第三方的东西凑和着用吧。。。</p>
+<p>编译一下试试：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;configure --prefix&#x3D;&#x2F;nginx&#x2F;nginx-1.12.1 --add-module&#x3D;&#x2F;nginx&#x2F;src&#x2F;nginx-sticky-module-ng</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+<p>编译很顺利，配置一下试试吧：<br>配置上非常简单，只需要在upstream{}中加入sticky即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">upstream &#123;</span><br><span class="line">  sticky;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Sticky的详细配置说明：<br>sticky [name=route] [domain=.foo.bar] [path=/] [expires=1h]<br>       [hash=index|md5|sha1] [no_fallback] [secure] [httponly];</p>
+<ul>
+<li>name: the name of the cookies used to track the persistant upstream srv; default: route</li>
+<li>domain: the domain in which the cookie will be valid default: nothing. Let the browser handle this.</li>
+<li>path: the path in which the cookie will be valid default: /</li>
+<li>expires: the validity duration of the cookie default: nothing. It’s a session cookie. restriction: must be a duration greater than one second</li>
+<li>hash: the hash mechanism to encode upstream server. It cant’ be used with hmac. default: md5</li>
+<li>md5|sha1: well known hash</li>
+<li>index: it’s not hashed, an in-memory index is used instead, it’s quicker and the overhead is shorter Warning: the matching against upstream servers list is inconsistent. So, at reload, if upstreams servers has changed, index values are not guaranted to correspond to the same server as before! USE IT WITH CAUTION and only if you need to!</li>
+<li>hmac: the HMAC hash mechanism to encode upstream server It’s like the hash mechanism but it uses hmac_key to secure the hashing. It can’t be used with hash. md5|sha1: well known hash default: none. see hash.</li>
+<li>hmac_key: the key to use with hmac. It’s mandatory when hmac is set default: nothing.</li>
+<li>no_fallback: when this flag is set, nginx will return a 502 (Bad Gateway or Proxy Error) if a request comes with a cookie and the corresponding backend is unavailable.</li>
+<li>secure enable secure cookies; transferred only via https</li>
+<li>httponly enable cookies not to be leaked via js</li>
+</ul>
+<p>下面给出一个完整的配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">worker_processes  4;</span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections 1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    upstream proxy_admin &#123;</span><br><span class="line">        #ip_hash;</span><br><span class="line">        sticky;</span><br><span class="line">        server 192.168.1.61:19022 weight&#x3D;10 max_fails&#x3D;3 fail_timeout&#x3D;20s;</span><br><span class="line">        server 192.168.1.62:19022 weight&#x3D;10 max_fails&#x3D;3 fail_timeout&#x3D;20s;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen       29022;</span><br><span class="line">        server_name  proxy_admin;</span><br><span class="line">        location &#x2F; &#123;</span><br><span class="line">            root   html;</span><br><span class="line">            proxy_pass   http:&#x2F;&#x2F;proxy_admin;</span><br><span class="line">            proxy_next_upstream error timeout invalid_header http_500 http_503 http_404;</span><br><span class="line">            proxy_redirect off;</span><br><span class="line">            proxy_ignore_client_abort on;</span><br><span class="line">            proxy_set_header Host $host:$server_port;</span><br><span class="line">            proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">            proxy_set_header REMOTE-HOST $remote_addr;</span><br><span class="line">            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">            proxy_connect_timeout 60;</span><br><span class="line">            proxy_send_timeout 60;</span><br><span class="line">            proxy_read_timeout 60;</span><br><span class="line">            proxy_buffer_size 4k;</span><br><span class="line">            proxy_buffers 4 32k;</span><br><span class="line">            proxy_busy_buffers_size 64k;</span><br><span class="line">            proxy_temp_file_write_size 64k;</span><br><span class="line">            client_body_buffer_size 128k;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试，用浏览器访问一下试试：<br><a target="_blank" rel="noopener" href="http://ip:29022/mobagent-admin/">http://IP:29022/mobagent-admin/</a><br>如果在控制台中的Cookie中看到一个名为route的键，就说明基本上成功了。<br>然后多请求几次，看看后端服务的日志，最终确认一下，是不是只指向了同一台服务器。  </p>
+<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><p>最后，请注意，因为nginx-sticky-module-ng的可靠性未经长时间验证，请勿直接用于生产系统。  </p>
+
+    </div>
+
+    
+    
+    
+        
+
+  <div class="followme">
+    <p>Welcome to my other publishing channels</p>
+
+    <div class="social-list">
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="https://twitter.com/bluexiii">
+            <span class="icon">
+              <i class="fab fa-twitter"></i>
+            </span>
+
+            <span class="label">Twitter</span>
+          </a>
+        </div>
+
+        <div class="social-item">
+          <a target="_blank" class="social-link" href="/atom.xml">
+            <span class="icon">
+              <i class="fa fa-rss"></i>
+            </span>
+
+            <span class="label">RSS</span>
+          </a>
+        </div>
+    </div>
+  </div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/201707/netcat%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%89%93%E5%BC%80%E6%96%B9%E5%BC%8F/" rel="prev" title="">
+      <i class="fa fa-chevron-left"></i> 
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E6%93%8D%E4%BD%9C/" rel="next" title="阿里云DRDS分库分表">
+      阿里云DRDS分库分表 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%E7%9A%84%E5%87%A0%E7%A7%8D%E7%AD%96%E7%95%A5"><span class="nav-number">1.</span> <span class="nav-text">Nginx负载均衡的几种策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cookie-Insertion"><span class="nav-number">2.</span> <span class="nav-text">Cookie Insertion</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%AD%E4%B9%B0%E5%B9%B6%E4%BD%BF%E7%94%A8Nginx-Plus"><span class="nav-number">3.</span> <span class="nav-text">购买并使用Nginx Plus</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E7%AC%AC%E4%B8%89%E6%96%B9%E6%A8%A1%E5%9D%97nginx-sticky-module"><span class="nav-number">4.</span> <span class="nav-text">使用第三方模块nginx-sticky-module</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E7%AC%AC%E4%B8%89%E6%96%B9%E6%A8%A1%E5%9D%97nginx-sticky-module-ng"><span class="nav-number">5.</span> <span class="nav-text">使用第三方模块nginx-sticky-module-ng</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="nav-number">6.</span> <span class="nav-text">注意事项</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">113</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
