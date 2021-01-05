@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="官网 ffmpeg官网  ffprobe1234567891011121314# 查看媒体文件信息ffprobe test.mp4# 输出文件的格式信息ffprobe -show_format test.mp4# 以json格式输出每个流最详细的信息ffprobe -print_format json -show_streams test.mp4# 显示帧信息ffprobe  -show_stre">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ffmpeg&amp;ffplay&amp;ffprobe常用命令">
+<meta property="og:url" content="http://blog.bluexiii.com/202008/ffmpeg&ffplay&ffprobe%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="官网 ffmpeg官网  ffprobe1234567891011121314# 查看媒体文件信息ffprobe test.mp4# 输出文件的格式信息ffprobe -show_format test.mp4# 以json格式输出每个流最详细的信息ffprobe -print_format json -show_streams test.mp4# 显示帧信息ffprobe  -show_stre">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-08-18T06:24:09.920Z">
+<meta property="article:modified_time" content="2021-01-05T06:03:21.407Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/202008/ffmpeg&ffplay&ffprobe%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>ffmpeg&ffplay&ffprobe常用命令 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202008/ffmpeg&ffplay&ffprobe%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ffmpeg&ffplay&ffprobe常用命令
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-08-18 14:24:09" itemprop="dateCreated datePublished" datetime="2020-08-18T14:24:09+08:00">2020-08-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-01-05 14:03:21" itemprop="dateModified" datetime="2021-01-05T14:03:21+08:00">2021-01-05</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://ffmpeg.org/ffmpeg.html">ffmpeg官网</a></li>
+</ul>
+<h2 id="ffprobe"><a href="#ffprobe" class="headerlink" title="ffprobe"></a>ffprobe</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看媒体文件信息</span></span><br><span class="line">ffprobe test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出文件的格式信息</span></span><br><span class="line">ffprobe -show_format test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 以json格式输出每个流最详细的信息</span></span><br><span class="line">ffprobe -print_format json -show_streams test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 显示帧信息</span></span><br><span class="line">ffprobe  -show_streams test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看包信息</span></span><br><span class="line">ffprobe -show_packets test.mp4</span><br></pre></td></tr></table></figure>
+<h2 id="ffplay"><a href="#ffplay" class="headerlink" title="ffplay"></a>ffplay</h2><h3 id="常用示例"><a href="#常用示例" class="headerlink" title="常用示例"></a>常用示例</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 播放音视频文件</span></span><br><span class="line">ffplay test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 循环播放</span></span><br><span class="line">ffplay test.mp4 -loop 3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放音频流</span></span><br><span class="line">ffplay test.mp4 -ast 1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放视频流</span></span><br><span class="line">ffplay test.mp4 -vst 0</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放rtmp流</span></span><br><span class="line">ffplay -i rtmp://127.0.0.1:1935/hls/mystream -fflags nobuffer -analyzeduration 1000000</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放裸数据音频</span></span><br><span class="line">ffplay 原始文件(pcm文件) -f 格式 -channels 声道数 -ar 采样率</span><br><span class="line"><span class="comment"># 播放裸数据视频</span></span><br><span class="line">ffplay 原始格式(例如-f rawvideo) 格式(例如-pixel_format yuv420p) 宽高(例如-s 480*480) 原始文件(yuv)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放裸数据RGB</span></span><br><span class="line">ffplay -f rawvideo -pixel_format rgb24 -s 480*480 texture.rgb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+<h3 id="常用参数"><a href="#常用参数" class="headerlink" title="常用参数"></a>常用参数</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 通用参数</span></span><br><span class="line">-f fmt	指定格式(音频或视频格式)</span><br><span class="line">-i filename	指定输入文件名，在linux下当然也能指定:0.0(屏幕录制)或摄像头</span><br><span class="line">-y	覆盖已有文件</span><br><span class="line">-t duration	记录时长为</span><br><span class="line">-fs limit_size 设置文件大小上限</span><br><span class="line">-ss time_off	从指定的时间(s)开始， [-]hh:mm:ss[.xxx]的格式也支持</span><br><span class="line">-re 代表按照帧率发送,作为推流工具一定要加入参数,否则ffmpeg会按照最高速率向流媒体服务器不停发送数据</span><br><span class="line"></span><br><span class="line"><span class="comment"># 视频参数</span></span><br><span class="line">-b 指定比特率(bits/s)，似乎ffmpeg是自动VBR的，指定了就大概是平均比特率</span><br><span class="line">-bitexact    使用标准比特率</span><br><span class="line">-vb    指定视频比特率(bits/s)</span><br><span class="line">-vframes number    设置转换多少桢(frame)的视频</span><br><span class="line">-r rate    帧速率(fps) （可以改，确认非标准桢率会导致音画不同步，所以只能设定为15或者29.97）</span><br><span class="line">-s size    指定分辨率 (320x240)</span><br><span class="line">-aspect aspect    设置视频长宽比(4:3, 16:9 or 1.3333, 1.7777)</span><br><span class="line">-croptop size    设置顶部切除尺寸(<span class="keyword">in</span> pixels)</span><br><span class="line">-cropbottom size    设置底部切除尺寸(<span class="keyword">in</span> pixels)</span><br><span class="line">-cropleft size    设置左切除尺寸 (<span class="keyword">in</span> pixels)</span><br><span class="line">-cropright size    设置右切除尺寸 (<span class="keyword">in</span> pixels)</span><br><span class="line">-padtop size    设置顶部补齐尺寸(<span class="keyword">in</span> pixels)</span><br><span class="line">-padbottom size    底补齐(<span class="keyword">in</span> pixels)</span><br><span class="line">-padleft size    左补齐(<span class="keyword">in</span> pixels)</span><br><span class="line">-padright size    右补齐(<span class="keyword">in</span> pixels)</span><br><span class="line">-padcolor color    补齐带颜色(000000-FFFFFF)</span><br><span class="line">-vn    取消视频</span><br><span class="line">-vcodec codec    强制使用codec编解码方式(<span class="string">&#x27;copy&#x27;</span> to copy stream)</span><br><span class="line">-sameq    使用同样视频质量作为源（VBR）</span><br><span class="line">-pass n    选择处理遍数（1或者2）。两遍编码非常有用。第一遍生成统计信息，第二遍生成精确的请求的码率</span><br><span class="line">-passlogfile file    选择两遍的纪录文件名为file</span><br><span class="line">-newvideo    在现在的视频流后面加入新的视频流</span><br><span class="line"></span><br><span class="line"><span class="comment"># 高级视频选项</span></span><br><span class="line">-pix_fmt format    <span class="built_in">set</span> pixel format, <span class="string">&#x27;list&#x27;</span> as argument shows all the pixel formats supported</span><br><span class="line">-intra    仅适用帧内编码</span><br><span class="line">-qscale q    以&lt;数值&gt;质量为基础的VBR，取值0.01-255，约小质量越好</span><br><span class="line">-loop_input    设置输入流的循环数(目前只对图像有效)</span><br><span class="line">-loop_output    设置输出视频的循环数，比如输出gif时设为0表示无限循环</span><br><span class="line">-g int    设置图像组大小</span><br><span class="line">-cutoff int    设置截止频率</span><br><span class="line">-qmin int    设定最小质量，与-qmax（设定最大质量）共用，比如-qmin 10 -qmax 31</span><br><span class="line">-qmax int    设定最大质量</span><br><span class="line">-qdiff int    量化标度间最大偏差 (VBR)</span><br><span class="line">-bf int    使用frames B 帧，支持mpeg1,mpeg2,mpeg4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 音频参数</span></span><br><span class="line">-ab    设置比特率(单位：bit/s，也许老版是kb/s)前面-ac设为立体声时要以一半比特率来设置，比如192kbps的就设成96，转换 默认比特率都较小，要听到较高品质声音的话建议设到160kbps（80）以上。</span><br><span class="line">-aframes number    设置转换多少桢(frame)的音频</span><br><span class="line">-aq quality    设置音频质量 (指定编码)</span><br><span class="line">-ar rate    设置音频采样率 (单位：Hz)，PSP只认24000</span><br><span class="line">-ac channels    设置声道数，1就是单声道，2就是立体声，转换单声道的TVrip可以用1（节省一半容量），高品质的DVDrip就可以用2</span><br><span class="line">-an    取消音频</span><br><span class="line">-acodec codec    指定音频编码(<span class="string">&#x27;copy&#x27;</span> to copy stream)</span><br><span class="line">-vol volume    设置录制音量大小(默认为256) &lt;百分比&gt; ，某些DVDrip的AC3轨音量极小，转换时可以用这个提高音量，比如200就是原来的2倍</span><br><span class="line">-newaudio    在现在的音频流后面加入新的音频流</span><br><span class="line"></span><br><span class="line"><span class="comment"># 字幕参数</span></span><br><span class="line">-sn    取消字幕</span><br><span class="line">-scodec codec    设置字幕编码(<span class="string">&#x27;copy&#x27;</span> to copy stream)</span><br><span class="line">-newsubtitle    在当前字幕后新增</span><br><span class="line">-slang code    设置字幕所用的ISO 639编码(3个字母)</span><br><span class="line">Audio/Video 抓取选项:</span><br><span class="line">-vc channel    设置视频捕获通道(只对DV1394)</span><br><span class="line">-tvstd standard    设置电视标准 NTSC PAL(SECAM)	</span><br></pre></td></tr></table></figure>
+
+<h2 id="ffmpeg"><a href="#ffmpeg" class="headerlink" title="ffmpeg"></a>ffmpeg</h2><h3 id="参数格式"><a href="#参数格式" class="headerlink" title="参数格式"></a>参数格式</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg &#123;1&#125; &#123;2&#125; -i &#123;3&#125; &#123;4&#125; &#123;5&#125;</span><br><span class="line">1. 全局参数</span><br><span class="line">2. 输入文件参数</span><br><span class="line">3. 输入文件</span><br><span class="line">4. 输出文件参数</span><br><span class="line">5. 输出文件</span><br><span class="line"></span><br><span class="line">ffmpeg \</span><br><span class="line">-y \ # 全局参数</span><br><span class="line">-c:a libfdk_aac -c:v libx264 \ # 输入文件参数</span><br><span class="line">-i input.mp4 \ # 输入文件</span><br><span class="line">-c:v libvpx-vp9 -c:a libvorbis \ # 输出文件参数</span><br><span class="line">output.webm # 输出文件</span><br></pre></td></tr></table></figure>
+<h3 id="常用参数-1"><a href="#常用参数-1" class="headerlink" title="常用参数"></a>常用参数</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-c：指定编码器</span><br><span class="line">-c copy：直接复制，不经过重新编码（这样比较快）</span><br><span class="line">-c:v：指定视频编码器</span><br><span class="line">-c:a：指定音频编码器</span><br><span class="line">-i：指定输入文件</span><br><span class="line">-an：去除音频流</span><br><span class="line">-vn： 去除视频流</span><br><span class="line">-preset：指定输出的视频质量，会影响文件的生成速度，有以下几个可用的值 ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow。</span><br><span class="line">-y：不经过确认，输出时直接覆盖同名文件。</span><br></pre></td></tr></table></figure>
+<h3 id="常用示例-1"><a href="#常用示例-1" class="headerlink" title="常用示例"></a>常用示例</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 转换编码格式</span></span><br><span class="line">ffmpeg -i input.mp4 -c:v libx264 output.mp4</span><br><span class="line">ffmpeg -i input.mp4 -c:v libx265 output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 转换容器格式</span></span><br><span class="line">ffmpeg -i input.mp4 -c copy output.webm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调整码率</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-minrate 964K -maxrate 3856K -bufsize 2000K \</span><br><span class="line">output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 改变分辨率（transsizing）</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-vf scale=480:-1 \</span><br><span class="line">output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 提取音频</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-vn -c:a copy \</span><br><span class="line">output.aac</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加音轨</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-i input.aac -i input.mp4 \</span><br><span class="line">output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 连续截图1秒钟</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-y \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-ss 00:01:24 -t 00:00:01 \</span><br><span class="line">output_%3d.jpg</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定一帧截图</span></span><br><span class="line"><span class="comment"># -vframes 1指定只截取一帧，-q:v 2表示输出的图片质量</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-ss 00:01:24 \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-vframes 1 -q:v 2 \</span><br><span class="line">output.jpg</span><br><span class="line"></span><br><span class="line"><span class="comment"># 裁剪</span></span><br><span class="line">ffmpeg -ss 00:01:50 -i input.mp4 -t 10.5 -c copy output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 为音频添加封面</span></span><br><span class="line"><span class="comment"># -loop 1参数表示图片无限循环，-shortest参数表示音频文件结束，输出视频就结束。</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-loop 1 \</span><br><span class="line">-i cover.jpg -i input.mp3 \</span><br><span class="line">-c:v libx264 -c:a aac -b:a 192k -shortest \</span><br><span class="line">output.mp4</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="其它示例"><a href="#其它示例" class="headerlink" title="其它示例"></a>其它示例</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># 列出ffmpeg支持的所有格式</span></span><br><span class="line">ffmpeg -formats</span><br><span class="line"></span><br><span class="line"><span class="comment"># 剪切一段媒体文件,将文件从50秒开始剪切20秒,输入到新文件,-ss是指定时间,-t是指定时长 提取一个视频中的音频文件</span></span><br><span class="line"></span><br><span class="line">ffmpeg -i input.mp4 -ss 00:00:50.0 -codec copy -t 20 output,mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 提取一个视频中的音频文件</span></span><br><span class="line">ffmpeg -i input.mp4 -vn -acodec copy output.m4a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使一个视频中的音频静音</span></span><br><span class="line">ffmpeg -i input.mp4 -an -vcodec copy output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从MP4文件中导出H264裸流</span></span><br><span class="line">ffmpeg -i test.mp4 -an -vcodec copy -bsf:v h264_mp4toannexb output.h264</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用aac和h264文件生成mp4文件</span></span><br><span class="line">ffmpeg -i input.aac -i input.h264 -acodec copy -bsf:a aac_adtstoasc -vcodec copy -f mp4 output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 对音频文件的编码做转换</span></span><br><span class="line">ffmpeg -i input.wav -acodec libfdk_aac output.aac</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从wav文件导出pcm裸数据</span></span><br><span class="line">ffmpeg -i input.wav -acodec pcm_s16le -f s16le output.pcm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将mp4导出为gif,参数设置为宽度100,帧率10,只处理前五秒</span></span><br><span class="line">ffmpeg -i test.mp4 -vf sacle=100:-1 -t 5 -r 10 output.gif</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将视频画面生成图片,参数为每四秒截取一张,生成缩略图</span></span><br><span class="line">ffmpeg -i test.mp4 -r 0.25 frames_%04d.png</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将两路声音合并,例如添加背景音乐,输出时间是以较短的为准</span></span><br><span class="line">ffmpeg -i input.wav -i bgm.wav -filter_complex amix=inputs=2:deration=shortest output.wav</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 视频添加水印,视频宽度为100,水印宽度为20</span></span><br><span class="line">ffmpeg -i test.mp4 -i image.png -filter_complex <span class="string">&#x27;[0:v][1:v]overlay=100-20-10:10:1[out]&#x27;</span> -map <span class="string">&#x27;[out]&#x27;</span> output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将视频推送到流媒体服务器(-re表示实际速度)</span></span><br><span class="line">ffmpeg -re -i test.mp4 -acodec copy -vcodec copy -f flv rtmp://10.30.22.242:1935/hls/mystream</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将流媒体服务器的流dump到本地</span></span><br><span class="line">ffmpeg -i rtmp://10.30.22.242:1935/hls/mystream -acodec copy -vcodec copy -f flv output.flv</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2020/01/ffmpeg.html">FFmpeg 视频处理入门教程</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/6844903550229676039">ffprobe,ffplay ffmpeg常用的命令行命令</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/146359917">FFmpeg常用技巧</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.longqi.cf/tools/2015/02/13/ffmpegcn/">ffmpeg中文手册</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/202008/nginx-http-flv%E9%85%8D%E7%BD%AE/" rel="prev" title="nginx-http-flv配置">
+      <i class="fa fa-chevron-left"></i> nginx-http-flv配置
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/202008/SRS%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/" rel="next" title="SRS配置笔记">
+      SRS配置笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E7%BD%91"><span class="nav-number">1.</span> <span class="nav-text">官网</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ffprobe"><span class="nav-number">2.</span> <span class="nav-text">ffprobe</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ffplay"><span class="nav-number">3.</span> <span class="nav-text">ffplay</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="nav-number">3.1.</span> <span class="nav-text">常用示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0"><span class="nav-number">3.2.</span> <span class="nav-text">常用参数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ffmpeg"><span class="nav-number">4.</span> <span class="nav-text">ffmpeg</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E6%A0%BC%E5%BC%8F"><span class="nav-number">4.1.</span> <span class="nav-text">参数格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%8F%82%E6%95%B0-1"><span class="nav-number">4.2.</span> <span class="nav-text">常用参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%A4%BA%E4%BE%8B-1"><span class="nav-number">4.3.</span> <span class="nav-text">常用示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E5%AE%83%E7%A4%BA%E4%BE%8B"><span class="nav-number">4.4.</span> <span class="nav-text">其它示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">5.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">160</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
