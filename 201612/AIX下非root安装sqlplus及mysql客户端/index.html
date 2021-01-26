@@ -27,15 +27,15 @@
 <meta property="og:site_name" content="BlueXIII&#39;s Blog">
 <meta property="og:description" content="场景同事的一个新需求，需要在AIX上以shell脚本的方式，调用sqlplus客户端连接Oracle数据库，调用mysql客户端连接MySQL数据库。想尽量简化开发，只用纯脚本方式实现，不想替换为Java或其它方案，且不想远程调用其它Linux主机上的客户端。故需要在AIX上安装两个客户端（只有普通用户权限，没有root权限）。没什么太特别的地方，简单记录一下过程。    sqlplus客户端的安">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://oss.bluexiii.com/d3keo.jpg">
-<meta property="og:image" content="http://oss.bluexiii.com/yl5kv.jpg">
-<meta property="og:image" content="http://oss.bluexiii.com/by3i2.jpg">
-<meta property="og:image" content="http://oss.bluexiii.com/trpgr.jpg">
+<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/d3keo.jpg">
+<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/yl5kv.jpg">
+<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/by3i2.jpg">
+<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/trpgr.jpg">
 <meta property="article:published_time" content="2016-12-19T06:24:32.000Z">
-<meta property="article:modified_time" content="2019-07-31T00:56:53.634Z">
+<meta property="article:modified_time" content="2021-01-26T01:44:33.849Z">
 <meta property="article:author" content="BlueXIII">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://oss.bluexiii.com/d3keo.jpg">
+<meta name="twitter:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/d3keo.jpg">
 
 <link rel="canonical" href="http://blog.bluexiii.com/201612/AIX%E4%B8%8B%E9%9D%9Eroot%E5%AE%89%E8%A3%85sqlplus%E5%8F%8Amysql%E5%AE%A2%E6%88%B7%E7%AB%AF/">
 
@@ -186,7 +186,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2019-07-31 08:56:53" itemprop="dateModified" datetime="2019-07-31T08:56:53+08:00">2019-07-31</time>
+                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
               </span>
 
           
@@ -204,17 +204,17 @@
 <h2 id="sqlplus客户端的安装"><a href="#sqlplus客户端的安装" class="headerlink" title="sqlplus客户端的安装"></a>sqlplus客户端的安装</h2><p>Oracle接供了AIX下的InstantClient二进制zip包，其中包含了sqlplus，安装起来比较简单，主要注意一下环境变量的设置。  </p>
 <h3 id="下载InstantClient"><a href="#下载InstantClient" class="headerlink" title="下载InstantClient"></a>下载InstantClient</h3><p><a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/cn/database/features/instant-client/index-092699-zhs.html">这里是Oracle Instant Client的下载地址</a>  ，目前最新版本是11.2.0.1.0  </p>
 <ol>
-<li>首先根据系统，选择”适用于 AIX5L（64 位）的 Instant Client”<br><img src="http://oss.bluexiii.com/d3keo.jpg">  </li>
-<li>然后再下载Basic和SQLPlus两个编译好的二进制包，注意两个都要下载<br><img src="http://oss.bluexiii.com/yl5kv.jpg">  </li>
+<li>首先根据系统，选择”适用于 AIX5L（64 位）的 Instant Client”<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/d3keo.jpg">  </li>
+<li>然后再下载Basic和SQLPlus两个编译好的二进制包，注意两个都要下载<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/yl5kv.jpg">  </li>
 </ol>
 <h3 id="上传并解压"><a href="#上传并解压" class="headerlink" title="上传并解压"></a>上传并解压</h3><p>将下载好的两个包 <code>basic-11.2.0.1.0-aix-ppc64.zip</code> 和 <code>sqlplus-11.2.0.1.0-aix-ppc64.zip</code>上传至服务器，使用unzip解压至同一目录，例如： /path/to/instantclient。  </p>
 <h3 id="设置环境变量"><a href="#设置环境变量" class="headerlink" title="设置环境变量"></a>设置环境变量</h3><p>编辑.profile文件，加入以下两行：  </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export PATH&#x3D;$PATH:&#x2F;path&#x2F;to&#x2F;instantclient</span><br><span class="line">export LIBPATH&#x3D;&#x2F;path&#x2F;to&#x2F;instantclient</span><br></pre></td></tr></table></figure>
 <p>注意AIX下要设置LIBPATH环境变量，且只能填写InstantClient一个目录，不能用冒号分割加入其它目录。  </p>
-<h2 id="mysql客户端的安装"><a href="#mysql客户端的安装" class="headerlink" title="mysql客户端的安装"></a>mysql客户端的安装</h2><p><a target="_blank" rel="noopener" href="http://dev.mysql.com/downloads/">MySQL官网</a> 目前只提供5.5~5.7的下载，且二进制ZIP包和RPM/DEB包主要针对Linux的各个发行版，没有对应的AIX版本。<br><img src="http://oss.bluexiii.com/by3i2.jpg"><br>连源码包也是”Generic Linux”的，在AIX下编译的话编译器和依赖都会有问题。Google上可以搜索到MySQL 5.1版本在AIX下成功编译的<a target="_blank" rel="noopener" href="http://bluefinch-nl.blogspot.com/2014/05/installing-mysql-on-aix.html">案例</a>（需要一些trick），不过老源码目前在官网已经下载不到了。<br>第三方网站bullfreeware提供了5.5版本的RPM包。此种方式有安全风险，不过已经是唯一的方案了。  </p>
+<h2 id="mysql客户端的安装"><a href="#mysql客户端的安装" class="headerlink" title="mysql客户端的安装"></a>mysql客户端的安装</h2><p><a target="_blank" rel="noopener" href="http://dev.mysql.com/downloads/">MySQL官网</a> 目前只提供5.5~5.7的下载，且二进制ZIP包和RPM/DEB包主要针对Linux的各个发行版，没有对应的AIX版本。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/by3i2.jpg"><br>连源码包也是”Generic Linux”的，在AIX下编译的话编译器和依赖都会有问题。Google上可以搜索到MySQL 5.1版本在AIX下成功编译的<a target="_blank" rel="noopener" href="http://bluefinch-nl.blogspot.com/2014/05/installing-mysql-on-aix.html">案例</a>（需要一些trick），不过老源码目前在官网已经下载不到了。<br>第三方网站bullfreeware提供了5.5版本的RPM包。此种方式有安全风险，不过已经是唯一的方案了。  </p>
 <h3 id="下载并处理RPM包"><a href="#下载并处理RPM包" class="headerlink" title="下载并处理RPM包"></a>下载并处理RPM包</h3><ol>
 <li>在 <a target="_blank" rel="noopener" href="http://www.bullfreeware.com/affichage.php?id=1215">bullfreeware</a> 上下载MySQL5.5版本的客户端 <code>MySQL-client-5.5.10-1.aix5.3.ppc.rpm</code></li>
-<li>因为我们是没有root权限的，所有无法直接安装rpm包，需要将包里的二进制内容提取出来直接拷贝到安装目录：<br>将rpm直接使用unzip解压，解出如下的目录结构：<br><img src="http://oss.bluexiii.com/trpgr.jpg"><br>直接将bin目录下的二进制文件取出来上传至服务器，路径例如： /path/to/mysqlclient</li>
+<li>因为我们是没有root权限的，所有无法直接安装rpm包，需要将包里的二进制内容提取出来直接拷贝到安装目录：<br>将rpm直接使用unzip解压，解出如下的目录结构：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/trpgr.jpg"><br>直接将bin目录下的二进制文件取出来上传至服务器，路径例如： /path/to/mysqlclient</li>
 </ol>
 <h3 id="设置环境变量-1"><a href="#设置环境变量-1" class="headerlink" title="设置环境变量"></a>设置环境变量</h3><p>编辑.profile文件，加入PATH：  </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export PATH&#x3D;$PATH:&#x2F;path&#x2F;to&#x2F;mysqlclient</span><br></pre></td></tr></table></figure>

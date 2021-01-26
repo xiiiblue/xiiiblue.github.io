@@ -27,12 +27,12 @@
 <meta property="og:site_name" content="BlueXIII&#39;s Blog">
 <meta property="og:description" content="Feign的不恰当的fallbackFeign的坑不少，特别与Hystrix集成之后。在微服务引入Feign后，上线不久后便发现，对于一个简单的查询类调用，在下游返回正常的”404-资源不存在”这种业务异常时，Feign也做了fallback，最终导致circuit break，引发平台告警。 REST接口的设计为了解释这个问题，首先还是要从REST接口开始谈起。 REST的一个缺点（也有人认为是">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://oss.bluexiii.com/sgqvj.jpg">
+<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/sgqvj.jpg">
 <meta property="article:published_time" content="2017-09-16T01:51:24.000Z">
-<meta property="article:modified_time" content="2019-07-31T00:56:53.579Z">
+<meta property="article:modified_time" content="2021-01-26T01:44:33.904Z">
 <meta property="article:author" content="BlueXIII">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://oss.bluexiii.com/sgqvj.jpg">
+<meta name="twitter:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/sgqvj.jpg">
 
 <link rel="canonical" href="http://blog.bluexiii.com/201709/%E5%85%B3%E4%BA%8EFeign%E7%9A%84Fallback%E5%A4%84%E7%90%86/">
 
@@ -183,7 +183,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2019-07-31 08:56:53" itemprop="dateModified" datetime="2019-07-31T08:56:53+08:00">2019-07-31</time>
+                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
               </span>
 
           
@@ -230,7 +230,7 @@
 <h2 id="什么时候应该Fallback"><a href="#什么时候应该Fallback" class="headerlink" title="什么时候应该Fallback"></a>什么时候应该Fallback</h2><p>2XX，成功，这个不用再讨论。<br>5XX，也相当明确，直接Fallback，这个也不用讨论。<br>4XX，可以一律认为是业务逻辑异常（或者更精确的说，可以认为4XX中的某几个是业务异常）。这时候，应该是用if/else来处理这个异常，而不应该动用Hystrix来Fallback。  </p>
 <p>Feign在默认情况下，对于非2XX，都认为是异常。这个地方是有问题的。特别是对于404这种非常容易抛出的业务异常来说，没两下就circuit break了。</p>
 <p>Feign的Issue里已经有人提过这个问题，后面的版本中已经提供了一个参数:<code>decode404</code>。</p>
-<p>可以看一下Feign的代码，位置在：<br>~/.m2/repository/io/github/openfeign/feign-core/9.5.0/feign-core-9.5.0.jar!/feign/SynchronousMethodHandler.class<br><img src="http://oss.bluexiii.com/sgqvj.jpg"></p>
+<p>可以看一下Feign的代码，位置在：<br>~/.m2/repository/io/github/openfeign/feign-core/9.5.0/feign-core-9.5.0.jar!/feign/SynchronousMethodHandler.class<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/sgqvj.jpg"></p>
 <p>所以在Client上可以这样设置：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@FeignClient(name &#x3D; &quot;marathon-lb&quot;, fallback &#x3D; FooBarClientFallback.class, decode404 &#x3D; true)</span><br><span class="line">@RequestMapping(value &#x3D; &quot;&#x2F;foo&#x2F;bar&quot;)</span><br><span class="line">public interface FooBarClient &#123;</span><br><span class="line">    ... ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>只需要加入<code>decode404 = true</code>这一个参数，Feign对于2XX和404 ，都不会走Fallback了。<br>排除404，已经基本上够用了，如果想把409、400等status也加到例外中，可以重写一下Feign的errorDecoder。</p>
