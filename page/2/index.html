@@ -148,7 +148,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-1-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE/">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202208/iptables%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -162,7 +162,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-1-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">K8S离线部署笔记-1-操作系统配置</a>
+            <a href="/202208/iptables%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">iptables学习笔记</a>
         </h2>
 
         <div class="post-meta">
@@ -172,14 +172,14 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2020-09-27 16:42:31" itemprop="dateCreated datePublished" datetime="2020-09-27T16:42:31+08:00">2020-09-27</time>
+              <time title="Created: 2022-08-26 16:18:37" itemprop="dateCreated datePublished" datetime="2022-08-26T16:18:37+08:00">2022-08-26</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:04:30" itemprop="dateModified" datetime="2021-01-05T14:04:30+08:00">2021-01-05</time>
+                <time title="Modified: 2022-11-02 17:20:07" itemprop="dateModified" datetime="2022-11-02T17:20:07+08:00">2022-11-02</time>
               </span>
 
           
@@ -193,667 +193,709 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="通用配置"><a href="#通用配置" class="headerlink" title="通用配置"></a>通用配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 配置网络</span></span><br><span class="line">nmtui</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置hostname</span></span><br><span class="line">hostnamectl set-hostname uat-native.yourcompany.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭防火墙</span></span><br><span class="line">systemctl stop firewalld.service</span><br><span class="line">systemctl <span class="built_in">disable</span> firewalld.service</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭SELINUX</span></span><br><span class="line">getenforce</span><br><span class="line">setenforce 0</span><br><span class="line">sed -i <span class="string">&#x27;s/^SELINUX=enforcing$/SELINUX=permissive/&#x27;</span> /etc/selinux/config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭Swap</span></span><br><span class="line">swapoff -a</span><br><span class="line">vi /etc/fstab </span><br><span class="line">注释掉swap行</span><br></pre></td></tr></table></figure>
-<h2 id="K8S特殊配置"><a href="#K8S特殊配置" class="headerlink" title="K8S特殊配置"></a>K8S特殊配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># iptables不处理bridge数据</span></span><br><span class="line">cat &lt;&lt;<span class="string">EOF &gt;  /etc/sysctl.d/k8s.conf</span></span><br><span class="line"><span class="string">net.bridge.bridge-nf-call-ip6tables = 1</span></span><br><span class="line"><span class="string">net.bridge.bridge-nf-call-iptables = 1</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">sysctl --system</span><br><span class="line"></span><br><span class="line"><span class="comment"># 打开kubectl自动完成</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;source &lt;(kubectl completion bash)&quot;</span> &gt;&gt; ~/.bashrc</span><br><span class="line">yum -y install bash-completion</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-9-Postgres%E5%8E%9F%E7%94%9F%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-9-Postgres%E5%8E%9F%E7%94%9F%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">K8S离线部署笔记-9-Postgres原生部署</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-09-27 16:24:30" itemprop="dateCreated datePublished" datetime="2020-09-27T16:24:30+08:00">2020-09-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:05:49" itemprop="dateModified" datetime="2021-01-05T14:05:49+08:00">2021-01-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 初始化</span></span><br><span class="line">/usr/pgsql-9.6/bin/postgresql96-setup initdb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">systemctl start postgresql-9.6.service</span><br><span class="line">systemctl <span class="built_in">enable</span> postgresql-9.6.service</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改密码</span></span><br><span class="line">su postgres</span><br><span class="line">psql</span><br><span class="line">ALTER USER postgres WITH PASSWORD <span class="string">&#x27;yourpassword&#x27;</span>;</span><br><span class="line">\q</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开启远程访问</span></span><br><span class="line">vi /var/lib/pgsql/9.6/data/postgresql.conf</span><br><span class="line">修改<span class="comment">#listen_addresses = &#x27;localhost&#x27; 为 listen_addresses=&#x27;*&#x27;</span></span><br><span class="line"></span><br><span class="line">vi /var/lib/pgsql/9.6/data/pg_hba.conf</span><br><span class="line">host    all             all             0.0.0.0/0            md5</span><br></pre></td></tr></table></figure>
-<h2 id="初始配置"><a href="#初始配置" class="headerlink" title="初始配置"></a>初始配置</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建用户</span></span><br><span class="line"><span class="keyword">CREATE</span> ROLE business LOGIN PASSWORD <span class="string">&#x27;yourpassword&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建表空间</span></span><br><span class="line">su <span class="operator">-</span> postgres</span><br><span class="line">cd <span class="operator">/</span>var<span class="operator">/</span>lib<span class="operator">/</span>pgsql<span class="operator">/</span><span class="number">9.6</span><span class="operator">/</span>data<span class="operator">/</span>pg_tblspc</span><br><span class="line">mkdir ts_business</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span>SPACE ts_business OWNER business LOCATION <span class="string">&#x27;/var/lib/pgsql/9.6/data/pg_tblspc/ts_business&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建数据库</span></span><br><span class="line"><span class="keyword">CREATE</span> DATABASE yourdb <span class="keyword">WITH</span> TEMPLATE <span class="operator">=</span> template0 ENCODING <span class="operator">=</span> <span class="string">&#x27;UTF8&#x27;</span> LC_COLLATE <span class="operator">=</span> <span class="string">&#x27;en_US.UTF-8&#x27;</span> LC_CTYPE <span class="operator">=</span> <span class="string">&#x27;en_US.UTF-8&#x27;</span> TABLESPACE <span class="operator">=</span> ts_business;</span><br><span class="line"><span class="keyword">ALTER</span> DATABASE yourdb OWNER <span class="keyword">TO</span> business;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h2 id="数据导入"><a href="#数据导入" class="headerlink" title="数据导入"></a>数据导入</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 本地方式导出导入</span></span><br><span class="line">su - postgres</span><br><span class="line">pg_dump --dbname yourdb --file dump.sql</span><br><span class="line">psql --dbname yourdb --file dump.sql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 远程方式导出导入</span></span><br><span class="line">pg_dump --host 10.10.71.53 --port 5432 --dbname yourdb --username postgres --file dump.sql</span><br><span class="line">psql --host 10.10.51.76 --port 5432  --dbname yourdb --username postgres  --file dump.sql</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-11-Dashboard/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-11-Dashboard/" class="post-title-link" itemprop="url">K8S离线部署笔记-11-Dashboard</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-09-27 15:54:59" itemprop="dateCreated datePublished" datetime="2020-09-27T15:54:59+08:00">2020-09-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:06:05" itemprop="dateModified" datetime="2021-01-05T14:06:05+08:00">2021-01-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><p><a target="_blank" rel="noopener" href="https://github.com/kubernetes/dashboard/releases">https://github.com/kubernetes/dashboard/releases</a></p>
-<h2 id="下载yml"><a href="#下载yml" class="headerlink" title="下载yml"></a>下载yml</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境，下载yml</span></span><br><span class="line">wget https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.4/aio/deploy/recommended.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将Service修改为NodePort类型</span></span><br><span class="line">spec:</span><br><span class="line">  <span class="built_in">type</span>: NodePort</span><br><span class="line">  ports:</span><br><span class="line">    - port: 443</span><br><span class="line">      nodePort: 30443</span><br><span class="line">      targetPort: 8443</span><br><span class="line"></span><br><span class="line"><span class="comment"># 注释掉imagePullPolicy</span></span><br><span class="line">imagePullPolicy: Always</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线环境，下载镜像</span></span><br><span class="line">docker pull kubernetesui/dashboard:v2.0.4</span><br><span class="line">docker pull kubernetesui/metrics-scraper:v1.0.4</span><br><span class="line">docker save kubernetesui/dashboard:v2.0.4 &gt; dashboard_v2.0.4.tar</span><br><span class="line">docker save kubernetesui/metrics-scraper:v1.0.4 &gt; metrics-scraper_v1.0.4.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，导入镜像</span></span><br><span class="line">docker load &lt; dashboard_v2.0.4.tar</span><br><span class="line">docker load &lt; metrics-scraper_v1.0.4.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建自签名CA</span></span><br><span class="line">openssl genrsa -out ca.key 2048</span><br><span class="line">openssl req -new -x509 -key ca.key -out ca.crt -days 3650 -subj <span class="string">&quot;/C=CN/ST=HB/L=WH/O=DM/OU=YPT/CN=CA&quot;</span> </span><br><span class="line">openssl x509 -<span class="keyword">in</span> ca.crt -noout -text</span><br><span class="line"></span><br><span class="line"><span class="comment"># 签发Dashboard证书</span></span><br><span class="line">openssl genrsa -out dashboard.key 2048</span><br><span class="line">openssl req -new -sha256 -key dashboard.key -out dashboard.csr -subj <span class="string">&quot;/C=CN/ST=HB/L=WH/O=DM/OU=YPT/CN=yourcompany&quot;</span></span><br><span class="line">cat &lt;&lt;<span class="string">EOF &gt; dashboard.cnf</span></span><br><span class="line"><span class="string">extensions = san</span></span><br><span class="line"><span class="string">[san]</span></span><br><span class="line"><span class="string">keyUsage = digitalSignature</span></span><br><span class="line"><span class="string">extendedKeyUsage = clientAuth,serverAuth</span></span><br><span class="line"><span class="string">subjectKeyIdentifier = hash</span></span><br><span class="line"><span class="string">authorityKeyIdentifier = keyid,issuer</span></span><br><span class="line"><span class="string">subjectAltName = IP:10.10.51.78,DNS:yourcompany.com</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">openssl x509 -req -sha256 -days 3650 -<span class="keyword">in</span> dashboard.csr -out dashboard.crt -CA ca.crt -CAkey ca.key -CAcreateserial -extfile dashboard.cnf</span><br><span class="line">openssl x509 -<span class="keyword">in</span> dashboard.crt -noout -text</span><br><span class="line"></span><br><span class="line"><span class="comment"># 挂载证书</span></span><br><span class="line">kubectl create namespace kubernetes-dashboard</span><br><span class="line">kubectl delete secret kubernetes-dashboard-certs  --namespace=kubernetes-dashboard</span><br><span class="line">kubectl create secret generic kubernetes-dashboard-certs --from-file=<span class="string">&quot;./dashboard.crt,./dashboard.key&quot;</span> -n kubernetes-dashboard</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，部署dashboard</span></span><br><span class="line">kubectl delete -f recommended.yaml</span><br><span class="line">kubectl apply -f recommended.yaml</span><br><span class="line">kubectl get pods -n kubernetes-dashboard</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成token</span></span><br><span class="line">kubectl create serviceaccount dashboard-admin-sa</span><br><span class="line">kubectl create clusterrolebinding dashboard-admin-sa --clusterrole=cluster-admin --serviceaccount=default:dashboard-admin-sa</span><br><span class="line">kubectl get secrets</span><br><span class="line">kubectl describe secret dashboard-admin-sa-token-5sb8s</span><br><span class="line"></span><br><span class="line"><span class="comment"># 浏览器访问</span></span><br><span class="line">https://10.10.51.78:30443</span><br></pre></td></tr></table></figure>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.replex.io/blog/how-to-install-access-and-add-heapster-metrics-to-the-kubernetes-dashboard">The Ultimate Guide to the Kubernetes Dashboard: How to Install, Access, Authenticate and Add Heapster Metrics</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-10-Kubeadm/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-10-Kubeadm/" class="post-title-link" itemprop="url">K8S离线部署笔记-10-Kubeadm</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-09-27 09:41:41" itemprop="dateCreated datePublished" datetime="2020-09-27T09:41:41+08:00">2020-09-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:05:57" itemprop="dateModified" datetime="2021-01-05T14:05:57+08:00">2021-01-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="RPM包安装"><a href="#RPM包安装" class="headerlink" title="RPM包安装"></a>RPM包安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 联网环境</span></span><br><span class="line"><span class="comment"># 添加谷歌源(需扶墙)</span></span><br><span class="line">cat &lt;&lt;<span class="string">EOF &gt; /etc/yum.repos.d/kubernetes.repo</span></span><br><span class="line"><span class="string">[kubernetes]</span></span><br><span class="line"><span class="string">name=Kubernetes</span></span><br><span class="line"><span class="string">baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64</span></span><br><span class="line"><span class="string">enabled=1</span></span><br><span class="line"><span class="string">gpgcheck=1</span></span><br><span class="line"><span class="string">repo_gpgcheck=1</span></span><br><span class="line"><span class="string">gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加阿里源</span></span><br><span class="line">cat &lt;&lt;<span class="string">EOF &gt; /etc/yum.repos.d/kubernetes.repo</span></span><br><span class="line"><span class="string">[kubernetes]</span></span><br><span class="line"><span class="string">name=Kubernetes</span></span><br><span class="line"><span class="string">baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64</span></span><br><span class="line"><span class="string">enabled=1</span></span><br><span class="line"><span class="string">gpgcheck=1</span></span><br><span class="line"><span class="string">repo_gpgcheck=1</span></span><br><span class="line"><span class="string">gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 准备RPM包</span></span><br><span class="line">yumdownloader --assumeyes --destdir=/root/pkg/k8s --resolve yum-utils kubeadm-1.18.* kubelet-1.18.* kubectl-1.18.* ebtables</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，安装RPM包。若提示缺少RPM包，按提示使用yum安装即可（需提前配置yum源）</span></span><br><span class="line">yum install -y libxml2-python python-kitchen</span><br><span class="line">yum install -y --cacheonly --disablerepo=* /root/pkg/k8s/*.rpm</span><br></pre></td></tr></table></figure>
-<h2 id="下载K8S镜像"><a href="#下载K8S镜像" class="headerlink" title="下载K8S镜像"></a>下载K8S镜像</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看镜像列表</span></span><br><span class="line">kubeadm config images list</span><br><span class="line">k8s.gcr.io/kube-apiserver:v1.18.4</span><br><span class="line">k8s.gcr.io/kube-controller-manager:v1.18.4</span><br><span class="line">k8s.gcr.io/kube-scheduler:v1.18.4</span><br><span class="line">k8s.gcr.io/kube-proxy:v1.18.4</span><br><span class="line">k8s.gcr.io/pause:3.2</span><br><span class="line">k8s.gcr.io/etcd:3.4.3-0</span><br><span class="line">k8s.gcr.io/coredns:1.6.7</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线环境，镜像下载脚本</span></span><br><span class="line">vi img_save.sh</span><br><span class="line">images=(</span><br><span class="line">    kube-apiserver:v1.18.4</span><br><span class="line">    kube-controller-manager:v1.18.4</span><br><span class="line">    kube-scheduler:v1.18.4</span><br><span class="line">    kube-proxy:v1.18.4</span><br><span class="line">    pause:3.2</span><br><span class="line">    etcd:3.4.3-0</span><br><span class="line">    coredns:1.6.7</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">    docker pull registry.aliyuncs.com/google_containers/<span class="variable">$imageName</span></span><br><span class="line">    docker tag  registry.aliyuncs.com/google_containers/<span class="variable">$imageName</span> k8s.gcr.io/<span class="variable">$imageName</span></span><br><span class="line">    docker rmi  registry.aliyuncs.com/google_containers/<span class="variable">$imageName</span></span><br><span class="line">    docker save k8s.gcr.io/<span class="variable">$imageName</span> &gt; <span class="variable">$imageName</span>.tar</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，镜像导入脚本</span></span><br><span class="line">vi img_load.sh</span><br><span class="line">images=(</span><br><span class="line">    kube-apiserver:v1.18.4</span><br><span class="line">    kube-controller-manager:v1.18.4</span><br><span class="line">    kube-scheduler:v1.18.4</span><br><span class="line">    kube-proxy:v1.18.4</span><br><span class="line">    pause:3.2</span><br><span class="line">    etcd:3.4.3-0</span><br><span class="line">    coredns:1.6.7</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">    docker load &lt; <span class="variable">$imageName</span>.tar</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
-<h2 id="下载Flannel镜像"><a href="#下载Flannel镜像" class="headerlink" title="下载Flannel镜像"></a>下载Flannel镜像</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下载yml(需翻墙)</span></span><br><span class="line">wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线环境，下载镜像</span></span><br><span class="line">docker pull quay.io/coreos/flannel:v0.13.0-rc2</span><br><span class="line">docker save quay.io/coreos/flannel:v0.13.0-rc2 &gt; flannel_v0.13.0-rc2.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，导入镜像</span></span><br><span class="line">docker load &lt; flannel_v0.13.0-rc2.tar</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h2 id="下载IngressNginx镜像"><a href="#下载IngressNginx镜像" class="headerlink" title="下载IngressNginx镜像"></a>下载IngressNginx镜像</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境，下载yml</span></span><br><span class="line">wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/namespace.yaml</span><br><span class="line">wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/rbac.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线环境，下载镜像</span></span><br><span class="line">docker pull quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0</span><br><span class="line">docker save quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0 &gt; nginx-ingress-controller_0.30.0.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，导入镜像</span></span><br><span class="line">docker load &lt; nginx-ingress-controller_0.30.0.tar</span><br></pre></td></tr></table></figure>
-<h2 id="主节点部署"><a href="#主节点部署" class="headerlink" title="主节点部署"></a>主节点部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 注意版本号为之前下载镜像的版本 </span></span><br><span class="line">kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version=v1.18.4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 复制配置文件</span></span><br><span class="line">mkdir -p <span class="variable">$HOME</span>/.kube</span><br><span class="line">sudo cp -i /etc/kubernetes/admin.conf <span class="variable">$HOME</span>/.kube/config</span><br><span class="line">sudo chown $(id -u):$(id -g) <span class="variable">$HOME</span>/.kube/config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装Flannel</span></span><br><span class="line">kubectl apply -f kube-flannel.yml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解决Flannel NodePort网络慢问题</span></span><br><span class="line">ethtool --offload flannel.1 rx off tx off</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查节点状态</span></span><br><span class="line">kubectl get nodes -o wide</span><br><span class="line">kubectl get pods --all-namespaces</span><br><span class="line"></span><br><span class="line"><span class="comment"># 主节点允许部署pod(可选)</span></span><br><span class="line">kubectl taint nodes --all node-role.kubernetes.io/master-</span><br></pre></td></tr></table></figure>
-<h2 id="工作节点部署"><a href="#工作节点部署" class="headerlink" title="工作节点部署"></a>工作节点部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 加入集群</span></span><br><span class="line">kubeadm join 10.10.51.78:6443 --token cb3tj7.fvnovftkepaghkeq \</span><br><span class="line">  --discovery-token-ca-cert-hash sha256:093dc747b9a22551ee029b325078e49170b680ee885e869ffbe665cdf53e4d8e</span><br><span class="line"></span><br><span class="line"><span class="comment"># 若token过期，需要在主节点重新生成</span></span><br><span class="line">kubeadm token create --print-join-command --ttl=0</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="其它常规操作"><a href="#其它常规操作" class="headerlink" title="其它常规操作"></a>其它常规操作</h2><h3 id="查看报错日志"><a href="#查看报错日志" class="headerlink" title="查看报错日志"></a>查看报错日志</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u kubelet</span><br></pre></td></tr></table></figure>
-<h3 id="删除节点"><a href="#删除节点" class="headerlink" title="删除节点"></a>删除节点</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl delete node ubuntu103  <span class="comment">#on master</span></span><br><span class="line">kubeadm reset  <span class="comment">#on slave</span></span><br></pre></td></tr></table></figure>
-<h3 id="重置"><a href="#重置" class="headerlink" title="重置"></a>重置</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 重置k8s</span></span><br><span class="line">kubeadm reset</span><br><span class="line">rm -rf /etc/cni/net.d</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清理路由</span></span><br><span class="line">iptables -L</span><br><span class="line">iptables -F &amp;&amp; iptables -t nat -F &amp;&amp; iptables -t mangle -F &amp;&amp; iptables -X</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清理网卡</span></span><br><span class="line">modprobe -r ipip</span><br><span class="line">ip link delete cni0</span><br><span class="line">ip link delete flannel.1</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.genesys.com/Documentation/GCXI/9.0.0/Dep/DockerOffline">Installing Kubernetes and Docker in offline scenarios</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/46341911">kubernetes安装（国内环境）</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/kubernetes/kubernetes/issues/88986">Bare Metal K8S 63 Second Service Routing Delay - when accessing service via ClusterIP, or ExternalIP #88986</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-4-Registry/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-4-Registry/" class="post-title-link" itemprop="url">K8S离线部署笔记-4-Registry</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-09-27 09:40:10" itemprop="dateCreated datePublished" datetime="2020-09-27T09:40:10+08:00">2020-09-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:05:02" itemprop="dateModified" datetime="2021-01-05T14:05:02+08:00">2021-01-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Rigistry"><a href="#Rigistry" class="headerlink" title="Rigistry"></a>Rigistry</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境</span></span><br><span class="line">docker pull docker.io/registry</span><br><span class="line">docker save -o registry.tar registry</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境</span></span><br><span class="line">docker load -i registry.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line">docker run \</span><br><span class="line"> -d \</span><br><span class="line"> -p 5000:5000 \</span><br><span class="line"> -v /var/lib/registry:/var/lib/registry \</span><br><span class="line"> --restart=always \</span><br><span class="line"> --name docker-registry \</span><br><span class="line"> registry</span><br><span class="line"></span><br><span class="line"><span class="comment"># 允许HTTP访问</span></span><br><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123; <span class="string">&quot;insecure-registries&quot;</span>:[<span class="string">&quot;10.10.51.77:5000&quot;</span>,<span class="string">&quot;registry.yourcompany.com:5000&quot;</span>] &#125;</span><br><span class="line"></span><br><span class="line">systemctl daemon-reload &amp; systemctl restart docker</span><br><span class="line"></span><br><span class="line"><span class="comment"># Push镜像</span></span><br><span class="line">docker pull nginx</span><br><span class="line">docker tag nginx 10.10.51.77:5000/nginx</span><br><span class="line">docker push 10.10.51.77:5000/nginx</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-<h2 id="UI"><a href="#UI" class="headerlink" title="UI"></a>UI</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境</span></span><br><span class="line">docker pull konradkleine/docker-registry-frontend:v2</span><br><span class="line">docker save -o docker-registry-frontend.tar konradkleine/docker-registry-frontend:v2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境</span></span><br><span class="line">docker load -i docker-registry-frontend.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line">docker run \</span><br><span class="line">  -d \</span><br><span class="line">  -e ENV_DOCKER_REGISTRY_HOST=10.10.51.77 \</span><br><span class="line">  -e ENV_DOCKER_REGISTRY_PORT=5000 \</span><br><span class="line">  -p 8080:80 \</span><br><span class="line">  --restart=always \</span><br><span class="line">  --name docker-registry-frontend \</span><br><span class="line">  konradkleine/docker-registry-frontend:v2</span><br><span class="line">  </span><br><span class="line"><span class="comment"># 浏览器访问</span></span><br><span class="line">http://10.10.51.77:8080</span><br></pre></td></tr></table></figure>
-<h2 id="迁移"><a href="#迁移" class="headerlink" title="迁移"></a>迁移</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 打包整个目录</span></span><br><span class="line"><span class="built_in">cd</span> /var/lib/registry</span><br><span class="line">tar -zcvf docker.tar.gz docker</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-5-Harbor/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-5-Harbor/" class="post-title-link" itemprop="url">K8S离线部署笔记-5-Harbor</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-09-27 09:36:21" itemprop="dateCreated datePublished" datetime="2020-09-27T09:36:21+08:00">2020-09-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:05:10" itemprop="dateModified" datetime="2021-01-05T14:05:10+08:00">2021-01-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="下载离线安装包"><a href="#下载离线安装包" class="headerlink" title="下载离线安装包"></a>下载离线安装包</h2><p><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/releases">https://github.com/goharbor/harbor/releases</a></p>
-<h2 id="开始安装"><a href="#开始安装" class="headerlink" title="开始安装"></a>开始安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 解压</span></span><br><span class="line">tar -zxvf harbor-offline-installer-v2.1.0.tgz</span><br><span class="line"><span class="built_in">cd</span> harbor </span><br><span class="line">cp harbor.yml.tmpl harbor.yml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改配置文件</span></span><br><span class="line">vi harbor.yml</span><br><span class="line">hostname: harbor.yourcompany.com</span><br><span class="line">harbor_admin_password = yourpassword</span><br><span class="line"></span><br><span class="line"><span class="comment">#开始安装</span></span><br><span class="line">./install.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开机自启</span></span><br><span class="line">docker-compose stop</span><br><span class="line">docker-compose up -d</span><br><span class="line"></span><br><span class="line"><span class="comment"># 卸载</span></span><br><span class="line">docker-compose down -v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查</span></span><br><span class="line">docker ps</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看日志</span></span><br><span class="line"><span class="built_in">cd</span> /var/<span class="built_in">log</span>/harbor</span><br></pre></td></tr></table></figure>
-<h2 id="图形界面配置"><a href="#图形界面配置" class="headerlink" title="图形界面配置"></a>图形界面配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 浏览器访问</span></span><br><span class="line">http://10.10.51.77/</span><br><span class="line">admin/yourpassword</span><br><span class="line"></span><br><span class="line"><span class="comment"># 新建用户</span></span><br><span class="line">operator/yourpassword</span><br><span class="line"></span><br><span class="line"><span class="comment"># 新建项目</span></span><br><span class="line">yourproject</span><br></pre></td></tr></table></figure>
-<h2 id="客户端配置"><a href="#客户端配置" class="headerlink" title="客户端配置"></a>客户端配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 允许HTTP访问</span></span><br><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123; <span class="string">&quot;insecure-registries&quot;</span>:[<span class="string">&quot;10.10.51.77:80&quot;</span>] &#125;</span><br><span class="line">systemctl daemon-reload </span><br><span class="line">systemctl restart docker</span><br><span class="line"></span><br><span class="line"><span class="comment"># docker登录</span></span><br><span class="line">docker login -u operator -p yourpassword 10.10.51.77:80</span><br><span class="line"></span><br><span class="line"><span class="comment"># Push镜像</span></span><br><span class="line">docker images tag nginx 10.10.51.77:80/yourproject/nginx</span><br><span class="line">docker push 10.10.51.77:80/yourproject/nginx</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置SSL（可选）"><a href="#配置SSL（可选）" class="headerlink" title="配置SSL（可选）"></a>配置SSL（可选）</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建自签名CA</span></span><br><span class="line">openssl genrsa -out ca.key 2048</span><br><span class="line">openssl req -new -x509 -key ca.key -out ca.crt -days 3650 -subj <span class="string">&quot;/C=CN/ST=HB/L=WH/O=DM/OU=YPT/CN=CA&quot;</span> </span><br><span class="line">openssl x509 -<span class="keyword">in</span> ca.crt -noout -text</span><br><span class="line"><span class="comment"># 签发证书</span></span><br><span class="line">openssl genrsa -out harbor.key 2048</span><br><span class="line">openssl req -new -sha256 -key harbor.key -out harbor.csr -subj <span class="string">&quot;/C=CN/ST=HB/L=WH/O=DM/OU=YPT/CN=yourcompany.com&quot;</span></span><br><span class="line">cat &lt;&lt;<span class="string">EOF &gt; harbor.cnf</span></span><br><span class="line"><span class="string">extensions = san</span></span><br><span class="line"><span class="string">[san]</span></span><br><span class="line"><span class="string">keyUsage = digitalSignature</span></span><br><span class="line"><span class="string">extendedKeyUsage = clientAuth,serverAuth</span></span><br><span class="line"><span class="string">subjectKeyIdentifier = hash</span></span><br><span class="line"><span class="string">authorityKeyIdentifier = keyid,issuer</span></span><br><span class="line"><span class="string">subjectAltName = IP:10.10.51.77,DNS:harbor.yourcompany.com</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">openssl x509 -req -sha256 -days 3650 -<span class="keyword">in</span> harbor.csr -out harbor.crt -CA ca.crt -CAkey ca.key -CAcreateserial -extfile harbor.cnf</span><br><span class="line">openssl x509 -<span class="keyword">in</span> harbor.crt -noout -text</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改harbor.yml</span></span><br><span class="line">certificate: /root/cert/harbor.crt</span><br><span class="line">private_key: /root/cert/harbor.key</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新安装</span></span><br><span class="line">docker-compose down -v</span><br><span class="line">./install.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改hosts</span></span><br><span class="line">vi /etc/hosts</span><br><span class="line">10.10.51.77    harbor.yourcompany.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 浏览器访问</span></span><br><span class="line">https://harbor.yourcompany.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># docker信任证书</span></span><br><span class="line">cp /root/cert/ca.crt /etc/pki/ca-trust/<span class="built_in">source</span>/anchors</span><br><span class="line">update-ca-trust extract</span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-2-Yum%E6%BA%90%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-2-Yum%E6%BA%90%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">K8S离线部署笔记-2-Yum源配置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-09-27 09:34:57" itemprop="dateCreated datePublished" datetime="2020-09-27T09:34:57+08:00">2020-09-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:04:45" itemprop="dateModified" datetime="2021-01-05T14:04:45+08:00">2021-01-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="服务端配置"><a href="#服务端配置" class="headerlink" title="服务端配置"></a>服务端配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境，准备httpd安装包</span></span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yumdownloader --assumeyes --destdir=/root/pkg/httpd --resolve httpd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，安装httpd</span></span><br><span class="line">yum install -y --cacheonly --disablerepo=* /root/pkg/httpd/*.rpm</span><br><span class="line">systemctl start httpd</span><br><span class="line">systemctl <span class="built_in">enable</span> httpd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置httpd端口</span></span><br><span class="line">vi /etc/httpd/conf/httpd.conf</span><br><span class="line">Listen 8001</span><br><span class="line">systemctl stop httpd &amp; systemctl start httpd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 挂载镜像</span></span><br><span class="line">mkdir -p /var/www/html/centos77</span><br><span class="line">mount -o loop /root/iso/CentOS-7-x86_64-DVD-1908.iso /var/www/html/centos77/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试</span></span><br><span class="line">http://10.10.51.77:8001/centos77</span><br></pre></td></tr></table></figure>
-<h2 id="客户端配置"><a href="#客户端配置" class="headerlink" title="客户端配置"></a>客户端配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /etc/yum.repos.d/</span><br><span class="line"></span><br><span class="line">mkdir bak</span><br><span class="line">mv CentOS* bak</span><br><span class="line"></span><br><span class="line">cat &lt;&lt;<span class="string">EOF &gt; rhel77.repo</span></span><br><span class="line"><span class="string">[rhel77]</span></span><br><span class="line"><span class="string">name=rhel77 repo</span></span><br><span class="line"><span class="string">baseurl=http://10.10.51.77:8001/centos77</span></span><br><span class="line"><span class="string">enable=1</span></span><br><span class="line"><span class="string">gpgcheck=0</span></span><br><span class="line"><span class="string">priority=1</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line">yum clean all</span><br><span class="line">yum makecache</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-3-Docker/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-3-Docker/" class="post-title-link" itemprop="url">K8S离线部署笔记-3-Docker</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-09-27 09:33:45" itemprop="dateCreated datePublished" datetime="2020-09-27T09:33:45+08:00">2020-09-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:04:54" itemprop="dateModified" datetime="2021-01-05T14:04:54+08:00">2021-01-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 联网环境，准备RPM包</span></span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo</span><br><span class="line">yumdownloader --assumeyes --destdir=/root/pkg/docker-ce --resolve docker-ce</span><br><span class="line">yumdownloader --assumeyes --destdir=/root/pkg/docker-compose --resolve docker-compose</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，安装RPM包</span></span><br><span class="line">yum install -y --cacheonly --disablerepo=* /root/pkg/docker-ce/*.rpm</span><br><span class="line">systemctl <span class="built_in">enable</span> docker</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
-<h2 id="DockerCompose-可选"><a href="#DockerCompose-可选" class="headerlink" title="DockerCompose(可选)"></a>DockerCompose(可选)</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下载二进制</span></span><br><span class="line">https://github.com/docker/compose/releases</span><br><span class="line"></span><br><span class="line"><span class="comment"># 拷贝</span></span><br><span class="line">cp docker-compose-Linux-x86_64 /usr/<span class="built_in">local</span>/bin/docker-compose</span><br><span class="line"></span><br><span class="line"><span class="comment"># 赋权</span></span><br><span class="line">chmod +x /usr/<span class="built_in">local</span>/bin/docker-compose</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202008/Livego%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202008/Livego%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Livego配置笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-08-18 16:53:07" itemprop="dateCreated datePublished" datetime="2020-08-18T16:53:07+08:00">2020-08-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:03:30" itemprop="dateModified" datetime="2021-01-05T14:03:30+08:00">2021-01-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/gwuhaolin/livego/blob/master/README_cn.md">https://github.com/gwuhaolin/livego/blob/master/README_cn.md</a></li>
-</ul>
-<h2 id="二进制下载"><a href="#二进制下载" class="headerlink" title="二进制下载"></a>二进制下载</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/gwuhaolin/livego/releases">https://github.com/gwuhaolin/livego/releases</a></li>
-</ul>
-<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;livego</span><br><span class="line"></span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] HLS server enable....</span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] HTTP-FLV listen On :7001</span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] HTTP-API listen On :8090</span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] RTMP Listen On :1935</span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] HLS listen On :7002</span><br></pre></td></tr></table></figure>
-<h2 id="获取channelkey"><a href="#获取channelkey" class="headerlink" title="获取channelkey"></a>获取channelkey</h2><p>访问 <a target="_blank" rel="noopener" href="http://localhost:8090/control/get?room=movie">http://localhost:8090/control/get?room=movie</a> 获取一个房间的 channelkey(channelkey用于推流，movie用于播放)</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl http://localhost:8090/control/get?room=movie</span><br><span class="line">rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk</span><br></pre></td></tr></table></figure>
-<h2 id="推流"><a href="#推流" class="headerlink" title="推流"></a>推流</h2><p>通过RTMP协议推送视频流到地址 rtmp://localhost:1935/{appname}/{channelkey} (appname默认是live)</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -re -i test.mp4 -c copy -f flv rtmp://127.0.0.1:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk</span><br></pre></td></tr></table></figure>
-<h2 id="播放"><a href="#播放" class="headerlink" title="播放"></a>播放</h2><ul>
-<li>RTMP: rtmp://127.0.0.1:1935/live/movie</li>
-<li>FLV:  <a target="_blank" rel="noopener" href="http://127.0.0.1:7001/live/movie.flv">http://127.0.0.1:7001/live/movie.flv</a></li>
-<li>HLS:  <a target="_blank" rel="noopener" href="http://127.0.0.1:7002/live/movie.m3u8">http://127.0.0.1:7002/live/movie.m3u8</a></li>
-</ul>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;livego  -h</span><br><span class="line">Usage of .&#x2F;livego:</span><br><span class="line">      --api_addr string       HTTP管理访问监听地址 (default &quot;:8090&quot;)</span><br><span class="line">      --config_file string    配置文件路径 (默认 &quot;livego.yaml&quot;)</span><br><span class="line">      --flv_dir string        输出的 flv 文件路径 flvDir&#x2F;APP&#x2F;KEY_TIME.flv (默认 &quot;tmp&quot;)</span><br><span class="line">      --gop_num int           gop 数量 (default 1)</span><br><span class="line">      --hls_addr string       HLS 服务监听地址 (默认 &quot;:7002&quot;)</span><br><span class="line">      --hls_keep_after_end    Maintains the HLS after the stream ends</span><br><span class="line">      --httpflv_addr string   HTTP-FLV server listen address (默认 &quot;:7001&quot;)</span><br><span class="line">      --level string          日志等级 (默认 &quot;info&quot;)</span><br><span class="line">      --read_timeout int      读超时时间 (默认 10)</span><br><span class="line">      --rtmp_addr string      RTMP 服务监听地址 (默认 &quot;:1935&quot;)</span><br><span class="line">      --write_timeout int     写超时时间 (默认 10)</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202008/SRS%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202008/SRS%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">SRS配置笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2020-08-18 15:15:32" itemprop="dateCreated datePublished" datetime="2020-08-18T15:15:32+08:00">2020-08-18</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-05 14:04:05" itemprop="dateModified" datetime="2021-01-05T14:04:05+08:00">2021-01-05</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://ossrs.net/srs.release/releases/">http://ossrs.net/srs.release/releases/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs">https://github.com/ossrs/srs</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs/wiki/v3_CN_Home">https://github.com/ossrs/srs/wiki/v3_CN_Home</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs/wiki/v3_CN_Docs">https://github.com/ossrs/srs/wiki/v3_CN_Docs</a></li>
-</ul>
-<h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://gitee.com/winlinvip/srs.oschina.git srs</span><br><span class="line"><span class="built_in">cd</span> srs/trunk </span><br><span class="line">git remote set-url origin https://github.com/ossrs/srs.git</span><br><span class="line">git pull</span><br><span class="line"></span><br><span class="line">./configure --osx</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
-<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">./objs/srs -c conf/srs.conf</span><br><span class="line">./objs/srs -c conf/hls.conf</span><br><span class="line">./objs/srs -c conf/http.flv.live.conf</span><br><span class="line">./objs/srs -c conf/dash.conf</span><br><span class="line"></span><br><span class="line">[2020-08-19 08:35:47.917][Trace][4124][388] RTMP listen at tcp://0.0.0.0:1935, fd=7</span><br><span class="line">[2020-08-19 08:35:47.917][Trace][4124][388] HTTP-Server listen at tcp://0.0.0.0:8080, fd=8</span><br><span class="line">[2020-08-19 08:35:47.929][Trace][4124][388] signal installed, reload=1, reopen=30, fast_quit=15, grace_quit=3</span><br><span class="line">[2020-08-19 08:35:47.929][Trace][4124][388] http: api mount /console to ./objs/nginx/html/console</span><br></pre></td></tr></table></figure>
-<h2 id="模拟推流"><a href="#模拟推流" class="headerlink" title="模拟推流"></a>模拟推流</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>((;;)); <span class="keyword">do</span> \</span><br><span class="line">    ./objs/ffmpeg/bin/ffmpeg -re -i ./doc/source.200kbps.768x320.flv \</span><br><span class="line">    -vcodec copy -acodec copy \</span><br><span class="line">    -f flv -y rtmp://127.0.0.1/live/livestream; \</span><br><span class="line">    sleep 1; \</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://www.zsythink.net/archives/1199">https://www.zsythink.net/archives/1199</a></p>
+<h2 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h2><p><img src="http://oss.bluexiii.com/c07520f56f1563ae817e67946825cd5f.png" alt="20220927103716"></p>
 <ul>
-<li>RTMP流地址 rtmp://127.0.0.1:1935/live/livestream</li>
-<li>HLS流地址  <a target="_blank" rel="noopener" href="http://127.0.0.1:8080/live/livestream.m3u8">http://127.0.0.1:8080/live/livestream.m3u8</a></li>
-<li>HTTP FLV  <a target="_blank" rel="noopener" href="http://127.0.0.1:8080/live/livestream.flv">http://127.0.0.1:8080/live/livestream.flv</a></li>
-<li>DASH流地址 <a target="_blank" rel="noopener" href="http://192.168.1.170:8080/live/livestream.mpd">http://192.168.1.170:8080/live/livestream.mpd</a></li>
+<li><p>PREROUTING   的规则可以存在于：raw表，mangle表，nat表。</p>
+</li>
+<li><p>INPUT        的规则可以存在于：mangle表，filter表，（centos7中还有nat表，centos6中没有）。</p>
+</li>
+<li><p>FORWARD      的规则可以存在于：mangle表，filter表。</p>
+</li>
+<li><p>OUTPUT       的规则可以存在于：raw表mangle表，nat表，filter表。</p>
+</li>
+<li><p>POSTROUTING  的规则可以存在于：mangle表，nat表。</p>
+</li>
+<li><p>raw     表中的规则可以被哪些链使用：PREROUTING，OUTPUT</p>
+</li>
+<li><p>mangle  表中的规则可以被哪些链使用：PREROUTING，INPUT，FORWARD，OUTPUT，POSTROUTING</p>
+</li>
+<li><p>nat     表中的规则可以被哪些链使用：PREROUTING，OUTPUT，POSTROUTING（centos7中还有INPUT，centos6中没有）</p>
+</li>
+<li><p>filter  表中的规则可以被哪些链使用：INPUT，FORWARD，OUTPUT</p>
+</li>
 </ul>
-<h2 id="API"><a href="#API" class="headerlink" title="API"></a>API</h2><ul>
-<li>versions    /api/v1/versions    获取服务器版本信息</li>
-<li>summaries    /api/v1/summaries    获取服务器的摘要信息</li>
-<li>rusages    /api/v1/rusages    获取服务器资源使用信息</li>
-<li>self_proc_stats    /api/v1/self_proc_stats    获取服务器进程信息</li>
-<li>system_proc_stats    /api/v1/system_proc_stats    获取服务器所有进程情况</li>
-<li>meminfos    /api/v1/meminfos    获取服务器内存使用情况</li>
-<li>authors    /api/v1/authors    获取作者、版权和License信息</li>
-<li>features    /api/v1/features    获取系统支持的功能列表</li>
-<li>requests    /api/v1/requests    获取请求的信息，即当前发起的请求的详细信息</li>
-<li>vhosts    /api/v1/vhosts    获取服务器上的vhosts信息</li>
-<li>streams    /api/v1/streams    获取服务器的streams信息</li>
-<li>clients    /api/v1/clients    获取服务器的clients信息，默认获取前10个</li>
-<li>configs    /api/v1/configs    CUID配置，RAW API</li>
+<h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看规则</span></span><br><span class="line">iptables --line -nvL</span><br><span class="line"><span class="comment"># 查看指定链上的规则</span></span><br><span class="line">iptables --line -nvL INPUT</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清空INPUT链中的规则</span></span><br><span class="line">iptables -F INPUT</span><br><span class="line"><span class="comment"># 清空filter表在INUT链中的规则</span></span><br><span class="line">iptables -t filter -F INPUT</span><br><span class="line"></span><br><span class="line"><span class="comment"># 插入规则</span></span><br><span class="line">iptables -t filter -I INPUT -s 10.211.55.101 -j DROP</span><br><span class="line"><span class="comment"># 追加规则</span></span><br><span class="line">iptables -t filter -A INPUT -s 10.211.55.101 -j ACCEPT</span><br><span class="line"><span class="comment"># 在第N行前插入规则</span></span><br><span class="line">iptables -t filter -I INPUT 2 -s 10.211.55.101 -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除指定行</span></span><br><span class="line">iptables -t filter -D INPUT 3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改默认策略</span></span><br><span class="line">iptables -t filter -P FORWARD DROP</span><br><span class="line"></span><br><span class="line"><span class="comment"># centos7安装iptables-services </span></span><br><span class="line">yum install iptables-services </span><br><span class="line">systemctl stop firewalld &amp;&amp; systemctl <span class="built_in">disable</span> firewalld  <span class="comment">#停止firewalld</span></span><br><span class="line">systemctl start iptables &amp;&amp; systemctl <span class="built_in">enable</span> iptables <span class="comment">#启动iptables</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 保存规则</span></span><br><span class="line">service iptables save</span><br><span class="line"><span class="comment"># 保存规则</span></span><br><span class="line">iptables-save &gt; /etc/sysconfig/iptables</span><br><span class="line"><span class="comment"># 还原规则</span></span><br><span class="line">iptables-restore &lt; /etc/sysconfig/iptables</span><br><span class="line"><span class="comment"># 查看规则</span></span><br><span class="line">cat /etc/sysconfig/iptables</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 条件匹配</span></span><br><span class="line">-s 10.211.55.0/24 <span class="comment">#源地址</span></span><br><span class="line">-d 10.211.55.10  <span class="comment">#目标地址</span></span><br><span class="line">-p tcp <span class="comment">#协议 tcp, udp, udplite, icmp, esp, ah, sctp</span></span><br><span class="line">-i eth0 <span class="comment">#流入网卡 只能用于PREROUTING链、INPUT链、FORWARD链</span></span><br><span class="line">-o eth1 <span class="comment">#流出网卡 只能用于FORWARD链、OUTPUT链、POSTROUTING链</span></span><br><span class="line">--dport 22 <span class="comment">#目标端口22</span></span><br><span class="line">! --dport 22 <span class="comment">#目标端口，非22的</span></span><br><span class="line">–-dport 22:25 <span class="comment"># 目标端口，22到25的</span></span><br><span class="line">-m multiport --dport 22,36,80 <span class="comment">#目标端口，离散的，需要用到扩展模块multiport</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建自定义链</span></span><br><span class="line">iptables -t filter -N IN_WEB</span><br><span class="line">iptables -t filter -I IN_WEB -s 10.211.55.101 -j REJECT</span><br><span class="line">iptables           -I IN_WEB -s 10.211.55.102 -j REJECT</span><br><span class="line"></span><br><span class="line"><span class="comment"># 引用自定义链</span></span><br><span class="line">iptables -I INPUT -p tcp --dport 80 -j IN_WEB</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除自定义链</span></span><br><span class="line">iptables -D INPUT 1</span><br><span class="line">iptables -t filter -F IN_WEB</span><br><span class="line">iptables -t filter -X IN_WEB</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202208/Druid%E5%8F%8C%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9B%91%E6%8E%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202208/Druid%E5%8F%8C%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9B%91%E6%8E%A7/" class="post-title-link" itemprop="url">Druid双数据源监控</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-08-17 16:30:20" itemprop="dateCreated datePublished" datetime="2022-08-17T16:30:20+08:00">2022-08-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:20:01" itemprop="dateModified" datetime="2022-11-02T17:20:01+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/bolingcavalry/p/14296129.html">https://www.cnblogs.com/bolingcavalry/p/14296129.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/alibaba/druid/blob/master/druid-spring-boot-starter/README_EN.md">https://github.com/alibaba/druid/blob/master/druid-spring-boot-starter/README_EN.md</a></li>
 </ul>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/feixiangsmile/article/details/105881467">使用SRS和Nginx配置HLS、RTMP方式视频直播</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/dd3f58392aa0">MAC 搭建RTMP服务器nginx 和 srs</a></li>
+<h2 id="Nacos配置"><a href="#Nacos配置" class="headerlink" title="Nacos配置"></a>Nacos配置</h2><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="attr">loginTimeout:</span> <span class="number">20</span></span><br><span class="line">    <span class="attr">druid:</span></span><br><span class="line">      <span class="attr">filter:</span></span><br><span class="line">        <span class="attr">stat:</span></span><br><span class="line">          <span class="attr">merge-sql:</span> <span class="literal">true</span></span><br><span class="line">          <span class="attr">slow-sql-millis:</span> <span class="number">5000</span></span><br><span class="line">      <span class="attr">web-stat-filter:</span></span><br><span class="line">        <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">        <span class="attr">url-pattern:</span> <span class="string">/*</span></span><br><span class="line">        <span class="attr">exclusions:</span> <span class="string">&quot;*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*&quot;</span></span><br><span class="line">        <span class="attr">session-stat-enable:</span> <span class="literal">true</span></span><br><span class="line">        <span class="attr">session-stat-max-count:</span> <span class="number">100</span></span><br><span class="line">      <span class="attr">stat-view-servlet:</span></span><br><span class="line">        <span class="attr">enabled:</span> <span class="literal">true</span></span><br><span class="line">        <span class="attr">allow:</span> <span class="string">&quot;&quot;</span></span><br><span class="line">        <span class="attr">url-pattern:</span> <span class="string">/druid/*</span></span><br><span class="line">        <span class="attr">reset-enable:</span> <span class="literal">true</span></span><br><span class="line">        <span class="attr">login-username:</span> <span class="string">admin</span></span><br><span class="line">        <span class="attr">login-password:</span> <span class="string">yourpass</span></span><br><span class="line">    <span class="attr">primary:</span></span><br><span class="line">      <span class="attr">type:</span> <span class="string">com.alibaba.druid.pool.DruidDataSource</span></span><br><span class="line">      <span class="attr">url:</span> <span class="string">jdbc:mysql://10.193.2.8:3306/efpx_dubhe_quality?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false</span></span><br><span class="line">      <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">      <span class="attr">password:</span> <span class="string">yourpass</span></span><br><span class="line">      <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line">      <span class="attr">initialSize:</span> <span class="number">5</span></span><br><span class="line">      <span class="attr">maxActive:</span> <span class="number">20</span></span><br><span class="line">      <span class="attr">minIdle:</span> <span class="number">5</span></span><br><span class="line">      <span class="attr">maxWait:</span> <span class="number">10000</span></span><br><span class="line">      <span class="attr">poolPreparedStatements:</span> <span class="literal">false</span></span><br><span class="line">      <span class="attr">maxPoolPreparedStatementPerConnectionSize:</span> <span class="number">-1</span></span><br><span class="line">      <span class="attr">validationQuery:</span> <span class="string">SELECT</span> <span class="string">&#x27;x&#x27;</span></span><br><span class="line">      <span class="attr">testOnBorrow:</span> <span class="literal">false</span></span><br><span class="line">      <span class="attr">testOnReturn:</span> <span class="literal">false</span></span><br><span class="line">      <span class="attr">timeBetweenEvictionRunsMillis:</span> <span class="number">60000</span></span><br><span class="line">      <span class="attr">minEvictableIdleTimeMillis:</span> <span class="number">30000</span></span><br><span class="line">      <span class="attr">filters:</span> <span class="string">stat,wall,log4j2</span></span><br><span class="line">    <span class="attr">warehouse:</span></span><br><span class="line">      <span class="attr">type:</span> <span class="string">com.alibaba.druid.pool.DruidDataSource</span></span><br><span class="line">      <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line">      <span class="attr">url:</span> <span class="string">jdbc:mysql://10.193.2.8:4000/warehouse?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=Asia/Shanghai&amp;useSSL=false</span></span><br><span class="line">      <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">      <span class="attr">password:</span> <span class="string">yourpass</span></span><br><span class="line">      <span class="attr">initialSize:</span> <span class="number">5</span></span><br><span class="line">      <span class="attr">maxActive:</span> <span class="number">20</span></span><br><span class="line">      <span class="attr">minIdle:</span> <span class="number">5</span></span><br><span class="line">      <span class="attr">maxWait:</span> <span class="number">10000</span></span><br><span class="line">      <span class="attr">poolPreparedStatements:</span> <span class="literal">false</span></span><br><span class="line">      <span class="attr">maxPoolPreparedStatementPerConnectionSize:</span> <span class="number">-1</span></span><br><span class="line">      <span class="attr">validationQuery:</span> <span class="string">SELECT</span> <span class="string">&#x27;x&#x27;</span></span><br><span class="line">      <span class="attr">testOnBorrow:</span> <span class="literal">false</span></span><br><span class="line">      <span class="attr">testOnReturn:</span> <span class="literal">false</span></span><br><span class="line">      <span class="attr">timeBetweenEvictionRunsMillis:</span> <span class="number">60000</span></span><br><span class="line">      <span class="attr">minEvictableIdleTimeMillis:</span> <span class="number">30000</span></span><br><span class="line">      <span class="attr">filters:</span> <span class="string">stat,wall,log4j2</span></span><br></pre></td></tr></table></figure>
+<h2 id="Bean配置"><a href="#Bean配置" class="headerlink" title="Bean配置"></a>Bean配置</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.sdecloud.efpx.quality.biz.config;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Qualifier;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.context.properties.ConfigurationProperties;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Primary;</span><br><span class="line"><span class="keyword">import</span> org.springframework.jdbc.core.JdbcTemplate;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javax.sql.DataSource;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * JdbcTemplate配置类</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> bluexiii</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JdbcTemplateConfiguration</span> </span>&#123;</span><br><span class="line">	<span class="meta">@Primary</span></span><br><span class="line">	<span class="meta">@Bean(name = &quot;dataSource&quot;)</span></span><br><span class="line">	<span class="meta">@ConfigurationProperties(&quot;spring.datasource.primary&quot;)</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> DataSource <span class="title">dataSource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> DruidDataSourceBuilder.create().build();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Bean(name = &quot;warehouseDataSource&quot;)</span></span><br><span class="line">	<span class="meta">@ConfigurationProperties(&quot;spring.datasource.warehouse&quot;)</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> DataSource <span class="title">warehouseDataSource</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> DruidDataSourceBuilder.create().build();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="meta">@Bean(&quot;warehouseJdbcTemplate&quot;)</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> JdbcTemplate <span class="title">warehouseJdbcTemplate</span><span class="params">(<span class="meta">@Qualifier(&quot;warehouseDataSource&quot;)</span> DataSource warehouseDataSource)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> JdbcTemplate(warehouseDataSource);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202208/Arthas%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202208/Arthas%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Arthas学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-08-17 13:31:01" itemprop="dateCreated datePublished" datetime="2022-08-17T13:31:01+08:00">2022-08-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:19:56" itemprop="dateModified" datetime="2022-11-02T17:19:56+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://arthas.aliyun.com/doc/install-detail.html">https://arthas.aliyun.com/doc/install-detail.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://jueee.github.io/2020/08/2020-08-14-Arthas%E4%B9%8B%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E9%97%AE%E9%A2%98/">https://jueee.github.io/2020/08/2020-08-14-Arthas%E4%B9%8B%E5%AE%9A%E4%BD%8D%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E9%97%AE%E9%A2%98/</a>  Arthas 之定位方法调用问题</li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1846725">https://cloud.tencent.com/developer/article/1846725</a></li>
+</ul>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -O https://arthas.aliyun.com/arthas-boot.jar</span><br><span class="line">java -jar arthas-boot.jar</span><br><span class="line"></span><br><span class="line">curl -L https://arthas.aliyun.com/install.sh | sh</span><br><span class="line">./as.sh</span><br></pre></td></tr></table></figure>
+<h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">watch com.sdecloud.efpx.quality.biz.controller.QualityRuleTemplateController list <span class="string">&#x27;&#123;params[0],returnObj.toString()&#125;&#x27;</span></span><br><span class="line"></span><br><span class="line">stack com.sdecloud.efpx.quality.biz.controller.QualityRuleTemplateController list</span><br><span class="line"></span><br><span class="line">tt -t com.sdecloud.efpx.quality.biz.controller.QualityRuleTemplateController list</span><br><span class="line"></span><br><span class="line">watch com.sdecloud.efpx.quality.biz.component.CleanComponent cleanCheckLog</span><br><span class="line"></span><br><span class="line">ognl <span class="string">&#x27;@com.sdecloud.efpx.quality.biz.component.CleanComponent@cleanCheckLog&#x27;</span></span><br><span class="line">ognl <span class="string">&#x27;@com.sdecloud.efpx.quality.biz.service.QualityCheckLogServiceDb@info(1,1,&quot;test&quot;)&#x27;</span></span><br><span class="line">ognl <span class="string">&#x27;@com.sdecloud.efpx.quality.biz.service.QualityTaskBatchService@clean(&quot;2021-8-1&quot;)&#x27;</span> -X 1</span><br><span class="line"></span><br><span class="line">sc -d com.sdecloud.efpx.quality.biz.service.QualityTaskBatchService</span><br><span class="line">sm -d com.sdecloud.efpx.quality.biz.service.QualityTaskBatchService$$EnhancerBySpringCGLIB$<span class="variable">$52b99956</span></span><br><span class="line">watch com.sdecloud.efpx.quality.biz.service.QualityTaskBatchService clean</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202208/Skywalking%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202208/Skywalking%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Skywalking学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-08-17 10:30:51" itemprop="dateCreated datePublished" datetime="2022-08-17T10:30:51+08:00">2022-08-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:20:24" itemprop="dateModified" datetime="2022-11-02T17:20:24+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://skywalking.apache.org/zh/2020-04-19-skywalking-quick-start/">https://skywalking.apache.org/zh/2020-04-19-skywalking-quick-start/</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/SkyAPM/document-cn-translation-of-skywalking/blob/master/docs/zh/8.0.0/README.md">https://github.com/SkyAPM/document-cn-translation-of-skywalking/blob/master/docs/zh/8.0.0/README.md</a></li>
+</ul>
+<h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><p><a target="_blank" rel="noopener" href="https://skywalking.apache.org/downloads/">https://skywalking.apache.org/downloads/</a></p>
+<h2 id="OAP地址"><a href="#OAP地址" class="headerlink" title="OAP地址"></a>OAP地址</h2><p>OAP:<br><a target="_blank" rel="noopener" href="http://10.193.2.8:12800/">http://10.193.2.8:12800</a><br>10.193.2.8:11800</p>
+<p>UI:<br><a target="_blank" rel="noopener" href="http://10.193.2.8:18080/">http://10.193.2.8:18080</a></p>
+<h2 id="Agent配置"><a href="#Agent配置" class="headerlink" title="Agent配置"></a>Agent配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">export SW_AGENT_NAME&#x3D;dubhe-quality</span><br><span class="line">export SW_AGENT_COLLECTOR_BACKEND_SERVICES&#x3D;10.193.2.8:11800</span><br><span class="line">export SW_AGENT_SPAN_LIMIT&#x3D;2000</span><br><span class="line">export JAVA_AGENT&#x3D;-javaagent:&#x2F;path&#x2F;to&#x2F;skywalking-agent.jar  </span><br><span class="line">java -jar $JAVA_AGENT -jar dubhe-quality-biz.jar</span><br></pre></td></tr></table></figure>
+<h2 id="DevOps配置"><a href="#DevOps配置" class="headerlink" title="DevOps配置"></a>DevOps配置</h2><h3 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h3><figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> openjdk:<span class="number">17</span>-oracle</span><br><span class="line"><span class="keyword">MAINTAINER</span> la</span><br><span class="line"><span class="keyword">ENV</span> TZ=Asia/Shanghai</span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> ln -sf /usr/share/zoneinfo/<span class="variable">$TZ</span> /etc/localtime &amp;&amp; <span class="built_in">echo</span> <span class="variable">$TZ</span> &gt; /etc/timezone</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> mkdir -p /dubhe-quality-biz</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /dubhe-quality-biz</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8604</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> ./dubhe-quality/dubhe-quality-biz/target/dubhe-quality-biz.jar ./</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> ./deploy/skyskywalking-agent.tar.gz /</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> java --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED -Xms128m -Xmx256m -Djava.security.egd=file:/dev/./urandom -jar -javaagent:/skywalking-agent/skywalking-agent.jar -jar dubhe-quality-biz.jar</span></span><br></pre></td></tr></table></figure>
+<h3 id="K8S-Yaml"><a href="#K8S-Yaml" class="headerlink" title="K8S Yaml"></a>K8S Yaml</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">env:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">NACOS_HOST</span></span><br><span class="line">        <span class="attr">value:</span> <span class="number">10.133</span><span class="number">.0</span><span class="number">.63</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">NACOS_PORT</span></span><br><span class="line">        <span class="attr">value:</span> <span class="number">30501</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SERVICE_HOST</span></span><br><span class="line">        <span class="attr">value:</span> <span class="number">10.133</span><span class="number">.0</span><span class="number">.63</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SERVICE_PORT</span></span><br><span class="line">        <span class="attr">value:</span> <span class="number">30510</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">NACOS_USERNAME</span></span><br><span class="line">        <span class="attr">value:</span> <span class="string">nacos</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">NACOS_PASSWORD</span></span><br><span class="line">        <span class="attr">value:</span> <span class="string">nacos</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SW_AGENT_NAME</span></span><br><span class="line">        <span class="attr">value:</span> <span class="string">dubhe-quality</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SW_AGENT_COLLECTOR_BACKEND_SERVICES</span></span><br><span class="line">        <span class="attr">value:</span> <span class="number">10.193</span><span class="number">.2</span><span class="number">.8</span><span class="string">:11800</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SW_AGENT_SPAN_LIMIT</span></span><br><span class="line">        <span class="attr">value:</span> <span class="number">2000</span></span><br></pre></td></tr></table></figure>
+<h3 id="本机打包测试"><a href="#本机打包测试" class="headerlink" title="本机打包测试"></a>本机打包测试</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">docker build -f dubhe-quality&#x2F;dubhe-quality-biz&#x2F;Dockerfile -t dubhe-quality .</span><br><span class="line"></span><br><span class="line">docker run --rm \</span><br><span class="line">--name dubhe-quality \</span><br><span class="line">-p 8604:8604 \</span><br><span class="line">-e NACOS_HOST&#x3D;10.133.0.63 \</span><br><span class="line">-e NACOS_PORT&#x3D;30501 \</span><br><span class="line">-e SERVICE_HOST&#x3D;10.255.2.133 \</span><br><span class="line">-e SERVICE_PORT&#x3D;8604 \</span><br><span class="line">-e NACOS_USERNAME&#x3D;nacos \</span><br><span class="line">-e NACOS_PASSWORD&#x3D;nacos \</span><br><span class="line">-e SW_AGENT_NAME&#x3D;dubhe-quality \</span><br><span class="line">-e SW_AGENT_COLLECTOR_BACKEND_SERVICES&#x3D;10.193.2.8:11800 \</span><br><span class="line">-e SW_AGENT_SPAN_LIMIT&#x3D;2000 \</span><br><span class="line">dubhe-quality:latest</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202208/%E8%80%81%E9%A1%B9%E7%9B%AE%E6%B7%BB%E5%8A%A0JDK17%E6%94%AF%E6%8C%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202208/%E8%80%81%E9%A1%B9%E7%9B%AE%E6%B7%BB%E5%8A%A0JDK17%E6%94%AF%E6%8C%81/" class="post-title-link" itemprop="url">老项目添加JDK17支持</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-08-15 10:52:57" itemprop="dateCreated datePublished" datetime="2022-08-15T10:52:57+08:00">2022-08-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:20:18" itemprop="dateModified" datetime="2022-11-02T17:20:18+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Pom依赖添加"><a href="#Pom依赖添加" class="headerlink" title="Pom依赖添加"></a>Pom依赖添加</h2><blockquote>
+<p>需要添加缺失的依赖以避免找不到类的问题</p>
+</blockquote>
+<p>在根pom.xml中，添加Java17缺失依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--Java17缺失依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.glassfish.jaxb<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jaxb-runtime<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.sun.xml.bind<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jaxb-impl<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="Dockerfile修改"><a href="#Dockerfile修改" class="headerlink" title="Dockerfile修改"></a>Dockerfile修改</h2><blockquote>
+<p>需要修改java启动参数以允许深度反射</p>
+</blockquote>
+<ol>
+<li>基础镜像改为openjdk:17-oracle</li>
+<li>启动命令中加入<code>--add-opens</code>参数</li>
+</ol>
+<p>原始:  </p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> java:<span class="number">8</span></span><br><span class="line"><span class="keyword">MAINTAINER</span> la</span><br><span class="line"><span class="keyword">ENV</span> TZ=Asia/Shanghai</span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> ln -sf /usr/share/zoneinfo/<span class="variable">$TZ</span> /etc/localtime &amp;&amp; <span class="built_in">echo</span> <span class="variable">$TZ</span> &gt; /etc/timezone</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> mkdir -p /dubhe-quality-biz</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /dubhe-quality-biz</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8604</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> ./dubhe-quality/dubhe-quality-biz/target/dubhe-quality-biz.jar ./</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> java -Xms128m -Xmx256m -Djava.security.egd=file:/dev/./urandom -jar dubhe-quality-biz.jar</span></span><br></pre></td></tr></table></figure>
+<p>修改后:  </p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> openjdk:<span class="number">17</span>-oracle</span><br><span class="line"><span class="keyword">MAINTAINER</span> la</span><br><span class="line"><span class="keyword">ENV</span> TZ=Asia/Shanghai</span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> ln -sf /usr/share/zoneinfo/<span class="variable">$TZ</span> /etc/localtime &amp;&amp; <span class="built_in">echo</span> <span class="variable">$TZ</span> &gt; /etc/timezone</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> mkdir -p /dubhe-quality-biz</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="bash"> /dubhe-quality-biz</span></span><br><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8604</span></span><br><span class="line"><span class="keyword">ADD</span><span class="bash"> ./dubhe-quality/dubhe-quality-biz/target/dubhe-quality-biz.jar ./</span></span><br><span class="line"><span class="keyword">CMD</span><span class="bash"> java --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED -Xms128m -Xmx256m -Djava.security.egd=file:/dev/./urandom -jar dubhe-quality-biz.jar</span></span><br></pre></td></tr></table></figure>
+<h2 id="Alias修改"><a href="#Alias修改" class="headerlink" title="Alias修改"></a>Alias修改</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi .zshrc</span><br><span class="line">alias java&#x3D;&quot;java --add-opens java.base&#x2F;java.util&#x3D;ALL-UNNAMED --add-opens java.base&#x2F;java.lang.reflect&#x3D;ALL-UNNAMED --add-opens java.base&#x2F;java.text&#x3D;ALL-UNNAMED --add-opens java.desktop&#x2F;java.awt.font&#x3D;ALL-UNNAMED&quot;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202208/MicroPython%E5%85%A5%E9%97%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202208/MicroPython%E5%85%A5%E9%97%A8/" class="post-title-link" itemprop="url">MicroPython入门</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-08-12 11:28:21" itemprop="dateCreated datePublished" datetime="2022-08-12T11:28:21+08:00">2022-08-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:20:14" itemprop="dateModified" datetime="2022-11-02T17:20:14+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.micropython.org/en/latest/library/machine.Pin.html">https://docs.micropython.org/en/latest/library/machine.Pin.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/496208408?utm_id=0">https://zhuanlan.zhihu.com/p/496208408?utm_id=0</a> IoT项目在线仿真（Arduino, ESP32, Raspiberry Pi pico）</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/JetBrains/intellij-micropython">https://github.com/JetBrains/intellij-micropython</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.singtown.com/micropython/zh/latest/moxingstm32f4/library/machine.html">https://docs.singtown.com/micropython/zh/latest/moxingstm32f4/library/machine.html</a>  </li>
+<li><a target="_blank" rel="noopener" href="https://pico.wiki/index.php/2021/06/08/getting-started-with-raspberry-pi-pico-i2c.html">https://pico.wiki/index.php/2021/06/08/getting-started-with-raspberry-pi-pico-i2c.html</a></li>
+</ul>
+<h2 id="在线仿真"><a href="#在线仿真" class="headerlink" title="在线仿真"></a>在线仿真</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://wokwi.com/">https://wokwi.com/</a></li>
 </ul>
 
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202207/ApiMock%E7%9B%B8%E5%85%B3%E9%80%89%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202207/ApiMock%E7%9B%B8%E5%85%B3%E9%80%89%E5%9E%8B/" class="post-title-link" itemprop="url">ApiMock相关选型</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-07-25 16:32:18" itemprop="dateCreated datePublished" datetime="2022-07-25T16:32:18+08:00">2022-07-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:19:30" itemprop="dateModified" datetime="2022-11-02T17:19:30+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="选型"><a href="#选型" class="headerlink" title="选型"></a>选型</h2><ul>
+<li>spotlight <em>关注</em></li>
+<li>apifox <em>关注</em></li>
+<li>yapi</li>
+<li>swagger-faker</li>
+<li>easydoc</li>
+<li>apizza</li>
+<li>torna</li>
+</ul>
+<h2 id="torna安装"><a href="#torna安装" class="headerlink" title="torna安装"></a>torna安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">docker pull tanghc2020/torna:1.15.7</span><br><span class="line"></span><br><span class="line">docker run --name torna --restart=always \</span><br><span class="line">  -p 7700:7700 \</span><br><span class="line">  -e JAVA_OPTS=<span class="string">&quot;-Xms256m -Xmx256m&quot;</span> \</span><br><span class="line">  -e MYSQL_HOST=<span class="string">&quot;10.193.2.12:3306&quot;</span> \</span><br><span class="line">  -e MYSQL_SCHEMA=<span class="string">&quot;torna&quot;</span> \</span><br><span class="line">  -e MYSQL_USERNAME=<span class="string">&quot;root&quot;</span> \</span><br><span class="line">  -e MYSQL_PASSWORD=<span class="string">&quot;yourpass&quot;</span> \</span><br><span class="line">  -d tanghc2020/torna:1.15.7</span><br><span class="line"></span><br><span class="line">http://10.193.2.12:7700</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202207/Containerd%E4%B8%8EPodman%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202207/Containerd%E4%B8%8EPodman%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Containerd与Podman学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-07-07 13:42:18" itemprop="dateCreated datePublished" datetime="2022-07-07T13:42:18+08:00">2022-07-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:19:38" itemprop="dateModified" datetime="2022-11-02T17:19:38+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Containerd"><a href="#Containerd" class="headerlink" title="Containerd"></a>Containerd</h2><h3 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://os.51cto.com/article/705519.html">https://os.51cto.com/article/705519.html</a> 如何在命令行下优雅地管理 Containerd</li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/338484552">https://zhuanlan.zhihu.com/p/338484552</a> Containerd 的前世今生和保姆级入门教程</li>
+<li><a target="_blank" rel="noopener" href="https://aijishu.com/a/1060000000083155">https://aijishu.com/a/1060000000083155</a>  如何优雅地使用containerd</li>
+<li><a target="_blank" rel="noopener" href="https://www.zhangbj.com/p/1095.html">https://www.zhangbj.com/p/1095.html</a>  k3s设置镜像</li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/0f7940258b7a">https://www.jianshu.com/p/0f7940258b7a</a> crictl 命令用法及与docker-cli的命令对比</li>
+</ul>
+<h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><p>/var/lib/rancher/k3s/agent/etc/containerd/config.toml</p>
+<h2 id="Podman"><a href="#Podman" class="headerlink" title="Podman"></a>Podman</h2><h3 id="参考文档-1"><a href="#参考文档-1" class="headerlink" title="参考文档"></a>参考文档</h3><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/110394125">https://zhuanlan.zhihu.com/p/110394125</a></p>
+<h3 id="镜像"><a href="#镜像" class="headerlink" title="镜像"></a>镜像</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qiao_xinxin/article/details/114943904">https://blog.csdn.net/qiao_xinxin/article/details/114943904</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/460489756">https://zhuanlan.zhihu.com/p/460489756</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.aliyun.com/article/29941">https://developer.aliyun.com/article/29941</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202207/K3S%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202207/K3S%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">K3S部署笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-07-01 13:38:13" itemprop="dateCreated datePublished" datetime="2022-07-01T13:38:13+08:00">2022-07-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:19:42" itemprop="dateModified" datetime="2022-11-02T17:19:42+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://k3s.io/">https://k3s.io/</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.rancher.cn/docs/k3s/installation/airgap/_index">https://docs.rancher.cn/docs/k3s/installation/airgap/_index</a></li>
+</ul>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.escapelife.site/posts/754ba85c.html">https://www.escapelife.site/posts/754ba85c.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/releases">https://github.com/goharbor/harbor/releases</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6922690795107516424">https://juejin.cn/post/6922690795107516424</a> 一文搞定全场景K3s离线安装</li>
+<li><a target="_blank" rel="noopener" href="https://blog.chobon.top/posts/e8f50adc">https://blog.chobon.top/posts/e8f50adc</a> k8s和k3s常用命令笔记</li>
+</ul>
+<h2 id="测试机"><a href="#测试机" class="headerlink" title="测试机"></a>测试机</h2><ul>
+<li>10.193.34.2</li>
+<li>10.193.34.3</li>
+</ul>
+<h2 id="Yum源"><a href="#Yum源" class="headerlink" title="Yum源"></a>Yum源</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://developer.aliyun.com/mirror/">https://developer.aliyun.com/mirror/</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiaocao_debug/article/details/123041407">https://blog.csdn.net/xiaocao_debug/article/details/123041407</a></li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /etc/yum.repos.d/ &amp;&amp; mkdir backup &amp;&amp; mv *repo backup/ </span><br><span class="line">curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-8.repo</span><br><span class="line">sed -i -e <span class="string">&quot;s|mirrors.cloud.aliyuncs.com|mirrors.aliyun.com|g &quot;</span> /etc/yum.repos.d/CentOS-*</span><br><span class="line">sed -i -e <span class="string">&quot;s|releasever|releasever-stream|g&quot;</span> /etc/yum.repos.d/CentOS-*</span><br><span class="line">yum clean all &amp;&amp; yum makecache</span><br></pre></td></tr></table></figure>
+<h2 id="CentOS7内核升级"><a href="#CentOS7内核升级" class="headerlink" title="CentOS7内核升级"></a>CentOS7内核升级</h2><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/368879345">https://zhuanlan.zhihu.com/p/368879345</a> </p>
+<h2 id="K3S离线包"><a href="#K3S离线包" class="headerlink" title="K3S离线包"></a>K3S离线包</h2><p><a target="_blank" rel="noopener" href="https://github.com/rancher/k3s/releases">https://github.com/rancher/k3s/releases</a></p>
+<h2 id="离线安装"><a href="#离线安装" class="headerlink" title="离线安装"></a>离线安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下载</span></span><br><span class="line">wget https://bluexiii-files.oss-cn-beijing.aliyuncs.com/install.sh</span><br><span class="line">wget https://bluexiii-files.oss-cn-beijing.aliyuncs.com/k3s</span><br><span class="line">wget https://bluexiii-files.oss-cn-beijing.aliyuncs.com/k3s-airgap-images-amd64.tar.gz</span><br><span class="line">chmod +x install.sh</span><br><span class="line">chmod +x k3s</span><br><span class="line">mkdir -p /var/lib/rancher/k3s/agent/images/</span><br><span class="line">cp ./k3s-airgap-images-amd64.tar.gz /var/lib/rancher/k3s/agent/images/</span><br><span class="line">cp k3s /usr/<span class="built_in">local</span>/bin/k3s</span><br><span class="line"></span><br><span class="line"><span class="comment"># Master</span></span><br><span class="line">INSTALL_K3S_SKIP_DOWNLOAD=<span class="literal">true</span> ./install.sh</span><br><span class="line">cat /var/lib/rancher/k3s/server/node-token</span><br><span class="line"></span><br><span class="line"><span class="comment"># Agent</span></span><br><span class="line">INSTALL_K3S_SKIP_DOWNLOAD=<span class="literal">true</span> K3S_URL=https://10.193.34.2:6443 K3S_TOKEN=K108a518c04bb5139e71da5822461293fe4016b0ae5a46db42f8b105d1a4a3369e4::server:b1af43bb495176c4050d4c2f4907a75f ./install.sh</span><br></pre></td></tr></table></figure>
+
+<h2 id="Registry"><a href="#Registry" class="headerlink" title="Registry"></a>Registry</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">docker pull registry:latest</span><br><span class="line"></span><br><span class="line">docker run -itd \</span><br><span class="line">--name registry \</span><br><span class="line">--hostname registry \</span><br><span class="line">--volume &#x2F;root&#x2F;registry:&#x2F;var&#x2F;lib&#x2F;registry&#x2F;docker&#x2F;registry \</span><br><span class="line">--publish 5000:5000 \</span><br><span class="line">--restart unless-stopped \</span><br><span class="line">registry:latest</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="http://10.193.34.2:5000/">http://10.193.34.2:5000</a></p>
+<h2 id="Helm"><a href="#Helm" class="headerlink" title="Helm"></a>Helm</h2><h3 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h3><p><a target="_blank" rel="noopener" href="https://github.com/helm/helm/releases">https://github.com/helm/helm/releases</a><br><a target="_blank" rel="noopener" href="https://helm.sh/zh/docs/intro/install/">https://helm.sh/zh/docs/intro/install/</a></p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://bluexiii-files.oss-cn-beijing.aliyuncs.com/helm-v3.9.1-linux-amd64.tar.gz</span><br><span class="line">mv linux-amd64/helm /usr/<span class="built_in">local</span>/bin/helm</span><br></pre></td></tr></table></figure>
+<h2 id="Docker离线"><a href="#Docker离线" class="headerlink" title="Docker离线"></a>Docker离线</h2><p><a target="_blank" rel="noopener" href="https://blog.51cto.com/90xpy/2722642">https://blog.51cto.com/90xpy/2722642</a><br><a target="_blank" rel="noopener" href="https://github.com/docker/compose/releases">https://github.com/docker/compose/releases</a></p>
+<h2 id="Docker在线"><a href="#Docker在线" class="headerlink" title="Docker在线"></a>Docker在线</h2><p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yyee/p/12905165.html">https://www.cnblogs.com/yyee/p/12905165.html</a><br><a target="_blank" rel="noopener" href="https://github.com/duiying/ops/tree/master/docker-ce-yum-install">https://github.com/duiying/ops/tree/master/docker-ce-yum-install</a></p>
+<h2 id="Harbor离线"><a href="#Harbor离线" class="headerlink" title="Harbor离线"></a>Harbor离线</h2><p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000040905311">https://segmentfault.com/a/1190000040905311</a><br><a target="_blank" rel="noopener" href="https://learnku.com/articles/29884">https://learnku.com/articles/29884</a><br><a target="_blank" rel="noopener" href="https://github.com/duiying/OPS/tree/master/harbor-install">https://github.com/duiying/OPS/tree/master/harbor-install</a></p>
+<p><a target="_blank" rel="noopener" href="http://10.193.34.4:9010/">http://10.193.34.4:9010</a><br>admin/Harbor12345</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;insecure-registries&quot;</span> : [<span class="string">&quot;10.193.34.4:9010&quot;</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">docker login 10.193.34.4:9010</span><br><span class="line">docker tag nginx:latest 10.193.34.4:9010/dubhe/nginx:latest</span><br><span class="line">docker push 10.193.34.4:9010/dubhe/nginx:latest</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202206/SSH%E5%8F%8C%E5%90%91%E9%9A%A7%E9%81%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202206/SSH%E5%8F%8C%E5%90%91%E9%9A%A7%E9%81%93/" class="post-title-link" itemprop="url">SSH双向隧道</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-06-09 09:55:42" itemprop="dateCreated datePublished" datetime="2022-06-09T09:55:42+08:00">2022-06-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:19:25" itemprop="dateModified" datetime="2022-11-02T17:19:25+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.zsythink.net/archives/2450">https://www.zsythink.net/archives/2450</a></li>
+</ul>
+<h2 id="脚本"><a href="#脚本" class="headerlink" title="脚本"></a>脚本</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1、通过本地端口建立ssh隧道转发请求</span></span><br><span class="line">ssh -CNg -D8000 -p9922 root@10.80.8.238</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2、ssh隧道代理本地端口</span></span><br><span class="line">ssh -N -R 20001:127.0.0.1:20001 root@10.193.2.5</span><br></pre></td></tr></table></figure>
       
     </div>
 
@@ -871,7 +913,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/23/">23</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -937,7 +979,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">160</span>
+          <span class="site-state-item-count">223</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -975,7 +1017,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

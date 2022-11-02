@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="官网 https:&#x2F;&#x2F;scrapy.org&#x2F; https:&#x2F;&#x2F;docs.scrapy.org&#x2F;en&#x2F;latest&#x2F; https:&#x2F;&#x2F;doc.scrapy.org&#x2F;en&#x2F;latest&#x2F;topics&#x2F;settings.html#std-setting-CONCURRENT_REQUESTS_PER_DOMAIN  参考文档 https:&#x2F;&#x2F;www.osgeo.cn&#x2F;scrapy&#x2F;intro&#x2F;tutor">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Scrapy学习笔记">
+<meta property="og:url" content="http://blog.bluexiii.com/202106/Scrapy%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="官网 https:&#x2F;&#x2F;scrapy.org&#x2F; https:&#x2F;&#x2F;docs.scrapy.org&#x2F;en&#x2F;latest&#x2F; https:&#x2F;&#x2F;doc.scrapy.org&#x2F;en&#x2F;latest&#x2F;topics&#x2F;settings.html#std-setting-CONCURRENT_REQUESTS_PER_DOMAIN  参考文档 https:&#x2F;&#x2F;www.osgeo.cn&#x2F;scrapy&#x2F;intro&#x2F;tutor">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-06-09T06:32:50.108Z">
+<meta property="article:modified_time" content="2022-11-02T09:24:17.411Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/202106/Scrapy%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Scrapy学习笔记 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202106/Scrapy%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Scrapy学习笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-06-09 14:32:50" itemprop="dateCreated datePublished" datetime="2021-06-09T14:32:50+08:00">2021-06-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:24:17" itemprop="dateModified" datetime="2022-11-02T17:24:17+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://scrapy.org/">https://scrapy.org/</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.scrapy.org/en/latest/">https://docs.scrapy.org/en/latest/</a></li>
+<li><a target="_blank" rel="noopener" href="https://doc.scrapy.org/en/latest/topics/settings.html#std-setting-CONCURRENT_REQUESTS_PER_DOMAIN">https://doc.scrapy.org/en/latest/topics/settings.html#std-setting-CONCURRENT_REQUESTS_PER_DOMAIN</a></li>
+</ul>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.osgeo.cn/scrapy/intro/tutorial.html">https://www.osgeo.cn/scrapy/intro/tutorial.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.xncoding.com/2016/04/10/scrapy-10.html">https://www.xncoding.com/2016/04/10/scrapy-10.html</a>  Scrapy笔记10- 动态配置爬虫</li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000022681330">https://segmentfault.com/a/1190000022681330</a>  scrapy配置参数(settings.py)</li>
+</ul>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install scrapy</span><br></pre></td></tr></table></figure>
+<h2 id="DEMO"><a href="#DEMO" class="headerlink" title="DEMO"></a>DEMO</h2><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> scrapy</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BlogSpider</span>(<span class="params">scrapy.Spider</span>):</span></span><br><span class="line">    name = <span class="string">&#x27;blogspider&#x27;</span></span><br><span class="line">    start_urls = [<span class="string">&#x27;https://www.zyte.com/blog/&#x27;</span>]</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">parse</span>(<span class="params">self, response</span>):</span></span><br><span class="line">        <span class="keyword">for</span> title <span class="keyword">in</span> response.css(<span class="string">&#x27;.oxy-post-title&#x27;</span>):</span><br><span class="line">            <span class="keyword">yield</span> &#123;<span class="string">&#x27;title&#x27;</span>: title.css(<span class="string">&#x27;::text&#x27;</span>).get()&#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> next_page <span class="keyword">in</span> response.css(<span class="string">&#x27;a.next&#x27;</span>):</span><br><span class="line">            <span class="keyword">yield</span> response.follow(next_page, self.parse)</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scrapy runspider myspider.py</span><br></pre></td></tr></table></figure>
+<h2 id="CLT"><a href="#CLT" class="headerlink" title="CLT"></a>CLT</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">scrapy startproject hydrabot</span><br><span class="line">scrapy genspider httpbin httpbin.org</span><br></pre></td></tr></table></figure>
+<h2 id="周边生态"><a href="#周边生态" class="headerlink" title="周边生态"></a>周边生态</h2><ul>
+<li>scrapy-splash</li>
+<li>scrapy-redis</li>
+<li>scrapyd</li>
+<li>scrapyd-client</li>
+<li>python-scrapyd-api</li>
+<li>scrapyrt</li>
+<li>gerapy</li>
+</ul>
+<h2 id="scrapyrt"><a href="#scrapyrt" class="headerlink" title="scrapyrt"></a>scrapyrt</h2><h3 id="参考文档-1"><a href="#参考文档-1" class="headerlink" title="参考文档"></a>参考文档</h3><p><a target="_blank" rel="noopener" href="https://github.com/scrapinghub/scrapyrt/pull/120/commits/b0302994e1df2a4784f6342bddebea91ccfd7a72">https://github.com/scrapinghub/scrapyrt/pull/120/commits/b0302994e1df2a4784f6342bddebea91ccfd7a72</a><br><a target="_blank" rel="noopener" href="https://scrapyrt.readthedocs.io/en/stable/api.html#post">https://scrapyrt.readthedocs.io/en/stable/api.html#post</a></p>
+<h3 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h3><p>当前目录下运行<code>scrapyrt</code><br>curl <a target="_blank" rel="noopener" href="http://localhost:9080/crawl.json">http://localhost:9080/crawl.json</a> -d ‘{“start_requests”: “true”,”spider_name”: “teacher”,”crawl_args”: {“task_id”: “1”,”entry_id”: “3070”}}’</p>
+<p>curl <a target="_blank" rel="noopener" href="http://localhost:9080/crawl.json">http://localhost:9080/crawl.json</a> -d ‘{“start_requests”: “true”,”spider_name”: “policy_site”,”crawl_args”: {“task_id”: “5”}}’</p>
+<h3 id="conda"><a href="#conda" class="headerlink" title="conda"></a>conda</h3><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43840215/article/details/89599559">https://blog.csdn.net/weixin_43840215/article/details/89599559</a><br>wget -c <a target="_blank" rel="noopener" href="https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh">https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh</a><br>wget -c <a target="_blank" rel="noopener" href="https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh">https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh</a></p>
+<h3 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">pip install scrapyd</span><br><span class="line"></span><br><span class="line">vi &#x2F;etc&#x2F;scrapyd&#x2F;scrapyd.conf</span><br><span class="line">[scrapyd]</span><br><span class="line">eggs_dir    &#x3D; &#x2F;data&#x2F;scrapyd&#x2F;eggs</span><br><span class="line">logs_dir    &#x3D; &#x2F;data&#x2F;scrapyd&#x2F;logs</span><br><span class="line">items_dir   &#x3D; &#x2F;data&#x2F;scrapyd&#x2F;items</span><br><span class="line">jobs_to_keep &#x3D; 100</span><br><span class="line">dbs_dir     &#x3D; &#x2F;data&#x2F;scrapyd&#x2F;dbs</span><br><span class="line">max_proc    &#x3D; 0</span><br><span class="line">max_proc_per_cpu &#x3D; 10</span><br><span class="line">finished_to_keep &#x3D; 100</span><br><span class="line">poll_interval &#x3D; 5.0</span><br><span class="line">bind_address &#x3D; 0.0.0.0</span><br><span class="line">http_port   &#x3D; 6800</span><br><span class="line">debug       &#x3D; off</span><br><span class="line">runner      &#x3D; scrapyd.runner</span><br><span class="line">application &#x3D; scrapyd.app.application</span><br><span class="line">launcher    &#x3D; scrapyd.launcher.Launcher</span><br><span class="line">webroot     &#x3D; scrapyd.website.Root</span><br><span class="line"></span><br><span class="line">[services]</span><br><span class="line">schedule.json     &#x3D; scrapyd.webservice.Schedule</span><br><span class="line">cancel.json       &#x3D; scrapyd.webservice.Cancel</span><br><span class="line">addversion.json   &#x3D; scrapyd.webservice.AddVersion</span><br><span class="line">listprojects.json &#x3D; scrapyd.webservice.ListProjects</span><br><span class="line">listversions.json &#x3D; scrapyd.webservice.ListVersions</span><br><span class="line">listspiders.json  &#x3D; scrapyd.webservice.ListSpiders</span><br><span class="line">delproject.json   &#x3D; scrapyd.webservice.DeleteProject</span><br><span class="line">delversion.json   &#x3D; scrapyd.webservice.DeleteVersion</span><br><span class="line">listjobs.json     &#x3D; scrapyd.webservice.ListJobs</span><br><span class="line">daemonstatus.json &#x3D; scrapyd.webservice.DaemonStatus</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">nohup scrapyd&gt;scrapyd.log 2&gt;&amp;1 &amp;</span><br><span class="line"></span><br><span class="line">open http:&#x2F;&#x2F;10.211.55.101:6800</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># scrapyd服务器提前安装依赖</span><br><span class="line">pip install -r requirements.txt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="API"><a href="#API" class="headerlink" title="API"></a>API</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">curl http://10.211.55.101:6800/daemonstatus.json</span><br><span class="line">curl http://10.211.55.101:6800/addversion.json -F project=hydrabot -F version=1.0.0 -F egg=@hydrabot.egg</span><br><span class="line">curl http://10.211.55.101:6800/schedule.json -d project=hydrabot -d spider=teacher -d task_id=1 -d entry_id=3070</span><br><span class="line">curl http://10.211.55.101:6800/cancel.json -d project=hydrabot -d job=6487ec79947edab326d6db28a2d86S11e8247444</span><br><span class="line"></span><br><span class="line">curl http://10.211.55.101:6800/listprojects.json</span><br><span class="line">curl http://10.211.55.101:6800/listversions.json?project=hydrabot</span><br><span class="line">curl http://10.211.55.101:6800/listspiders.json?project=hydrabot</span><br><span class="line">curl http://10.211.55.101:6800/listjobs.json?project=hydrabot</span><br><span class="line"></span><br><span class="line">curl http://10.211.55.101:6800/delversion.json -d project=hydrabot -d version=1.0.0</span><br><span class="line">curl http://10.211.55.101:6800/delproject.json -d project=hydrabot</span><br></pre></td></tr></table></figure>
+<h2 id="gerapy"><a href="#gerapy" class="headerlink" title="gerapy"></a>gerapy</h2><h3 id="官网-1"><a href="#官网-1" class="headerlink" title="官网"></a>官网</h3><p><a target="_blank" rel="noopener" href="https://github.com/Gerapy/Gerapy">https://github.com/Gerapy/Gerapy</a></p>
+<h3 id="安装-2"><a href="#安装-2" class="headerlink" title="安装"></a>安装</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">pip3 install gerapy</span><br><span class="line">gerapy init</span><br><span class="line">cd gerapy</span><br><span class="line">gerapy migrate</span><br><span class="line"></span><br><span class="line">gerapy createsuperuser  #hydrabot&#x2F;hydrabot</span><br><span class="line">gerapy runserver</span><br><span class="line">open http:&#x2F;&#x2F;127.0.0.1:8000&#x2F;</span><br></pre></td></tr></table></figure>
+
+<h2 id="crawspider"><a href="#crawspider" class="headerlink" title="crawspider"></a>crawspider</h2><h3 id="参考文档-2"><a href="#参考文档-2" class="headerlink" title="参考文档"></a>参考文档</h3><p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1518542">https://cloud.tencent.com/developer/article/1518542</a></p>
+<h2 id="shell"><a href="#shell" class="headerlink" title="shell"></a>shell</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scrapy shell http:&#x2F;&#x2F;wjw.yangzhou.gov.cn&#x2F;yzwshjh&#x2F;csdt&#x2F;wjw_list.shtml</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/202106/%E7%88%AC%E8%99%AB%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="爬虫入门学习笔记">
+      <i class="fa fa-chevron-left"></i> 爬虫入门学习笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/202106/Elasticsearch%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="next" title="Elasticsearch学习笔记">
+      Elasticsearch学习笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E7%BD%91"><span class="nav-number">1.</span> <span class="nav-text">官网</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">2.</span> <span class="nav-text">参考文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">3.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DEMO"><span class="nav-number">4.</span> <span class="nav-text">DEMO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CLT"><span class="nav-number">5.</span> <span class="nav-text">CLT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%A8%E8%BE%B9%E7%94%9F%E6%80%81"><span class="nav-number">6.</span> <span class="nav-text">周边生态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scrapyrt"><span class="nav-number">7.</span> <span class="nav-text">scrapyrt</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3-1"><span class="nav-number">7.1.</span> <span class="nav-text">参考文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C"><span class="nav-number">7.2.</span> <span class="nav-text">运行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#conda"><span class="nav-number">7.3.</span> <span class="nav-text">conda</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-1"><span class="nav-number">7.4.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#API"><span class="nav-number">7.5.</span> <span class="nav-text">API</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gerapy"><span class="nav-number">8.</span> <span class="nav-text">gerapy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E7%BD%91-1"><span class="nav-number">8.1.</span> <span class="nav-text">官网</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85-2"><span class="nav-number">8.2.</span> <span class="nav-text">安装</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#crawspider"><span class="nav-number">9.</span> <span class="nav-text">crawspider</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3-2"><span class="nav-number">9.1.</span> <span class="nav-text">参考文档</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shell"><span class="nav-number">10.</span> <span class="nav-text">shell</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">223</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

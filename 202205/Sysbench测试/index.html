@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="参考文档 https:&#x2F;&#x2F;github.com&#x2F;akopytov&#x2F;sysbench https:&#x2F;&#x2F;help.aliyun.com&#x2F;document_detail&#x2F;65637.html https:&#x2F;&#x2F;www.cnblogs.com&#x2F;f-ck-need-u&#x2F;p&#x2F;9279703.html  安装1234567# 安装# curl -s https:&#x2F;&#x2F;packagecloud.io&#x2F;install&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sysbench测试">
+<meta property="og:url" content="http://blog.bluexiii.com/202205/Sysbench%E6%B5%8B%E8%AF%95/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="参考文档 https:&#x2F;&#x2F;github.com&#x2F;akopytov&#x2F;sysbench https:&#x2F;&#x2F;help.aliyun.com&#x2F;document_detail&#x2F;65637.html https:&#x2F;&#x2F;www.cnblogs.com&#x2F;f-ck-need-u&#x2F;p&#x2F;9279703.html  安装1234567# 安装# curl -s https:&#x2F;&#x2F;packagecloud.io&#x2F;install&#x2F;">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-05-13T07:01:16.880Z">
+<meta property="article:modified_time" content="2022-11-02T09:19:09.946Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/202205/Sysbench%E6%B5%8B%E8%AF%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Sysbench测试 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202205/Sysbench%E6%B5%8B%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Sysbench测试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-05-13 15:01:16" itemprop="dateCreated datePublished" datetime="2022-05-13T15:01:16+08:00">2022-05-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:19:09" itemprop="dateModified" datetime="2022-11-02T17:19:09+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/akopytov/sysbench">https://github.com/akopytov/sysbench</a></li>
+<li><a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/65637.html">https://help.aliyun.com/document_detail/65637.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/f-ck-need-u/p/9279703.html">https://www.cnblogs.com/f-ck-need-u/p/9279703.html</a></li>
+</ul>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line"><span class="comment"># curl -s https://packagecloud.io/install/repositories/akopytov/sysbench/script.rpm.sh | sudo bash</span></span><br><span class="line">wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo</span><br><span class="line">sudo yum -y install sysbench</span><br><span class="line"></span><br><span class="line"><span class="comment"># LUA脚本目录</span></span><br><span class="line">/usr/share/sysbench</span><br></pre></td></tr></table></figure>
+<h2 id="MySQL压测"><a href="#MySQL压测" class="headerlink" title="MySQL压测"></a>MySQL压测</h2><h3 id="脚本"><a href="#脚本" class="headerlink" title="脚本"></a>脚本</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#  准备数据</span></span><br><span class="line">sysbench \</span><br><span class="line">--mysql-host=10.193.10.252 \</span><br><span class="line">--mysql-port=3306 \</span><br><span class="line">--mysql-db=sysbench \</span><br><span class="line">--mysql-user=dev \</span><br><span class="line">--mysql-password=yourpass \</span><br><span class="line">/usr/share/sysbench/oltp_common.lua \</span><br><span class="line">--tables=10 \</span><br><span class="line">--table_size=100000 \</span><br><span class="line">prepare</span><br><span class="line"></span><br><span class="line"><span class="comment">#  清理数据</span></span><br><span class="line">sysbench \</span><br><span class="line">--mysql-host=10.193.10.252 \</span><br><span class="line">--mysql-port=3306 \</span><br><span class="line">--mysql-db=sysbench \</span><br><span class="line">--mysql-user=dev \</span><br><span class="line">--mysql-password=yourpass \</span><br><span class="line">/usr/share/sysbench/oltp_common.lua \</span><br><span class="line">--tables=10 \</span><br><span class="line">cleanup</span><br><span class="line"></span><br><span class="line"><span class="comment">#  测试</span></span><br><span class="line">sysbench \</span><br><span class="line">--mysql-host=10.193.10.252 \</span><br><span class="line">--mysql-port=3306 \</span><br><span class="line">--mysql-db=sysbench \</span><br><span class="line">--mysql-user=dev \</span><br><span class="line">--mysql-password=yourpass \</span><br><span class="line">--threads=20 \</span><br><span class="line">--time=60 \</span><br><span class="line">--report-interval=5 \</span><br><span class="line">/usr/share/sysbench/oltp_read_write.lua \</span><br><span class="line">--tables=10 \</span><br><span class="line">--table_size=100000 \</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+<h3 id="测试结果-10-193-10-252-写实例"><a href="#测试结果-10-193-10-252-写实例" class="headerlink" title="测试结果 10.193.10.252 写实例"></a>测试结果 10.193.10.252 写实例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">[ 5s ] thds: 4 tps: 426.24 qps: 8533.27 (r&#x2F;w&#x2F;o: 5975.01&#x2F;1704.97&#x2F;853.29) lat (ms,95%): 10.09 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 10s ] thds: 4 tps: 458.81 qps: 9181.27 (r&#x2F;w&#x2F;o: 6426.59&#x2F;1837.05&#x2F;917.63) lat (ms,95%): 9.56 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 15s ] thds: 4 tps: 510.40 qps: 10205.85 (r&#x2F;w&#x2F;o: 7144.44&#x2F;2040.61&#x2F;1020.81) lat (ms,95%): 8.90 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 20s ] thds: 4 tps: 480.19 qps: 9604.44 (r&#x2F;w&#x2F;o: 6722.49&#x2F;1921.57&#x2F;960.38) lat (ms,95%): 8.90 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">SQL statistics:</span><br><span class="line">    queries performed:</span><br><span class="line">        read:                            131362</span><br><span class="line">        write:                           37532</span><br><span class="line">        other:                           18766</span><br><span class="line">        total:                           187660</span><br><span class="line">    transactions:                        9383   (468.95 per sec.)</span><br><span class="line">    queries:                             187660 (9378.96 per sec.)</span><br><span class="line">    ignored errors:                      0      (0.00 per sec.)</span><br><span class="line">    reconnects:                          0      (0.00 per sec.)</span><br><span class="line"></span><br><span class="line">General statistics:</span><br><span class="line">    total time:                          20.0069s</span><br><span class="line">    total number of events:              9383</span><br><span class="line"></span><br><span class="line">Latency (ms):</span><br><span class="line">         min:                                    5.30</span><br><span class="line">         avg:                                    8.53</span><br><span class="line">         max:                                  120.79</span><br><span class="line">         95th percentile:                        9.22</span><br><span class="line">         sum:                                79990.85</span><br><span class="line"></span><br><span class="line">Threads fairness:</span><br><span class="line">    events (avg&#x2F;stddev):           2345.7500&#x2F;10.08</span><br><span class="line">    execution time (avg&#x2F;stddev):   19.9977&#x2F;0.00</span><br></pre></td></tr></table></figure>
+<h3 id="测试结果-10-193-10-250-Proxy"><a href="#测试结果-10-193-10-250-Proxy" class="headerlink" title="测试结果 10.193.10.250 Proxy"></a>测试结果 10.193.10.250 Proxy</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">[ 5s ] thds: 4 tps: 270.87 qps: 5427.64 (r&#x2F;w&#x2F;o: 3801.41&#x2F;1083.69&#x2F;542.54) lat (ms,95%): 15.83 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 10s ] thds: 4 tps: 257.42 qps: 5146.09 (r&#x2F;w&#x2F;o: 3600.95&#x2F;1030.30&#x2F;514.85) lat (ms,95%): 16.12 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 15s ] thds: 4 tps: 261.62 qps: 5233.32 (r&#x2F;w&#x2F;o: 3664.43&#x2F;1045.66&#x2F;523.23) lat (ms,95%): 16.41 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 20s ] thds: 4 tps: 271.79 qps: 5435.24 (r&#x2F;w&#x2F;o: 3804.49&#x2F;1087.17&#x2F;543.58) lat (ms,95%): 15.55 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">SQL statistics:</span><br><span class="line">    queries performed:</span><br><span class="line">        read:                            74382</span><br><span class="line">        write:                           21252</span><br><span class="line">        other:                           10626</span><br><span class="line">        total:                           106260</span><br><span class="line">    transactions:                        5313   (265.48 per sec.)</span><br><span class="line">    queries:                             106260 (5309.53 per sec.)</span><br><span class="line">    ignored errors:                      0      (0.00 per sec.)</span><br><span class="line">    reconnects:                          0      (0.00 per sec.)</span><br><span class="line"></span><br><span class="line">General statistics:</span><br><span class="line">    total time:                          20.0115s</span><br><span class="line">    total number of events:              5313</span><br><span class="line"></span><br><span class="line">Latency (ms):</span><br><span class="line">         min:                                    9.53</span><br><span class="line">         avg:                                   15.06</span><br><span class="line">         max:                                  120.29</span><br><span class="line">         95th percentile:                       16.12</span><br><span class="line">         sum:                                80021.11</span><br><span class="line"></span><br><span class="line">Threads fairness:</span><br><span class="line">    events (avg&#x2F;stddev):           1328.2500&#x2F;4.15</span><br><span class="line">    execution time (avg&#x2F;stddev):   20.0053&#x2F;0.00</span><br></pre></td></tr></table></figure>
+<h2 id="TiDB"><a href="#TiDB" class="headerlink" title="TiDB"></a>TiDB</h2><p>mysql://10.193.0.8:4000  root/yourpass</p>
+<h3 id="脚本-1"><a href="#脚本-1" class="headerlink" title="脚本"></a>脚本</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 准备</span></span><br><span class="line">sysbench \</span><br><span class="line">--mysql-host=10.193.0.8 \</span><br><span class="line">--mysql-port=4000 \</span><br><span class="line">--mysql-db=sysbench \</span><br><span class="line">--mysql-user=root \</span><br><span class="line">--mysql-password=yourpass \</span><br><span class="line">/usr/share/sysbench/oltp_common.lua \</span><br><span class="line">--tables=10 \</span><br><span class="line">--table_size=100000 \</span><br><span class="line">prepare</span><br><span class="line"></span><br><span class="line"><span class="comment">#  测试</span></span><br><span class="line">sysbench \</span><br><span class="line">--mysql-host=10.193.0.8 \</span><br><span class="line">--mysql-port=4000 \</span><br><span class="line">--mysql-db=sysbench \</span><br><span class="line">--mysql-user=root \</span><br><span class="line">--mysql-password=yourpass \</span><br><span class="line">--threads=20 \</span><br><span class="line">--time=60 \</span><br><span class="line">--report-interval=5 \</span><br><span class="line">/usr/share/sysbench/oltp_read_write.lua \</span><br><span class="line">--tables=10 \</span><br><span class="line">--table_size=100000 \</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+<h3 id="测试结果"><a href="#测试结果" class="headerlink" title="测试结果"></a>测试结果</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">[ 5s ] thds: 20 tps: 469.21 qps: 9454.95 (r&#x2F;w&#x2F;o: 6623.50&#x2F;1889.03&#x2F;942.42) lat (ms,95%): 130.13 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 10s ] thds: 20 tps: 494.81 qps: 9882.80 (r&#x2F;w&#x2F;o: 6920.34&#x2F;1972.84&#x2F;989.62) lat (ms,95%): 106.75 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 15s ] thds: 20 tps: 441.62 qps: 8837.18 (r&#x2F;w&#x2F;o: 6185.26&#x2F;1768.68&#x2F;883.24) lat (ms,95%): 132.49 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 20s ] thds: 20 tps: 503.80 qps: 10065.62 (r&#x2F;w&#x2F;o: 7044.81&#x2F;2013.60&#x2F;1007.20) lat (ms,95%): 94.10 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 25s ] thds: 20 tps: 439.01 qps: 8783.70 (r&#x2F;w&#x2F;o: 6149.27&#x2F;1756.02&#x2F;878.41) lat (ms,95%): 130.13 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 30s ] thds: 20 tps: 383.00 qps: 7660.47 (r&#x2F;w&#x2F;o: 5362.45&#x2F;1532.01&#x2F;766.01) lat (ms,95%): 137.35 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 35s ] thds: 20 tps: 439.79 qps: 8793.80 (r&#x2F;w&#x2F;o: 6156.66&#x2F;1757.56&#x2F;879.58) lat (ms,95%): 130.13 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 40s ] thds: 20 tps: 467.00 qps: 9337.01 (r&#x2F;w&#x2F;o: 6534.81&#x2F;1868.60&#x2F;933.60) lat (ms,95%): 118.92 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 45s ] thds: 20 tps: 418.60 qps: 8381.86 (r&#x2F;w&#x2F;o: 5868.84&#x2F;1675.41&#x2F;837.61) lat (ms,95%): 134.90 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 50s ] thds: 20 tps: 459.79 qps: 9196.03 (r&#x2F;w&#x2F;o: 6435.68&#x2F;1840.77&#x2F;919.58) lat (ms,95%): 101.13 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 55s ] thds: 20 tps: 463.01 qps: 9255.66 (r&#x2F;w&#x2F;o: 6479.38&#x2F;1850.25&#x2F;926.03) lat (ms,95%): 108.68 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">[ 60s ] thds: 20 tps: 415.40 qps: 8288.56 (r&#x2F;w&#x2F;o: 5799.77&#x2F;1658.79&#x2F;830.00) lat (ms,95%): 137.35 err&#x2F;s: 0.00 reconn&#x2F;s: 0.00</span><br><span class="line">SQL statistics:</span><br><span class="line">    queries performed:</span><br><span class="line">        read:                            377944</span><br><span class="line">        write:                           107984</span><br><span class="line">        other:                           53992</span><br><span class="line">        total:                           539920</span><br><span class="line">    transactions:                        26996  (449.31 per sec.)</span><br><span class="line">    queries:                             539920 (8986.21 per sec.)</span><br><span class="line">    ignored errors:                      0      (0.00 per sec.)</span><br><span class="line">    reconnects:                          0      (0.00 per sec.)</span><br><span class="line"></span><br><span class="line">General statistics:</span><br><span class="line">    total time:                          60.0817s</span><br><span class="line">    total number of events:              26996</span><br><span class="line"></span><br><span class="line">Latency (ms):</span><br><span class="line">         min:                                   20.72</span><br><span class="line">         avg:                                   44.47</span><br><span class="line">         max:                                  368.03</span><br><span class="line">         95th percentile:                      130.13</span><br><span class="line">         sum:                              1200584.83</span><br><span class="line"></span><br><span class="line">Threads fairness:</span><br><span class="line">    events (avg&#x2F;stddev):           1349.8000&#x2F;15.89</span><br><span class="line">    execution time (avg&#x2F;stddev):   60.0292&#x2F;0.02</span><br></pre></td></tr></table></figure>
+
+<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sysbench cpu --threads=40 --events=10000 --cpu-max-prime=20000 run</span><br></pre></td></tr></table></figure>
+<h2 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h2><h3 id="脚本-2"><a href="#脚本-2" class="headerlink" title="脚本"></a>脚本</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">sysbench fileio <span class="built_in">help</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 准备</span></span><br><span class="line">sysbench fileio --file-num=5 --file-total-size=1G prepare</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试</span></span><br><span class="line">sysbench fileio \</span><br><span class="line">--events=5000 \</span><br><span class="line">--threads=16 \</span><br><span class="line">--file-num=5 \</span><br><span class="line">--file-total-size=1G \</span><br><span class="line">--file-test-mode=rndrw \</span><br><span class="line">--file-fsync-freq=0 \</span><br><span class="line">--file-block-size=16384 \</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">File operations:</span><br><span class="line">    reads&#x2F;s:                      33380.09</span><br><span class="line">    writes&#x2F;s:                     22271.94</span><br><span class="line">    fsyncs&#x2F;s:                     890.43</span><br><span class="line"></span><br><span class="line">Throughput:</span><br><span class="line">    read, MiB&#x2F;s:                  521.56</span><br><span class="line">    written, MiB&#x2F;s:               348.00</span><br><span class="line"></span><br><span class="line">General statistics:</span><br><span class="line">    total time:                          0.0881s</span><br><span class="line">    total number of events:              5000</span><br><span class="line"></span><br><span class="line">Latency (ms):</span><br><span class="line">         min:                                    0.00</span><br><span class="line">         avg:                                    0.02</span><br><span class="line">         max:                                    4.30</span><br><span class="line">         95th percentile:                        0.04</span><br><span class="line">         sum:                                  116.73</span><br><span class="line"></span><br><span class="line">Threads fairness:</span><br><span class="line">    events (avg&#x2F;stddev):           312.5000&#x2F;132.74</span><br><span class="line">    execution time (avg&#x2F;stddev):   0.0073&#x2F;0.00</span><br></pre></td></tr></table></figure>
+<h2 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h2><p><a target="_blank" rel="noopener" href="https://hub.docker.com/r/severalnines/sysbench/">https://hub.docker.com/r/severalnines/sysbench/</a></p>
+<h3 id="脚本-3"><a href="#脚本-3" class="headerlink" title="脚本"></a>脚本</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 拉镜像</span></span><br><span class="line">docker pull severalnines/sysbench</span><br><span class="line"></span><br><span class="line"><span class="comment"># 磁盘准备</span></span><br><span class="line">docker run -it \</span><br><span class="line">--name=sysbench \</span><br><span class="line">severalnines/sysbench \</span><br><span class="line">bash </span><br></pre></td></tr></table></figure>
+<h3 id="结果-1"><a href="#结果-1" class="headerlink" title="结果"></a>结果</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">File operations:</span><br><span class="line">    reads/s:                      6408.42</span><br><span class="line">    writes/s:                     4272.28</span><br><span class="line">    fsyncs/s:                     170.89</span><br><span class="line"></span><br><span class="line">Throughput:</span><br><span class="line">    <span class="built_in">read</span>, MiB/s:                  100.13</span><br><span class="line">    written, MiB/s:               66.75</span><br><span class="line"></span><br><span class="line">General statistics:</span><br><span class="line">    total time:                          0.4660s</span><br><span class="line">    total number of events:              5000</span><br><span class="line"></span><br><span class="line">Latency (ms):</span><br><span class="line">         min:                                    0.00</span><br><span class="line">         avg:                                    0.02</span><br><span class="line">         max:                                    3.48</span><br><span class="line">         95th percentile:                        0.04</span><br><span class="line">         sum:                                   95.95</span><br><span class="line"></span><br><span class="line">Threads fairness:</span><br><span class="line">    events (avg/stddev):           312.5000/219.91</span><br><span class="line">    execution time (avg/stddev):   0.0060/0.00</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/202204/Tomcat%E4%BC%98%E5%8C%96%E9%85%8D%E7%BD%AE/" rel="prev" title="Tomcat优化配置">
+      <i class="fa fa-chevron-left"></i> Tomcat优化配置
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/202206/SSH%E5%8F%8C%E5%90%91%E9%9A%A7%E9%81%93/" rel="next" title="SSH双向隧道">
+      SSH双向隧道 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">1.</span> <span class="nav-text">参考文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL%E5%8E%8B%E6%B5%8B"><span class="nav-number">3.</span> <span class="nav-text">MySQL压测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%84%9A%E6%9C%AC"><span class="nav-number">3.1.</span> <span class="nav-text">脚本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C-10-193-10-252-%E5%86%99%E5%AE%9E%E4%BE%8B"><span class="nav-number">3.2.</span> <span class="nav-text">测试结果 10.193.10.252 写实例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C-10-193-10-250-Proxy"><span class="nav-number">3.3.</span> <span class="nav-text">测试结果 10.193.10.250 Proxy</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TiDB"><span class="nav-number">4.</span> <span class="nav-text">TiDB</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%84%9A%E6%9C%AC-1"><span class="nav-number">4.1.</span> <span class="nav-text">脚本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E7%BB%93%E6%9E%9C"><span class="nav-number">4.2.</span> <span class="nav-text">测试结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CPU"><span class="nav-number">5.</span> <span class="nav-text">CPU</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A3%81%E7%9B%98"><span class="nav-number">6.</span> <span class="nav-text">磁盘</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%84%9A%E6%9C%AC-2"><span class="nav-number">6.1.</span> <span class="nav-text">脚本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">6.2.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker"><span class="nav-number">7.</span> <span class="nav-text">Docker</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%84%9A%E6%9C%AC-3"><span class="nav-number">7.1.</span> <span class="nav-text">脚本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-1"><span class="nav-number">7.2.</span> <span class="nav-text">结果</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">223</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

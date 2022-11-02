@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="jenssegers&#x2F;mongodb https:&#x2F;&#x2F;github.com&#x2F;jenssegers&#x2F;laravel-mongodb https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;484fb19c9389 https:&#x2F;&#x2F;segmentfault.com&#x2F;a&#x2F;1190000018922161  guzzlehttp&#x2F;guzzleGuzzle是一个PHP的HTTP客户端，用来轻而易举地发送请求，并">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PHP依赖包学习笔记">
+<meta property="og:url" content="http://blog.bluexiii.com/202111/PHP%E4%BE%9D%E8%B5%96%E5%8C%85%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="jenssegers&#x2F;mongodb https:&#x2F;&#x2F;github.com&#x2F;jenssegers&#x2F;laravel-mongodb https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;484fb19c9389 https:&#x2F;&#x2F;segmentfault.com&#x2F;a&#x2F;1190000018922161  guzzlehttp&#x2F;guzzleGuzzle是一个PHP的HTTP客户端，用来轻而易举地发送请求，并">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-11-30T02:47:34.831Z">
+<meta property="article:modified_time" content="2022-11-02T09:16:00.788Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/202111/PHP%E4%BE%9D%E8%B5%96%E5%8C%85%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>PHP依赖包学习笔记 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/PHP%E4%BE%9D%E8%B5%96%E5%8C%85%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PHP依赖包学习笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-11-30 10:47:34" itemprop="dateCreated datePublished" datetime="2021-11-30T10:47:34+08:00">2021-11-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:16:00" itemprop="dateModified" datetime="2022-11-02T17:16:00+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="jenssegers-mongodb"><a href="#jenssegers-mongodb" class="headerlink" title="jenssegers/mongodb"></a>jenssegers/mongodb</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/jenssegers/laravel-mongodb">https://github.com/jenssegers/laravel-mongodb</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/484fb19c9389">https://www.jianshu.com/p/484fb19c9389</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000018922161">https://segmentfault.com/a/1190000018922161</a></li>
+</ul>
+<h2 id="guzzlehttp-guzzle"><a href="#guzzlehttp-guzzle" class="headerlink" title="guzzlehttp/guzzle"></a>guzzlehttp/guzzle</h2><p>Guzzle是一个PHP的HTTP客户端，用来轻而易举地发送请求，并集成到我们的WEB服务上。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.guzzlephp.org/">https://docs.guzzlephp.org/</a></li>
+<li><a target="_blank" rel="noopener" href="https://guzzle-cn.readthedocs.io/zh_CN/latest/">https://guzzle-cn.readthedocs.io/zh_CN/latest/</a></li>
+</ul>
+<h2 id="pda-pheanstalk"><a href="#pda-pheanstalk" class="headerlink" title="pda/pheanstalk"></a>pda/pheanstalk</h2><p>Beanstalkd 是一个高性能，轻量级的分布式内存队列，C 代码，典型的类 Memcached 设计，协议和使用方式都是同样的风格，所以使用过 memcached 的用户会觉得 Beanstalkd 似曾相识。<br>pheanstalk是一个操作 beanstalkd 的 php 客户端。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/pheanstalk/pheanstalk">https://github.com/pheanstalk/pheanstalk</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.kancloud.cn/vson/php-message-queue/895573">https://www.kancloud.cn/vson/php-message-queue/895573</a></li>
+</ul>
+<h2 id="predis-predis"><a href="#predis-predis" class="headerlink" title="predis/predis"></a>predis/predis</h2><p>predis是php连接redis的操作库</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/predis/predis">https://github.com/predis/predis</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000012404974">https://segmentfault.com/a/1190000012404974</a></li>
+</ul>
+<h2 id="doctrine-dbal"><a href="#doctrine-dbal" class="headerlink" title="doctrine/dbal"></a>doctrine/dbal</h2><p>在Laravel中，使用migration作为数据库的版本控制工具，当需要对已存在的数据表作更改，需要额外引入doctrine/dbal扩展</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/doctrine/dbal">https://github.com/doctrine/dbal</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/f33db09d3ed6">https://www.jianshu.com/p/f33db09d3ed6</a></li>
+</ul>
+<h2 id="kittinan-php-crc"><a href="#kittinan-php-crc" class="headerlink" title="kittinan/php-crc"></a>kittinan/php-crc</h2><p>Calculates CRC checksums for input data</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://packagist.org/packages/kittinan/php-crc">https://packagist.org/packages/kittinan/php-crc</a></li>
+</ul>
+<h2 id="simplesoftwareio-simple-qrcode"><a href="#simplesoftwareio-simple-qrcode" class="headerlink" title="simplesoftwareio/simple-qrcode"></a>simplesoftwareio/simple-qrcode</h2><p>Simple QrCode 是基于Bacon/BaconQrCode 开发，适用于Laravel框架的软件包. 我们的目的是让二维码能更加便捷的使用在Laravel框架的项目里</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/SimpleSoftwareIO/simple-qrcode">https://github.com/SimpleSoftwareIO/simple-qrcode</a></li>
+</ul>
+<h2 id="menthe-aliyun-ueditor"><a href="#menthe-aliyun-ueditor" class="headerlink" title="menthe/aliyun-ueditor"></a>menthe/aliyun-ueditor</h2><p>UEditor 是由百度web前端研发部开发所见即所得富文本web编辑器，此包为laravel5的支持,新增多语言配置,可自由部署前端代码</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/menthe/aliyun-ueditor">https://github.com/menthe/aliyun-ueditor</a></li>
+</ul>
+<h2 id="laravel-passport"><a href="#laravel-passport" class="headerlink" title="laravel/passport"></a>laravel/passport</h2><p>Passport提供完整的 OAuth2 服务端实现</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://laravel.com/docs/8.x/passport">https://laravel.com/docs/8.x/passport</a></li>
+<li><a target="_blank" rel="noopener" href="https://learnku.com/docs/laravel/8.x/passport/9420">https://learnku.com/docs/laravel/8.x/passport/9420</a></li>
+</ul>
+<h2 id="alibabacloud-client"><a href="#alibabacloud-client" class="headerlink" title="alibabacloud/client"></a>alibabacloud/client</h2><p>短信服务（Short Message Service）是阿里云为用户提供的一种通信服务的能力。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://packagist.org/packages/alibabacloud/client">https://packagist.org/packages/alibabacloud/client</a></li>
+<li><a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/112186.html">https://help.aliyun.com/document_detail/112186.html</a></li>
+</ul>
+<h2 id="jenssegers-agent"><a href="#jenssegers-agent" class="headerlink" title="jenssegers/agent"></a>jenssegers/agent</h2><p>laravel-agent 是一个为 Laravel 定制的客户端识别扩展包，基于 Mobile Detect , 提供了非常优雅的接口.</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/jenssegers/agent">https://github.com/jenssegers/agent</a></li>
+<li><a target="_blank" rel="noopener" href="https://learnku.com/laravel/t/782/extended-recommendation-laravel-user-agent-easily-identify-client-information">https://learnku.com/laravel/t/782/extended-recommendation-laravel-user-agent-easily-identify-client-information</a></li>
+</ul>
+<h2 id="dariuszp-cli-progress-bar"><a href="#dariuszp-cli-progress-bar" class="headerlink" title="dariuszp/cli-progress-bar"></a>dariuszp/cli-progress-bar</h2><p>Progress bar for cli apps</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/dariuszp/cli-progress-bar">https://github.com/dariuszp/cli-progress-bar</a></li>
+</ul>
+<h2 id="overtrue-laravel-wechat"><a href="#overtrue-laravel-wechat" class="headerlink" title="overtrue/laravel-wechat"></a>overtrue/laravel-wechat</h2><p>微信 SDK for Laravel / Lumen， 基于 overtrue/wechat</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/overtrue/laravel-wechat">https://github.com/overtrue/laravel-wechat</a></li>
+</ul>
+<h2 id="imangazaliev-didom"><a href="#imangazaliev-didom" class="headerlink" title="imangazaliev/didom"></a>imangazaliev/didom</h2><p>HTML 解析器</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/Imangazaliev/DiDOM">https://github.com/Imangazaliev/DiDOM</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.muyuanzhan.com/tutorials/php/1030.html">https://www.muyuanzhan.com/tutorials/php/1030.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/cunjie3951/article/details/106905467">https://blog.csdn.net/cunjie3951/article/details/106905467</a></li>
+</ul>
+<h2 id="bvtvd-laravel-gateway-worker"><a href="#bvtvd-laravel-gateway-worker" class="headerlink" title="bvtvd/laravel-gateway-worker"></a>bvtvd/laravel-gateway-worker</h2><p>GatewayWorker 是基于 Workerman 开发的一个 TCP 长连接框架，实现了单发、群送、广播等长连接必用的接口</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/bvtvd/laravel-gateway-worker">https://github.com/bvtvd/laravel-gateway-worker</a></li>
+<li><a target="_blank" rel="noopener" href="https://learnku.com/articles/25208">https://learnku.com/articles/25208</a></li>
+</ul>
+<h2 id="fideloper-proxy"><a href="#fideloper-proxy" class="headerlink" title="fideloper/proxy"></a>fideloper/proxy</h2><p>如果您的站点位于代理（例如负载均衡器）后面，则您的 Web 应用程序可能存在以下一些问题：<br>重定向和 PHP 生成的 URL 在其 Web 地址，协议和 / 或端口方面可能不准确。<br>可能无法为每个用户创建唯一会话，从而导致可能访问不正确的帐户，或者无法让用户完全登录<br>记录或其他数据收集过程数据可能看起来来自一个位置（代理本身），使您无法区分各个客户端所采取的流量 / 操作。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/fideloper/TrustedProxy">https://github.com/fideloper/TrustedProxy</a></li>
+<li><a target="_blank" rel="noopener" href="https://learnku.com/docs/the-laravel-way/5.6/Tao-5-6/2947">https://learnku.com/docs/the-laravel-way/5.6/Tao-5-6/2947</a></li>
+</ul>
+<h2 id="laravel-tinker"><a href="#laravel-tinker" class="headerlink" title="laravel/tinker"></a>laravel/tinker</h2><p>tinker 允许您从交互式 shell 中的命令行与 Laravel 应用程序进行交互</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://laravelacademy.org/post/4935.html">https://laravelacademy.org/post/4935.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://learnku.com/articles/7338/understand-laravel-tinker-shell">https://learnku.com/articles/7338/understand-laravel-tinker-shell</a></li>
+</ul>
+<h2 id="laravelcollective-html"><a href="#laravelcollective-html" class="headerlink" title="laravelcollective/html"></a>laravelcollective/html</h2><p>Laravel提供了各种内置的标签，以方便，安全地处理HTML表单。所有 HTML 的主要元素都是可以使用Laravel来产生的。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/LaravelCollective/html">https://github.com/LaravelCollective/html</a></li>
+<li><a target="_blank" rel="noopener" href="https://laravelcollective.com/docs">https://laravelcollective.com/docs</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000011580448">https://segmentfault.com/a/1190000011580448</a></li>
+</ul>
+<h2 id="maatwebsite-excel"><a href="#maatwebsite-excel" class="headerlink" title="maatwebsite/excel"></a>maatwebsite/excel</h2><p>Excel 工具包</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/SpartnerNL/Laravel-Excel">https://github.com/SpartnerNL/Laravel-Excel</a></li>
+<li><a target="_blank" rel="noopener" href="https://learnku.com/articles/32391">https://learnku.com/articles/32391</a></li>
+</ul>
+<h2 id="workerman-workerman"><a href="#workerman-workerman" class="headerlink" title="workerman/workerman"></a>workerman/workerman</h2><p>workerman是一款开源高性能PHP应用容器</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.workerman.net/">https://www.workerman.net/</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/walkor/Workerman">https://github.com/walkor/Workerman</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.kancloud.cn/walkor/workerman/640361">https://www.kancloud.cn/walkor/workerman/640361</a></li>
+</ul>
+<h2 id="workerman-mqtt"><a href="#workerman-mqtt" class="headerlink" title="workerman/mqtt"></a>workerman/mqtt</h2><p>一个基于workerman的异步mqtt客户端库，可用于接收或者发送mqtt协议的消息</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.workerman.net/doc/workerman/components/workemran-mqtt.html">https://www.workerman.net/doc/workerman/components/workemran-mqtt.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/walkor/mqtt">https://github.com/walkor/mqtt</a></li>
+</ul>
+<h2 id="mrgoon-aliyun-sms"><a href="#mrgoon-aliyun-sms" class="headerlink" title="mrgoon/aliyun-sms"></a>mrgoon/aliyun-sms</h2><p>阿里云提供的短信服务</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://packagist.org/packages/mrgoon/aliyun-sms">https://packagist.org/packages/mrgoon/aliyun-sms</a></li>
+<li><a target="_blank" rel="noopener" href="https://laravelacademy.org/post/9502">https://laravelacademy.org/post/9502</a></li>
+</ul>
+<h2 id="overtrue-laravel-pinyin"><a href="#overtrue-laravel-pinyin" class="headerlink" title="overtrue/laravel-pinyin"></a>overtrue/laravel-pinyin</h2><p>Laravel 中文转拼音</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/overtrue/laravel-pinyin">https://github.com/overtrue/laravel-pinyin</a></li>
+<li><a target="_blank" rel="noopener" href="https://learnku.com/laravel/t/573/laravel-chinese-pinyin-overtruelaravel-pinyin">https://learnku.com/laravel/t/573/laravel-chinese-pinyin-overtruelaravel-pinyin</a></li>
+</ul>
+<h2 id="zircote-swagger-php"><a href="#zircote-swagger-php" class="headerlink" title="zircote/swagger-php"></a>zircote/swagger-php</h2><p>接口API的定义</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/zircote/swagger-php">https://github.com/zircote/swagger-php</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000015913371">https://segmentfault.com/a/1190000015913371</a></li>
+</ul>
+<h2 id="jenssegers-imagehash"><a href="#jenssegers-imagehash" class="headerlink" title="jenssegers/imagehash"></a>jenssegers/imagehash</h2><p>图片摘要</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/jenssegers/imagehash">https://github.com/jenssegers/imagehash</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/202111/Laravel%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="Laravel学习笔记">
+      <i class="fa fa-chevron-left"></i> Laravel学习笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/202112/ES%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" rel="next" title="ES集群部署">
+      ES集群部署 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#jenssegers-mongodb"><span class="nav-number">1.</span> <span class="nav-text">jenssegers&#x2F;mongodb</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#guzzlehttp-guzzle"><span class="nav-number">2.</span> <span class="nav-text">guzzlehttp&#x2F;guzzle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pda-pheanstalk"><span class="nav-number">3.</span> <span class="nav-text">pda&#x2F;pheanstalk</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#predis-predis"><span class="nav-number">4.</span> <span class="nav-text">predis&#x2F;predis</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#doctrine-dbal"><span class="nav-number">5.</span> <span class="nav-text">doctrine&#x2F;dbal</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kittinan-php-crc"><span class="nav-number">6.</span> <span class="nav-text">kittinan&#x2F;php-crc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#simplesoftwareio-simple-qrcode"><span class="nav-number">7.</span> <span class="nav-text">simplesoftwareio&#x2F;simple-qrcode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#menthe-aliyun-ueditor"><span class="nav-number">8.</span> <span class="nav-text">menthe&#x2F;aliyun-ueditor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#laravel-passport"><span class="nav-number">9.</span> <span class="nav-text">laravel&#x2F;passport</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#alibabacloud-client"><span class="nav-number">10.</span> <span class="nav-text">alibabacloud&#x2F;client</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jenssegers-agent"><span class="nav-number">11.</span> <span class="nav-text">jenssegers&#x2F;agent</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dariuszp-cli-progress-bar"><span class="nav-number">12.</span> <span class="nav-text">dariuszp&#x2F;cli-progress-bar</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#overtrue-laravel-wechat"><span class="nav-number">13.</span> <span class="nav-text">overtrue&#x2F;laravel-wechat</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#imangazaliev-didom"><span class="nav-number">14.</span> <span class="nav-text">imangazaliev&#x2F;didom</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bvtvd-laravel-gateway-worker"><span class="nav-number">15.</span> <span class="nav-text">bvtvd&#x2F;laravel-gateway-worker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fideloper-proxy"><span class="nav-number">16.</span> <span class="nav-text">fideloper&#x2F;proxy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#laravel-tinker"><span class="nav-number">17.</span> <span class="nav-text">laravel&#x2F;tinker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#laravelcollective-html"><span class="nav-number">18.</span> <span class="nav-text">laravelcollective&#x2F;html</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#maatwebsite-excel"><span class="nav-number">19.</span> <span class="nav-text">maatwebsite&#x2F;excel</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#workerman-workerman"><span class="nav-number">20.</span> <span class="nav-text">workerman&#x2F;workerman</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#workerman-mqtt"><span class="nav-number">21.</span> <span class="nav-text">workerman&#x2F;mqtt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mrgoon-aliyun-sms"><span class="nav-number">22.</span> <span class="nav-text">mrgoon&#x2F;aliyun-sms</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#overtrue-laravel-pinyin"><span class="nav-number">23.</span> <span class="nav-text">overtrue&#x2F;laravel-pinyin</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zircote-swagger-php"><span class="nav-number">24.</span> <span class="nav-text">zircote&#x2F;swagger-php</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jenssegers-imagehash"><span class="nav-number">25.</span> <span class="nav-text">jenssegers&#x2F;imagehash</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">223</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

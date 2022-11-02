@@ -148,7 +148,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201903/20190312net-tools%E5%AF%B9%E6%AF%94iproute2/">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/MongoDB%E8%BF%81%E7%A7%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -162,7 +162,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201903/20190312net-tools%E5%AF%B9%E6%AF%94iproute2/" class="post-title-link" itemprop="url">net-tools对比iproute2</a>
+            <a href="/202111/MongoDB%E8%BF%81%E7%A7%BB/" class="post-title-link" itemprop="url">MongoDB迁移</a>
         </h2>
 
         <div class="post-meta">
@@ -172,154 +172,15 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2019-03-12 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-12T00:00:00+08:00">2019-03-12</time>
+              <time title="Created: 2021-11-03 14:47:54" itemprop="dateCreated datePublished" datetime="2021-11-03T14:47:54+08:00">2021-11-03</time>
             </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>iproute2是linux下管理控制TCP/IP网络和流量控制的新一代工具包，旨在替代老派的工具链net-tools，即大家比较熟悉的ifconfig，arp，route，netstat等命令。</p>
-<p>net-tools是通过procfs(/proc)和ioctl系统调用去访问和改变内核网络配置，而iproute2则通过netlink套接字接口与内核通讯。</p>
-<h2 id="对照表"><a href="#对照表" class="headerlink" title="对照表"></a>对照表</h2><table>
-<thead>
-<tr>
-<th>net-tools</th>
-<th>iproute2</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>arp -na</td>
-<td>ip neigh</td>
-</tr>
-<tr>
-<td>ifconfig</td>
-<td>ip link</td>
-</tr>
-<tr>
-<td>ifconfig -a</td>
-<td>ip addr show</td>
-</tr>
-<tr>
-<td>ifconfig -s</td>
-<td>ip -s link</td>
-</tr>
-<tr>
-<td>ifconfig eth0 up</td>
-<td>ip link set eth0 up</td>
-</tr>
-<tr>
-<td>ipmaddr</td>
-<td>ip maddr</td>
-</tr>
-<tr>
-<td>iptunnel</td>
-<td>ip tunnel</td>
-</tr>
-<tr>
-<td>netstat</td>
-<td>ss</td>
-</tr>
-<tr>
-<td>netstat -i</td>
-<td>ip -s link</td>
-</tr>
-<tr>
-<td>netstat -g</td>
-<td>ip maddr</td>
-</tr>
-<tr>
-<td>netstat -l</td>
-<td>ss -l</td>
-</tr>
-<tr>
-<td>netstat -r</td>
-<td>ip route</td>
-</tr>
-<tr>
-<td>route add</td>
-<td>ip route add</td>
-</tr>
-<tr>
-<td>route del</td>
-<td>ip route del</td>
-</tr>
-<tr>
-<td>route -n</td>
-<td>ip route show</td>
-</tr>
-</tbody></table>
-<h2 id="ss常用操作"><a href="#ss常用操作" class="headerlink" title="ss常用操作"></a>ss常用操作</h2><p><code>-s</code>查看当前服务器的网络连接统计</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -s</span><br></pre></td></tr></table></figure>
-<p><code>-l</code>查看所有监听的网络端口，<code>-p</code>并列出具体的程序名称</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -lp</span><br></pre></td></tr></table></figure>
-<p><code>-a</code>查看这台服务器上所有的socket连接</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -a</span><br></pre></td></tr></table></figure>
-<p>替代<code>netstat -ntlp</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -nltp|column  -t</span><br></pre></td></tr></table></figure>
-<p>替代<code>lsof -i</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -nltp|grep 18010</span><br></pre></td></tr></table></figure>
-<h2 id="ip常用操作"><a href="#ip常用操作" class="headerlink" title="ip常用操作"></a>ip常用操作</h2><p>检查网卡的诸如 IP 地址</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip addr show</span><br><span class="line">ip a</span><br></pre></td></tr></table></figure>
-<p>启用/禁用网卡</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip link set eth0 up</span><br><span class="line">ip link set eth0 down</span><br></pre></td></tr></table></figure>
-<p>配置IP地址</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip addr add 10.211.55.13&#x2F;24 brd + dev eth0</span><br><span class="line">ip addr del 10.211.55.13&#x2F;24 dev eth0</span><br></pre></td></tr></table></figure>
-<p>检查路由</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip route show</span><br></pre></td></tr></table></figure>
-<p>检查ARP记录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip neigh</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/" class="post-title-link" itemprop="url">CentOS7安装KVM</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:15:47" itemprop="dateModified" datetime="2022-11-02T17:15:47+08:00">2022-11-02</time>
               </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-03-08 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-08T00:00:00+08:00">2019-03-08</time>
-            </span>
 
           
 
@@ -333,30 +194,10 @@
 
       
           <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md">https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md</a></li>
-<li><a target="_blank" rel="noopener" href="https://c.isme.pub/2017/06/17/kvm-install/">https://c.isme.pub/2017/06/17/kvm-install/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.tuxfixer.com/install-and-configure-kvm-qemu-on-centos-7-rhel-7-bridge-vhost-network-interface/">https://www.tuxfixer.com/install-and-configure-kvm-qemu-on-centos-7-rhel-7-bridge-vhost-network-interface/</a></li>
-<li><a target="_blank" rel="noopener" href="http://www.91bg.top/archives/51/">http://www.91bg.top/archives/51/</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.51cto.com/11305268/1774531">https://blog.51cto.com/11305268/1774531</a></li>
+<li><a target="_blank" rel="noopener" href="https://xiangsugar.github.io/2018/06/24/MongoDB%E4%B8%8D%E5%90%8C%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B9%8B%E9%97%B4%E7%9A%84%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB/">https://xiangsugar.github.io/2018/06/24/MongoDB%E4%B8%8D%E5%90%8C%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B9%8B%E9%97%B4%E7%9A%84%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/d65190e16afe">https://www.jianshu.com/p/d65190e16afe</a></li>
 </ul>
-<h1 id="关闭selinux"><a href="#关闭selinux" class="headerlink" title="关闭selinux"></a>关闭selinux</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setenforce 0</span><br><span class="line">sed -i &#39;s&#x2F;&#x3D;enforcing&#x2F;&#x3D;disabled&#x2F;g&#39; &#x2F;etc&#x2F;selinux&#x2F;config</span><br></pre></td></tr></table></figure>
-<h1 id="停用防火墙"><a href="#停用防火墙" class="headerlink" title="停用防火墙"></a>停用防火墙</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl disable firewalld.service</span><br><span class="line">systemctl stop firewalld.service</span><br></pre></td></tr></table></figure>
-<h2 id="安装KVM"><a href="#安装KVM" class="headerlink" title="安装KVM"></a>安装KVM</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install qemu-kvm libvirt virt-install bridge-utils </span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>安装后需要重启系统</p>
-</blockquote>
-<h2 id="开启libvirtd服务"><a href="#开启libvirtd服务" class="headerlink" title="开启libvirtd服务"></a>开启libvirtd服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl start libvirtd</span><br><span class="line">systemctl enable libvirtd</span><br></pre></td></tr></table></figure>
-<h2 id="创建虚拟机"><a href="#创建虚拟机" class="headerlink" title="创建虚拟机"></a>创建虚拟机</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">virt-install \</span><br><span class="line">--virt-type&#x3D;kvm \</span><br><span class="line">--name&#x3D;centos01 \</span><br><span class="line">--vcpus&#x3D;2 \</span><br><span class="line">--memory&#x3D;2048 \</span><br><span class="line">--location&#x3D;&#x2F;tmp&#x2F;CentOS-7-x86_64-Minimal-1511.iso \</span><br><span class="line">--disk path&#x3D;&#x2F;home&#x2F;vms&#x2F;centos01.qcow2,size&#x3D;40,format&#x3D;qcow2 \</span><br><span class="line">--network bridge&#x3D;br0 \</span><br><span class="line">--graphics none \</span><br><span class="line">--extra-args&#x3D;&#39;console&#x3D;ttyS0&#39; \</span><br><span class="line">--force</span><br></pre></td></tr></table></figure>
-
-<h1 id="虚拟机管理"><a href="#虚拟机管理" class="headerlink" title="虚拟机管理"></a>虚拟机管理</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">virsh list              # 查看在运行的虚拟机</span><br><span class="line">virsh list --all         # 查看所有虚拟机</span><br><span class="line">virsh console centos72</span><br><span class="line">virsh start centos72     # 虚拟机开启（启动）：</span><br><span class="line">virsh reboot centos72    # 虚拟机重新启动</span><br><span class="line">virsh shutdown centos72  # 虚拟机关机</span><br><span class="line">virsh destroy centos72   # 强制关机（强制断电）</span><br><span class="line">virsh suspend centos72   # 暂停（挂起）KVM 虚拟机</span><br><span class="line">virsh resume centos72    # 恢复被挂起的 KVM 虚拟机</span><br><span class="line">virsh undefine centos72  # 该方法只删除配置文件，磁盘文件未删除</span><br><span class="line">virsh autostart centos72 # 随物理机启动而启动（开机启动）</span><br><span class="line">virsh autostart --disable centos72 # 取消标记为自动开始（取消开机启动）</span><br></pre></td></tr></table></figure>
-<h2 id="相关"><a href="#相关" class="headerlink" title="相关"></a>相关</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">libvirt-client   # libvirt的客户端,最重要的功能之一就是在宿主机关机时可以通知虚拟机也关机  </span><br><span class="line">gpxe-roms-qemu   # 虚拟机 iPXE 的启动固件,支持虚拟机从网络启动</span><br><span class="line">libvirt-python   # libvirt 为 python 提供的 API</span><br><span class="line">python-virtinst  # 一套 Python 的虚拟机安装工具</span><br><span class="line">qemu-kvm         # KVM 在用户空间运行的程序</span><br><span class="line">libvirt          # 用于管理虚拟机,它提供了一套虚拟机操作 API</span><br><span class="line">virt-manager     # 基于 libvirt 的图像化虚拟机管理软件 </span><br><span class="line">virt-viewer      # 显示虚拟机的控制台 Console</span><br><span class="line">virt-top         # 类似于 top 命令,查看虚拟机的资源使用情况</span><br><span class="line">virt-what        # 在虚拟机内部执行,查看虚拟机运行的虚拟化平台</span><br><span class="line">qemu-img         # 用于操作虚拟机硬盘镜像的创建、查看和格式转化</span><br><span class="line">qemu-kvm: 主要包含KVM内核模块和基于KVM重构后的QEMU模拟器. KVM模块作为整个虚拟化环境的核心工作在系统空间, 负责CPU和内存的调度. QEMU作为模拟器工作在用户空间, 负责虚拟机I&#x2F;O模拟. </span><br><span class="line">依赖包 quemu-img:  主要用来QEMU磁盘镜像的管理, 如新建一块磁盘镜像给虚拟机. </span><br><span class="line">libvirt: 提供Hypervisor和虚拟机管理的API. </span><br><span class="line">libvirt-client: KVM客户端命令行管理工具virsh, 负责虚拟机的启动、停止和管理等.</span><br><span class="line">libvirt-daemon: libvirtd守护进, 作为客户端管理工具跟Hypervisor和虚拟机之间的桥梁.</span><br><span class="line">libvirt-daemon-driver-xxx: 从名字来看属于libvirtd服务的驱动文件, 作为libvirtd服务跟Hypervisor不同对象(如qemu模拟器、网络、存储等)间的接口.</span><br><span class="line">bridge-utils: 网桥管理工具包, 负责桥接网络的创建、配置和管理等工作.</span><br><span class="line">virt-install: 创建和克隆虚拟机的命令行工具包.</span><br><span class="line">virt-manager: 图形界面的KVM管理工具.</span><br></pre></td></tr></table></figure>
-<h2 id="图形界面"><a href="#图形界面" class="headerlink" title="图形界面"></a>图形界面</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum install virt-manager</span><br><span class="line">virt-manager</span><br></pre></td></tr></table></figure>
-<h2 id="配置桥接模式"><a href="#配置桥接模式" class="headerlink" title="配置桥接模式"></a>配置桥接模式</h2><p>停用NetworkManager</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop NetworkManager</span><br><span class="line">systemctl disable NetworkManager</span><br></pre></td></tr></table></figure>
-<p>cd /etc/sysconfig/network-scripts<br>vi ifcfg-br0 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DEVICE&#x3D;br0</span><br><span class="line">TYPE&#x3D;Bridge</span><br><span class="line">BOOTRPOTO&#x3D;static</span><br><span class="line">IPADDR&#x3D;10.211.55.11</span><br><span class="line">NETMASK&#x3D;255.255.255.0</span><br><span class="line">GATEWAY&#x3D;10.211.55.1</span><br><span class="line">DNS1&#x3D;10.211.55.1</span><br><span class="line">ONBOOT&#x3D;yes</span><br></pre></td></tr></table></figure>
-<p>vi ifcfg-eth0 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">TYPE&#x3D;Ethernet</span><br><span class="line">PROXY_METHOD&#x3D;none</span><br><span class="line">BROWSER_ONLY&#x3D;no</span><br><span class="line">BOOTPROTO&#x3D;none</span><br><span class="line">#IPADDR&#x3D;10.211.55.11</span><br><span class="line">#PREFIX&#x3D;24</span><br><span class="line">#GATEWAY&#x3D;10.211.55.1</span><br><span class="line">#DNS1&#x3D;10.211.55.1</span><br><span class="line">DEFROUTE&#x3D;yes</span><br><span class="line">IPV4_FAILURE_FATAL&#x3D;no</span><br><span class="line">IPV6INIT&#x3D;no</span><br><span class="line">NAME&#x3D;eth0</span><br><span class="line">UUID&#x3D;9beea3d9-92ac-4f7f-b5eb-c8341f308a7d</span><br><span class="line">ONBOOT&#x3D;yes</span><br><span class="line">DEVICE&#x3D;eth0</span><br><span class="line">BRIDGE&#x3D;br0</span><br></pre></td></tr></table></figure>
+<h2 id="命令"><a href="#命令" class="headerlink" title="命令"></a>命令</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mongodump -d hydrabot -c policy_content</span><br><span class="line">mongorestore -d hydrabot -c policy_content --drop  ./policy_content.bson </span><br></pre></td></tr></table></figure>
       
     </div>
 
@@ -375,7 +216,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85VirtualBox/">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/%E5%9B%BD%E5%AF%86%E9%A2%84%E7%A0%94/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -389,7 +230,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201903/20190308CentOS7%E5%AE%89%E8%A3%85VirtualBox/" class="post-title-link" itemprop="url">CentOS7安装VirtualBox</a>
+            <a href="/202111/%E5%9B%BD%E5%AF%86%E9%A2%84%E7%A0%94/" class="post-title-link" itemprop="url">Untitled</a>
         </h2>
 
         <div class="post-meta">
@@ -399,8 +240,15 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2019-03-08 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-08T00:00:00+08:00">2019-03-08</time>
+              <time title="Created: 2021-11-01 17:29:43" itemprop="dateCreated datePublished" datetime="2021-11-01T17:29:43+08:00">2021-11-01</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:16:11" itemprop="dateModified" datetime="2022-11-02T17:16:11+08:00">2022-11-02</time>
+              </span>
 
           
 
@@ -413,522 +261,644 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p><a target="_blank" rel="noopener" href="https://www.virtualbox.org/wiki/Downloads">https://www.virtualbox.org/wiki/Downloads</a></p>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum install SDL-devel gcc kernel-devel</span><br><span class="line">yum install .&#x2F;VirtualBox-6.0-6.0.4_128413_el7-1.x86_64.rpm</span><br><span class="line">vboxconfig</span><br></pre></td></tr></table></figure>
-<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p>开启X11转发</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh -Y root@10.211.55.11</span><br><span class="line">virtualbox</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201903/20190307CentOS7%E9%85%8D%E7%BD%AEVNC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201903/20190307CentOS7%E9%85%8D%E7%BD%AEVNC/" class="post-title-link" itemprop="url">CentOS7配置TigerVNC</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-03-07 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-07T00:00:00+08:00">2019-03-07</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="安装X11和Gnome"><a href="#安装X11和Gnome" class="headerlink" title="安装X11和Gnome"></a>安装X11和Gnome</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum groupinstall &quot;X Window System&quot;</span><br><span class="line">yum groupinstall &quot;GNOME Desktop&quot;</span><br></pre></td></tr></table></figure>
-<h2 id="切换启动模式"><a href="#切换启动模式" class="headerlink" title="切换启动模式"></a>切换启动模式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl set-default multi-user.target  &#x2F;&#x2F;设置成命令模式</span><br><span class="line">systemctl set-default graphical.target  &#x2F;&#x2F;设置成图形模式</span><br></pre></td></tr></table></figure>
-<h2 id="远程访问并启动X"><a href="#远程访问并启动X" class="headerlink" title="远程访问并启动X"></a>远程访问并启动X</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ssh -Y root@10.211.55.11</span><br><span class="line">startx</span><br><span class="line">或</span><br><span class="line">systemctl start gdm</span><br></pre></td></tr></table></figure>
-<h2 id="TigerVNC安装"><a href="#TigerVNC安装" class="headerlink" title="TigerVNC安装"></a>TigerVNC安装</h2><p>yum install tigervnc tigervnc-server</p>
-<h2 id="设置vnc密码"><a href="#设置vnc密码" class="headerlink" title="设置vnc密码"></a>设置vnc密码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vncpasswd</span><br></pre></td></tr></table></figure>
-<h2 id="TigerVNC配置"><a href="#TigerVNC配置" class="headerlink" title="TigerVNC配置"></a>TigerVNC配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cp &#x2F;lib&#x2F;systemd&#x2F;system&#x2F;vncserver@.service  &#x2F;etc&#x2F;systemd&#x2F;system&#x2F;vncserver@:1.service</span><br><span class="line"></span><br><span class="line">vi &#x2F;etc&#x2F;systemd&#x2F;system&#x2F;vncserver@\:1.service</span><br><span class="line">将&lt;USER&gt;替换</span><br></pre></td></tr></table></figure>
-
-<h2 id="TigerVNC启动"><a href="#TigerVNC启动" class="headerlink" title="TigerVNC启动"></a>TigerVNC启动</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start vncserver@:1</span><br><span class="line">systemctl status vncserver@:1</span><br><span class="line">systemctl enable vncserver@:1</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>VNC以590+x作为访问端口，第1个server是5901端口</p>
-</blockquote>
-<h2 id="macOS访问VNC"><a href="#macOS访问VNC" class="headerlink" title="macOS访问VNC"></a>macOS访问VNC</h2><p>原生支持VNC访问，Finder中cmd+k，弹出窗口中输入<br>vnc://10.211.55.11:5901</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201902/20190220haproxy+keepalived%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201902/20190220haproxy+keepalived%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">haproxy+keepalived配置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-02-20 09:00:00" itemprop="dateCreated datePublished" datetime="2019-02-20T09:00:00+08:00">2019-02-20</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="防火墙配置"><a href="#防火墙配置" class="headerlink" title="防火墙配置"></a>防火墙配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --direct --permanent --add-rule ipv4 filter INPUT 0 --in-interface ens33 --destination 224.0.0.18 --protocol vrrp -j ACCEPT</span><br><span class="line">firewall-cmd --zone&#x3D;public --add-port&#x3D;8080&#x2F;tcp --permanent</span><br><span class="line">firewall-cmd --zone&#x3D;public --add-port&#x3D;18010&#x2F;tcp --permanent</span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
-<p>或</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl disable firewalld </span><br><span class="line">systemctl stop firewalld </span><br></pre></td></tr></table></figure>
-<h2 id="关闭selinux"><a href="#关闭selinux" class="headerlink" title="关闭selinux"></a>关闭selinux</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi &#x2F;etc&#x2F;sysconfig&#x2F;selinux</span><br><span class="line">SELINUX&#x3D;disabled</span><br><span class="line">setenforce 0</span><br><span class="line">getenforce</span><br></pre></td></tr></table></figure>
-<h2 id="启动测试WEB服务"><a href="#启动测试WEB服务" class="headerlink" title="启动测试WEB服务"></a>启动测试WEB服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install nc</span><br></pre></td></tr></table></figure>
-<p>vi index.html</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;utf-8&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">title</span>&gt;</span>Test Page<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">h1</span>&gt;</span>It Works!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">while true;do &#123; printf &#x27;%b\r\n&#x27; &#x27;HTTP/1.1 200 OK&#x27; &#x27;%b\r\n&#x27;;cat index.html; &#125;|nc -l 8080;done</span><br></pre></td></tr></table></figure>
-<h2 id="安装haproxy"><a href="#安装haproxy" class="headerlink" title="安装haproxy"></a>安装haproxy</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y haproxy</span><br></pre></td></tr></table></figure>
-<h2 id="配置haproxy"><a href="#配置haproxy" class="headerlink" title="配置haproxy"></a>配置haproxy</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">vi &#x2F;etc&#x2F;haproxy&#x2F;haproxy.cfg </span><br><span class="line"></span><br><span class="line">global</span><br><span class="line">        user haproxy</span><br><span class="line">        group haproxy</span><br><span class="line">        daemon</span><br><span class="line">        maxconn 4096</span><br><span class="line">defaults</span><br><span class="line">        mode    tcp</span><br><span class="line">        balance roundrobin #leastconn</span><br><span class="line">        timeout client      30000ms</span><br><span class="line">        timeout server      30000ms</span><br><span class="line">        timeout connect      3000ms</span><br><span class="line">        retries 3</span><br><span class="line">frontend fr_server1</span><br><span class="line">        bind 0.0.0.0:18010</span><br><span class="line">        default_backend bk_server1</span><br><span class="line">backend bk_server1</span><br><span class="line">    server  srv1 10.211.55.11:8080</span><br><span class="line">    server  srv2 10.211.55.12:8080</span><br><span class="line">listen stats</span><br><span class="line">    mode http</span><br><span class="line">    bind *:9090</span><br><span class="line">    stats enable</span><br><span class="line">    stats refresh 3s</span><br><span class="line">    stats uri     &#x2F;</span><br><span class="line">    stats auth    admin:123456</span><br><span class="line">    stats admin if TRUE</span><br></pre></td></tr></table></figure>
-<h2 id="启动haproxy"><a href="#启动haproxy" class="headerlink" title="启动haproxy"></a>启动haproxy</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable haproxy</span><br><span class="line">systemctl start haproxy</span><br></pre></td></tr></table></figure>
-<h2 id="安装keepalived"><a href="#安装keepalived" class="headerlink" title="安装keepalived"></a>安装keepalived</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install keepalived ipset-libs libnl3-devel psmisc</span><br></pre></td></tr></table></figure>
-<h2 id="配置keepalived"><a href="#配置keepalived" class="headerlink" title="配置keepalived"></a>配置keepalived</h2><p>vi /etc/keepalived/keepalived.conf</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">vrrp_script chk_proc &#123;</span><br><span class="line">  script &quot;killall -0 haproxy&quot; # check the haproxy process</span><br><span class="line">  interval 2 # every 2 seconds</span><br><span class="line">  weight 2 # add 2 points if OK</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">vrrp_instance VI_1 &#123;</span><br><span class="line">  interface eth0 # interface to monitor</span><br><span class="line">  state MASTER # MASTER on haproxy1, BACKUP on haproxy2</span><br><span class="line">  virtual_router_id 51</span><br><span class="line">  priority 101 # 101 on haproxy1, 100 on haproxy2</span><br><span class="line">  virtual_ipaddress &#123;</span><br><span class="line">    10.211.55.100&#x2F;24 # virtual ip address </span><br><span class="line">  &#125;</span><br><span class="line">  track_script &#123;</span><br><span class="line">    chk_proc</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="启动keepalived"><a href="#启动keepalived" class="headerlink" title="启动keepalived"></a>启动keepalived</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable keepalived</span><br><span class="line">systemctl start keepalived</span><br></pre></td></tr></table></figure>
-<h2 id="查看日志"><a href="#查看日志" class="headerlink" title="查看日志"></a>查看日志</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tail -f &#x2F;var&#x2F;log&#x2F;messages</span><br></pre></td></tr></table></figure>
+          <hr>
+<p>title: 国密预研</p>
 <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://www.keepalived.org/manpage.html">http://www.keepalived.org/manpage.html</a></li>
-<li><a target="_blank" rel="noopener" href="http://seanlook.com/2015/05/18/nginx-keepalived-ha/">http://seanlook.com/2015/05/18/nginx-keepalived-ha/</a></li>
-<li><a target="_blank" rel="noopener" href="https://qizhanming.com/blog/2018/05/17/how-to-config-keepalived-on-centos-7">https://qizhanming.com/blog/2018/05/17/how-to-config-keepalived-on-centos-7</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.certdepot.net/rhel7-configure-high-available-load-balancer/">https://www.certdepot.net/rhel7-configure-high-available-load-balancer/</a></li>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/39016291/haproxy-loadbalancing-tcp-traffic">https://stackoverflow.com/questions/39016291/haproxy-loadbalancing-tcp-traffic</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/c9f6d55288c0">https://www.jianshu.com/p/c9f6d55288c0</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/132352160">https://zhuanlan.zhihu.com/p/132352160</a> 国密算法介绍</li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844904114879463438">https://juejin.cn/post/6844904114879463438</a> 浅谈国密算法</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/guanzhi/GM-Standards">https://github.com/guanzhi/GM-Standards</a> 中华人民共和国密码行业标准(GM/T)文本</li>
 </ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201902/20190217systemd%E4%B8%8Bulimit%E8%B0%83%E6%95%B4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201902/20190217systemd%E4%B8%8Bulimit%E8%B0%83%E6%95%B4/" class="post-title-link" itemprop="url">systemd下ulimit调整</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-02-17 09:00:00" itemprop="dateCreated datePublished" datetime="2019-02-17T09:00:00+08:00">2019-02-17</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="全局配置"><a href="#全局配置" class="headerlink" title="全局配置"></a>全局配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vi &#x2F;etc&#x2F;systemd&#x2F;system.conf </span><br><span class="line"></span><br><span class="line">DefaultLimitCORE&#x3D;infinity</span><br><span class="line">DefaultLimitNOFILE&#x3D;10000</span><br><span class="line">DefaultLimitNPROC&#x3D;10000</span><br></pre></td></tr></table></figure>
+<h2 id="参考书籍"><a href="#参考书籍" class="headerlink" title="参考书籍"></a>参考书籍</h2><p>《图解密码技术 第三版》 </p>
 <blockquote>
-<p>注意system.conf修改后需要重启系统才会生效。</p>
+<p>链接: <a target="_blank" rel="noopener" href="https://pan.baidu.com/s/1VlIz9uad_PHVB4ikhJzaYg">https://pan.baidu.com/s/1VlIz9uad_PHVB4ikhJzaYg</a> 提取码: k4nw </p>
 </blockquote>
-<h2 id="服务方式"><a href="#服务方式" class="headerlink" title="服务方式"></a>服务方式</h2><p>需要修改systemd服务配置</p>
-<p>以httpd.service为例:  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;etc&#x2F;systemd&#x2F;system</span><br><span class="line">mkdir httpd.service.d</span><br><span class="line"></span><br><span class="line">vi limits.conf</span><br><span class="line">[Service]</span><br><span class="line">LimitNOFILE&#x3D;20000</span><br><span class="line"></span><br><span class="line">cat &#x2F;etc&#x2F;systemd&#x2F;system&#x2F;httpd.service.d&#x2F;limits.conf</span><br><span class="line"></span><br><span class="line">systemctl stop httpd</span><br><span class="line">systemctl start httpd</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>注意，重启服务时要先stop再start，不要restart</p>
-</blockquote>
-<h2 id="手工启动进程方式"><a href="#手工启动进程方式" class="headerlink" title="手工启动进程方式"></a>手工启动进程方式</h2><p>可以在启动脚本之前加入ulimit命令手工指定<br>以netcat为例:  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi start.sh</span><br><span class="line"></span><br><span class="line">ulimit -n 20000</span><br><span class="line">while true;do &#123; printf &#39;%b\r\n&#39; &#39;HTTP&#x2F;1.1 200 OK&#39; &#39;%b\r\n&#39;;cat index.html; &#125;|nc -l 8080;done</span><br></pre></td></tr></table></figure>
-<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat &#x2F;proc&#x2F;进程号&#x2F;limits</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201902/20190212mysqldump%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201902/20190212mysqldump%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">mysqldump常用操作</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-02-12 09:00:00" itemprop="dateCreated datePublished" datetime="2019-02-12T09:00:00+08:00">2019-02-12</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="insert备份"><a href="#insert备份" class="headerlink" title="insert备份"></a>insert备份</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldump -uroot -p vibeauth &gt; vibeauth.sql</span><br></pre></td></tr></table></figure>
-<h2 id="insert恢复"><a href="#insert恢复" class="headerlink" title="insert恢复"></a>insert恢复</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -uroot -p test &lt; vibeauth.sql</span><br></pre></td></tr></table></figure>
-<h2 id="txt备份"><a href="#txt备份" class="headerlink" title="txt备份"></a>txt备份</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldump -uroot -p -T. vibeauth --fields-enclosed-by&#x3D;\&quot; --fields-terminated-by&#x3D;,</span><br></pre></td></tr></table></figure>
-<h2 id="txt恢复"><a href="#txt恢复" class="headerlink" title="txt恢复"></a>txt恢复</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql -uroot -p test &lt; app_info.sql</span><br><span class="line">mysqlimport --user&#x3D;root --password test --fields-enclosed-by&#x3D;\&quot; --fields-terminated-by&#x3D;, ~&#x2F;Downloads&#x2F;app_info.txt</span><br></pre></td></tr></table></figure>
-<h2 id="mysqldump常用参数"><a href="#mysqldump常用参数" class="headerlink" title="mysqldump常用参数"></a>mysqldump常用参数</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--lock-tables</span><br><span class="line">--lock-all-tables</span><br><span class="line">--no-data</span><br><span class="line">--no-create-info</span><br></pre></td></tr></table></figure>
-<h2 id="myisam物理备份"><a href="#myisam物理备份" class="headerlink" title="myisam物理备份"></a>myisam物理备份</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqlhotcopy</span><br></pre></td></tr></table></figure>
-<h2 id="innodb物理备份"><a href="#innodb物理备份" class="headerlink" title="innodb物理备份"></a>innodb物理备份</h2><p>使用ibbackup收费工具</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201901/20190130minio%E9%83%A8%E7%BD%B2%E5%8F%8A%E4%BD%BF%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201901/20190130minio%E9%83%A8%E7%BD%B2%E5%8F%8A%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">minio部署及使用</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-01-30 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-30T00:00:00+08:00">2019-01-30</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://docs.minio.io/">https://docs.minio.io/</a></p>
-<h2 id="macOS-brew安装"><a href="#macOS-brew安装" class="headerlink" title="macOS brew安装"></a>macOS brew安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew install minio&#x2F;stable&#x2F;minio</span><br><span class="line">brew install minio&#x2F;stable&#x2F;mc</span><br></pre></td></tr></table></figure>
-<h2 id="macOS下brew-services环境变量配置"><a href="#macOS下brew-services环境变量配置" class="headerlink" title="macOS下brew services环境变量配置"></a>macOS下brew services环境变量配置</h2><p>vi /usr/local/opt/minio/homebrew.mxcl.minio.plist<br>新增</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;dict&gt;</span><br><span class="line">    &lt;key&gt;MINIO_ACCESS_KEY&lt;&#x2F;key&gt;</span><br><span class="line">    &lt;string&gt;admin&lt;&#x2F;string&gt;</span><br><span class="line">    &lt;key&gt;MINIO_SECRET_KEY&lt;&#x2F;key&gt;</span><br><span class="line">    &lt;string&gt;yourpass&lt;&#x2F;string&gt;</span><br><span class="line">&lt;&#x2F;dict&gt;</span><br></pre></td></tr></table></figure>
-
-<h2 id="mc客户端操作"><a href="#mc客户端操作" class="headerlink" title="mc客户端操作"></a>mc客户端操作</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">ls       列出文件和文件夹。</span><br><span class="line">mb       创建一个存储桶或一个文件夹。</span><br><span class="line">cat      显示文件和对象内容。</span><br><span class="line">pipe     将一个STDIN重定向到一个对象或者文件或者STDOUT。</span><br><span class="line">share    生成用于共享的URL。</span><br><span class="line">cp       拷贝文件和对象。</span><br><span class="line">mirror   给存储桶和文件夹做镜像。</span><br><span class="line">find     基于参数查找文件。</span><br><span class="line">diff     对两个文件夹或者存储桶比较差异。</span><br><span class="line">rm       删除文件和对象。</span><br><span class="line">events   管理对象通知。</span><br><span class="line">watch    监听文件和对象的事件。</span><br><span class="line">policy   管理访问策略。</span><br><span class="line">session  为cp命令管理保存的会话。</span><br><span class="line">config   管理mc配置文件。</span><br><span class="line">update   检查软件更新。</span><br><span class="line">version  输出版本信息。</span><br></pre></td></tr></table></figure>
-<h2 id="CentOS安装"><a href="#CentOS安装" class="headerlink" title="CentOS安装"></a>CentOS安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;usr&#x2F;local&#x2F;bin</span><br><span class="line">wget https:&#x2F;&#x2F;dl.minio.io&#x2F;server&#x2F;minio&#x2F;release&#x2F;linux-amd64&#x2F;minio</span><br><span class="line">wget https:&#x2F;&#x2F;dl.minio.io&#x2F;client&#x2F;mc&#x2F;release&#x2F;linux-amd64&#x2F;mc</span><br><span class="line">chmod +x minio</span><br><span class="line">chmod +x mc</span><br></pre></td></tr></table></figure>
-<h2 id="运行服务端"><a href="#运行服务端" class="headerlink" title="运行服务端"></a>运行服务端</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">minio server &#x2F;data</span><br><span class="line">或</span><br><span class="line">minio server --config-dir&#x3D;&#x2F;usr&#x2F;local&#x2F;etc&#x2F;minio --address&#x3D;:9000 &#x2F;&#x2F;data</span><br></pre></td></tr></table></figure>
-<h2 id="mc客户端配置"><a href="#mc客户端配置" class="headerlink" title="mc客户端配置"></a>mc客户端配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mc config host add myminio http:&#x2F;&#x2F;10.37.129.11:9000 6FN56FQD3BBYYFHRV8CV 99HwhtPhIpVph+eyNh5ouRcorCBAvGUiVM3LXtuq</span><br><span class="line"></span><br><span class="line">mc mb myminio&#x2F;testbucket # 创建桶</span><br><span class="line">mc cp io.out myminio&#x2F;testbucket # 拷贝测试文件</span><br><span class="line">mc ls myminio&#x2F;testbucket  # 列出目录</span><br><span class="line">mc policy public  myminio&#x2F;testbucket  # 设置公开权限</span><br></pre></td></tr></table></figure>
-<h2 id="纠编码方式运行"><a href="#纠编码方式运行" class="headerlink" title="纠编码方式运行"></a>纠编码方式运行</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">minio server &#x2F;data1 &#x2F;data2 &#x2F;data3 &#x2F;data4</span><br></pre></td></tr></table></figure>
-<h2 id="分布式运行"><a href="#分布式运行" class="headerlink" title="分布式运行"></a>分布式运行</h2><p>分布式Minio单租户存在最少4个盘最多16个盘的限制（受限于纠删码）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export MINIO_ACCESS_KEY&#x3D;admin</span><br><span class="line">export MINIO_SECRET_KEY&#x3D;yourpass</span><br><span class="line">minio server http:&#x2F;&#x2F;10.37.129.11&#x2F;export1 http:&#x2F;&#x2F;10.37.129.11&#x2F;export2 \</span><br><span class="line">            http:&#x2F;&#x2F;10.37.129.12&#x2F;export1 http:&#x2F;&#x2F;10.37.129.12&#x2F;export2</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201901/20190128iostat%E4%BD%BF%E7%94%A8%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201901/20190128iostat%E4%BD%BF%E7%94%A8%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">iostat使用笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-01-28 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-28T00:00:00+08:00">2019-01-28</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="cpu属性值说明"><a href="#cpu属性值说明" class="headerlink" title="cpu属性值说明"></a>cpu属性值说明</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">%user：CPU处在用户模式下的时间百分比。</span><br><span class="line">%nice：CPU处在带NICE值的用户模式下的时间百分比。</span><br><span class="line">%system：CPU处在系统模式下的时间百分比。</span><br><span class="line">%iowait：CPU等待输入输出完成时间的百分比。</span><br><span class="line">%steal：管理程序维护另一个虚拟处理器时，虚拟CPU的无意识等待时间百分比。</span><br><span class="line">%idle：CPU空闲时间百分比。</span><br><span class="line">注：如果%iowait的值过高，表示硬盘存在I&#x2F;O瓶颈，%idle值高，表示CPU较空闲，如果%idle值高但系统响应慢时，有可能是CPU等待分配内存，此时应加大内存容量。%idle值如果持续低于10，那么系统的CPU处理能力相对较低，表明系统中最需要解决的资源是CPU。</span><br></pre></td></tr></table></figure>
-<h2 id="disk属性值说明"><a href="#disk属性值说明" class="headerlink" title="disk属性值说明"></a>disk属性值说明</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">rrqm&#x2F;s: 每秒进行 merge 的读操作数目。即 rmerge&#x2F;s</span><br><span class="line">wrqm&#x2F;s: 每秒进行 merge 的写操作数目。即 wmerge&#x2F;s</span><br><span class="line">r&#x2F;s: 每秒完成的读 I&#x2F;O 设备次数。即 rio&#x2F;s</span><br><span class="line">w&#x2F;s: 每秒完成的写 I&#x2F;O 设备次数。即 wio&#x2F;s</span><br><span class="line">rsec&#x2F;s: 每秒读扇区数。即 rsect&#x2F;s</span><br><span class="line">wsec&#x2F;s: 每秒写扇区数。即 wsect&#x2F;s</span><br><span class="line">rkB&#x2F;s: 每秒读K字节数。是 rsect&#x2F;s 的一半，因为每扇区大小为512字节。</span><br><span class="line">wkB&#x2F;s: 每秒写K字节数。是 wsect&#x2F;s 的一半。</span><br><span class="line">avgrq-sz: 平均每次设备I&#x2F;O操作的数据大小 (扇区)。</span><br><span class="line">avgqu-sz: 平均I&#x2F;O队列长度。</span><br><span class="line">await: 平均每次设备I&#x2F;O操作的等待时间 (毫秒)。</span><br><span class="line">svctm: 平均每次设备I&#x2F;O操作的服务时间 (毫秒)。</span><br><span class="line">%util: 一秒中有百分之多少的时间用于 I&#x2F;O 操作，即被io消耗的cpu百分比</span><br></pre></td></tr></table></figure>
-<h2 id="查看TPS和吞吐量"><a href="#查看TPS和吞吐量" class="headerlink" title="查看TPS和吞吐量"></a>查看TPS和吞吐量</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iostat -d -k 1 1</span><br></pre></td></tr></table></figure>
-<h2 id="查看设备使用率（-util）和响应时间（await）"><a href="#查看设备使用率（-util）和响应时间（await）" class="headerlink" title="查看设备使用率（%util）和响应时间（await）"></a>查看设备使用率（%util）和响应时间（await）</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iostat -d -x -k 1 1</span><br></pre></td></tr></table></figure>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.ibm.com/support/knowledgecenter/zh/ssw_aix_71/com.ibm.aix.performance/assess_disk_perf_iostat.htm">https://www.ibm.com/support/knowledgecenter/zh/ssw_aix_71/com.ibm.aix.performance/assess_disk_perf_iostat.htm</a></li>
-<li><a target="_blank" rel="noopener" href="https://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/iostat.html">https://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/iostat.html</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">jmeter压测笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2019-01-28 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-28T00:00:00+08:00">2019-01-28</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="官网下载"><a href="#官网下载" class="headerlink" title="官网下载"></a>官网下载</h2><p><a target="_blank" rel="noopener" href="http://jmeter.apache.org/download_jmeter.cgi">http://jmeter.apache.org/download_jmeter.cgi</a></p>
-<h2 id="配置修改"><a href="#配置修改" class="headerlink" title="配置修改"></a>配置修改</h2><ol>
-<li><p>停止防火墙<br>服务器部署时，可临时停止防火墙</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop firewalld.service </span><br></pre></td></tr></table></figure></li>
-<li><p>编辑bin/jmeter，新增HEAP参数<br>如压测文件较大，例如报文中包含BASE64图片或视频，则需调大HEAP参数<br>vi jmeter</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HEAP&#x3D;&quot;-Xms4096m -Xmx4096m&quot;</span><br></pre></td></tr></table></figure>
-<h2 id="单机测试"><a href="#单机测试" class="headerlink" title="单机测试"></a>单机测试</h2><p>图形模式仅用来配置.jmx文件，正式压测时需要在服务器中使用命令行方式启动</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">..&#x2F;bin&#x2F;jmeter.sh -n -t test.jmx -l result.jtl</span><br></pre></td></tr></table></figure>
-<h2 id="分布式测试"><a href="#分布式测试" class="headerlink" title="分布式测试"></a>分布式测试</h2><h3 id="开启X11"><a href="#开启X11" class="headerlink" title="开启X11"></a>开启X11</h3><p>Master需要和Slave在同一网段下，如果条件受限，则需要将Master部署在服务器中，并开启X11转发</p>
-</li>
-<li><p>安装依赖</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y xorg-x11-server-Xorg xorg-x11-xauth xorg-x11-apps</span><br></pre></td></tr></table></figure></li>
-<li><p>sshd_config</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -i X11Forwarding &#x2F;etc&#x2F;ssh&#x2F;sshd_config</span><br></pre></td></tr></table></figure>
-<p>保证值为YES</p>
-</li>
-<li><p>SSH登录并测试</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh -Y user@host  # -Y参数开启信任的X11转发</span><br><span class="line">xclock #测试X11转发是否成功</span><br></pre></td></tr></table></figure></li>
-<li><p>解决英文X11方块字乱码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install fontforge</span><br></pre></td></tr></table></figure>
-<h3 id="Master修改"><a href="#Master修改" class="headerlink" title="Master修改"></a>Master修改</h3></li>
-<li><p>vi jmeter.properties</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">remote_hosts&#x3D;172.20.100.127:1099,172.20.100.128:1099,172.20.100.129:1099,172.20.100.130:1099,172.20.100.131:1099</span><br></pre></td></tr></table></figure></li>
-<li><p>启动GUI</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;jmeter.sh</span><br></pre></td></tr></table></figure>
-<h3 id="Slave修改"><a href="#Slave修改" class="headerlink" title="Slave修改"></a>Slave修改</h3></li>
-<li><p>修改bin/jmeter.properties<br>vi jmeter.properties</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">server_port&#x3D;1099</span><br><span class="line">server.rmi.ssl.disable&#x3D;true 　　  </span><br></pre></td></tr></table></figure></li>
-<li><p>启动bin/jmeter-server</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export RMI_HOST_DEF&#x3D;-Djava.rmi.server.hostname&#x3D;172.20.100.130 #本机IP</span><br><span class="line">.&#x2F;jmeter-server</span><br></pre></td></tr></table></figure>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2></li>
-</ol>
+<h2 id="概念及类比"><a href="#概念及类比" class="headerlink" title="概念及类比"></a>概念及类比</h2><p>概念:  </p>
 <ul>
-<li><a target="_blank" rel="noopener" href="https://rtfmp.com/2015/10/08/how-configure-x11-forwarding-in-rhel7-centos7/">https://rtfmp.com/2015/10/08/how-configure-x11-forwarding-in-rhel7-centos7/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.bbsmax.com/A/6pdD4xNGdw/">https://www.bbsmax.com/A/6pdD4xNGdw/</a></li>
-<li><a target="_blank" rel="noopener" href="http://jmeter.apache.org/usermanual/remote-test.html#setup_ssl">http://jmeter.apache.org/usermanual/remote-test.html#setup_ssl</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jzhg/p/9099118.html">https://www.cnblogs.com/jzhg/p/9099118.html</a></li>
+<li>SM1 为对称加密。其加密强度与AES相当。该算法不公开，调用该算法时，需要通过加密芯片的接口进行调用。</li>
+<li>SM2为非对称加密，基于ECC。该算法已公开。由于该算法基于ECC，故其签名速度与秘钥生成速度都快于RSA。ECC 256位（SM2采用的就是ECC 256位的一种）安全强度比RSA 2048位高，但运算速度快于RSA。</li>
+<li>SM3 消息摘要。可以用MD5作为对比理解。该算法已公开。校验结果为256位。</li>
+<li>SM4 无线局域网标准的分组数据算法。对称加密，密钥长度和分组长度均为128位。</li>
+</ul>
+<p>类比:</p>
+<ul>
+<li>对称算法（分组密码算法）：AES/DES/SM4</li>
+<li>非对称算法（公钥密码算法）：RSA/SM2</li>
+<li>摘要算法（杂凑算法）：MD5/SHA-I/SM3</li>
+</ul>
+<h2 id="选型"><a href="#选型" class="headerlink" title="选型"></a>选型</h2><blockquote>
+<p>直接使用pigx内置的hutool封装库</p>
+</blockquote>
+<h3 id="BouncyCastle"><a href="#BouncyCastle" class="headerlink" title="BouncyCastle"></a>BouncyCastle</h3><p><a target="_blank" rel="noopener" href="https://www.bouncycastle.org/">https://www.bouncycastle.org/</a></p>
+<blockquote>
+<p>主流密码算法库，包含国密</p>
+</blockquote>
+<h3 id="hutool"><a href="#hutool" class="headerlink" title="hutool"></a>hutool</h3><p><a target="_blank" rel="noopener" href="https://hutool.cn/docs/#/crypto/%E5%9B%BD%E5%AF%86%E7%AE%97%E6%B3%95%E5%B7%A5%E5%85%B7-SmUtil">https://hutool.cn/docs/#/crypto/%E5%9B%BD%E5%AF%86%E7%AE%97%E6%B3%95%E5%B7%A5%E5%85%B7-SmUtil</a></p>
+<blockquote>
+<p>基于Bouncy Castle封装<br>PigX内置hutool及，无需额外引入依赖</p>
+</blockquote>
+<h3 id="GmSSL"><a href="#GmSSL" class="headerlink" title="GmSSL"></a>GmSSL</h3><p><a target="_blank" rel="noopener" href="http://gmssl.org/docs/java-api.html">http://gmssl.org/docs/java-api.html</a></p>
+<blockquote>
+<p>只支持国密</p>
+</blockquote>
+<h3 id="java-gm"><a href="#java-gm" class="headerlink" title="java-gm"></a>java-gm</h3><p><a target="_blank" rel="noopener" href="https://github.com/Hyperledger-TWGC/java-gm">https://github.com/Hyperledger-TWGC/java-gm</a></p>
+<blockquote>
+<p>基于Bouncy Castl封装</p>
+</blockquote>
+<h3 id="SM2Java"><a href="#SM2Java" class="headerlink" title="SM2Java"></a>SM2Java</h3><p><a target="_blank" rel="noopener" href="https://github.com/PopezLotado/SM2Java">https://github.com/PopezLotado/SM2Java</a></p>
+<blockquote>
+<p>基于Bouncy Castl封装</p>
+</blockquote>
+<h3 id="sm-crypto"><a href="#sm-crypto" class="headerlink" title="sm-crypto"></a>sm-crypto</h3><p><a target="_blank" rel="noopener" href="https://github.com/JuneAndGreen/sm-crypto">https://github.com/JuneAndGreen/sm-crypto</a></p>
+<blockquote>
+<p>前端JS版本</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202110/ChromeDriver%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E6%B8%85%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202110/ChromeDriver%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E6%B8%85%E7%90%86/" class="post-title-link" itemprop="url">ChromeDriver僵尸进程清理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-10-27 11:13:50" itemprop="dateCreated datePublished" datetime="2021-10-27T11:13:50+08:00">2021-10-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:14:40" itemprop="dateModified" datetime="2022-11-02T17:14:40+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="脚本"><a href="#脚本" class="headerlink" title="脚本"></a>脚本</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ps -A -ostat,ppid | grep -e <span class="string">&#x27;^[Zz]&#x27;</span> | awk <span class="string">&#x27;&#123;print &#125;&#x27;</span> | xargs <span class="built_in">kill</span> -HUP &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">ps -ef|grep chromedriver|grep -v grep|awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>|xargs <span class="built_in">kill</span> -9</span><br><span class="line">ps -ef|grep <span class="string">&quot;/usr/bin/google-chrome&quot;</span>|grep -v grep|awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>|xargs <span class="built_in">kill</span> -9</span><br><span class="line">ps -ef|grep /usr/<span class="built_in">local</span>/bin/chromedriver | grep -e grep</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202110/Telegraf%E5%91%8A%E8%AD%A6%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202110/Telegraf%E5%91%8A%E8%AD%A6%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Telegraf告警配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-10-21 13:05:13" itemprop="dateCreated datePublished" datetime="2021-10-21T13:05:13+08:00">2021-10-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:14:45" itemprop="dateModified" datetime="2022-11-02T17:14:45+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf/tree/master/plugins/inputs">https://github.com/influxdata/telegraf/tree/master/plugins/inputs</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf/tree/master/plugins/parsers/value">https://github.com/influxdata/telegraf/tree/master/plugins/parsers/value</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf/issues/4174">https://github.com/influxdata/telegraf/issues/4174</a></li>
+<li><a target="_blank" rel="noopener" href="https://grafana.com/docs/grafana/latest/datasources/mysql/">https://grafana.com/docs/grafana/latest/datasources/mysql/</a></li>
+</ul>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.influxdata.com/telegraf/releases/telegraf-1.20.2-1.x86_64.rpm</span><br><span class="line">sudo yum localinstall telegraf-1.20.2-1.x86_64.rpm</span><br></pre></td></tr></table></figure>
+<h2 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">telegraf --debug</span><br><span class="line">telegraf --test</span><br></pre></td></tr></table></figure>
+<h2 id="log"><a href="#log" class="headerlink" title="log"></a>log</h2><p>  logfile = “/var/log/telegraf/telegraf.log”</p>
+<h2 id="net-response"><a href="#net-response" class="headerlink" title="net_response"></a>net_response</h2><p><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf/tree/master/plugins/inputs/net_response">https://github.com/influxdata/telegraf/tree/master/plugins/inputs/net_response</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[[inputs.net_response]]</span><br><span class="line">  protocol &#x3D; &quot;tcp&quot;</span><br><span class="line">  address &#x3D; &quot;10.194.99.9:8050&quot;</span><br><span class="line"></span><br><span class="line">[[inputs.net_response]]</span><br><span class="line">  protocol &#x3D; &quot;tcp&quot;</span><br><span class="line">  address &#x3D; &quot;10.194.99.10:8050&quot;</span><br><span class="line"></span><br><span class="line">[[inputs.net_response]]</span><br><span class="line">  protocol &#x3D; &quot;tcp&quot;</span><br><span class="line">  address &#x3D; &quot;10.194.99.11:8050&quot;</span><br><span class="line"></span><br><span class="line">[[inputs.net_response]]</span><br><span class="line">  protocol &#x3D; &quot;tcp&quot;</span><br><span class="line">  address &#x3D; &quot;10.194.99.12:8050&quot;</span><br><span class="line"></span><br><span class="line">[[inputs.net_response]]</span><br><span class="line">  protocol &#x3D; &quot;tcp&quot;</span><br><span class="line">  address &#x3D; &quot;10.194.99.13:8050&quot;</span><br><span class="line"></span><br><span class="line">[[inputs.net_response]]</span><br><span class="line">  protocol &#x3D; &quot;tcp&quot;</span><br><span class="line">  address &#x3D; &quot;10.194.99.14:8050&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="procstat"><a href="#procstat" class="headerlink" title="procstat"></a>procstat</h2><p><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf/tree/master/plugins/inputs/procstat">https://github.com/influxdata/telegraf/tree/master/plugins/inputs/procstat</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[[inputs.procstat]]</span><br><span class="line">    exe &#x3D; &quot;mysqld&quot;</span><br><span class="line">    process_name &#x3D; &quot;10.194.99.2-mysqld&quot;</span><br><span class="line"></span><br><span class="line">[[inputs.procstat]]</span><br><span class="line">    exe &#x3D; &quot;mongod&quot;</span><br><span class="line">    process_name &#x3D; &quot;10.194.99.3-mongod&quot;</span><br><span class="line"></span><br><span class="line">[[inputs.procstat]]</span><br><span class="line">    pattern &#x3D; &quot;splash&quot;</span><br><span class="line">    process_name &#x3D; &quot;10.194.99.4-minio&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="docker"><a href="#docker" class="headerlink" title="docker"></a>docker</h2><p><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf/tree/master/plugins/inputs/docker">https://github.com/influxdata/telegraf/tree/master/plugins/inputs/docker</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[inputs.docker]]</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">usermod -aG docker telegraf</span><br></pre></td></tr></table></figure>
+<h2 id="haproxy"><a href="#haproxy" class="headerlink" title="haproxy"></a>haproxy</h2><p><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf/tree/master/plugins/inputs/haproxy">https://github.com/influxdata/telegraf/tree/master/plugins/inputs/haproxy</a><br><a target="_blank" rel="noopener" href="https://cbonte.github.io/haproxy-dconv/1.8/management.html#9.1">https://cbonte.github.io/haproxy-dconv/1.8/management.html#9.1</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[[inputs.haproxy]]</span><br><span class="line">  servers &#x3D; [&quot;http:&#x2F;&#x2F;10.194.99.9:8036&#x2F;&quot;,&quot;http:&#x2F;&#x2F;10.194.99.10:8036&#x2F;&quot;,&quot;http:&#x2F;&#x2F;10.194.99.11:8036&#x2F;&quot;,&quot;http:&#x2F;&#x2F;10.194.99.12:8036&#x2F;&quot;,&quot;http:&#x2F;&#x2F;10.194.99.13:8036&#x2F;&quot;,&quot;http:&#x2F;&#x2F;10.194.99.14:8036&#x2F;&quot;]</span><br></pre></td></tr></table></figure>
+<h2 id="邮件配置"><a href="#邮件配置" class="headerlink" title="邮件配置"></a>邮件配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[smtp]</span><br><span class="line">enabled &#x3D; true</span><br><span class="line">host &#x3D; smtp.163.com:25</span><br><span class="line">user &#x3D; youraccount@163.com</span><br><span class="line">password &#x3D; yourpass</span><br><span class="line">skip_verify &#x3D; true</span><br><span class="line">from_address &#x3D; youraccount@163.com</span><br><span class="line">from_name &#x3D; 运维告警</span><br><span class="line"></span><br><span class="line">[emails]</span><br><span class="line">content_types &#x3D; text&#x2F;plain</span><br></pre></td></tr></table></figure>
+<h2 id="邮件模板"><a href="#邮件模板" class="headerlink" title="邮件模板"></a>邮件模板</h2><p>/usr/share/grafana/public/emails/alert_notification.txt</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123;if ne .State &quot;ok&quot; &#125;&#125;异常列表:&#123;&#123;range .EvalMatches&#125;&#125;</span><br><span class="line">&#123;&#123;.Metric&#125;&#125;    : &#123;&#123;.Value&#125;&#125;</span><br><span class="line">&#123;&#123;end&#125;&#125;&#123;&#123;end&#125;&#125;</span><br><span class="line">&#123;&#123;.Message&#125;&#125;</span><br><span class="line">&#123;&#123;if ne .Error &quot;&quot; &#125;&#125;</span><br><span class="line">报错信息:&#123;&#123;.Error&#125;&#125;</span><br><span class="line">&#123;&#123;end&#125;&#125;</span><br><span class="line">----------</span><br><span class="line"></span><br><span class="line">如有问题烦请联系，谢谢。</span><br><span class="line">Best Regards.</span><br></pre></td></tr></table></figure>
+<h2 id="告警参数配置"><a href="#告警参数配置" class="headerlink" title="告警参数配置"></a>告警参数配置</h2><ul>
+<li>客户端上报间隔 10s  (每10秒上报一个点)</li>
+<li>告警评估间隔 10s (越短越好，但太短影响Server性能)</li>
+<li>告警评估持续时长 1m (当持续1分钟后，由pending转为alert并发邮件)</li>
+<li>告警采样时间段 5m  (逆推300个点)</li>
+<li>告警采样域值 0.93 (允许丢失20个点)</li>
 </ul>
 
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202110/%E4%BD%BF%E7%94%A8acme%E7%94%B3%E8%AF%B7SSL%E8%AF%81%E4%B9%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202110/%E4%BD%BF%E7%94%A8acme%E7%94%B3%E8%AF%B7SSL%E8%AF%81%E4%B9%A6/" class="post-title-link" itemprop="url">使用acme申请SSL证书</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-10-18 10:01:53" itemprop="dateCreated datePublished" datetime="2021-10-18T10:01:53+08:00">2021-10-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:14:50" itemprop="dateModified" datetime="2022-11-02T17:14:50+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="github"><a href="#github" class="headerlink" title="github"></a>github</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/acmesh-official/acme.sh/wiki/%E8%AF%B4%E6%98%8E">https://github.com/acmesh-official/acme.sh/wiki/%E8%AF%B4%E6%98%8E</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/acmesh-official/acme.sh/wiki/dnsapi">https://github.com/acmesh-official/acme.sh/wiki/dnsapi</a></li>
+</ul>
+<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装acme.sh</span></span><br><span class="line">curl  https://get.acme.sh | sh -s email=foobar@163.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成证书</span></span><br><span class="line"><span class="built_in">export</span> Ali_Key=<span class="string">&quot;foo&quot;</span></span><br><span class="line"><span class="built_in">export</span> Ali_Secret=<span class="string">&quot;bar&quot;</span></span><br><span class="line">acme.sh --issue --dns dns_ali -d foobar.com -d www.foobar.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装证书</span></span><br><span class="line">acme.sh --install-cert -d foobar.com \</span><br><span class="line">--cert-file      /etc/grafana/foobar.com.cer  \</span><br><span class="line">--key-file       /etc/grafana/foobar.com.key  \</span><br><span class="line">--reloadcmd     <span class="string">&quot;systemctl restart grafana-server&quot;</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202110/MySQL5.6JSON%E8%A7%A3%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202110/MySQL5.6JSON%E8%A7%A3%E6%9E%90/" class="post-title-link" itemprop="url">Untitled</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-10-13 09:38:30" itemprop="dateCreated datePublished" datetime="2021-10-13T09:38:30+08:00">2021-10-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 14:48:13" itemprop="dateModified" datetime="2022-11-02T14:48:13+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="MySQL5-6JSON解析"><a href="#MySQL5-6JSON解析" class="headerlink" title="MySQL5.6JSON解析"></a>MySQL5.6JSON解析</h1><h2 id="新建存储过程"><a href="#新建存储过程" class="headerlink" title="新建存储过程"></a>新建存储过程</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">DELIMITER $$</span><br><span class="line"><span class="keyword">DROP</span> <span class="keyword">function</span> if <span class="keyword">exists</span> json_extract_c$$</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">FUNCTION</span> json_extract_c(</span><br><span class="line">details TEXT,</span><br><span class="line">required_field <span class="type">VARCHAR</span> (<span class="number">255</span>)</span><br><span class="line">) <span class="keyword">RETURNS</span> TEXT CHARSET utf8mb4</span><br><span class="line"><span class="keyword">DETERMINISTIC</span></span><br><span class="line"><span class="keyword">NO</span> <span class="keyword">SQL</span></span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line">  <span class="keyword">DECLARE</span> search_term, val TEXT;</span><br><span class="line">  <span class="keyword">DECLARE</span> pos <span class="type">INT</span> signed <span class="keyword">DEFAULT</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">-- Remove &#x27;&#123;&#x27; and &#x27;&#125;&#x27;</span></span><br><span class="line">  <span class="keyword">SET</span> details <span class="operator">=</span> SUBSTRING_INDEX(details, &quot;&#123;&quot;, <span class="number">-1</span>);</span><br><span class="line">  <span class="keyword">SET</span> details <span class="operator">=</span> SUBSTRING_INDEX(details, &quot;&#125;&quot;, <span class="number">1</span>);</span><br><span class="line">  <span class="comment">-- Transform &#x27;$.xx&#x27; to be &#x27;&quot;xx&quot;&#x27;</span></span><br><span class="line">  <span class="keyword">SET</span> search_term <span class="operator">=</span> CONCAT(<span class="string">&#x27;&quot;&#x27;</span>, SUBSTRING_INDEX(required_field,<span class="string">&#x27;$.&#x27;</span>, <span class="operator">-</span> <span class="number">1</span>), <span class="string">&#x27;&quot;&#x27;</span>);</span><br><span class="line"></span><br><span class="line">  searching: LOOP</span><br><span class="line">    <span class="keyword">SET</span> pos <span class="operator">=</span> LOCATE(search_term, details);</span><br><span class="line">    <span class="comment">-- Keep searching if the field contains escape chars</span></span><br><span class="line">    WHILE pos <span class="operator">&gt;</span> <span class="number">0</span> <span class="keyword">AND</span> <span class="keyword">RIGHT</span>(<span class="keyword">LEFT</span>(details, pos<span class="number">-1</span>), <span class="number">1</span>) <span class="operator">=</span> <span class="string">&#x27;\\&#x27;</span></span><br><span class="line">    DO</span><br><span class="line">      <span class="keyword">SET</span> details <span class="operator">=</span> SUBSTR(details, pos<span class="operator">+</span>LENGTH(search_term));</span><br><span class="line">      <span class="keyword">SET</span> pos <span class="operator">=</span> LOCATE(search_term, details);</span><br><span class="line">    <span class="keyword">END</span> WHILE;</span><br><span class="line">    <span class="comment">-- Return NULL if not found</span></span><br><span class="line">    IF pos <span class="operator">&lt;=</span> <span class="number">0</span> <span class="keyword">THEN</span></span><br><span class="line">      <span class="keyword">RETURN</span> <span class="keyword">NULL</span>;</span><br><span class="line">    <span class="keyword">END</span> IF;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">SET</span> pos <span class="operator">=</span> LENGTH(search_term)<span class="operator">+</span>pos;</span><br><span class="line">    <span class="keyword">SET</span> details <span class="operator">=</span> SUBSTR(details, pos);</span><br><span class="line">    <span class="keyword">SET</span> val <span class="operator">=</span> <span class="built_in">TRIM</span>(details);</span><br><span class="line"></span><br><span class="line">    <span class="comment">-- see if we reach the value that is a leading colon &#x27;:&#x27;</span></span><br><span class="line">    IF <span class="keyword">LEFT</span>(val, <span class="number">1</span>) <span class="operator">=</span> <span class="string">&#x27;:&#x27;</span> <span class="keyword">THEN</span></span><br><span class="line">      <span class="keyword">RETURN</span> <span class="built_in">TRIM</span>(</span><br><span class="line">        <span class="keyword">TRAILING</span> <span class="string">&#x27;,&#x27;</span> <span class="keyword">FROM</span> </span><br><span class="line">        <span class="built_in">TRIM</span>(</span><br><span class="line">          SUBSTRING_INDEX(</span><br><span class="line">            <span class="built_in">TRIM</span>(</span><br><span class="line">              <span class="keyword">BOTH</span> <span class="string">&#x27;&quot;&#x27;</span> <span class="keyword">FROM</span> <span class="built_in">TRIM</span>(</span><br><span class="line">                SUBSTR(</span><br><span class="line">                  val</span><br><span class="line">                , <span class="number">2</span></span><br><span class="line">                )</span><br><span class="line">              )</span><br><span class="line">            )</span><br><span class="line">          , <span class="string">&#x27;&quot;&#x27;</span>, <span class="number">1</span></span><br><span class="line">          )</span><br><span class="line">        )</span><br><span class="line">      );</span><br><span class="line">    <span class="keyword">ELSE</span></span><br><span class="line">      ITERATE searching;</span><br><span class="line">    <span class="keyword">END</span> IF;</span><br><span class="line">  <span class="keyword">END</span> LOOP;</span><br><span class="line"><span class="keyword">END</span>$$</span><br><span class="line">DELIMITER ;</span><br></pre></td></tr></table></figure>
+<h2 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> offer_id</span><br><span class="line">     , terms</span><br><span class="line">     , json_extract_c(terms, <span class="string">&#x27;qty&#x27;</span>) <span class="keyword">as</span> offer_qty  </span><br><span class="line">     , json_extract_c(terms, <span class="string">&#x27;discount&#x27;</span>) <span class="keyword">as</span> offer_discount</span><br><span class="line">     , json_extract_c(terms, <span class="string">&#x27;total&#x27;</span>) <span class="keyword">as</span> offer_total</span><br><span class="line"><span class="keyword">FROM</span> offer; </span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202110/%E7%AE%80%E6%98%93%E6%9C%8D%E5%8A%A1%E9%87%8D%E5%90%AF%E8%84%9A%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202110/%E7%AE%80%E6%98%93%E6%9C%8D%E5%8A%A1%E9%87%8D%E5%90%AF%E8%84%9A%E6%9C%AC/" class="post-title-link" itemprop="url">简易服务重启脚本</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-10-12 14:39:21" itemprop="dateCreated datePublished" datetime="2021-10-12T14:39:21+08:00">2021-10-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:14:55" itemprop="dateModified" datetime="2022-11-02T17:14:55+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Crontab脚本"><a href="#Crontab脚本" class="headerlink" title="Crontab脚本"></a>Crontab脚本</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br><span class="line"></span><br><span class="line">*/5 * * * * . /etc/profile; . ~/.bash_profile; isfound=$(ps -ef | grep <span class="string">&quot;qixin-entrance-v2021.07.13.jar&quot;</span> | grep -v <span class="string">&quot;grep&quot;</span>); <span class="keyword">if</span> [ -z <span class="string">&quot;<span class="variable">$isfound</span>&quot;</span> ]; <span class="keyword">then</span> <span class="built_in">echo</span> <span class="string">&quot;<span class="subst">$(date)</span>: restart qixin-entrance-v2021.07.13.jar...&quot;</span>&gt;&gt;/var/<span class="built_in">log</span>/restart.log &amp;&amp; <span class="built_in">cd</span> /opt/soft/enterprisedata &amp;&amp; ./startup.sh; <span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/PHP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202111/PHP%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">PHP学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-10-11 17:23:03" itemprop="dateCreated datePublished" datetime="2021-10-11T17:23:03+08:00">2021-10-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:16:06" itemprop="dateModified" datetime="2022-11-02T17:16:06+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="资源"><a href="#资源" class="headerlink" title="资源"></a>资源</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/">https://www.php.net/manual/zh/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.w3school.com.cn/php/index.asp">https://www.w3school.com.cn/php/index.asp</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.runoob.com/php/php-tutorial.html">https://www.runoob.com/php/php-tutorial.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://laravel-china.github.io/php-the-right-way/">https://laravel-china.github.io/php-the-right-way/</a></li>
+</ul>
+<h2 id="macOS环境手动搭建"><a href="#macOS环境手动搭建" class="headerlink" title="macOS环境手动搭建"></a>macOS环境手动搭建</h2><h3 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://learnku.com/articles/35981">https://learnku.com/articles/35981</a></li>
+<li><a target="_blank" rel="noopener" href="https://laravelacademy.org/post/21613">https://laravelacademy.org/post/21613</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.qiji.tech/archives/132">http://blog.qiji.tech/archives/132</a></li>
+</ul>
+<h3 id="安装PHP"><a href="#安装PHP" class="headerlink" title="安装PHP"></a>安装PHP</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">brew search php</span><br><span class="line">brew install php@7.4</span><br><span class="line">brew services start php@7.4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加PATH</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;export PATH=&quot;/usr/local/opt/php/sbin:$PATH&quot;&#x27;</span> &gt;&gt; ~/.zshrc</span><br><span class="line"><span class="built_in">source</span> ~/.zshrc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看版本</span></span><br><span class="line">php -v</span><br><span class="line">php-fpm -v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务(php-fpm监听9000端口)</span></span><br><span class="line">brew services run php@7.4</span><br></pre></td></tr></table></figure>
+<h3 id="安装Nginx"><a href="#安装Nginx" class="headerlink" title="安装Nginx"></a>安装Nginx</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">brew install nginx</span><br><span class="line">brew services start nginx</span><br><span class="line">nginx -h</span><br><span class="line"></span><br><span class="line">vi /usr/<span class="built_in">local</span>/etc/nginx/nginx.conf</span><br><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/etc/nginx/servers/</span><br><span class="line">vi test.conf</span><br><span class="line">server &#123;</span><br><span class="line">    listen 8099;</span><br><span class="line">    server_name localhost;</span><br><span class="line">    root /home/www/php-project;</span><br><span class="line">    rewrite . /index.php;</span><br><span class="line">    location / &#123;</span><br><span class="line">    index index.php index.html index.htm;</span><br><span class="line">    autoindex on;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">#proxy the php scripts to php-fpm</span></span><br><span class="line">    location ~ \.php$ &#123;</span><br><span class="line">        include /usr/<span class="built_in">local</span>/etc/nginx/fastcgi.conf;</span><br><span class="line">        fastcgi_intercept_errors on;</span><br><span class="line">        fastcgi_pass 127.0.0.1:9000;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="DEMO"><a href="#DEMO" class="headerlink" title="DEMO"></a>DEMO</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi index.php</span><br><span class="line">&lt;?php</span><br><span class="line">    phpinfo();</span><br></pre></td></tr></table></figure>
+<h3 id="直接启动"><a href="#直接启动" class="headerlink" title="直接启动"></a>直接启动</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 内置server方式启动</span></span><br><span class="line">php -S localhost:9000</span><br><span class="line"></span><br><span class="line"><span class="comment"># 命令行执行</span></span><br><span class="line">php start.php</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="MongoDB扩展安装"><a href="#MongoDB扩展安装" class="headerlink" title="MongoDB扩展安装"></a>MongoDB扩展安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pecl install mongodb</span><br></pre></td></tr></table></figure>
+<h2 id="Xdebug安装"><a href="#Xdebug安装" class="headerlink" title="Xdebug安装"></a>Xdebug安装</h2><h3 id="参考文档-1"><a href="#参考文档-1" class="headerlink" title="参考文档"></a>参考文档</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://learnku.com/articles/49708">https://learnku.com/articles/49708</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/059957513e41">https://www.jianshu.com/p/059957513e41</a></li>
+</ul>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">pecl install xdebug</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看PHP配置路径</span></span><br><span class="line">php --ini</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改php.ini</span></span><br><span class="line">vi /usr/<span class="built_in">local</span>/etc/php/7.4/php.ini</span><br><span class="line">[xdebug]</span><br><span class="line">xdebug.mode=debug</span><br><span class="line">xdebug.client_host=<span class="string">&quot;127.0.0.1&quot;</span></span><br><span class="line">xdebug.client_port=9001</span><br><span class="line">xdebug.collect_return=On</span><br><span class="line">xdebug.idekey=<span class="string">&quot;PHPSTORM&quot;</span></span><br><span class="line">xdebug.log=<span class="string">&quot;/tmp/xdebug.log&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="PhpUnit"><a href="#PhpUnit" class="headerlink" title="PhpUnit"></a>PhpUnit</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装依赖</span></span><br><span class="line">composer require phpunit/phpunit</span><br><span class="line"></span><br><span class="line">或 vi composer.json</span><br><span class="line"><span class="string">&quot;require-dev&quot;</span> : &#123;</span><br><span class="line">    <span class="string">&quot;phpunit/phpunit&quot;</span> : <span class="string">&quot;^8.0&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成配置</span></span><br><span class="line">vendor/bin/phpunit --generate-configuration</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202109/GitBook%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202109/GitBook%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">GitBook安装</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-09-16 10:03:33" itemprop="dateCreated datePublished" datetime="2021-09-16T10:03:33+08:00">2021-09-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:14:26" itemprop="dateModified" datetime="2022-11-02T17:14:26+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/Venry_/article/details/110948703">https://blog.csdn.net/Venry_/article/details/110948703</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/cyxroot/p/13754475.html">https://www.cnblogs.com/cyxroot/p/13754475.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43528771/article/details/107949010">https://blog.csdn.net/qq_43528771/article/details/107949010</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.huaweicloud.com/articles/12564085.html">https://www.huaweicloud.com/articles/12564085.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1449410">https://cloud.tencent.com/developer/article/1449410</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1479117">https://cloud.tencent.com/developer/article/1479117</a></li>
+</ul>
+<h2 id="安装过程"><a href="#安装过程" class="headerlink" title="安装过程"></a>安装过程</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># npm切换至低版本</span></span><br><span class="line">npm install -g n</span><br><span class="line">sudo n 10.14.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装gitbook-cli</span></span><br><span class="line">npm install -g gitbook-cli</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看版本号并自动安装最新版本gitbook</span></span><br><span class="line">gitbook -V</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装低版本的gitbook(可选)</span></span><br><span class="line">gitbook <span class="built_in">help</span></span><br><span class="line">gitbook fetch 2.6.7</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">gitbook -V      查看版本号</span><br><span class="line">gitbook init    初始化</span><br><span class="line">gitbook serve   预览</span><br><span class="line">gitbook build   生成</span><br><span class="line">gitbook build --gitbook=2.6.7 生成时指定gitbook的版本, 本地没有会先下载</span><br><span class="line">gitbook uninstall 2.6.7   卸载指定版本号的gitbook</span><br><span class="line">gitbook fetch [version]      获取[版本]下载并安装&lt;版本&gt;</span><br><span class="line">gitbook --<span class="built_in">help</span>   显示帮助文档</span><br><span class="line">gitbook ls-remote  列出NPM上的可用版本</span><br></pre></td></tr></table></figure>
+<h2 id="错误修复"><a href="#错误修复" class="headerlink" title="错误修复"></a>错误修复</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 错误</span></span><br><span class="line">Error loading version latest: Error: Cannot find module <span class="string">&#x27;internal/util/types&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 修复</span></span><br><span class="line">I updated npm to the stable version and reinstalled gitbook and it worked</span><br><span class="line">npm cache clean -f</span><br><span class="line">npm install n stable -g</span><br><span class="line">npm cache clean -f</span><br><span class="line">rm -rf ~/.gitbook/*</span><br><span class="line">npm install gitbook-cli -g</span><br><span class="line">gitbook init</span><br></pre></td></tr></table></figure>
+<h2 id="本地HTML不能跳转问题"><a href="#本地HTML不能跳转问题" class="headerlink" title="本地HTML不能跳转问题"></a>本地HTML不能跳转问题</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi theme.js</span><br><span class="line">if(m)for(n.handler&amp;&amp;</span><br><span class="line">将if(m)改成if(false)</span><br></pre></td></tr></table></figure>
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202109/MongoDB%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202109/MongoDB%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">MongoDB学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-09-11 10:21:54" itemprop="dateCreated datePublished" datetime="2021-09-11T10:21:54+08:00">2021-09-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:14:19" itemprop="dateModified" datetime="2022-11-02T17:14:19+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/2a65343a857e">https://www.jianshu.com/p/2a65343a857e</a></li>
+</ul>
+<h2 id="常用查询"><a href="#常用查询" class="headerlink" title="常用查询"></a>常用查询</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;&#125;)</span><br><span class="line"></span><br><span class="line"># 条件查询</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;&quot;task_id&quot;:1&#125;);</span><br><span class="line"></span><br><span class="line"># Count</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;&quot;task_id&quot;:1&#125;).count();</span><br><span class="line"># 限制条数</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;&quot;task_id&quot;:1&#125;).limit(5);</span><br><span class="line"># 分页</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;&quot;task_id&quot;:1&#125;).limit(10).skip(5);;</span><br><span class="line"># OR</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;$or:[&#123;column: &quot;2&quot;&#125;, &#123;column1: &quot;24&quot;&#125;]&#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># 比较查询 $gt&quot; 、&quot;$gte&quot;、 &quot;$lt&quot;、 &quot;$lte&quot;</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;&quot;task_id&quot;:1, &quot;created&quot;:&#123;&quot;&quot;:10000&#125;&#125;).count();</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;&#39;DataTime&#39;:&#123;&#39;$gte&#39;:1518278400&#125;&#125;).count()</span><br><span class="line"></span><br><span class="line"># 时间</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;&quot;task_id&quot;:1, &quot;created&quot;:&#123;$gte:&quot;2021-09-01&quot;,$lte:&quot;2021-9-11&quot;&#125;&#125;)</span><br><span class="line"></span><br><span class="line"># 模糊查询</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123; &quot;name&quot; : &#x2F;mongo&#x2F;&#125;);</span><br><span class="line"></span><br><span class="line"># 查询指定条件下指定列</span><br><span class="line">db.getCollection(&#39;policy_content&#39;).find(&#123;&#125;, &#123;&quot;column&quot;:1, &quot;InMongoTimet&quot;:1&#125;);&#x2F;&#x2F;查询column和InMongoTimet这两个字段</span><br><span class="line"></span><br><span class="line"># 建索引</span><br><span class="line">db.policy_content.createIndex(&#123;&quot;index_id&quot;:1&#125;)</span><br></pre></td></tr></table></figure>
       
     </div>
 
@@ -946,7 +916,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/23/">23</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1012,7 +982,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">160</span>
+          <span class="site-state-item-count">223</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1050,7 +1020,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2021</span>
+  <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

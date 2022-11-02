@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"blog.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="官网 https:&#x2F;&#x2F;docs.pingcap.com&#x2F;zh&#x2F;tidb&#x2F;stable&#x2F;overview https:&#x2F;&#x2F;github.com&#x2F;pingcap&#x2F;docs-cn&#x2F;blob&#x2F;master&#x2F;config-templates&#x2F;simple-mini.yaml  磁盘12345vi &#x2F;etc&#x2F;fstabUUID&#x3D;c51eb23b-195c-4061-92a9-3fad812cc12f &#x2F;dat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TiDB部署笔记">
+<meta property="og:url" content="http://blog.bluexiii.com/202112/TiDB%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="官网 https:&#x2F;&#x2F;docs.pingcap.com&#x2F;zh&#x2F;tidb&#x2F;stable&#x2F;overview https:&#x2F;&#x2F;github.com&#x2F;pingcap&#x2F;docs-cn&#x2F;blob&#x2F;master&#x2F;config-templates&#x2F;simple-mini.yaml  磁盘12345vi &#x2F;etc&#x2F;fstabUUID&#x3D;c51eb23b-195c-4061-92a9-3fad812cc12f &#x2F;dat">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-12-20T08:15:52.981Z">
+<meta property="article:modified_time" content="2022-11-02T09:17:00.733Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://blog.bluexiii.com/202112/TiDB%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>TiDB部署笔记 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202112/TiDB%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          TiDB部署笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-12-20 16:15:52" itemprop="dateCreated datePublished" datetime="2021-12-20T16:15:52+08:00">2021-12-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:17:00" itemprop="dateModified" datetime="2022-11-02T17:17:00+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.pingcap.com/zh/tidb/stable/overview">https://docs.pingcap.com/zh/tidb/stable/overview</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/pingcap/docs-cn/blob/master/config-templates/simple-mini.yaml">https://github.com/pingcap/docs-cn/blob/master/config-templates/simple-mini.yaml</a></li>
+</ul>
+<h2 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/fstab</span><br><span class="line">UUID=c51eb23b-195c-4061-92a9-3fad812cc12f /data ext4 defaults,nodelalloc,noatime 0 2</span><br><span class="line">mkdir /data</span><br><span class="line">mount -a</span><br><span class="line">mount -t ext4</span><br></pre></td></tr></table></figure>
+<h2 id="Swap"><a href="#Swap" class="headerlink" title="Swap"></a>Swap</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;vm.swappiness &#x3D; 0&quot;&gt;&gt; &#x2F;etc&#x2F;sysctl.conf</span><br><span class="line">swapoff -a &amp;&amp; swapon -a</span><br><span class="line">sysctl -p</span><br><span class="line"></span><br><span class="line">vi &#x2F;etc&#x2F;fstab # 注释掉swap一行</span><br><span class="line">swapoff -a</span><br><span class="line"></span><br><span class="line">free # 验证</span><br></pre></td></tr></table></figure>
+<h2 id="ntp"><a href="#ntp" class="headerlink" title="ntp"></a>ntp</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum install ntp ntpdate -y</span><br><span class="line">systemctl start ntpd.service</span><br><span class="line">systemctl <span class="built_in">enable</span> ntpd.service</span><br><span class="line">ntpstat</span><br></pre></td></tr></table></figure>
+<h2 id="操作系统优化"><a href="#操作系统优化" class="headerlink" title="操作系统优化"></a>操作系统优化</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">cat /sys/kernel/mm/transparent_hugepage/enabled</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">cat /sys/block/vdc/queue/scheduler</span><br><span class="line">cat /sys/block/vdd/queue/scheduler</span><br><span class="line"></span><br><span class="line">udevadm info --name=/dev/vdc | grep ID_SERIAL</span><br><span class="line">udevadm info --name=/dev/vdd | grep ID_SERIAL</span><br><span class="line"></span><br><span class="line">cpupower frequency-info --policy</span><br><span class="line"></span><br><span class="line">-----------------</span><br><span class="line"></span><br><span class="line">tuned-adm list</span><br><span class="line">mkdir /etc/tuned/balanced-tidb-optimal/</span><br><span class="line">vi /etc/tuned/balanced-tidb-optimal/tuned.conf</span><br><span class="line">[main]</span><br><span class="line">include=balanced</span><br><span class="line"></span><br><span class="line">[cpu]</span><br><span class="line">governor=performance</span><br><span class="line"></span><br><span class="line">[vm]</span><br><span class="line">transparent_hugepages=never</span><br><span class="line"></span><br><span class="line">[disk]</span><br><span class="line">devices_udev_regex=(ID_SERIAL=vos-5ef7r1pv)|(ID_SERIAL=vos-od1sacxs)</span><br><span class="line">elevator=noop</span><br><span class="line"></span><br><span class="line">tuned-adm profile balanced-tidb-optimal</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;fs.file-max = 1000000&quot;</span>&gt;&gt; /etc/sysctl.conf</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;net.core.somaxconn = 32768&quot;</span>&gt;&gt; /etc/sysctl.conf</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;net.ipv4.tcp_tw_recycle = 0&quot;</span>&gt;&gt; /etc/sysctl.conf</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;net.ipv4.tcp_syncookies = 0&quot;</span>&gt;&gt; /etc/sysctl.conf</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;vm.overcommit_memory = 1&quot;</span>&gt;&gt; /etc/sysctl.conf</span><br><span class="line">sysctl -p</span><br><span class="line"></span><br><span class="line">cat &lt;&lt; <span class="string">EOF &gt;&gt;/etc/security/limits.conf</span></span><br><span class="line"><span class="string">tidb           soft    nofile          1000000</span></span><br><span class="line"><span class="string">tidb           hard    nofile          1000000</span></span><br><span class="line"><span class="string">tidb           soft    stack          32768</span></span><br><span class="line"><span class="string">tidb           hard    stack          32768</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 禁用透明大页</span></span><br><span class="line"><span class="built_in">echo</span> never &gt; /sys/kernel/mm/transparent_hugepage/enabled</span><br><span class="line"><span class="built_in">echo</span> never &gt; /sys/kernel/mm/transparent_hugepage/defrag</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装numactl</span></span><br><span class="line">yum install numactl -y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装irqbalance</span></span><br><span class="line">yum install irqbalance -y</span><br><span class="line">systemctl <span class="built_in">enable</span> irqbalance &amp;&amp; systemctl start irqbalance</span><br></pre></td></tr></table></figure>
+<h2 id="ssh互信"><a href="#ssh互信" class="headerlink" title="ssh互信"></a>ssh互信</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ssh-copy-id root@10.193.50.17</span><br><span class="line">ssh-copy-id root@10.193.50.18</span><br><span class="line">ssh-copy-id root@10.193.50.19</span><br></pre></td></tr></table></figure>
+<h2 id="TiUP"><a href="#TiUP" class="headerlink" title="TiUP"></a>TiUP</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl --proto <span class="string">&#x27;=https&#x27;</span> --tlsv1.2 -sSf https://tiup-mirrors.pingcap.com/install.sh | sh</span><br><span class="line"><span class="built_in">which</span> tiup</span><br><span class="line">tiup cluster</span><br><span class="line">tiup update --self &amp;&amp; tiup update cluster</span><br><span class="line">tiup --binary cluster</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">tiup cluster template &gt; topology.yaml</span><br><span class="line">vi topology.yaml</span><br><span class="line"></span><br><span class="line">global:</span><br><span class="line">  user: <span class="string">&quot;tidb&quot;</span></span><br><span class="line">  ssh_port: 22</span><br><span class="line">  deploy_dir: <span class="string">&quot;/data/tidb-deploy&quot;</span></span><br><span class="line">  data_dir: <span class="string">&quot;/data/tidb-data&quot;</span></span><br><span class="line"></span><br><span class="line">pd_servers:</span><br><span class="line">  - host: 10.193.50.17</span><br><span class="line">  - host: 10.193.50.18</span><br><span class="line">  - host: 10.193.50.19</span><br><span class="line"></span><br><span class="line">tidb_servers:</span><br><span class="line">  - host: 10.193.50.17</span><br><span class="line">  - host: 10.193.50.18</span><br><span class="line">  - host: 10.193.50.19</span><br><span class="line"></span><br><span class="line">tikv_servers:</span><br><span class="line">  - host: 10.193.50.17</span><br><span class="line">  - host: 10.193.50.18</span><br><span class="line">  - host: 10.193.50.19</span><br><span class="line"></span><br><span class="line">monitoring_servers:</span><br><span class="line">  - host: 10.193.50.17</span><br><span class="line"></span><br><span class="line">grafana_servers:</span><br><span class="line">  - host: 10.193.50.17</span><br><span class="line"></span><br><span class="line">alertmanager_servers:</span><br><span class="line">  - host: 10.193.50.17</span><br><span class="line"></span><br><span class="line">tiup cluster check ./topology.yaml --user root</span><br><span class="line">tiup cluster check ./topology.yaml --apply --user root</span><br><span class="line"></span><br><span class="line">tiup cluster deploy tidb-eip v5.3.0 ./topology.yaml --user root</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="HaProxy"><a href="#HaProxy" class="headerlink" title="HaProxy"></a>HaProxy</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">yum install haproxy -y</span><br><span class="line"></span><br><span class="line">vi /etc/haproxy/haproxy.cfg</span><br><span class="line"></span><br><span class="line">global                                     <span class="comment"># 全局配置。</span></span><br><span class="line">   <span class="built_in">log</span>         127.0.0.1 local2            <span class="comment"># 定义全局的 syslog 服务器，最多可以定义两个。</span></span><br><span class="line">   chroot      /var/lib/haproxy            <span class="comment"># 更改当前目录并为启动进程设置超级用户权限，从而提高安全性。</span></span><br><span class="line">   pidfile     /var/run/haproxy.pid        <span class="comment"># 将 HAProxy 进程的 PID 写入 pidfile。</span></span><br><span class="line">   maxconn     4096                        <span class="comment"># 单个 HAProxy 进程可接受的最大并发连接数，等价于命令行参数 &quot;-n&quot;。</span></span><br><span class="line">   <span class="comment"># nbthread    48                          # 最大线程数。线程数的上限与 CPU 数量相同。</span></span><br><span class="line">   user        haproxy                     <span class="comment"># 同 UID 参数。</span></span><br><span class="line">   group       haproxy                     <span class="comment"># 同 GID 参数，建议使用专用用户组。</span></span><br><span class="line">   daemon                                  <span class="comment"># 让 HAProxy 以守护进程的方式工作于后台，等同于命令行参数“-D”的功能。当然，也可以在命令行中用“-db”参数将其禁用。</span></span><br><span class="line">   stats socket /var/lib/haproxy/stats     <span class="comment"># 统计信息保存位置。</span></span><br><span class="line"></span><br><span class="line">defaults                                   <span class="comment"># 默认配置。</span></span><br><span class="line">   <span class="built_in">log</span> global                              <span class="comment"># 日志继承全局配置段的设置。</span></span><br><span class="line">   retries 2                               <span class="comment"># 向上游服务器尝试连接的最大次数，超过此值便认为后端服务器不可用。</span></span><br><span class="line">   timeout connect  2s                     <span class="comment"># HAProxy 与后端服务器连接超时时间。如果在同一个局域网内，可设置成较短的时间。</span></span><br><span class="line">   timeout client 30000s                   <span class="comment"># 客户端与 HAProxy 连接后，数据传输完毕，即非活动连接的超时时间。</span></span><br><span class="line">   timeout server 30000s                   <span class="comment"># 服务器端非活动连接的超时时间。</span></span><br><span class="line"></span><br><span class="line">listen admin_stats                         <span class="comment"># frontend 和 backend 的组合体，此监控组的名称可按需进行自定义。</span></span><br><span class="line">   <span class="built_in">bind</span> 0.0.0.0:8080                       <span class="comment"># 监听端口。</span></span><br><span class="line">   mode http                               <span class="comment"># 监控运行的模式，此处为 `http` 模式。</span></span><br><span class="line">   option httplog                          <span class="comment"># 开始启用记录 HTTP 请求的日志功能。</span></span><br><span class="line">   maxconn 10                              <span class="comment"># 最大并发连接数。</span></span><br><span class="line">   stats refresh 30s                       <span class="comment"># 每隔 30 秒自动刷新监控页面。</span></span><br><span class="line">   stats uri /haproxy                      <span class="comment"># 监控页面的 URL。</span></span><br><span class="line">   stats realm HAProxy                     <span class="comment"># 监控页面的提示信息。</span></span><br><span class="line">   stats auth admin:pingcap123             <span class="comment"># 监控页面的用户和密码，可设置多个用户名。</span></span><br><span class="line">   stats hide-version                      <span class="comment"># 隐藏监控页面上的 HAProxy 版本信息。</span></span><br><span class="line">   stats  admin <span class="keyword">if</span> TRUE                    <span class="comment"># 手工启用或禁用后端服务器（HAProxy 1.4.9 及之后版本开始支持）。</span></span><br><span class="line"></span><br><span class="line">listen tidb-cluster                        <span class="comment"># 配置 database 负载均衡。</span></span><br><span class="line">   <span class="built_in">bind</span> 0.0.0.0:3390                       <span class="comment"># 浮动 IP 和 监听端口。</span></span><br><span class="line">   mode tcp                                <span class="comment"># HAProxy 要使用第 4 层的传输层。</span></span><br><span class="line">   balance leastconn                       <span class="comment"># 连接数最少的服务器优先接收连接。`leastconn` 建议用于长会话服务，例如 LDAP、SQL、TSE 等，而不是短会话协议，如 HTTP。该算法是动态的，对于启动慢的服务器，服务器权重会在运行中作调整。</span></span><br><span class="line">   server tidb-1 10.193.50.17:4000 check inter 2000 rise 2 fall 3       <span class="comment"># 检测 4000 端口，检测频率为每 2000 毫秒一次。如果 2 次检测为成功，则认为服务器可用；如果 3 次检测为失败，则认为服务器不可用。</span></span><br><span class="line">   server tidb-2 10.193.50.18:4000 check inter 2000 rise 2 fall 3</span><br><span class="line">   server tidb-3 10.193.50.19:4000 check inter 2000 rise 2 fall 3</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">haproxy -f /etc/haproxy/haproxy.cfg</span><br><span class="line">systemctl <span class="built_in">enable</span> haproxy</span><br><span class="line">systemctl start haproxy</span><br></pre></td></tr></table></figure>
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tiup cluster list</span><br><span class="line">tiup cluster display tidb-eip</span><br><span class="line">tiup cluster start tidb-eip</span><br></pre></td></tr></table></figure>
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><h3 id="PD"><a href="#PD" class="headerlink" title="PD"></a>PD</h3><p><a target="_blank" rel="noopener" href="http://10.193.50.17:2379/dashboard">http://10.193.50.17:2379/dashboard</a>   </p>
+<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a>Grafana</h3><p><a target="_blank" rel="noopener" href="http://10.193.50.17:3000/">http://10.193.50.17:3000</a>  </p>
+<h3 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h3><p>mysql -uroot -p -h10.193.50.17 -P3390<br>select tidb_version()\G</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/202112/%E4%BD%BF%E7%94%A8DataX%E5%90%8C%E6%AD%A5MySQL/" rel="prev" title="使用DataX同步MySQL">
+      <i class="fa fa-chevron-left"></i> 使用DataX同步MySQL
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/202112/Scrapyd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="next" title="Scrapyd学习笔记">
+      Scrapyd学习笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E7%BD%91"><span class="nav-number">1.</span> <span class="nav-text">官网</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A3%81%E7%9B%98"><span class="nav-number">2.</span> <span class="nav-text">磁盘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Swap"><span class="nav-number">3.</span> <span class="nav-text">Swap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ntp"><span class="nav-number">4.</span> <span class="nav-text">ntp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%BC%98%E5%8C%96"><span class="nav-number">5.</span> <span class="nav-text">操作系统优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ssh%E4%BA%92%E4%BF%A1"><span class="nav-number">6.</span> <span class="nav-text">ssh互信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TiUP"><span class="nav-number">7.</span> <span class="nav-text">TiUP</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HaProxy"><span class="nav-number">8.</span> <span class="nav-text">HaProxy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8"><span class="nav-number">9.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">10.</span> <span class="nav-text">验证</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PD"><span class="nav-number">10.1.</span> <span class="nav-text">PD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Grafana"><span class="nav-number">10.2.</span> <span class="nav-text">Grafana</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MySQL"><span class="nav-number">10.3.</span> <span class="nav-text">MySQL</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">223</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
