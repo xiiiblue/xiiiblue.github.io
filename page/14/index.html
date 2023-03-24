@@ -148,6 +148,691 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">jmeter压测笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-01-28 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-28T00:00:00+08:00">2019-01-28</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网下载"><a href="#官网下载" class="headerlink" title="官网下载"></a>官网下载</h2><p><a target="_blank" rel="noopener" href="http://jmeter.apache.org/download_jmeter.cgi">http://jmeter.apache.org/download_jmeter.cgi</a></p>
+<h2 id="配置修改"><a href="#配置修改" class="headerlink" title="配置修改"></a>配置修改</h2><ol>
+<li><p>停止防火墙<br>服务器部署时，可临时停止防火墙</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop firewalld.service </span><br></pre></td></tr></table></figure></li>
+<li><p>编辑bin/jmeter，新增HEAP参数<br>如压测文件较大，例如报文中包含BASE64图片或视频，则需调大HEAP参数<br>vi jmeter</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HEAP&#x3D;&quot;-Xms4096m -Xmx4096m&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="单机测试"><a href="#单机测试" class="headerlink" title="单机测试"></a>单机测试</h2><p>图形模式仅用来配置.jmx文件，正式压测时需要在服务器中使用命令行方式启动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">..&#x2F;bin&#x2F;jmeter.sh -n -t test.jmx -l result.jtl</span><br></pre></td></tr></table></figure>
+<h2 id="分布式测试"><a href="#分布式测试" class="headerlink" title="分布式测试"></a>分布式测试</h2><h3 id="开启X11"><a href="#开启X11" class="headerlink" title="开启X11"></a>开启X11</h3><p>Master需要和Slave在同一网段下，如果条件受限，则需要将Master部署在服务器中，并开启X11转发</p>
+</li>
+<li><p>安装依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y xorg-x11-server-Xorg xorg-x11-xauth xorg-x11-apps</span><br></pre></td></tr></table></figure></li>
+<li><p>sshd_config</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -i X11Forwarding &#x2F;etc&#x2F;ssh&#x2F;sshd_config</span><br></pre></td></tr></table></figure>
+<p>保证值为YES</p>
+</li>
+<li><p>SSH登录并测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh -Y user@host  # -Y参数开启信任的X11转发</span><br><span class="line">xclock #测试X11转发是否成功</span><br></pre></td></tr></table></figure></li>
+<li><p>解决英文X11方块字乱码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install fontforge</span><br></pre></td></tr></table></figure>
+<h3 id="Master修改"><a href="#Master修改" class="headerlink" title="Master修改"></a>Master修改</h3></li>
+<li><p>vi jmeter.properties</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">remote_hosts&#x3D;172.20.100.127:1099,172.20.100.128:1099,172.20.100.129:1099,172.20.100.130:1099,172.20.100.131:1099</span><br></pre></td></tr></table></figure></li>
+<li><p>启动GUI</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;jmeter.sh</span><br></pre></td></tr></table></figure>
+<h3 id="Slave修改"><a href="#Slave修改" class="headerlink" title="Slave修改"></a>Slave修改</h3></li>
+<li><p>修改bin/jmeter.properties<br>vi jmeter.properties</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">server_port&#x3D;1099</span><br><span class="line">server.rmi.ssl.disable&#x3D;true 　　  </span><br></pre></td></tr></table></figure></li>
+<li><p>启动bin/jmeter-server</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export RMI_HOST_DEF&#x3D;-Djava.rmi.server.hostname&#x3D;172.20.100.130 #本机IP</span><br><span class="line">.&#x2F;jmeter-server</span><br></pre></td></tr></table></figure>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2></li>
+</ol>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://rtfmp.com/2015/10/08/how-configure-x11-forwarding-in-rhel7-centos7/">https://rtfmp.com/2015/10/08/how-configure-x11-forwarding-in-rhel7-centos7/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.bbsmax.com/A/6pdD4xNGdw/">https://www.bbsmax.com/A/6pdD4xNGdw/</a></li>
+<li><a target="_blank" rel="noopener" href="http://jmeter.apache.org/usermanual/remote-test.html#setup_ssl">http://jmeter.apache.org/usermanual/remote-test.html#setup_ssl</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jzhg/p/9099118.html">https://www.cnblogs.com/jzhg/p/9099118.html</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201901/20190128nmon%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201901/20190128nmon%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">nmon常用操作</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-01-28 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-28T00:00:00+08:00">2019-01-28</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网及下载"><a href="#官网及下载" class="headerlink" title="官网及下载"></a>官网及下载</h2><p><a target="_blank" rel="noopener" href="http://nmon.sourceforge.net/pmwiki.php">http://nmon.sourceforge.net/pmwiki.php</a></p>
+<h2 id="简易启动参数"><a href="#简易启动参数" class="headerlink" title="简易启动参数"></a>简易启动参数</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;nmon  -f -t -r test -s 10 -c 30</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>-f ：按标准格式输出文件名称：<hostname>_YYYYMMDD_HHMM.nmon<br>-t 输出最耗资源的进程<br>-s ：每隔n秒抽样一次<br>-c ：取出多少个抽样数量</p>
+</blockquote>
+<h2 id="参数详细说明"><a href="#参数详细说明" class="headerlink" title="参数详细说明"></a>参数详细说明</h2><p><a target="_blank" rel="noopener" href="https://www.ibm.com/support/knowledgecenter/zh/ssw_aix_72/com.ibm.aix.cmds4/nmon.htm">https://www.ibm.com/support/knowledgecenter/zh/ssw_aix_72/com.ibm.aix.cmds4/nmon.htm</a></p>
+<h2 id="GUI模式说明"><a href="#GUI模式说明" class="headerlink" title="GUI模式说明"></a>GUI模式说明</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">q : 停止并退出 Nmon</span><br><span class="line">h : 查看帮助</span><br><span class="line">c : 查看 CPU 统计数据</span><br><span class="line">m : 查看内存统计数据</span><br><span class="line">d : 查看硬盘统计数据</span><br><span class="line">k : 查看内核统计数据</span><br><span class="line">n : 查看网络统计数据</span><br><span class="line">N : 查看 NFS 统计数据</span><br><span class="line">j : 查看文件系统统计数据</span><br><span class="line">t : 查看高耗进程</span><br><span class="line">V : 查看虚拟内存统计数据</span><br><span class="line">v : 详细模式</span><br></pre></td></tr></table></figure>
+<h2 id="nmon-analyser"><a href="#nmon-analyser" class="headerlink" title="nmon analyser"></a>nmon analyser</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/aix/library/au-nmon_analyser/index.html">https://www.ibm.com/developerworks/aix/library/au-nmon_analyser/index.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/community/wikis/home?lang=en#!/wiki/Power%20Systems/page/nmon_Analyser">https://www.ibm.com/developerworks/community/wikis/home?lang=en#!/wiki/Power%20Systems/page/nmon_Analyser</a></li>
+<li><a target="_blank" rel="noopener" href="https://yq.aliyun.com/articles/283447">https://yq.aliyun.com/articles/283447</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201901/20190122MySQL%E5%8F%82%E6%95%B0%E8%B0%83%E6%95%B4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201901/20190122MySQL%E5%8F%82%E6%95%B0%E8%B0%83%E6%95%B4/" class="post-title-link" itemprop="url">MySQL参数调整</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-01-22 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-22T00:00:00+08:00">2019-01-22</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="开启Profiling"><a href="#开启Profiling" class="headerlink" title="开启Profiling"></a>开启Profiling</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">show variables like &#39;%profiling%&#39;;</span><br><span class="line">set profiling&#x3D;1;</span><br><span class="line">执行SQL</span><br><span class="line">set profiling&#x3D;0;</span><br><span class="line"></span><br><span class="line">show profiles;</span><br><span class="line">show profile cpu,block io for query 2;</span><br></pre></td></tr></table></figure>
+<h2 id="执行计划"><a href="#执行计划" class="headerlink" title="执行计划"></a>执行计划</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">explain </span><br><span class="line">select a.id,b.real_name from order_info a</span><br><span class="line">left join person_info b on b.id&#x3D;a.person_info_id</span><br><span class="line"></span><br><span class="line">explain </span><br><span class="line">select a.id,b.id from auth_info a</span><br><span class="line">left join order_info b on b.id&#x3D;a.order_id</span><br></pre></td></tr></table></figure>
+<h2 id="查表锁"><a href="#查表锁" class="headerlink" title="查表锁"></a>查表锁</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">show status like &#39;table%&#39;;</span><br><span class="line">Table_locks_immediate 产生表级锁定的次数</span><br><span class="line">Table_locks_waited 表级锁定争用发生的等待次数</span><br></pre></td></tr></table></figure>
+<h2 id="查行锁"><a href="#查行锁" class="headerlink" title="查行锁"></a>查行锁</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">show status like &#39;innodb_row_lock%&#39;;</span><br><span class="line">Innodb_row_lock_current_waits 正在等待锁定的数量</span><br><span class="line">Innodb_row_lock_time 锁定总时长</span><br><span class="line">Innodb_row_lock_time_avg 平均等待时间</span><br><span class="line">Innodb_row_lock_time_max 最长等待时间</span><br><span class="line">Innodb_row_lock_waits 总共等待次数</span><br><span class="line"></span><br><span class="line">show innodb status;</span><br></pre></td></tr></table></figure>
+<h2 id="QueryCache"><a href="#QueryCache" class="headerlink" title="QueryCache"></a>QueryCache</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">show variables like &#39;%query_cache%&#39;;</span><br><span class="line">show status like &#39;Qcache%&#39;;</span><br></pre></td></tr></table></figure>
+<h2 id="网络链接"><a href="#网络链接" class="headerlink" title="网络链接"></a>网络链接</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">show variables like &#39;%open_files_limit%&#39;;</span><br><span class="line">show variables like &#39;%max_connections%&#39;;</span><br><span class="line">set GLOBAL max_connections&#x3D;500;</span><br><span class="line"></span><br><span class="line">show variables like &#39;%thread_cache_size%&#39;;</span><br><span class="line">set GLOBAL thread_cache_size&#x3D;50;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">show status like &#39;connections&#39;;</span><br><span class="line">show status like &#39;%thread%&#39;;</span><br><span class="line">show processlist; </span><br><span class="line">mysqladmin -uroot -p processlist</span><br><span class="line">mysqladmin -uroot -p status</span><br></pre></td></tr></table></figure>
+<h2 id="my-cnf顺序"><a href="#my-cnf顺序" class="headerlink" title="my.cnf顺序"></a>my.cnf顺序</h2><ul>
+<li>/etc/my.cnf  </li>
+<li>/etc/mysql/my.cnf  </li>
+<li>/usr/local/mysql/etc/my.cnf </li>
+<li>~/.my.cnf</li>
+</ul>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://mysql.taobao.org/monthly/2015/12/04/">http://mysql.taobao.org/monthly/2015/12/04/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.kancloud.cn/thinkphp/mysql-faq/47450">https://www.kancloud.cn/thinkphp/mysql-faq/47450</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000008131735">https://segmentfault.com/a/1190000008131735</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202002/Postgres%E8%BF%90%E7%BB%B4%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202002/Postgres%E8%BF%90%E7%BB%B4%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Postgres运维笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-12-03 15:31:57" itemprop="dateCreated datePublished" datetime="2018-12-03T15:31:57+08:00">2018-12-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-01-05 13:59:31" itemprop="dateModified" datetime="2021-01-05T13:59:31+08:00">2021-01-05</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://www.postgresql.org/">https://www.postgresql.org/</a><br>版本选择: 12.1, 11.6, 10.11, 9.6.16, 9.5.20, 9.4.25</p>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.codementor.io/engineerapart/getting-started-with-postgresql-on-mac-osx-are8jcopb">Getting Started with PostgreSQL on Mac OSX</a></li>
+<li><a target="_blank" rel="noopener" href="https://postgresapp.com/documentation/gui-tools.html">GUI Client Apps</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/mchina/archive/2013/04/26/3040440.html">PostgreSQL角色管理</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/10ced5145d39">Mac安装PostgreSQL</a></li>
+</ul>
+<h2 id="电子书"><a href="#电子书" class="headerlink" title="电子书"></a>电子书</h2><ul>
+<li>PostgreSQL实战    </li>
+<li>PostgreSQL10.1中文手册</li>
+<li>数据架构师的PostgreSQL修炼</li>
+</ul>
+<h2 id="macos下brew安装"><a href="#macos下brew安装" class="headerlink" title="macos下brew安装"></a>macos下brew安装</h2><blockquote>
+<p>暂时选择较流行的10.11版本</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mv &#x2F;usr&#x2F;local&#x2F;var&#x2F;postgres &#x2F;usr&#x2F;local&#x2F;var&#x2F;postgres.old</span><br><span class="line"></span><br><span class="line">brew install postgresql@10</span><br><span class="line"></span><br><span class="line">echo &#39;export PATH&#x3D;&quot;&#x2F;usr&#x2F;local&#x2F;opt&#x2F;postgresql@10&#x2F;bin:$PATH&quot;&#39; &gt;&gt; ~&#x2F;.zshrc</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">默认端口 5431，默认数据库 postgres，默认用户密码同与macos当前用户相同</span><br><span class="line">查看版本号: pg_ctl -V</span><br><span class="line">二进制路径: &#x2F;usr&#x2F;local&#x2F;Cellar&#x2F;postgresql@10&#x2F;10.11</span><br><span class="line">数据库路径: initdb &#x2F;usr&#x2F;local&#x2F;var&#x2F;postgres</span><br></pre></td></tr></table></figure>
+<h3 id="brew服务启停"><a href="#brew服务启停" class="headerlink" title="brew服务启停"></a>brew服务启停</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">brew services run postgresql@10</span><br><span class="line">brew services start postgresql@10</span><br><span class="line">brew services stop postgresql@10</span><br></pre></td></tr></table></figure>
+<h3 id="手工启停"><a href="#手工启停" class="headerlink" title="手工启停"></a>手工启停</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pg_ctl -D &#x2F;usr&#x2F;local&#x2F;var&#x2F;postgres -l &#x2F;usr&#x2F;local&#x2F;var&#x2F;postgres&#x2F;server.log start</span><br><span class="line">pg_ctl -D &#x2F;usr&#x2F;local&#x2F;var&#x2F;postgres -l &#x2F;usr&#x2F;local&#x2F;var&#x2F;postgres&#x2F;server.log status</span><br><span class="line">pg_ctl -D &#x2F;usr&#x2F;local&#x2F;var&#x2F;postgres -l &#x2F;usr&#x2F;local&#x2F;var&#x2F;postgres&#x2F;server.log stop -s -m fast</span><br></pre></td></tr></table></figure>
+<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><h3 id="psql"><a href="#psql" class="headerlink" title="psql"></a>psql</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">psql -h 127.0.0.1 -p 5432 -d postgres -U yourname</span><br><span class="line">psql -d postgres</span><br></pre></td></tr></table></figure>
+<h3 id="pgcli"><a href="#pgcli" class="headerlink" title="pgcli"></a>pgcli</h3><p><a target="_blank" rel="noopener" href="https://www.pgcli.com/">https://www.pgcli.com/</a></p>
+<p>一个增强的psql命令行工具，提供高亮与代码补全，可替代psql</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pip3 install pgcli</span><br><span class="line"></span><br><span class="line">pgcli -d postgres</span><br></pre></td></tr></table></figure>
+<h3 id="GUI"><a href="#GUI" class="headerlink" title="GUI"></a>GUI</h3><ul>
+<li>pgAdmin4 WEB版UI较差，可适用于数据库管理，界面逻辑清晰，可显示DDL便于学习</li>
+<li>Navicat 老版本对PG支持差需使用V15.X，UI较好但隐藏过多细节，可适用于数据库管理与SQL编写</li>
+<li>DataGrip 仅适用于SQL编写，全平台，在IDEA中已集成，对PG支持略差</li>
+<li>DBeaver 仅适用于SQL编写，全平台，对PG支持略好，UI较差<blockquote>
+<p>没有特别突出的方案。大而全选Navicat，偏重管理选择pgAdmin4，偏重开发运维选择DataGrip</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="psql控制台命令"><a href="#psql控制台命令" class="headerlink" title="psql控制台命令"></a>psql控制台命令</h2><p>\password：设置当前登录用户的密码<br>\h：查看SQL命令的解释，比如\h select。<br>?：查看psql命令列表。<br>\l：列出所有数据库。<br>\c [database_name]：连接其他数据库。<br>\d：列出当前数据库的所有表格。<br>\d [table_name]：列出某一张表格的结构。<br>\du：列出所有用户。<br>\e：打开文本编辑器。<br>\conninfo：列出当前数据库和连接的信息。<br>\password [user]: 修改用户密码<br>\q：退出</p>
+<h2 id="常用管理SQL"><a href="#常用管理SQL" class="headerlink" title="常用管理SQL"></a>常用管理SQL</h2><h3 id="创建用户"><a href="#创建用户" class="headerlink" title="创建用户"></a>创建用户</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE USER testuser WITH PASSWORD &#39;testuser&#39;;</span><br><span class="line">CREATE ROLE testuser WITH LOGIN PASSWORD &#39;testuser&#39;;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在PG中，用户和角色的概念相同</p>
+</blockquote>
+<h3 id="创建删除数据库"><a href="#创建删除数据库" class="headerlink" title="创建删除数据库"></a>创建删除数据库</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE DATABASE testdb OWNER testuser;</span><br><span class="line">DROP DATABASE testdb;</span><br></pre></td></tr></table></figure>
+<h3 id="创建SCHEMA"><a href="#创建SCHEMA" class="headerlink" title="创建SCHEMA"></a>创建SCHEMA</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CREATE SCHEMA testschema2 AUTHORIZATION zorrouser;</span><br></pre></td></tr></table></figure>
+<h3 id="将DB权限赋予用户"><a href="#将DB权限赋予用户" class="headerlink" title="将DB权限赋予用户"></a>将DB权限赋予用户</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON DATABASE testdb to testuser;</span><br></pre></td></tr></table></figure>
+<h3 id="用户赋权限"><a href="#用户赋权限" class="headerlink" title="用户赋权限"></a>用户赋权限</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ALTER ROLE testuser CREATEDB;</span><br><span class="line">ALTER ROLE testuser WITH LOGIN;</span><br></pre></td></tr></table></figure>
+<h3 id="其它赋权语句"><a href="#其它赋权语句" class="headerlink" title="其它赋权语句"></a>其它赋权语句</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ALTER SCHEMA public OWNER TO testuser;</span><br><span class="line">ALTER ROLE testuser WITH PASSWORD &#39;testuser&#39;;</span><br></pre></td></tr></table></figure>
+<h2 id="常用数据类型"><a href="#常用数据类型" class="headerlink" title="常用数据类型"></a>常用数据类型</h2><p><a target="_blank" rel="noopener" href="http://www.postgres.cn/docs/9.3/datatype.html">http://www.postgres.cn/docs/9.3/datatype.html</a></p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>解释</th>
+<th>长度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>integer</td>
+<td>存储整数</td>
+<td>4字节</td>
+</tr>
+<tr>
+<td>bigint</td>
+<td>存储整数，大范围</td>
+<td>8字节</td>
+</tr>
+<tr>
+<td>numeric</td>
+<td>用户指定的精度，精确</td>
+<td>可自定</td>
+</tr>
+<tr>
+<td>serial</td>
+<td>自动递增整数</td>
+<td>4字节</td>
+</tr>
+<tr>
+<td>bigserial</td>
+<td>大的自动递增整数</td>
+<td>8字节</td>
+</tr>
+<tr>
+<td>varchar(size)</td>
+<td>字符串</td>
+<td></td>
+</tr>
+<tr>
+<td>text</td>
+<td>可变长度字符串</td>
+<td></td>
+</tr>
+<tr>
+<td>timestamp</td>
+<td>日期和时间(无时区)</td>
+<td>8字节</td>
+</tr>
+<tr>
+<td>boolean</td>
+<td>它指定true或false的状态</td>
+<td>1字节</td>
+</tr>
+</tbody></table>
+<h2 id="远程访问"><a href="#远程访问" class="headerlink" title="远程访问"></a>远程访问</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">vi postgresql.conf</span><br><span class="line">listen_addresses &#x3D; &#39;*&#39;</span><br><span class="line"></span><br><span class="line">vi pg_hba.conf</span><br><span class="line"># TYPE  DATABASE  USER  CIDR-ADDRESS  METHOD</span><br><span class="line">host  all  all 0.0.0.0&#x2F;0 md5</span><br><span class="line"></span><br><span class="line">sudo service postgresql restart</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="数据导入导出"><a href="#数据导入导出" class="headerlink" title="数据导入导出"></a>数据导入导出</h2><h2 id="备份与恢复"><a href="#备份与恢复" class="headerlink" title="备份与恢复"></a>备份与恢复</h2>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201901/20181128LDAP%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201901/20181128LDAP%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">LDAP配置笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-11-28 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-28T00:00:00+08:00">2018-11-28</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://myanbin.github.io/post/openldap-in-centos-7.html">https://myanbin.github.io/post/openldap-in-centos-7.html</a></p>
+<h2 id="安装openldap"><a href="#安装openldap" class="headerlink" title="安装openldap"></a>安装openldap</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">yum install -y openldap-servers openldap-clients</span><br><span class="line">cp &#x2F;usr&#x2F;share&#x2F;openldap-servers&#x2F;DB_CONFIG.example &#x2F;var&#x2F;lib&#x2F;ldap&#x2F;DB_CONFIG</span><br><span class="line">chown ldap. &#x2F;var&#x2F;lib&#x2F;ldap&#x2F;DB_CONFIG</span><br><span class="line">systemctl enable slapd</span><br><span class="line">systemctl start slapd</span><br></pre></td></tr></table></figure>
+<h2 id="生成密码"><a href="#生成密码" class="headerlink" title="生成密码"></a>生成密码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">slappasswd</span><br><span class="line"></span><br><span class="line">vim chrootpw.ldif</span><br><span class="line">dn: olcDatabase&#x3D;&#123;0&#125;config,cn&#x3D;config</span><br><span class="line">changetype: modify</span><br><span class="line">add: olcRootPW</span><br><span class="line">olcRootPW: &#123;SSHA&#125;KS&#x2F;bFZ8KTmO56khHjJvM97l7zivH1MwG</span><br><span class="line"></span><br><span class="line">ldapadd -Y EXTERNAL -H ldapi:&#x2F;&#x2F;&#x2F; -f chrootpw.ldif</span><br></pre></td></tr></table></figure>
+<h2 id="导入基本的Schema"><a href="#导入基本的Schema" class="headerlink" title="导入基本的Schema"></a>导入基本的Schema</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ldapadd -Y EXTERNAL -H ldapi:&#x2F;&#x2F;&#x2F; -f &#x2F;etc&#x2F;openldap&#x2F;schema&#x2F;cosine.ldif</span><br><span class="line">ldapadd -Y EXTERNAL -H ldapi:&#x2F;&#x2F;&#x2F; -f &#x2F;etc&#x2F;openldap&#x2F;schema&#x2F;nis.ldif</span><br><span class="line">ldapadd -Y EXTERNAL -H ldapi:&#x2F;&#x2F;&#x2F; -f &#x2F;etc&#x2F;openldap&#x2F;schema&#x2F;inetorgperson.ldif</span><br></pre></td></tr></table></figure>
+<h2 id="配置LDAP顶级域"><a href="#配置LDAP顶级域" class="headerlink" title="配置LDAP顶级域"></a>配置LDAP顶级域</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">vim chdomain.ldif</span><br><span class="line">dn: olcDatabase&#x3D;&#123;1&#125;monitor,cn&#x3D;config</span><br><span class="line">changetype: modify</span><br><span class="line">replace: olcAccess</span><br><span class="line">olcAccess: &#123;0&#125;to * by dn.base&#x3D;&quot;gidNumber&#x3D;0+uidNumber&#x3D;0,cn&#x3D;peercred,cn&#x3D;external,cn&#x3D;auth&quot;</span><br><span class="line">  read by dn.base&#x3D;&quot;cn&#x3D;Manager,dc&#x3D;yourcompany,dc&#x3D;cn&quot; read by * none</span><br><span class="line"></span><br><span class="line">dn: olcDatabase&#x3D;&#123;2&#125;hdb,cn&#x3D;config</span><br><span class="line">changetype: modify</span><br><span class="line">replace: olcSuffix</span><br><span class="line">olcSuffix: dc&#x3D;yourcompany,dc&#x3D;cn</span><br><span class="line"></span><br><span class="line">dn: olcDatabase&#x3D;&#123;2&#125;hdb,cn&#x3D;config</span><br><span class="line">changetype: modify</span><br><span class="line">replace: olcRootDN</span><br><span class="line">olcRootDN: cn&#x3D;Manager,dc&#x3D;yourcompany,dc&#x3D;cn</span><br><span class="line"></span><br><span class="line">dn: olcDatabase&#x3D;&#123;2&#125;hdb,cn&#x3D;config</span><br><span class="line">changetype: modify</span><br><span class="line">add: olcRootPW</span><br><span class="line">olcRootPW: &#123;SSHA&#125;EMaQFVOLPja2sx4F4VWW4ANE27PwDlPD</span><br><span class="line"></span><br><span class="line">dn: olcDatabase&#x3D;&#123;2&#125;hdb,cn&#x3D;config</span><br><span class="line">changetype: modify</span><br><span class="line">add: olcAccess</span><br><span class="line">olcAccess: &#123;0&#125;to attrs&#x3D;userPassword,shadowLastChange by</span><br><span class="line">  dn&#x3D;&quot;cn&#x3D;Manager,dc&#x3D;yourcompany,dc&#x3D;cn&quot; write by anonymous auth by self write by * none</span><br><span class="line">olcAccess: &#123;1&#125;to dn.base&#x3D;&quot;&quot; by * read</span><br><span class="line">olcAccess: &#123;2&#125;to * by dn&#x3D;&quot;cn&#x3D;Manager,dc&#x3D;yourcompany,dc&#x3D;cn&quot; write by * read</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ldapmodify -Y EXTERNAL -H ldapi:&#x2F;&#x2F;&#x2F; -f chdomain.ldif</span><br></pre></td></tr></table></figure>
+<h2 id="创建组织与角色"><a href="#创建组织与角色" class="headerlink" title="创建组织与角色"></a>创建组织与角色</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">vim basedomain.ldif</span><br><span class="line">dn: dc&#x3D;yourcompany,dc&#x3D;cn</span><br><span class="line">objectClass: top</span><br><span class="line">objectClass: dcObject</span><br><span class="line">objectclass: organization</span><br><span class="line">o: yourcompany Group</span><br><span class="line">dc: yourcompany</span><br><span class="line"></span><br><span class="line">dn: cn&#x3D;Manager,dc&#x3D;yourcompany,dc&#x3D;cn</span><br><span class="line">objectClass: organizationalRole</span><br><span class="line">cn: Manager</span><br><span class="line"></span><br><span class="line">dn: ou&#x3D;People,dc&#x3D;yourcompany,dc&#x3D;cn</span><br><span class="line">objectClass: organizationalUnit</span><br><span class="line">ou: People</span><br><span class="line"></span><br><span class="line">dn: ou&#x3D;Group,dc&#x3D;yourcompany,dc&#x3D;cn</span><br><span class="line">objectClass: organizationalUnit</span><br><span class="line">ou: Group</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ldapadd -x -D cn&#x3D;Manager,dc&#x3D;yourcompany,dc&#x3D;cn -W -f basedomain.ldif</span><br></pre></td></tr></table></figure>
+<h2 id="安装phpLDAPadmin"><a href="#安装phpLDAPadmin" class="headerlink" title="安装phpLDAPadmin"></a>安装phpLDAPadmin</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum -y install epel-release</span><br><span class="line">yum --enablerepo&#x3D;epel -y install phpldapadmin</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;phpldapadmin&#x2F;config.php</span><br><span class="line">$servers-&gt;setValue(&#39;login&#39;,&#39;attr&#39;,&#39;dn&#39;);</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;httpd&#x2F;conf.d&#x2F;phpldapadmin.conf</span><br><span class="line">Allow All</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201907/20190731NTP%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201907/20190731NTP%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">ntp客户端配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-11-12 13:44:57" itemprop="dateCreated datePublished" datetime="2018-11-12T13:44:57+08:00">2018-11-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-07-31 00:00:00" itemprop="dateModified" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install ntp</span><br></pre></td></tr></table></figure>
+<h2 id="修改配置"><a href="#修改配置" class="headerlink" title="修改配置"></a>修改配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">vim &#x2F;etc&#x2F;ntp.conf</span><br><span class="line">server ntp1.aliyun.com</span><br><span class="line">server ntp2.aliyun.com</span><br><span class="line">server ntp3.aliyun.com</span><br><span class="line">server ntp4.aliyun.com</span><br><span class="line">server ntp5.aliyun.com</span><br><span class="line">server ntp6.aliyun.com</span><br><span class="line">server ntp7.aliyun.com</span><br></pre></td></tr></table></figure>
+<h2 id="手动同步"><a href="#手动同步" class="headerlink" title="手动同步"></a>手动同步</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ntpdate ntp1.aliyun.com</span><br></pre></td></tr></table></figure>
+<h2 id="自动同步"><a href="#自动同步" class="headerlink" title="自动同步"></a>自动同步</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart ntpd</span><br><span class="line">ntpq -p</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201907/20190731Hexo%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201907/20190731Hexo%E6%90%AD%E5%BB%BA/" class="post-title-link" itemprop="url">Hexo搭建</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-11-06 14:57:16" itemprop="dateCreated datePublished" datetime="2018-11-06T14:57:16+08:00">2018-11-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2019-07-31 00:00:00" itemprop="dateModified" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://hexo.io/">https://hexo.io</a></p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g hexo-cli</span><br></pre></td></tr></table></figure>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo init hexo-blog</span><br></pre></td></tr></table></figure>
+<p>vi _config.yml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https:&#x2F;&#x2F;your-repo.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
+<h2 id="生成静态页"><a href="#生成静态页" class="headerlink" title="生成静态页"></a>生成静态页</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo g</span><br></pre></td></tr></table></figure>
+<h2 id="本机测试"><a href="#本机测试" class="headerlink" title="本机测试"></a>本机测试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+<h2 id="上传"><a href="#上传" class="headerlink" title="上传"></a>上传</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+<h2 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;theme-next&#x2F;hexo-theme-next themes&#x2F;next</span><br></pre></td></tr></table></figure>
+<h2 id="RSS"><a href="#RSS" class="headerlink" title="RSS"></a>RSS</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install --save hexo-generator-feed</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">social:</span><br><span class="line">  GitHub: https:&#x2F;&#x2F;your-repo.git</span><br><span class="line">  简书: https:&#x2F;&#x2F;your-blog</span><br><span class="line">social_icons:</span><br><span class="line">  enable: true</span><br><span class="line">  icons_only: false</span><br><span class="line">  transition: false</span><br><span class="line">  GitHub: github</span><br><span class="line">  简书: book</span><br></pre></td></tr></table></figure>
+<h2 id="侧边栏社交链接"><a href="#侧边栏社交链接" class="headerlink" title="侧边栏社交链接"></a>侧边栏社交链接</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">social:</span><br><span class="line">  GitHub: https:&#x2F;&#x2F;your-repo.git</span><br><span class="line">  简书: https:&#x2F;&#x2F;your-blog</span><br><span class="line">social_icons:</span><br><span class="line">  enable: true</span><br><span class="line">  icons_only: false</span><br><span class="line">  transition: false</span><br><span class="line">  GitHub: github</span><br><span class="line">  简书: book</span><br></pre></td></tr></table></figure>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/">https://hexo.io/zh-cn/docs/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a19962485b4a">https://www.jianshu.com/p/a19962485b4a</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000013660164/">https://segmentfault.com/a/1190000013660164/</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201811/CentOS7%E4%B8%8BOracle11g%E8%87%AA%E5%90%AF%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201811/CentOS7%E4%B8%8BOracle11g%E8%87%AA%E5%90%AF%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">CentOS7下Oracle11g自启配置</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-11-05 15:05:54" itemprop="dateCreated datePublished" datetime="2018-11-05T15:05:54+08:00">2018-11-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:20:46" itemprop="dateModified" datetime="2018-11-06T15:20:46+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="编辑init-d脚本"><a href="#编辑init-d脚本" class="headerlink" title="编辑init.d脚本"></a>编辑init.d脚本</h2><p>vi /etc/init.d/dbora</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">#! &#x2F;bin&#x2F;sh -x</span><br><span class="line">#</span><br><span class="line"># chkconfig: 2345 80 05</span><br><span class="line"># description: start and stop Oracle Database Enterprise Edition on Oracle Linux 5 and 6</span><br><span class="line">#</span><br><span class="line"></span><br><span class="line"># In &#x2F;etc&#x2F;oratab, change the autostart field from N to Y for any</span><br><span class="line"># databases that you want autostarted.</span><br><span class="line">#</span><br><span class="line"># Create this file as &#x2F;etc&#x2F;init.d&#x2F;dbora and execute:</span><br><span class="line">#  chmod 750 &#x2F;etc&#x2F;init.d&#x2F;dbora</span><br><span class="line">#  chkconfig --add dbora</span><br><span class="line">#  chkconfig dbora on</span><br><span class="line"></span><br><span class="line"># Note: Change the value of ORACLE_HOME to specify the correct Oracle home</span><br><span class="line"># directory for your installation.</span><br><span class="line"># ORACLE_HOME&#x3D;&#x2F;u01&#x2F;app&#x2F;oracle&#x2F;product&#x2F;11.1.0&#x2F;db_1</span><br><span class="line">ORACLE_HOME&#x3D;&#x2F;app&#x2F;oracle&#x2F;product&#x2F;11.2.0</span><br><span class="line"></span><br><span class="line">#</span><br><span class="line"># Note: Change the value of ORACLE to the login name of the oracle owner</span><br><span class="line">ORACLE&#x3D;oracle</span><br><span class="line"></span><br><span class="line">PATH&#x3D;$&#123;PATH&#125;:$ORACLE_HOME&#x2F;bin</span><br><span class="line">HOST&#x3D;&#96;hostname&#96;</span><br><span class="line">PLATFORM&#x3D;&#96;uname&#96;</span><br><span class="line">export ORACLE_HOME PATH</span><br><span class="line"></span><br><span class="line">case $1 in</span><br><span class="line">&#39;start&#39;)</span><br><span class="line">        echo -n $&quot;Starting Oracle: &quot;</span><br><span class="line">        su $ORACLE -c &quot;$ORACLE_HOME&#x2F;bin&#x2F;dbstart $ORACLE_HOME&quot; &amp;</span><br><span class="line">        ;;</span><br><span class="line">&#39;stop&#39;)</span><br><span class="line">        echo -n $&quot;Shutting down Oracle: &quot;</span><br><span class="line">        su $ORACLE -c &quot;$ORACLE_HOME&#x2F;bin&#x2F;dbshut $ORACLE_HOME&quot; &amp;</span><br><span class="line">        ;;</span><br><span class="line">&#39;restart&#39;)</span><br><span class="line">        echo -n $&quot;Shutting down Oracle: &quot;</span><br><span class="line">        su $ORACLE -c &quot;$ORACLE_HOME&#x2F;bin&#x2F;dbshut $ORACLE_HOME&quot; &amp;</span><br><span class="line">        sleep 5</span><br><span class="line">        echo -n $&quot;Starting Oracle: &quot;</span><br><span class="line">        su $ORACLE -c &quot;$ORACLE_HOME&#x2F;bin&#x2F;dbstart $ORACLE_HOME&quot; &amp;</span><br><span class="line">        ;;</span><br><span class="line">*)</span><br><span class="line">        echo &quot;usage: $0 &#123;start|stop|restart&#125;&quot;</span><br><span class="line">        exit</span><br><span class="line">        ;;</span><br><span class="line">esac</span><br><span class="line"></span><br><span class="line">exit</span><br></pre></td></tr></table></figure>
+<h2 id="赋权及加入自启"><a href="#赋权及加入自启" class="headerlink" title="赋权及加入自启"></a>赋权及加入自启</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">chmod 750 &#x2F;etc&#x2F;init.d&#x2F;dbora</span><br><span class="line">sudo chkconfig --add oracledb</span><br><span class="line">chkconfig dbora on</span><br></pre></td></tr></table></figure>
+<h2 id="编辑oratab"><a href="#编辑oratab" class="headerlink" title="编辑oratab"></a>编辑oratab</h2><p>vi /etc/oratab</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">orcl:&#x2F;app&#x2F;oracle&#x2F;product&#x2F;11.2.0:Y</span><br></pre></td></tr></table></figure>
+<p>N改为Y  </p>
+<h2 id="服务启停"><a href="#服务启停" class="headerlink" title="服务启停"></a>服务启停</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">service dbora start</span><br><span class="line">service dbora stop</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201811/CentOS7%E4%B8%8BOracle11g%E9%9D%99%E9%BB%98%E5%AE%89%E8%A3%85/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -294,733 +979,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201907/20190731systemd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201907/20190731systemd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">systemd学习笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-10-25 11:24:00" itemprop="dateCreated datePublished" datetime="2018-10-25T11:24:00+08:00">2018-10-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2019-07-31 00:00:00" itemprop="dateModified" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a></p>
-<h2 id="systemctl"><a href="#systemctl" class="headerlink" title="systemctl"></a>systemctl</h2><h3 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl reboot</span><br></pre></td></tr></table></figure>
-<h3 id="关闭"><a href="#关闭" class="headerlink" title="关闭"></a>关闭</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl poweroff</span><br></pre></td></tr></table></figure>
-<h3 id="CPU停止工作"><a href="#CPU停止工作" class="headerlink" title="CPU停止工作"></a>CPU停止工作</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl halt</span><br></pre></td></tr></table></figure>
-<h3 id="暂停系统"><a href="#暂停系统" class="headerlink" title="暂停系统"></a>暂停系统</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl suspend</span><br></pre></td></tr></table></figure>
-<h3 id="休眠"><a href="#休眠" class="headerlink" title="休眠"></a>休眠</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hibernate</span><br></pre></td></tr></table></figure>
-<h3 id="交互式休眠"><a href="#交互式休眠" class="headerlink" title="交互式休眠"></a>交互式休眠</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hybrid-sleep</span><br></pre></td></tr></table></figure>
-<p>###单用户状态</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl rescue</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="systemd-analyze"><a href="#systemd-analyze" class="headerlink" title="systemd-analyze"></a>systemd-analyze</h2><h3 id="启动耗时"><a href="#启动耗时" class="headerlink" title="启动耗时"></a>启动耗时</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze                                                                                       </span><br></pre></td></tr></table></figure>
-<h3 id="每个服务的启动耗时"><a href="#每个服务的启动耗时" class="headerlink" title="每个服务的启动耗时"></a>每个服务的启动耗时</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze blame</span><br></pre></td></tr></table></figure>
-<h3 id="瀑布状的启动过程流"><a href="#瀑布状的启动过程流" class="headerlink" title="瀑布状的启动过程流"></a>瀑布状的启动过程流</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze critical-chain</span><br></pre></td></tr></table></figure>
-<h3 id="显示指定服务的启动流"><a href="#显示指定服务的启动流" class="headerlink" title="显示指定服务的启动流"></a>显示指定服务的启动流</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze critical-chain atd.service</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="hostnamect"><a href="#hostnamect" class="headerlink" title="hostnamect"></a>hostnamect</h2><h3 id="显示当前主机的信息"><a href="#显示当前主机的信息" class="headerlink" title="显示当前主机的信息"></a>显示当前主机的信息</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostnamectl</span><br></pre></td></tr></table></figure>
-<h3 id="设置主机名"><a href="#设置主机名" class="headerlink" title="设置主机名"></a>设置主机名</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostnamectl set-hostname xxxx</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="localectl"><a href="#localectl" class="headerlink" title="localectl"></a>localectl</h2><h3 id="查看本地化设置"><a href="#查看本地化设置" class="headerlink" title="查看本地化设置"></a>查看本地化设置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">localectl</span><br></pre></td></tr></table></figure>
-<h3 id="设置本地化参数"><a href="#设置本地化参数" class="headerlink" title="设置本地化参数"></a>设置本地化参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">localectl set-locale LANG&#x3D;en_GB.utf8</span><br><span class="line">localectl set-keymap en_GB</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="timedatectl"><a href="#timedatectl" class="headerlink" title="timedatectl"></a>timedatectl</h2><h3 id="查看当前时区设置"><a href="#查看当前时区设置" class="headerlink" title="查看当前时区设置"></a>查看当前时区设置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">timedatectl</span><br></pre></td></tr></table></figure>
-<h3 id="显示所有可用的时区"><a href="#显示所有可用的时区" class="headerlink" title="显示所有可用的时区"></a>显示所有可用的时区</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">timedatectl list-timezones                                                                                   </span><br></pre></td></tr></table></figure>
-<h3 id="设置当前时区"><a href="#设置当前时区" class="headerlink" title="设置当前时区"></a>设置当前时区</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">timedatectl set-timezone America&#x2F;New_York</span><br><span class="line">timedatectl set-time 2018-10-25 </span><br><span class="line">timedatectl set-time 11:32:00</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="loginctl"><a href="#loginctl" class="headerlink" title="loginctl"></a>loginctl</h2><h3 id="列出当前session"><a href="#列出当前session" class="headerlink" title="列出当前session"></a>列出当前session</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loginctl list-sessions</span><br></pre></td></tr></table></figure>
-<h3 id="列出当前登录用户"><a href="#列出当前登录用户" class="headerlink" title="列出当前登录用户"></a>列出当前登录用户</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loginctl list-users</span><br></pre></td></tr></table></figure>
-<h3 id="列出显示指定用户的信息"><a href="#列出显示指定用户的信息" class="headerlink" title="列出显示指定用户的信息"></a>列出显示指定用户的信息</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loginctl show-user root</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="查询状态"><a href="#查询状态" class="headerlink" title="查询状态"></a>查询状态</h2><h3 id="列出正在运行的-Unit"><a href="#列出正在运行的-Unit" class="headerlink" title="列出正在运行的 Unit"></a>列出正在运行的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units</span><br></pre></td></tr></table></figure>
-<h3 id="列出所有Unit，包括没有找到配置文件的或者启动失败的"><a href="#列出所有Unit，包括没有找到配置文件的或者启动失败的" class="headerlink" title="列出所有Unit，包括没有找到配置文件的或者启动失败的"></a>列出所有Unit，包括没有找到配置文件的或者启动失败的</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --all</span><br></pre></td></tr></table></figure>
-<h3 id="列出所有没有运行的-Unit"><a href="#列出所有没有运行的-Unit" class="headerlink" title="列出所有没有运行的 Unit"></a>列出所有没有运行的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --all --state&#x3D;inactive</span><br></pre></td></tr></table></figure>
-<h3 id="列出所有加载失败的-Unit"><a href="#列出所有加载失败的-Unit" class="headerlink" title="列出所有加载失败的 Unit"></a>列出所有加载失败的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --failed</span><br></pre></td></tr></table></figure>
-<h3 id="列出所有正在运行的、类型为-service-的-Unit"><a href="#列出所有正在运行的、类型为-service-的-Unit" class="headerlink" title="列出所有正在运行的、类型为 service 的 Unit"></a>列出所有正在运行的、类型为 service 的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --type&#x3D;service</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="查询状态-1"><a href="#查询状态-1" class="headerlink" title="查询状态"></a>查询状态</h2><h3 id="显示系统状态"><a href="#显示系统状态" class="headerlink" title="显示系统状态"></a>显示系统状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status</span><br></pre></td></tr></table></figure>
-<h3 id="显示单个-Unit-的状态"><a href="#显示单个-Unit-的状态" class="headerlink" title="显示单个 Unit 的状态"></a>显示单个 Unit 的状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status bluetooth.service</span><br></pre></td></tr></table></figure>
-<h3 id="显示远程主机的某个-Unit-的状态"><a href="#显示远程主机的某个-Unit-的状态" class="headerlink" title="显示远程主机的某个 Unit 的状态"></a>显示远程主机的某个 Unit 的状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl -H root@rhel7.example.com status httpd.service</span><br></pre></td></tr></table></figure>
-<h3 id="显示某个-Unit-是否正在运行"><a href="#显示某个-Unit-是否正在运行" class="headerlink" title="显示某个 Unit 是否正在运行"></a>显示某个 Unit 是否正在运行</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl is-active application.service</span><br></pre></td></tr></table></figure>
-<h3 id="显示某个-Unit-是否处于启动失败状态"><a href="#显示某个-Unit-是否处于启动失败状态" class="headerlink" title="显示某个 Unit 是否处于启动失败状态"></a>显示某个 Unit 是否处于启动失败状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl is-failed application.service</span><br></pre></td></tr></table></figure>
-<h3 id="显示某个-Unit-服务是否建立了启动链接"><a href="#显示某个-Unit-服务是否建立了启动链接" class="headerlink" title="显示某个 Unit 服务是否建立了启动链接"></a>显示某个 Unit 服务是否建立了启动链接</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl is-enabled application.service</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="服务管理"><a href="#服务管理" class="headerlink" title="服务管理"></a>服务管理</h2><h3 id="立即启动一个服务"><a href="#立即启动一个服务" class="headerlink" title="立即启动一个服务"></a>立即启动一个服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start apache.service</span><br></pre></td></tr></table></figure>
-<h3 id="立即停止一个服务"><a href="#立即停止一个服务" class="headerlink" title="立即停止一个服务"></a>立即停止一个服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop apache.service</span><br></pre></td></tr></table></figure>
-<h3 id="重启一个服务"><a href="#重启一个服务" class="headerlink" title="重启一个服务"></a>重启一个服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart apache.service</span><br></pre></td></tr></table></figure>
-<h3 id="杀死一个服务的所有子进程"><a href="#杀死一个服务的所有子进程" class="headerlink" title="杀死一个服务的所有子进程"></a>杀死一个服务的所有子进程</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl kill apache.service</span><br></pre></td></tr></table></figure>
-<h3 id="重新加载一个服务的配置文件"><a href="#重新加载一个服务的配置文件" class="headerlink" title="重新加载一个服务的配置文件"></a>重新加载一个服务的配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl reload apache.service</span><br></pre></td></tr></table></figure>
-<h3 id="重载所有修改过的配置文件"><a href="#重载所有修改过的配置文件" class="headerlink" title="重载所有修改过的配置文件"></a>重载所有修改过的配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
-<h3 id="显示某个-Unit-的所有底层参数"><a href="#显示某个-Unit-的所有底层参数" class="headerlink" title="显示某个 Unit 的所有底层参数"></a>显示某个 Unit 的所有底层参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl show httpd.service</span><br></pre></td></tr></table></figure>
-<h3 id="显示某个-Unit-的指定属性的值"><a href="#显示某个-Unit-的指定属性的值" class="headerlink" title="显示某个 Unit 的指定属性的值"></a>显示某个 Unit 的指定属性的值</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl show -p CPUShares httpd.service</span><br></pre></td></tr></table></figure>
-<h3 id="设置某个-Unit-的指定属性"><a href="#设置某个-Unit-的指定属性" class="headerlink" title="设置某个 Unit 的指定属性"></a>设置某个 Unit 的指定属性</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl set-property httpd.service CPUShares&#x3D;500</span><br></pre></td></tr></table></figure>
-<h3 id="列出一个-Unit-的所有依赖"><a href="#列出一个-Unit-的所有依赖" class="headerlink" title="列出一个 Unit 的所有依赖"></a>列出一个 Unit 的所有依赖</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-dependencies --all nginx.service</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="配置文件的状态"><a href="#配置文件的状态" class="headerlink" title="配置文件的状态"></a>配置文件的状态</h2><h3 id="列出所有配置文件"><a href="#列出所有配置文件" class="headerlink" title="列出所有配置文件"></a>列出所有配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-unit-files</span><br></pre></td></tr></table></figure>
-<h3 id="列出指定类型的配置文件"><a href="#列出指定类型的配置文件" class="headerlink" title="列出指定类型的配置文件"></a>列出指定类型的配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-unit-files --type&#x3D;service</span><br></pre></td></tr></table></figure>
-<h3 id="查看配置文件"><a href="#查看配置文件" class="headerlink" title="查看配置文件"></a>查看配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl cat atd.service</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="日志管理"><a href="#日志管理" class="headerlink" title="日志管理"></a>日志管理</h2><h3 id="查看所有日志（默认情况下-，只保存本次启动的日志）"><a href="#查看所有日志（默认情况下-，只保存本次启动的日志）" class="headerlink" title="查看所有日志（默认情况下 ，只保存本次启动的日志）"></a>查看所有日志（默认情况下 ，只保存本次启动的日志）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl</span><br></pre></td></tr></table></figure>
-<h3 id="查看内核日志（不显示应用日志）"><a href="#查看内核日志（不显示应用日志）" class="headerlink" title="查看内核日志（不显示应用日志）"></a>查看内核日志（不显示应用日志）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -k</span><br></pre></td></tr></table></figure>
-<h3 id="查看系统本次启动的日志"><a href="#查看系统本次启动的日志" class="headerlink" title="查看系统本次启动的日志"></a>查看系统本次启动的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">journalctl -b</span><br><span class="line">journalctl -b -0</span><br></pre></td></tr></table></figure>
-<h3 id="查看上一次启动的日志（需更改设置）"><a href="#查看上一次启动的日志（需更改设置）" class="headerlink" title="查看上一次启动的日志（需更改设置）"></a>查看上一次启动的日志（需更改设置）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl -b -1</span><br></pre></td></tr></table></figure>
-<h3 id="查看指定时间的日志"><a href="#查看指定时间的日志" class="headerlink" title="查看指定时间的日志"></a>查看指定时间的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">journalctl --since&#x3D;&quot;2012-10-30 18:17:16&quot;</span><br><span class="line">journalctl --since &quot;20 min ago&quot;</span><br><span class="line">journalctl --since yesterday</span><br><span class="line">journalctl --since &quot;2015-01-10&quot; --until &quot;2015-01-11 03:00&quot;</span><br><span class="line">journalctl --since 09:00 --until &quot;1 hour ago&quot;</span><br></pre></td></tr></table></figure>
-<h3 id="显示尾部的最新10行日志"><a href="#显示尾部的最新10行日志" class="headerlink" title="显示尾部的最新10行日志"></a>显示尾部的最新10行日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -n</span><br></pre></td></tr></table></figure>
-<h3 id="显示尾部指定行数的日志"><a href="#显示尾部指定行数的日志" class="headerlink" title="显示尾部指定行数的日志"></a>显示尾部指定行数的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -n 20</span><br></pre></td></tr></table></figure>
-<h3 id="实时滚动显示最新日志"><a href="#实时滚动显示最新日志" class="headerlink" title="实时滚动显示最新日志"></a>实时滚动显示最新日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -f</span><br></pre></td></tr></table></figure>
-<h3 id="查看指定服务的日志"><a href="#查看指定服务的日志" class="headerlink" title="查看指定服务的日志"></a>查看指定服务的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;systemd</span><br></pre></td></tr></table></figure>
-<h3 id="查看指定进程的日志"><a href="#查看指定进程的日志" class="headerlink" title="查看指定进程的日志"></a>查看指定进程的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl _PID&#x3D;1</span><br></pre></td></tr></table></figure>
-<h3 id="查看某个路径的脚本的日志"><a href="#查看某个路径的脚本的日志" class="headerlink" title="查看某个路径的脚本的日志"></a>查看某个路径的脚本的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl &#x2F;usr&#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
-<h3 id="查看指定用户的日志"><a href="#查看指定用户的日志" class="headerlink" title="查看指定用户的日志"></a>查看指定用户的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl _UID&#x3D;33 --since today</span><br></pre></td></tr></table></figure>
-<h3 id="查看某个-Unit-的日志"><a href="#查看某个-Unit-的日志" class="headerlink" title="查看某个 Unit 的日志"></a>查看某个 Unit 的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u nginx.service</span><br><span class="line">journalctl -u nginx.service --since today</span><br></pre></td></tr></table></figure>
-<h3 id="实时滚动显示某个-Unit-的最新日志"><a href="#实时滚动显示某个-Unit-的最新日志" class="headerlink" title="实时滚动显示某个 Unit 的最新日志"></a>实时滚动显示某个 Unit 的最新日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u nginx.service -f</span><br></pre></td></tr></table></figure>
-<h3 id="合并显示多个-Unit-的日志"><a href="#合并显示多个-Unit-的日志" class="headerlink" title="合并显示多个 Unit 的日志"></a>合并显示多个 Unit 的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u nginx.service -u php-fpm.service --since today</span><br></pre></td></tr></table></figure>
-<h3 id="查看指定优先级（及其以上级别）的日志，共有8级"><a href="#查看指定优先级（及其以上级别）的日志，共有8级" class="headerlink" title="查看指定优先级（及其以上级别）的日志，共有8级"></a>查看指定优先级（及其以上级别）的日志，共有8级</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0: emerg 1: alert 2: crit 3: err 4: warning 5: notice 6: info 7: debug</span><br><span class="line">journalctl -p err -b</span><br></pre></td></tr></table></figure>
-<h3 id="日志默认分页输出，–no-pager-改为正常的标准输出"><a href="#日志默认分页输出，–no-pager-改为正常的标准输出" class="headerlink" title="日志默认分页输出，–no-pager 改为正常的标准输出"></a>日志默认分页输出，–no-pager 改为正常的标准输出</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl --no-pager</span><br></pre></td></tr></table></figure>
-<h3 id="以-JSON-格式（单行）输出"><a href="#以-JSON-格式（单行）输出" class="headerlink" title="以 JSON 格式（单行）输出"></a>以 JSON 格式（单行）输出</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -b -u nginx.service -o json</span><br></pre></td></tr></table></figure>
-<h3 id="以-JSON-格式（多行）输出，可读性更好"><a href="#以-JSON-格式（多行）输出，可读性更好" class="headerlink" title="以 JSON 格式（多行）输出，可读性更好"></a>以 JSON 格式（多行）输出，可读性更好</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -b -u nginx.service -o json-pretty</span><br></pre></td></tr></table></figure>
-<h3 id="显示日志占据的硬盘空间"><a href="#显示日志占据的硬盘空间" class="headerlink" title="显示日志占据的硬盘空间"></a>显示日志占据的硬盘空间</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl --disk-usage</span><br></pre></td></tr></table></figure>
-<h3 id="指定日志文件占据的最大空间"><a href="#指定日志文件占据的最大空间" class="headerlink" title="指定日志文件占据的最大空间"></a>指定日志文件占据的最大空间</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl --vacuum-size&#x3D;1G</span><br></pre></td></tr></table></figure>
-<h3 id="指定日志文件保存多久"><a href="#指定日志文件保存多久" class="headerlink" title="指定日志文件保存多久"></a>指定日志文件保存多久</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl --vacuum-time&#x3D;1years</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201907/20190731macOS%E4%B8%8B%E6%89%B9%E9%87%8Fgbk%E8%BD%ACutf8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201907/20190731macOS%E4%B8%8B%E6%89%B9%E9%87%8Fgbk%E8%BD%ACutf8/" class="post-title-link" itemprop="url">macOS下批量gbk转utf8</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-10-19 17:14:18" itemprop="dateCreated datePublished" datetime="2018-10-19T17:14:18+08:00">2018-10-19</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2019-07-31 00:00:00" itemprop="dateModified" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew install enca</span><br><span class="line">find . -name &quot;*.java&quot; -exec enconv -L zh_CN -x UTF-8 &#123;&#125; \;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Telegraf学习笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-07-17 14:48:51" itemprop="dateCreated datePublished" datetime="2018-07-17T14:48:51+08:00">2018-07-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="官网文档"><a href="#官网文档" class="headerlink" title="官网文档"></a>官网文档</h2><p><a target="_blank" rel="noopener" href="https://www.influxdata.com/time-series-platform/telegraf/">https://www.influxdata.com/time-series-platform/telegraf/</a><br><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf">https://github.com/influxdata/telegraf</a><br><a target="_blank" rel="noopener" href="https://docs.influxdata.com/telegraf/v1.7/concepts/data_formats_input/">https://docs.influxdata.com/telegraf/v1.7/concepts/data_formats_input/</a></p>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="macOS"><a href="#macOS" class="headerlink" title="macOS"></a>macOS</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install telegraf</span><br></pre></td></tr></table></figure>
-<h3 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;dl.influxdata.com&#x2F;telegraf&#x2F;releases&#x2F;telegraf-1.7.1_linux_amd64.tar.gz</span><br><span class="line">tar xf telegraf-1.7.1_linux_amd64.tar.gz</span><br></pre></td></tr></table></figure>
-<h2 id="修改机器名"><a href="#修改机器名" class="headerlink" title="修改机器名"></a>修改机器名</h2><p>hostnamectl set-hostname smrz133</p>
-<h2 id="安装InfluxDB"><a href="#安装InfluxDB" class="headerlink" title="安装InfluxDB"></a>安装InfluxDB</h2><p>不再赘述</p>
-<h2 id="修改配置"><a href="#修改配置" class="headerlink" title="修改配置"></a>修改配置</h2><p>vi /etc/telegraf/telegraf.conf</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Global tags can be specified here in key=&quot;value&quot; format.</span></span><br><span class="line">[global_tags]</span><br><span class="line">  <span class="comment"># dc = &quot;us-east-1&quot; # will tag all metrics with dc=us-east-1</span></span><br><span class="line">  <span class="comment"># rack = &quot;1a&quot;</span></span><br><span class="line">  <span class="comment">## Environment variables can be used as tags, and throughout the config file</span></span><br><span class="line">  <span class="comment"># user = &quot;$USER&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Configuration for telegraf agent</span></span><br><span class="line">[agent]</span><br><span class="line">  interval = <span class="string">&quot;10s&quot;</span></span><br><span class="line">  round_interval = <span class="literal">true</span></span><br><span class="line">  metric_batch_size = 1000</span><br><span class="line">  metric_buffer_limit = 10000</span><br><span class="line">  collection_jitter = <span class="string">&quot;0s&quot;</span></span><br><span class="line">  flush_interval = <span class="string">&quot;10s&quot;</span></span><br><span class="line">  flush_jitter = <span class="string">&quot;0s&quot;</span></span><br><span class="line">  precision = <span class="string">&quot;&quot;</span></span><br><span class="line">  debug = <span class="literal">false</span></span><br><span class="line">  quiet = <span class="literal">false</span></span><br><span class="line">  hostname = <span class="string">&quot;&quot;</span></span><br><span class="line">  omit_hostname = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">### OUTPUT</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Configuration for influxdb server to send metrics to</span></span><br><span class="line">[[outputs.influxdb]]</span><br><span class="line">  urls = [<span class="string">&quot;http://172.172.172.96:8086&quot;</span>]</span><br><span class="line">  database = <span class="string">&quot;telegraf_metrics&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">## Retention policy to write to. Empty string writes to the default rp.</span></span><br><span class="line">  retention_policy = <span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="comment">## Write consistency (clusters only), can be: &quot;any&quot;, &quot;one&quot;, &quot;quorum&quot;, &quot;all&quot;</span></span><br><span class="line">  write_consistency = <span class="string">&quot;any&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">## Write timeout (for the InfluxDB client), formatted as a string.</span></span><br><span class="line">  <span class="comment">## If not provided, will default to 5s. 0s means no timeout (not recommended).</span></span><br><span class="line">  timeout = <span class="string">&quot;5s&quot;</span></span><br><span class="line">  <span class="comment"># username = &quot;telegraf&quot;</span></span><br><span class="line">  <span class="comment"># password = &quot;2bmpiIeSWd63a7ew&quot;</span></span><br><span class="line">  <span class="comment">## Set the user agent for HTTP POSTs (can be useful for log differentiation)</span></span><br><span class="line">  <span class="comment"># user_agent = &quot;telegraf&quot;</span></span><br><span class="line">  <span class="comment">## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)</span></span><br><span class="line">  <span class="comment"># udp_payload = 512</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about cpu usage</span></span><br><span class="line">[[inputs.cpu]]</span><br><span class="line">  <span class="comment">## Whether to report per-cpu stats or not</span></span><br><span class="line">  percpu = <span class="literal">true</span></span><br><span class="line">  <span class="comment">## Whether to report total system cpu stats or not</span></span><br><span class="line">  totalcpu = <span class="literal">true</span></span><br><span class="line">  <span class="comment">## Comment this line if you want the raw CPU time metrics</span></span><br><span class="line">  fielddrop = [<span class="string">&quot;time_*&quot;</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about disk usage by mount point</span></span><br><span class="line">[[inputs.disk]]</span><br><span class="line">  <span class="comment">## By default, telegraf gather stats for all mountpoints.</span></span><br><span class="line">  <span class="comment">## Setting mountpoints will restrict the stats to the specified mountpoints.</span></span><br><span class="line">  <span class="comment"># mount_points = [&quot;/&quot;]</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">## Ignore some mountpoints by filesystem type. For example (dev)tmpfs (usually</span></span><br><span class="line">  <span class="comment">## present on /run, /var/run, /dev/shm or /dev).</span></span><br><span class="line">  ignore_fs = [<span class="string">&quot;tmpfs&quot;</span>, <span class="string">&quot;devtmpfs&quot;</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about disk IO by device</span></span><br><span class="line">[[inputs.diskio]]</span><br><span class="line">  <span class="comment">## By default, telegraf will gather stats for all devices including</span></span><br><span class="line">  <span class="comment">## disk partitions.</span></span><br><span class="line">  <span class="comment">## Setting devices will restrict the stats to the specified devices.</span></span><br><span class="line">  <span class="comment"># devices = [&quot;sda&quot;, &quot;sdb&quot;]</span></span><br><span class="line">  <span class="comment">## Uncomment the following line if you need disk serial numbers.</span></span><br><span class="line">  <span class="comment"># skip_serial_number = false</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get kernel statistics from /proc/stat</span></span><br><span class="line">[[inputs.kernel]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about memory usage</span></span><br><span class="line">[[inputs.mem]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get the number of processes and group them by status</span></span><br><span class="line">[[inputs.processes]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about swap memory usage</span></span><br><span class="line">[[inputs.swap]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about system load &amp; uptime</span></span><br><span class="line">[[inputs.system]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about network interface usage</span></span><br><span class="line">[[inputs.net]]</span><br><span class="line">  <span class="comment"># collect data only about specific interfaces</span></span><br><span class="line">  interfaces = [<span class="string">&quot;ens192&quot;</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[[inputs.netstat]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line">[[inputs.interrupts]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line">[[inputs.linux_sysctl_fs]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br></pre></td></tr></table></figure>
-<h2 id="添加Dashboard模板"><a href="#添加Dashboard模板" class="headerlink" title="添加Dashboard模板"></a>添加Dashboard模板</h2><p>Dashboard 928:<br><a target="_blank" rel="noopener" href="https://grafana.com/dashboards/928">https://grafana.com/dashboards/928</a></p>
-<p>左上加号-&gt;Import<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071448.png"></p>
-<p>Grafana.com Dashboard处，输入928编码<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071538.png"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201807/brew%E6%8D%A2%E6%BA%90/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201807/brew%E6%8D%A2%E6%BA%90/" class="post-title-link" itemprop="url">brew换源</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-07-06 10:31:48" itemprop="dateCreated datePublished" datetime="2018-07-06T10:31:48+08:00">2018-07-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:23:30" itemprop="dateModified" datetime="2018-11-06T15:23:30+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="替换"><a href="#替换" class="headerlink" title="替换"></a>替换</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">替换brew.git:</span><br><span class="line">cd &quot;$(brew --repo)&quot;</span><br><span class="line">git remote set-url origin https:&#x2F;&#x2F;mirrors.ustc.edu.cn&#x2F;brew.git</span><br><span class="line"></span><br><span class="line">替换homebrew-core.git:</span><br><span class="line">cd &quot;$(brew --repo)&#x2F;Library&#x2F;Taps&#x2F;homebrew&#x2F;homebrew-core&quot;</span><br><span class="line">git remote set-url origin https:&#x2F;&#x2F;mirrors.ustc.edu.cn&#x2F;homebrew-core.git</span><br></pre></td></tr></table></figure>
-<h2 id="重置"><a href="#重置" class="headerlink" title="重置"></a>重置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">重置brew.git:</span><br><span class="line">cd &quot;$(brew --repo)&quot;</span><br><span class="line">git remote set-url origin https:&#x2F;&#x2F;github.com&#x2F;Homebrew&#x2F;brew.git</span><br><span class="line"></span><br><span class="line">重置homebrew-core.git:</span><br><span class="line">cd &quot;$(brew --repo)&#x2F;Library&#x2F;Taps&#x2F;homebrew&#x2F;homebrew-core&quot;</span><br><span class="line">git remote set-url origin https:&#x2F;&#x2F;github.com&#x2F;Homebrew&#x2F;homebrew-core.git</span><br></pre></td></tr></table></figure>
-<h2 id="ss-curl方式"><a href="#ss-curl方式" class="headerlink" title="ss+curl方式"></a>ss+curl方式</h2><p>export ALL_PROXY=socks5://127.0.0.1:1086</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201806/BrewServices/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201806/BrewServices/" class="post-title-link" itemprop="url">使用brew services管理服务</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-06-29 16:54:00" itemprop="dateCreated datePublished" datetime="2018-06-29T16:54:00+08:00">2018-06-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:24:37" itemprop="dateModified" datetime="2018-11-06T15:24:37+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>官网：<br><a target="_blank" rel="noopener" href="https://github.com/Homebrew/homebrew-services">https://github.com/Homebrew/homebrew-services</a></p>
-<p>macOS使用<code>launchctl</code>命令加载开机自动运行的服务，<code>brew service</code>可以简化lauchctl的操作。</p>
-<p>以MySQL为例，使用launchctl启动:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln -sfv &#x2F;usr&#x2F;local&#x2F;opt&#x2F;mysql&#x2F;*.plist ~&#x2F;Library&#x2F;LaunchAgents</span><br><span class="line">launchctl load ~&#x2F;Library&#x2F;LaunchAgents&#x2F;homebrew.mxcl.mysql.plist</span><br></pre></td></tr></table></figure>
-<p>如使用brew service可以简化为:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew services start mysql</span><br></pre></td></tr></table></figure>
-<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">brew services list  # 查看使用brew安装的服务列表</span><br><span class="line">brew services run formula|--all  # 启动服务（仅启动不注册）</span><br><span class="line">brew services start formula|--all  # 启动服务，并注册</span><br><span class="line">brew services stop formula|--all   # 停止服务，并取消注册</span><br><span class="line">brew services restart formula|--all  # 重启服务，并注册</span><br><span class="line">brew services cleanup  # 清除已卸载应用的无用的配置</span><br></pre></td></tr></table></figure>
-<h2 id="配置文件目录"><a href="#配置文件目录" class="headerlink" title="配置文件目录"></a>配置文件目录</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;Library&#x2F;LaunchDaemons # 开机自启，需要sudo</span><br><span class="line">~&#x2F;Library&#x2F;LaunchAgents # 用户登录后自启</span><br></pre></td></tr></table></figure>
-<p>以homebrew.mxcl.kafka.plist为例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version&#x3D;&quot;1.0&quot; encoding&#x3D;&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;!DOCTYPE plist PUBLIC &quot;-&#x2F;&#x2F;Apple&#x2F;&#x2F;DTD PLIST 1.0&#x2F;&#x2F;EN&quot; &quot;http:&#x2F;&#x2F;www.apple.com&#x2F;DTDs&#x2F;PropertyList-1.0.dtd&quot;&gt;</span><br><span class="line">&lt;plist version&#x3D;&quot;1.0&quot;&gt;</span><br><span class="line">&lt;dict&gt;</span><br><span class="line">    &lt;key&gt;Label&lt;&#x2F;key&gt;</span><br><span class="line">    &lt;string&gt;homebrew.mxcl.kafka&lt;&#x2F;string&gt;</span><br><span class="line">    &lt;key&gt;WorkingDirectory&lt;&#x2F;key&gt;</span><br><span class="line">    &lt;string&gt;&#x2F;usr&#x2F;local&lt;&#x2F;string&gt;</span><br><span class="line">    &lt;key&gt;ProgramArguments&lt;&#x2F;key&gt;</span><br><span class="line">    &lt;array&gt;</span><br><span class="line">        &lt;string&gt;&#x2F;usr&#x2F;local&#x2F;opt&#x2F;kafka&#x2F;bin&#x2F;kafka-server-start&lt;&#x2F;string&gt;</span><br><span class="line">        &lt;string&gt;&#x2F;usr&#x2F;local&#x2F;etc&#x2F;kafka&#x2F;server.properties&lt;&#x2F;string&gt;</span><br><span class="line">    &lt;&#x2F;array&gt;</span><br><span class="line">    &lt;key&gt;RunAtLoad&lt;&#x2F;key&gt;</span><br><span class="line">    &lt;true&#x2F;&gt;</span><br><span class="line">    &lt;key&gt;KeepAlive&lt;&#x2F;key&gt;</span><br><span class="line">    &lt;true&#x2F;&gt;</span><br><span class="line">    &lt;key&gt;StandardErrorPath&lt;&#x2F;key&gt;</span><br><span class="line">    &lt;string&gt;&#x2F;usr&#x2F;local&#x2F;var&#x2F;log&#x2F;kafka&#x2F;kafka_output.log&lt;&#x2F;string&gt;</span><br><span class="line">    &lt;key&gt;StandardOutPath&lt;&#x2F;key&gt;</span><br><span class="line">    &lt;string&gt;&#x2F;usr&#x2F;local&#x2F;var&#x2F;log&#x2F;kafka&#x2F;kafka_output.log&lt;&#x2F;string&gt;</span><br><span class="line">&lt;&#x2F;dict&gt;</span><br><span class="line">&lt;&#x2F;plist&gt;</span><br></pre></td></tr></table></figure>
-<p>在这里可以找到服务路径、启动参数、日志路径等</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201806/InfluxDB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201806/InfluxDB/" class="post-title-link" itemprop="url">InfluxDB学习笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-06-29 14:58:40" itemprop="dateCreated datePublished" datetime="2018-06-29T14:58:40+08:00">2018-06-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:27:04" itemprop="dateModified" datetime="2018-11-06T15:27:04+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://www.influxdata.com/time-series-platform/influxdb/">https://www.influxdata.com/time-series-platform/influxdb/</a></p>
-<p>InfluxDB是InfluxData的核心产品。InfluxDB是一个开源分布式时序、时间和指标数据库，使用Go语言编写，无需外部依赖。其设计目标是实现分布式和水平伸缩扩展。</p>
-<h2 id="教程"><a href="#教程" class="headerlink" title="教程"></a>教程</h2><p><a target="_blank" rel="noopener" href="https://jasper-zhang1.gitbooks.io/influxdb/content/Concepts/key_concepts.html">https://jasper-zhang1.gitbooks.io/influxdb/content/Concepts/key_concepts.html</a><br><a target="_blank" rel="noopener" href="https://docs.influxdata.com/influxdb/v1.5/">https://docs.influxdata.com/influxdb/v1.5/</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/48104975d60a">https://www.jianshu.com/p/48104975d60a</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a373784c0bf9">https://www.jianshu.com/p/a373784c0bf9</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/b51ba7f88fb0">https://www.jianshu.com/p/b51ba7f88fb0</a><br><a target="_blank" rel="noopener" href="https://jkzhao.github.io/2017/12/15/%E6%97%B6%E5%BA%8F%E6%95%B0%E6%8D%AE%E5%BA%93InfluxDB/">https://jkzhao.github.io/2017/12/15/时序数据库InfluxDB/</a><br><a target="_blank" rel="noopener" href="http://www.ywnds.com/?p=10763">http://www.ywnds.com/?p=10763</a><br><a target="_blank" rel="noopener" href="https://anyof.me/articles/390">https://anyof.me/articles/390</a><br><a target="_blank" rel="noopener" href="https://xtutu.gitbooks.io/influxdb-handbook/content/an_zhuang_shi_yong.html">https://xtutu.gitbooks.io/influxdb-handbook/content/an_zhuang_shi_yong.html</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a1344ca86e9b">https://www.jianshu.com/p/a1344ca86e9b</a><br><a target="_blank" rel="noopener" href="https://code-examples.net/zh-CN/docs/influxdata/influxdb/v1.3/troubleshooting/frequently-asked-questions/index">https://code-examples.net/zh-CN/docs/influxdata/influxdb/v1.3/troubleshooting/frequently-asked-questions/index</a></p>
-<h2 id="安装方式"><a href="#安装方式" class="headerlink" title="安装方式"></a>安装方式</h2><p><a target="_blank" rel="noopener" href="https://influxdata.com/downloads/">https://influxdata.com/downloads/</a></p>
-<h3 id="macOS"><a href="#macOS" class="headerlink" title="macOS"></a>macOS</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew update</span><br><span class="line">brew install influxdb</span><br></pre></td></tr></table></figure>
-<p>或</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https:&#x2F;&#x2F;dl.influxdata.com&#x2F;influxdb&#x2F;releases&#x2F;influxdb-1.5.4_darwin_amd64.tar.gz</span><br><span class="line">tar zxvf influxdb-1.5.4_darwin_amd64.tar.gz</span><br></pre></td></tr></table></figure>
-<h3 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull influxdb</span><br></pre></td></tr></table></figure>
-<h3 id="Ubuntu"><a href="#Ubuntu" class="headerlink" title="Ubuntu"></a>Ubuntu</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;dl.influxdata.com&#x2F;influxdb&#x2F;releases&#x2F;influxdb_1.5.4_amd64.deb</span><br><span class="line">sudo dpkg -i influxdb_1.5.4_amd64.deb</span><br></pre></td></tr></table></figure>
-<h3 id="CentOS"><a href="#CentOS" class="headerlink" title="CentOS"></a>CentOS</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;dl.influxdata.com&#x2F;influxdb&#x2F;releases&#x2F;influxdb-1.5.4.x86_64.rpm</span><br><span class="line">sudo yum localinstall influxdb-1.5.4.x86_64.rpm</span><br></pre></td></tr></table></figure>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h3 id="配置文件路径"><a href="#配置文件路径" class="headerlink" title="配置文件路径"></a>配置文件路径</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;usr&#x2F;local&#x2F;etc&#x2F;influxdb.conf</span><br><span class="line">或</span><br><span class="line">&#x2F;etc&#x2F;influxdb&#x2F;influxdb.conf</span><br></pre></td></tr></table></figure>
-<h3 id="生成默认配置"><a href="#生成默认配置" class="headerlink" title="生成默认配置"></a>生成默认配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">influxd config &gt; &#x2F;etc&#x2F;influxdb&#x2F;influxdb.generated.conf</span><br></pre></td></tr></table></figure>
-
-<h2 id="名词"><a href="#名词" class="headerlink" title="名词"></a>名词</h2><table>
-<thead>
-<tr>
-<th>name</th>
-<th>desc</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>database</td>
-<td>数据库</td>
-</tr>
-<tr>
-<td>measurement</td>
-<td>数据库中的表</td>
-</tr>
-<tr>
-<td>points</td>
-<td>表里面的一行数据</td>
-</tr>
-<tr>
-<td>time</td>
-<td>每个数据记录时间，是数据库中的主索引(会自动生成)</td>
-</tr>
-<tr>
-<td>fields</td>
-<td>各种记录值（没有索引的属性）也就是记录的值：温度， 湿度</td>
-</tr>
-<tr>
-<td>tags</td>
-<td>各种有索引的属性：地区，海拔</td>
-</tr>
-<tr>
-<td>series</td>
-<td>tags的组合，类似复合索引</td>
-</tr>
-</tbody></table>
-<h2 id="命令行方式登入"><a href="#命令行方式登入" class="headerlink" title="命令行方式登入"></a>命令行方式登入</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">influx</span><br><span class="line">influx -precision rfc3339  # 显示标准时间</span><br></pre></td></tr></table></figure>
-<h2 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">show databases</span><br><span class="line">create database mydb</span><br><span class="line">use mydb</span><br></pre></td></tr></table></figure>
-<h2 id="显示所有表"><a href="#显示所有表" class="headerlink" title="显示所有表"></a>显示所有表</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show measurements</span><br></pre></td></tr></table></figure>
-<h2 id="新建表-插入数据"><a href="#新建表-插入数据" class="headerlink" title="新建表/插入数据"></a>新建表/插入数据</h2><p>无建表语句，第一次insert后自动创建 p</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">INSERT cpu,host&#x3D;serverA,region&#x3D;us_west value&#x3D;0.64</span><br><span class="line">INSERT temperature,machine&#x3D;unit42,type&#x3D;assembly external&#x3D;25,internal&#x3D;37</span><br><span class="line"></span><br><span class="line">其中:  </span><br><span class="line">cpu  # 表名</span><br><span class="line">host&#x3D;serverA,region&#x3D;us_west  # tag</span><br><span class="line">value&#x3D;0.64  # field</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h2 id="删除表"><a href="#删除表" class="headerlink" title="删除表"></a>删除表</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">drop measurement weather </span><br></pre></td></tr></table></figure>
-<h2 id="series操作"><a href="#series操作" class="headerlink" title="series操作"></a>series操作</h2><p>series表示这个表里面的数据，可以在图表上画成几条线，series主要通过tags排列组合算出来。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show series from weather</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="查询数据"><a href="#查询数据" class="headerlink" title="查询数据"></a>查询数据</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM &#x2F;.*&#x2F; LIMIT 1</span><br><span class="line">SELECT * FROM cpu_load_short</span><br><span class="line">SELECT * FROM cpu_load_short WHERE value &gt; 0.9</span><br></pre></td></tr></table></figure>
-<h2 id="查询-修改RETENTION"><a href="#查询-修改RETENTION" class="headerlink" title="查询/修改RETENTION"></a>查询/修改RETENTION</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SHOW RETENTION POLICIES ON &quot;mydb&quot;</span><br><span class="line">单位有 w&#x2F;d&#x2F;h&#x2F;s</span><br><span class="line">ALTER RETENTION POLICY &quot;autogen&quot; ON &quot;mydb&quot; DURATION 100d DEFAULT</span><br><span class="line">ALTER RETENTION POLICY &quot;autogen&quot; ON &quot;mydb&quot; DURATION 0s DEFAULT</span><br></pre></td></tr></table></figure>
-<h2 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">显示用户</span><br><span class="line">SHOW USERS</span><br><span class="line">创建用户</span><br><span class="line">CREATE USER &quot;username&quot; WITH PASSWORD &#39;password&#39;</span><br><span class="line">创建管理员权限的用户</span><br><span class="line">CREATE USER &quot;username&quot; WITH PASSWORD &#39;password&#39; WITH ALL PRIVILEGES</span><br><span class="line">删除用户</span><br><span class="line">DROP USER &quot;username&quot;</span><br></pre></td></tr></table></figure>
-<h2 id="HTTP创建和删除数据库"><a href="#HTTP创建和删除数据库" class="headerlink" title="HTTP创建和删除数据库"></a>HTTP创建和删除数据库</h2><p>curl -i -XPOST <a target="_blank" rel="noopener" href="http://localhost:8086/query">http://localhost:8086/query</a> –data-urlencode “q=CREATE DATABASE mydb”<br>curl -POST <a target="_blank" rel="noopener" href="http://localhost:8086/query">http://localhost:8086/query</a> –data-urlencode “q=DROP DATABASE mydb”</p>
-<h2 id="HTTP添加数据"><a href="#HTTP添加数据" class="headerlink" title="HTTP添加数据"></a>HTTP添加数据</h2><p>单条</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -i -XPOST &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;write?db&#x3D;mydb&#39; --data-binary &#39;cpu_load_short,host&#x3D;server01,region&#x3D;us-west value&#x3D;0.64 1434055562000000000&#39;</span><br></pre></td></tr></table></figure>
-<p>多条</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -i -XPOST &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;write?db&#x3D;mydb&#39; --data-binary &#39;cpu_load_short,host&#x3D;server02 value&#x3D;0.67</span><br><span class="line">cpu_load_short,host&#x3D;server02,region&#x3D;us-west value&#x3D;0.55 1422568543702900257</span><br><span class="line">cpu_load_short,direction&#x3D;in,host&#x3D;server01,region&#x3D;us-west value&#x3D;2.0 1422568543702900257&#39;</span><br></pre></td></tr></table></figure>
-
-<h2 id="使用HTTP查询数据"><a href="#使用HTTP查询数据" class="headerlink" title="使用HTTP查询数据"></a>使用HTTP查询数据</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -GET &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query?pretty&#x3D;true&#39; --data-urlencode &quot;db&#x3D;mydb&quot; --data-urlencode &quot;q&#x3D;show measurements&quot;</span><br></pre></td></tr></table></figure>
-<p>或直接在浏览器中:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;localhost:8086&#x2F;query?pretty&#x3D;true&amp;db&#x3D;mydb&amp;q&#x3D;show%20measurements</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -G &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query?pretty&#x3D;true&#39; --data-urlencode &quot;db&#x3D;mydb&quot; --data-urlencode &quot;q&#x3D;SELECT \&quot;value\&quot; FROM \&quot;cpu_load_short\&quot; WHERE \&quot;region\&quot;&#x3D;&#39;us-west&#39;&quot;</span><br></pre></td></tr></table></figure>
-<p>查询多条用分号分割：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -GET &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query?db&#x3D;_internal&#39; --data-urlencode &quot;q&#x3D;show databases;show measurements&quot;</span><br></pre></td></tr></table></figure>
-<h3 id="时间格式"><a href="#时间格式" class="headerlink" title="时间格式"></a>时间格式</h3><p>epoch=[h,m,s,ms,u,ns]</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -G &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query&#39; --data-urlencode &quot;db&#x3D;mydb&quot; --data-urlencode &quot;epoch&#x3D;s&quot; --data-urlencode &quot;q&#x3D;SELECT value FROM cpu_load_short WHERE region&#x3D;&#39;us-west&#39;&quot;</span><br></pre></td></tr></table></figure>
-<h3 id="指定每次查询数据大小"><a href="#指定每次查询数据大小" class="headerlink" title="指定每次查询数据大小"></a>指定每次查询数据大小</h3><p>chunk_size</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -G &#39;http:&#x2F;&#x2F;localhost:8086&#x2F;query&#39; --data-urlencode &quot;db&#x3D;mydb&quot; --data-urlencode &quot;chunk_size&#x3D;200&quot; --data-urlencode &quot;q&#x3D;SELECT value FROM cpu_load_short WHERE region&#x3D;&#39;us-west&#39;&quot;</span><br></pre></td></tr></table></figure>
-<h2 id="WEB控制台"><a href="#WEB控制台" class="headerlink" title="WEB控制台"></a>WEB控制台</h2><p>1.3内置8086WEB管理已经移除，需要使用TICK工具栈中的Chronograf来进行管理。</p>
-<p>下载安装说明：<br><a target="_blank" rel="noopener" href="https://portal.influxdata.com/downloads">https://portal.influxdata.com/downloads</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install chronograf</span><br></pre></td></tr></table></figure>
-<p>使用:<br><a target="_blank" rel="noopener" href="http://localhost:8888/">http://localhost:8888</a></p>
-<h2 id="测试数据导入"><a href="#测试数据导入" class="headerlink" title="测试数据导入"></a>测试数据导入</h2><p><a target="_blank" rel="noopener" href="https://docs.influxdata.com/influxdb/v1.6/query_language/data_download/">https://docs.influxdata.com/influxdb/v1.6/query_language/data_download/</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE DATABASE NOAA_water_database</span><br><span class="line"></span><br><span class="line">curl https:&#x2F;&#x2F;s3.amazonaws.com&#x2F;noaa.water-database&#x2F;NOAA_data.txt -o NOAA_data.txt</span><br><span class="line">influx -import -path&#x3D;NOAA_data.txt -precision&#x3D;s -database&#x3D;NOAA_water_database</span><br><span class="line"></span><br><span class="line">influx -precision rfc3339 -database NOAA_water_database</span><br></pre></td></tr></table></figure>
-<h2 id="数据查询详细语法"><a href="#数据查询详细语法" class="headerlink" title="数据查询详细语法"></a>数据查询详细语法</h2><p><a target="_blank" rel="noopener" href="https://jasper-zhang1.gitbooks.io/influxdb/content/Query_language/data_exploration.html">https://jasper-zhang1.gitbooks.io/influxdb/content/Query_language/data_exploration.html</a></p>
-<h2 id="备份"><a href="#备份" class="headerlink" title="备份"></a>备份</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 全量</span></span><br><span class="line">influxd backup -portable /mnt/disk/bak/influxdb/total</span><br><span class="line"><span class="comment"># 指定库</span></span><br><span class="line">influxd backup -portable -database heimdall /mnt/disk/bak/influxdb/heimdall</span><br><span class="line"><span class="comment"># 指定时间</span></span><br><span class="line">influxd backup -portable -database heimdall -start 2018-09-01T00:00:00Z -end 2018-09-30T23:59:59Z  /mnt/disk/bak/influxdb/heimdall</span><br></pre></td></tr></table></figure>
-
-<h2 id="恢复"><a href="#恢复" class="headerlink" title="恢复"></a>恢复</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 恢复到名为heimdall_bak的库</span></span><br><span class="line">influxd restore -portable -db heimdall -newdb heimdall_bak /mnt/disk/bak/influxdb/heimdall</span><br><span class="line"></span><br><span class="line"><span class="comment"># 移动库</span></span><br><span class="line">create database heimdall_new </span><br><span class="line">use heimdall_bak</span><br><span class="line">SELECT * INTO heimdall_new..:MEASUREMENT FROM /.*/ GROUP BY *</span><br><span class="line">drop heimdall_bak</span><br></pre></td></tr></table></figure>
-<h2 id="连续查询"><a href="#连续查询" class="headerlink" title="连续查询"></a>连续查询</h2><p>自动缩小取样存储到新的measurement中</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CREATE CONTINUOUS QUERY &quot;cq_basic&quot; ON &quot;transportation&quot;</span><br><span class="line">BEGIN</span><br><span class="line">  SELECT mean(&quot;passengers&quot;) INTO &quot;average_passengers&quot; FROM &quot;bus_data&quot; GROUP BY time(1h)</span><br><span class="line">END</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201806/macOS%E4%B8%8B%E5%AE%89%E8%A3%85%E5%A4%9A%E4%B8%AAJDK%E5%B9%B6%E5%88%87%E6%8D%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201806/macOS%E4%B8%8B%E5%AE%89%E8%A3%85%E5%A4%9A%E4%B8%AAJDK%E5%B9%B6%E5%88%87%E6%8D%A2/" class="post-title-link" itemprop="url">macOS下安装多个JDK并切换</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-06-28 15:14:22" itemprop="dateCreated datePublished" datetime="2018-06-28T15:14:22+08:00">2018-06-28</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:24:24" itemprop="dateModified" datetime="2018-11-06T15:24:24+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="一些废话"><a href="#一些废话" class="headerlink" title="一些废话"></a>一些废话</h2><p>起因是macOS下安装Oracle官方的JDK10后，kettle启动报错，需要切至JDK8。<br>于是需要借助brew cask来安装不同版本的JDK，并自已写脚本切换。  </p>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>使用<code>brew cask</code>安装JDK</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">brew tap caskroom&#x2F;versions</span><br><span class="line">brew cask install java6  #JDK6</span><br><span class="line">brew cask install java8  #JDK8</span><br><span class="line">brew cask install java   #JDK10</span><br></pre></td></tr></table></figure>
-<h2 id="切换脚本"><a href="#切换脚本" class="headerlink" title="切换脚本"></a>切换脚本</h2><p>vi .zshrc</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># Switch JDK</span><br><span class="line">export JAVA_6_HOME&#x3D;&quot;&#x2F;Library&#x2F;Java&#x2F;JavaVirtualMachines&#x2F;1.6.0.jdk&#x2F;Contents&#x2F;Home&quot;</span><br><span class="line">export JAVA_8_HOME&#x3D;&quot;&#x2F;Library&#x2F;Java&#x2F;JavaVirtualMachines&#x2F;jdk1.8.0_172.jdk&#x2F;Contents&#x2F;Home&quot;</span><br><span class="line">export JAVA_10_HOME&#x3D;&quot;&#x2F;Library&#x2F;Java&#x2F;JavaVirtualMachines&#x2F;jdk-10.0.1.jdk&#x2F;Contents&#x2F;Home&quot;</span><br><span class="line">export JAVA_HOME&#x3D;$JAVA_8_HOME  # Default JDK8</span><br><span class="line">alias jdk6&#x3D;&quot;export JAVA_HOME&#x3D;$JAVA_6_HOME;java -version&quot;  # to JDK6 </span><br><span class="line">alias jdk8&#x3D;&quot;export JAVA_HOME&#x3D;$JAVA_8_HOME;java -version&quot;  # to JDK8</span><br><span class="line">alias jdk10&#x3D;&quot;export JAVA_HOME&#x3D;$JAVA_8_HOME;java -version&quot; # to JDK10</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201806/Kettle%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201806/Kettle%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Kettle学习笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-06-28 13:40:35" itemprop="dateCreated datePublished" datetime="2018-06-28T13:40:35+08:00">2018-06-28</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:27:08" itemprop="dateModified" datetime="2018-11-06T15:27:08+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <blockquote>
-<p>本文简要整理一下Kettle学习过程中的相关文档</p>
-</blockquote>
-<h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://community.hitachivantara.com/docs/DOC-1009855-data-integration-kettle">https://community.hitachivantara.com/docs/DOC-1009855-data-integration-kettle</a><br><a target="_blank" rel="noopener" href="https://github.com/pentaho/pentaho-kettle">https://github.com/pentaho/pentaho-kettle</a></p>
-<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p><a target="_blank" rel="noopener" href="https://sourceforge.net/projects/pentaho/files/Data%20Integration/">https://sourceforge.net/projects/pentaho/files/Data%20Integration/</a></p>
-<blockquote>
-<p>JDK10下启动报错，需切至低版本JDK</p>
-</blockquote>
-<h2 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h2><p><a target="_blank" rel="noopener" href="https://wiki.pentaho.com/display/EAI/Pan+User+Documentation">https://wiki.pentaho.com/display/EAI/Pan+User+Documentation</a></p>
-<h2 id="中文教程"><a href="#中文教程" class="headerlink" title="中文教程"></a>中文教程</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/4d8171150faf">https://www.jianshu.com/p/4d8171150faf</a><br><a target="_blank" rel="noopener" href="https://juejin.im/entry/590c215ca22b9d0058e8e56b">https://juejin.im/entry/590c215ca22b9d0058e8e56b</a><br><a target="_blank" rel="noopener" href="https://ask.hellobi.com/blog/yuguiyang1990/category/1532">https://ask.hellobi.com/blog/yuguiyang1990/category/1532</a></p>
-<h2 id="ktr执行"><a href="#ktr执行" class="headerlink" title="ktr执行"></a>ktr执行</h2><p>./pan.sh -file=”./scripts/APP_CODE.ktr”<br>./pan.sh -file=”./scripts/APP_ZHIJI_CORRESPONDING.ktr”<br>./pan.sh -file=”./scripts/USER_BASIC_INFO.ktr”</p>
-<h2 id="kjb执行"><a href="#kjb执行" class="headerlink" title="kjb执行"></a>kjb执行</h2><p>./kitchen.sh -file=”./scripts/heimdall.kjb”</p>
-<h2 id="命令行输出乱码"><a href="#命令行输出乱码" class="headerlink" title="命令行输出乱码"></a>命令行输出乱码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export LANG&#x3D;zh_CN.UTF-8</span><br></pre></td></tr></table></figure>
-<h2 id="MySQL插表乱码"><a href="#MySQL插表乱码" class="headerlink" title="MySQL插表乱码"></a>MySQL插表乱码</h2><p>数据源选项中<br>Advanced，添加:<br><code>set names utf8;</code></p>
-<p>Options，添加：<br><code>characterEncoding = utf8</code></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/23/">23</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1086,7 +1048,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">223</span>
+          <span class="site-state-item-count">231</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1124,7 +1086,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

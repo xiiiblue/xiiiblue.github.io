@@ -148,6 +148,631 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201803/HBase%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201803/HBase%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Ubuntu16.04下HBase安装笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-03-27 13:34:29" itemprop="dateCreated datePublished" datetime="2018-03-27T13:34:29+08:00">2018-03-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:30:08" itemprop="dateModified" datetime="2018-11-06T15:30:08+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="基础准备"><a href="#基础准备" class="headerlink" title="基础准备"></a>基础准备</h2><ul>
+<li>JDK</li>
+<li>Hadoop</li>
+<li>SSH Server</li>
+</ul>
+<h2 id="下载HBase"><a href="#下载HBase" class="headerlink" title="下载HBase"></a>下载HBase</h2><p><a target="_blank" rel="noopener" href="https://hbase.apache.org/">https://hbase.apache.org/</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf hbase-1.4.2-bin.tar.gz</span><br><span class="line">sudo mv hbase-1.4.2 &#x2F;opt&#x2F;hbase</span><br></pre></td></tr></table></figure>
+<h2 id="系统环境变量"><a href="#系统环境变量" class="headerlink" title="系统环境变量"></a>系统环境变量</h2><p>export HBASE_MANAGES_ZK=true<br>export HBASE_HOME=/opt/hbase<br>export PATH=$PATH:/opt/hbase/bin</p>
+<h2 id="写死JAVA-HOME"><a href="#写死JAVA-HOME" class="headerlink" title="写死JAVA_HOME"></a>写死JAVA_HOME</h2><p>vi ./conf/hbase-env.sh</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME&#x3D;&#x2F;usr&#x2F;lib&#x2F;jvm&#x2F;java-8-oracle&#x2F;jre&#x2F;</span><br></pre></td></tr></table></figure>
+<h2 id="单机模式配置"><a href="#单机模式配置" class="headerlink" title="单机模式配置"></a>单机模式配置</h2><p>vi hbase-site.xml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.rootdir&lt;&#x2F;name&gt;</span><br><span class="line">        &lt;value&gt;file:&#x2F;&#x2F;&#x2F;tmp&#x2F;hbase-$&#123;user.name&#125;&#x2F;hbase&lt;&#x2F;value&gt;</span><br><span class="line">    &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="伪分布模式配置"><a href="#伪分布模式配置" class="headerlink" title="伪分布模式配置"></a>伪分布模式配置</h2><p>vi hbase-site.xml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.rootdir&lt;&#x2F;name&gt;</span><br><span class="line">        &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:9000&#x2F;hbase&lt;&#x2F;value&gt;</span><br><span class="line">    &lt;&#x2F;property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.cluster.distributed&lt;&#x2F;name&gt;</span><br><span class="line">        &lt;value&gt;true&lt;&#x2F;value&gt;</span><br><span class="line">    &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
+<p>启动Hadoop：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;start-all.sh</span><br></pre></td></tr></table></figure>
+<h2 id="Hbase启停"><a href="#Hbase启停" class="headerlink" title="Hbase启停"></a>Hbase启停</h2><p>启停:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;bin&#x2F;start-hbase.sh</span><br><span class="line">.&#x2F;bin&#x2F;stop-hbase.sh</span><br></pre></td></tr></table></figure>
+<p>查看进程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jps</span><br></pre></td></tr></table></figure>
+<p>WEB控制台:<br><a target="_blank" rel="noopener" href="http://localhost:45005/master-status">http://localhost:45005/master-status</a></p>
+<h2 id="HBase-Shell"><a href="#HBase-Shell" class="headerlink" title="HBase Shell"></a>HBase Shell</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;bin&#x2F;hbase shell</span><br><span class="line">help</span><br></pre></td></tr></table></figure>
+
+<p>常用命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">status</span><br><span class="line">create &#39;test&#39;, &#39;cf&#39;</span><br><span class="line">list &#39;test&#39;</span><br><span class="line">describe &#39;test&#39;</span><br><span class="line"></span><br><span class="line">disable &#39;test&#39;</span><br><span class="line">drop &#39;test&#39;</span><br><span class="line">exists &#39;test&#39;</span><br><span class="line"></span><br><span class="line">put &#39;test&#39;, &#39;row1&#39;, &#39;cf:a&#39;, &#39;value1&#39;</span><br><span class="line">put &#39;test&#39;, &#39;row2&#39;, &#39;cf:b&#39;, &#39;value2&#39;</span><br><span class="line">put &#39;test&#39;, &#39;row3&#39;, &#39;cf:c&#39;, &#39;value3&#39;</span><br><span class="line"></span><br><span class="line">scan &#39;test&#39;</span><br><span class="line">get &#39;test&#39;, &#39;row1&#39;</span><br></pre></td></tr></table></figure>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8818e8d40da4">https://www.jianshu.com/p/8818e8d40da4</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/352213f109e5">https://www.jianshu.com/p/352213f109e5</a><br><a target="_blank" rel="noopener" href="https://www.shiyanlou.com/courses/37">https://www.shiyanlou.com/courses/37</a><br><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html">https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201803/Ubuntu%E4%B8%8B%E5%BC%80%E5%90%AFIDEA%E5%90%88%E5%B1%80%E8%8F%9C%E5%8D%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201803/Ubuntu%E4%B8%8B%E5%BC%80%E5%90%AFIDEA%E5%90%88%E5%B1%80%E8%8F%9C%E5%8D%95/" class="post-title-link" itemprop="url">Ubuntu下开启IntelliJ IDEA顶部全局菜单</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-03-27 13:32:41" itemprop="dateCreated datePublished" datetime="2018-03-27T13:32:41+08:00">2018-03-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:31:04" itemprop="dateModified" datetime="2018-11-06T15:31:04+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="安装jayatana"><a href="#安装jayatana" class="headerlink" title="安装jayatana"></a>安装jayatana</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:danjaredg&#x2F;jayatana</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install jayatana</span><br></pre></td></tr></table></figure>
+<h2 id="编辑idea64-vmoptions"><a href="#编辑idea64-vmoptions" class="headerlink" title="编辑idea64.vmoptions"></a>编辑idea64.vmoptions</h2><p>vi /path/to/idea/bin/idea64.vmoptions<br>追加一行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-javaagent:&#x2F;usr&#x2F;share&#x2F;java&#x2F;jayatanaag.jar</span><br></pre></td></tr></table></figure>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000060530--Ubuntu-No-global-menu-with-Jayatana">https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000060530--Ubuntu-No-global-menu-with-Jayatana</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201803/Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85instantclient/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201803/Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85instantclient/" class="post-title-link" itemprop="url">Ubuntu 16.04下安装InstantClient12.2</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-03-27 13:31:28" itemprop="dateCreated datePublished" datetime="2018-03-27T13:31:28+08:00">2018-03-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:30:54" itemprop="dateModified" datetime="2018-11-06T15:30:54+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><p><a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/database/database-technologies/instant-client/downloads/index.html">http://www.oracle.com/technetwork/database/database-technologies/instant-client/downloads/index.html</a></p>
+<p>选择：<br>Instant Client for Linux x86-64</p>
+<p>下载以下两个ZIP包：</p>
+<ul>
+<li>instantclient-basic-linux.x64-12.2.0.1.0.zip  </li>
+<li>instantclient-sqlplus-linux.x64-12.2.0.1.0.zip  </li>
+</ul>
+<h2 id="解压安装"><a href="#解压安装" class="headerlink" title="解压安装"></a>解压安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">unzip instantclient-basic-linux.x64-12.2.0.1.0.zip</span><br><span class="line">unzip instantclient-sqlplus-linux.x64-12.2.0.1.0.zip</span><br><span class="line">sudo mv instantclient_12_2 &#x2F;opt&#x2F;instantclient</span><br></pre></td></tr></table></figure>
+<h2 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export ORACLE_HOME&#x3D;&#x2F;opt&#x2F;instantclient</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;&#x2F;opt&#x2F;instantclient</span><br><span class="line">export TNS_ADMIN&#x3D;&#x2F;opt&#x2F;instantclient</span><br><span class="line">export PATH&#x3D;$PATH:&#x2F;opt&#x2F;instantclient</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201803/Phoenix%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201803/Phoenix%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Ubuntu16.04下Phoenix安装笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-03-26 09:57:55" itemprop="dateCreated datePublished" datetime="2018-03-26T09:57:55+08:00">2018-03-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:30:18" itemprop="dateModified" datetime="2018-11-06T15:30:18+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Phoenix与Hive区别"><a href="#Phoenix与Hive区别" class="headerlink" title="Phoenix与Hive区别"></a>Phoenix与Hive区别</h2><p>Hive是HDFS的SQL层，适用于非实时场景<br>Phoenix是HBase的SQL层，适用于实时查询</p>
+<h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://phoenix.apache.org/">https://phoenix.apache.org/</a></p>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiangxizhishi/article/details/77203478">https://blog.csdn.net/xiangxizhishi/article/details/77203478</a> Hive、HBase、Impala的简单对比<br><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/41254468">https://www.zhihu.com/question/41254468</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/d862337247b1">https://www.jianshu.com/p/d862337247b1</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201803/Ubuntu%E8%BF%9E%E6%8E%A5Android%E6%89%8B%E6%9C%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201803/Ubuntu%E8%BF%9E%E6%8E%A5Android%E6%89%8B%E6%9C%BA/" class="post-title-link" itemprop="url">Ubuntu连接Android手机</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-03-22 15:46:21" itemprop="dateCreated datePublished" datetime="2018-03-22T15:46:21+08:00">2018-03-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:31:35" itemprop="dateModified" datetime="2018-11-06T15:31:35+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="解决Ubuntu无法识别Android手机的问题"><a href="#解决Ubuntu无法识别Android手机的问题" class="headerlink" title="解决Ubuntu无法识别Android手机的问题"></a>解决Ubuntu无法识别Android手机的问题</h2><ol>
+<li>安装mtp相关的包：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libmtp-common mtp-tools libmtp-dev libmtp-runtime libmtp9</span><br></pre></td></tr></table></figure></li>
+<li>查看手机的USB信息<br>执行：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsusb</span><br></pre></td></tr></table></figure>
+记录下新增的一条USB设备的信息，以坚果Pro1为例：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bus 002 Device 011: ID 29a9:7020  </span><br></pre></td></tr></table></figure></li>
+<li>编辑69-libmtp.rules<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi &#x2F;lib&#x2F;udev&#x2F;rules.d&#x2F;69-libmtp.rules</span><br></pre></td></tr></table></figure>
+新增一行：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ATTR&#123;idVendor&#125;&#x3D;&#x3D;&quot;29a9&quot;, ATTR&#123;idProduct&#125;&#x3D;&#x3D;&quot;7020&quot;, SYMLINK+&#x3D;&quot;libmtp-%k&quot;, ENV&#123;ID_MTP_DEVICE&#125;&#x3D;&quot;1&quot;, ENV&#123;ID_MEDIA_PLAYER&#125;&#x3D;&quot;1&quot;</span><br></pre></td></tr></table></figure>
+注意替换掉其中的idVendor和idProduct</li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201803/ubuntu%E4%B8%8B%E8%A7%A3%E5%86%B3Flash%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201803/ubuntu%E4%B8%8B%E8%A7%A3%E5%86%B3Flash%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Ubuntu下解决Flash中文乱码问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-03-22 14:39:55" itemprop="dateCreated datePublished" datetime="2018-03-22T14:39:55+08:00">2018-03-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:31:15" itemprop="dateModified" datetime="2018-11-06T15:31:15+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="修改sansserif-conf"><a href="#修改sansserif-conf" class="headerlink" title="修改sansserif.conf"></a>修改sansserif.conf</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo cp &#x2F;etc&#x2F;fonts&#x2F;conf.d&#x2F;49-sansserif.conf &#x2F;etc&#x2F;fonts&#x2F;conf.d&#x2F;49-sansserif.conf.bak</span><br><span class="line"></span><br><span class="line">sudo vi &#x2F;etc&#x2F;fonts&#x2F;conf.d&#x2F;49-sansserif.conf</span><br></pre></td></tr></table></figure>
+<p>倒数第4行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;string&gt;sans-serif&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
+<p>改为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;string&gt;sans&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="其它相关操作"><a href="#其它相关操作" class="headerlink" title="其它相关操作"></a>其它相关操作</h2><p>查看所有字体</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fc-list</span><br></pre></td></tr></table></figure>
+<p>查看中文字体</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fc-list :lang&#x3D;zh-cn</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201803/Ubuntu%E4%BB%8EU%E7%9B%98%E5%88%B6%E4%BD%9CISO%E9%95%9C%E5%83%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201803/Ubuntu%E4%BB%8EU%E7%9B%98%E5%88%B6%E4%BD%9CISO%E9%95%9C%E5%83%8F/" class="post-title-link" itemprop="url">Ubuntu从U盘制作ISO镜像</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-03-22 13:40:27" itemprop="dateCreated datePublished" datetime="2018-03-22T13:40:27+08:00">2018-03-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2018-11-06 15:31:26" itemprop="dateModified" datetime="2018-11-06T15:31:26+08:00">2018-11-06</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="从启动U盘制作ISO镜像"><a href="#从启动U盘制作ISO镜像" class="headerlink" title="从启动U盘制作ISO镜像"></a>从启动U盘制作ISO镜像</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dd if&#x3D;&#x2F;dev&#x2F;sdx of&#x3D;&#x2F;path&#x2F;to&#x2F;new.iso</span><br></pre></td></tr></table></figure>
+<h2 id="从ISO镜像制作启动U盘"><a href="#从ISO镜像制作启动U盘" class="headerlink" title="从ISO镜像制作启动U盘"></a>从ISO镜像制作启动U盘</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dd if&#x3D;&#x2F;path&#x2F;to&#x2F;iso of&#x3D;&#x2F;dev&#x2F;sdx</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201801/gitflow%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201801/gitflow%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">gitflow笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-01-22 11:09:54" itemprop="dateCreated datePublished" datetime="2018-01-22T11:09:54+08:00">2018-01-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>macOS:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install git-flow-avh</span><br></pre></td></tr></table></figure>
+<p>Ubuntu:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install git-flow</span><br></pre></td></tr></table></figure>
+<p>Windows:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -q -O - --no-check-certificate https:&#x2F;&#x2F;raw.github.com&#x2F;petervanderdoes&#x2F;gitflow-avh&#x2F;develop&#x2F;contrib&#x2F;gitflow-installer.sh install stable | bash</span><br></pre></td></tr></table></figure>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>在一个已有的版本库中执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow init</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>默认有master及develop两个长期分支</p>
+</blockquote>
+<h2 id="分支说明"><a href="#分支说明" class="headerlink" title="分支说明"></a>分支说明</h2><p>主要分支：</p>
+<ul>
+<li>master: 永远处在即将发布(production-ready)状态</li>
+<li>develop: 最新的开发状态</li>
+</ul>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-01-22-11-08-40.png" alt="2018-01-22-11-08-40"></p>
+<p>辅助分支：</p>
+<ul>
+<li>feature: 开发新功能的分支, 基于 develop, 完成后 merge 回 develop</li>
+<li>release: 准备要发布版本的分支, 用来修复 bug. 基于 develop, 完成后 merge 回 develop 和 master</li>
+<li>hotfix: 修复 master 上的问题, 等不及 release 版本就必须马上上线. 基于 master, 完成后 merge 回 master 和 develop</li>
+</ul>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-01-22-11-09-25.png" alt="2018-01-22-11-09-25"></p>
+<h2 id="Feature-新特性"><a href="#Feature-新特性" class="headerlink" title="Feature 新特性"></a>Feature 新特性</h2><h3 id="新特性帮助"><a href="#新特性帮助" class="headerlink" title="新特性帮助"></a>新特性帮助</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature help</span><br></pre></td></tr></table></figure>
+<h3 id="增加新特性"><a href="#增加新特性" class="headerlink" title="增加新特性"></a>增加新特性</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature start rss-feed</span><br></pre></td></tr></table></figure>
+<h3 id="完成新特性"><a href="#完成新特性" class="headerlink" title="完成新特性"></a>完成新特性</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature finish rss-feed</span><br></pre></td></tr></table></figure>
+
+<h2 id="Publish-推送"><a href="#Publish-推送" class="headerlink" title="Publish 推送"></a>Publish 推送</h2><p>此部分为可选。新特性分支可以只存在于本机，不向远程仓库推送</p>
+<h3 id="推送新特性"><a href="#推送新特性" class="headerlink" title="推送新特性"></a>推送新特性</h3><p>可以使用publish命令将一个feature分支推到远程服务器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature publish rss-feed</span><br></pre></td></tr></table></figure>
+<p>或者直接：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin feature&#x2F;rss-feed</span><br></pre></td></tr></table></figure>
+<h3 id="取得一个发布的新特性分支"><a href="#取得一个发布的新特性分支" class="headerlink" title="取得一个发布的新特性分支"></a>取得一个发布的新特性分支</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature pull origin rss-feed</span><br></pre></td></tr></table></figure>
+<h2 id="Release-发布"><a href="#Release-发布" class="headerlink" title="Release 发布"></a>Release 发布</h2><p>release分支是基于develop分支的</p>
+<h2 id="准备Release"><a href="#准备Release" class="headerlink" title="准备Release"></a>准备Release</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow release start 1.1.5</span><br><span class="line">Switched to a new branch &#39;release&#x2F;1.1.5&#39;</span><br></pre></td></tr></table></figure>
+<p>现在，可以在release/1.1.5分支，开始最后的准备工作，例如项目里的某些文件需要记录版本号</p>
+<h2 id="完成Release"><a href="#完成Release" class="headerlink" title="完成Release"></a>完成Release</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow release finish 1.1.5</span><br></pre></td></tr></table></figure>
+<p>git-flow自动做了以下事情：</p>
+<ol>
+<li>拉取远程仓库，以确保目前是最新的版本。</li>
+<li>release的内容会被合并到 master和develop两个分支中去，这样不仅产品代码为最新的版本，而且新的功能分支也将基于最新代码。</li>
+<li>为便于识别和做历史参考，release提交会被标记上这个release的名字（在我们的例子里是 1.1.5）</li>
+<li>清理操作，版本分支会被删除，并且回到develop</li>
+</ol>
+<h2 id="Hotfix-紧急修复"><a href="#Hotfix-紧急修复" class="headerlink" title="Hotfix 紧急修复"></a>Hotfix 紧急修复</h2><p>hotfix分支是基于master分支的</p>
+<h3 id="开始Hotfix"><a href="#开始Hotfix" class="headerlink" title="开始Hotfix"></a>开始Hotfix</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix start missing-link</span><br></pre></td></tr></table></figure>
+<h3 id="完成Hotfix"><a href="#完成Hotfix" class="headerlink" title="完成Hotfix"></a>完成Hotfix</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix finish VERSION</span><br></pre></td></tr></table></figure>
+<h2 id="命令汇总"><a href="#命令汇总" class="headerlink" title="命令汇总"></a>命令汇总</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-01-22-11-09-49.png" alt="2018-01-22-11-09-49"></p>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://danielkummer.github.io/git-flow-cheatsheet/index.zh_CN.html">https://danielkummer.github.io/git-flow-cheatsheet/index.zh_CN.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.git-tower.com/learn/git/ebook/cn/command-line/advanced-topics/git-flow">https://www.git-tower.com/learn/git/ebook/cn/command-line/advanced-topics/git-flow</a></li>
+<li><a target="_blank" rel="noopener" href="http://stormzhang.com/git/2014/01/29/git-flow/">http://stormzhang.com/git/2014/01/29/git-flow/</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201801/f7-vue-webpack/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -509,1069 +1134,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201710/ZEN-SC-SAMPLE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201710/ZEN-SC-SAMPLE/" class="post-title-link" itemprop="url">ZEN-SC-SAMPLE</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-10-30 14:22:56" itemprop="dateCreated datePublished" datetime="2017-10-30T14:22:56+08:00">2017-10-30</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:33:44" itemprop="dateModified" datetime="2018-11-06T15:33:44+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>ZEN-SC-SAMPLE:SpringCloud常用组件示例。</p>
-<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><p>更多源码，请移步GitHub:<br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/zen-sc-sample">https://github.com/xiiiblue/zen-sc-sample</a></p>
-<h2 id="启动方式"><a href="#启动方式" class="headerlink" title="启动方式"></a>启动方式</h2><h3 id="Docker方式启动"><a href="#Docker方式启动" class="headerlink" title="Docker方式启动"></a>Docker方式启动</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mvn clean package</span><br><span class="line">docker-compose up</span><br></pre></td></tr></table></figure>
-<h3 id="手工方式启动"><a href="#手工方式启动" class="headerlink" title="手工方式启动"></a>手工方式启动</h3><p>添加DNS</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi &#x2F;etc&#x2F;hosts</span><br><span class="line">127.0.0.1 zen-eureka</span><br><span class="line">127.0.0.1 zen-zipkin</span><br><span class="line">127.0.0.1 zen-config</span><br></pre></td></tr></table></figure>
-<p>在每个模块下分别执行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn spring-boot:run</span><br></pre></td></tr></table></figure>
-<h2 id="组件清单"><a href="#组件清单" class="headerlink" title="组件清单"></a>组件清单</h2><ul>
-<li>hystrix - 服务降级与融断</li>
-<li>feign - 声明式REST调用</li>
-<li>eureka - 服务注册与发现</li>
-<li>ribbon - 客户端负载均衡</li>
-<li>config-server - 配置中心</li>
-<li>zuul - API网关</li>
-<li>turbine - 监控聚合</li>
-<li>hystrix-dashboard - Hystrix面板</li>
-<li>sleuth - 服务跟踪</li>
-<li>zipkin - 调用链跟踪</li>
-</ul>
-<h2 id="未包含组件"><a href="#未包含组件" class="headerlink" title="未包含组件"></a>未包含组件</h2><ul>
-<li>ELK</li>
-</ul>
-<h2 id="URLs"><a href="#URLs" class="headerlink" title="URLs"></a>URLs</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://localhost:8888/application/default">ConfigServer-配置中心</a></li>
-<li><a target="_blank" rel="noopener" href="http://localhost:8761/">Eureka-服务注册与发现</a></li>
-<li><a target="_blank" rel="noopener" href="http://localhost:8080/swagger-ui.html">Playground-示例微服务</a></li>
-<li><a target="_blank" rel="noopener" href="http://localhost:8040/zen-playground/swagger-ui.html">Zuul-应用网关</a></li>
-<li><a target="_blank" rel="noopener" href="http://localhost:8031/turbine.stream">Turbine-监控聚合</a></li>
-<li><a target="_blank" rel="noopener" href="http://localhost:9411/zipkin/">Zipkin-调用链跟踪</a></li>
-</ul>
-<h2 id="其它说明"><a href="#其它说明" class="headerlink" title="其它说明"></a>其它说明</h2><h3 id="刷新配置"><a href="#刷新配置" class="headerlink" title="刷新配置"></a>刷新配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST http:&#x2F;&#x2F;localhost:8080&#x2F;refresh</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201710/REPORT-MAN/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201710/REPORT-MAN/" class="post-title-link" itemprop="url">REPORT-MAN</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-10-30 14:10:54" itemprop="dateCreated datePublished" datetime="2017-10-30T14:10:54+08:00">2017-10-30</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>report-man:一个轻量级的报表自动化工具</p>
-<p>对于中小型企业系统，一般没有配套的报表与经分系统进行支撑，但运维过程中经常会有各种报表的需求，报表一般为Excel格式，且内容经常发生变化，需要一套简单灵活的解决方案。</p>
-<p>REPORT-MAN的程序本体只有一个可执行jar包，直接使用Excel模板进行配置，可以自动生成报表并发送邮件。支持3种启动方式，简单易用。</p>
-<h2 id="功能特性"><a href="#功能特性" class="headerlink" title="功能特性"></a>功能特性</h2><ul>
-<li>支持桌面/命令行/WEB应用3种运行模式</li>
-<li>无配置文件，在Excel模板中配置全部参数</li>
-<li>可以在模版中定义各种复杂的汇总、公式、图表等</li>
-<li>以任务为基本单位，配置灵活，支撑不断变化的需求</li>
-<li>支持连接多个数据源</li>
-<li>支持邮除发送，可使用代理服务器</li>
-<li>丰富的自定义参数</li>
-</ul>
-<h2 id="技术特性"><a href="#技术特性" class="headerlink" title="技术特性"></a>技术特性</h2><ul>
-<li>Java实现，基于SpringBoot</li>
-<li>使用Gradle构建</li>
-<li>使用ApachePOI-XSSF处理Excel2007文件</li>
-<li>使用JavaMailSender发送邮件</li>
-<li>支持使用SOCKS5代理服务器</li>
-<li>全部参数使用Excel配置</li>
-<li>使用JdbcTemplate，动态生成数据源</li>
-<li>支持查询/更新/删除及建表、建索引等操作</li>
-<li>跨平台，多种运行模式</li>
-<li>对外提供REST接口，可以配合其它系统使用</li>
-</ul>
-<h2 id="使用简介"><a href="#使用简介" class="headerlink" title="使用简介"></a>使用简介</h2><p>report-man针对不同的使用场景，提供了3种启动模式</p>
-<h3 id="桌面模式"><a href="#桌面模式" class="headerlink" title="桌面模式"></a>桌面模式</h3><p>桌面环境下使用，提供一个Swing界面，用于手工生成报表。</p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/sltzo.png"></p>
-<p>界面中可以选择模板路径、报表输出路径，点击按钮直接运行即可。</p>
-<p>桌面模式，一般用于对SQL语句进行微调后（例如修改起止时间），手工执行生成报表的场景。</p>
-<h3 id="命令行模式"><a href="#命令行模式" class="headerlink" title="命令行模式"></a>命令行模式</h3><p>服务器环境下，提供了一个命令行模式，用于后台静默执行。</p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2vazt.jpg"></p>
-<p>一般会配合crontab定时生成报表并发送邮件。</p>
-<p>crontab示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">每天23:40执行</span><br><span class="line">40 23 * * * cd &#x2F;foo&#x2F;bar &amp;&amp; .&#x2F;reportman.sh 模版名称</span><br><span class="line"></span><br><span class="line">每周三23:45执行</span><br><span class="line">45 23 * * 3 cd &#x2F;foo&#x2F;bar &amp;&amp; .&#x2F;reportman.sh 模版名称</span><br></pre></td></tr></table></figure>
-
-<h3 id="WEB模式"><a href="#WEB模式" class="headerlink" title="WEB模式"></a>WEB模式</h3><p>WEB模式对外提供了一个开放的REST接口。可以在其它系统中开发一个简单的界面，调用report-man的REST接口，生成报表并发送邮件。</p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/uneap.png"></p>
-<p>应用默认端口为19090，内嵌一个Swagger-UI界面可以方便的进行测试。</p>
-<p>示例参数：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;file.prefix&quot;: &quot;demo&quot;,</span><br><span class="line">  &quot;mail.to.list&quot;: &quot;foo@bar.com&quot;,</span><br><span class="line">  &quot;sql.start_date&quot;: &quot;2017-10-1&quot;,</span><br><span class="line">  &quot;sql.end_date&quot;: &quot;2017-10-31&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>成功响应：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;code&quot;: &quot;0000&quot;,</span><br><span class="line">  &quot;message&quot;: &quot;报表生成中，稍后会发送至您的邮箱。请不要重复点击生成报表。&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>说明</strong></p>
-<ol>
-<li>file.prefix为必填，指定了基础的模板名称</li>
-<li>其它参数可以灵活添加。会追加在Sheet2的参数配置中。如果参数名称相同，则会覆盖Sheet2中的参数。</li>
-<li>接口是异步的，调用后会立即返回成功消息。如果SQL较复杂，可能会后台运行一段时间。</li>
-</ol>
-<h2 id="启动脚本"><a href="#启动脚本" class="headerlink" title="启动脚本"></a>启动脚本</h2><p>为了方便使用，report-man提供了两个启动脚本</p>
-<h3 id="Windows环境-启动脚本"><a href="#Windows环境-启动脚本" class="headerlink" title="Windows环境 启动脚本"></a>Windows环境 启动脚本</h3><p>Windows环境下，只提供了一个桌面版本的启动入口，直接点击<code>reportman.cmd</code>即可。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;reportman.cmd</span><br></pre></td></tr></table></figure>
-<h3 id="Linux-macOS环境-启动脚本"><a href="#Linux-macOS环境-启动脚本" class="headerlink" title="Linux/macOS环境 启动脚本"></a>Linux/macOS环境 启动脚本</h3><p>Linux以及macOS下，提供了一个全功能的启动脚本，可以支持3种启动方式。</p>
-<p>直接输入<code>./reportman.sh</code>可以查看帮助信息</p>
-<p>以下为示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;reportman.sh gui        #启动桌面版本</span><br><span class="line">.&#x2F;reportman.sh cli demo   #启动命令行版本，其中demo为模版名称</span><br><span class="line">.&#x2F;reportman.sh web start  #启动WEB版本</span><br><span class="line">.&#x2F;reportman.sh web stop   #停止WEB版本</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="运行流程"><a href="#运行流程" class="headerlink" title="运行流程"></a>运行流程</h2><p>程序启动后，会首先载入模板文件，根据模版中提前定义好的各种参数，连接数据库读取结果集，并将结果填充到模板的指定区域。最终生成完整的Excel报表，并发送邮件。</p>
-<table>
-<thead>
-<tr>
-<th>步骤</th>
-<th>解释</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>1</td>
-<td>载入模板文件</td>
-</tr>
-<tr>
-<td>2</td>
-<td>读取Sheet1的任务配置</td>
-</tr>
-<tr>
-<td>3</td>
-<td>读取Sheet2的参数配置</td>
-</tr>
-<tr>
-<td>4</td>
-<td>循环执行全部任务</td>
-</tr>
-<tr>
-<td>5</td>
-<td>删除前2个配置Sheet页</td>
-</tr>
-<tr>
-<td>6</td>
-<td>刷新Excel公式</td>
-</tr>
-<tr>
-<td>7</td>
-<td>保存Excel</td>
-</tr>
-<tr>
-<td>8</td>
-<td>发送邮件</td>
-</tr>
-</tbody></table>
-<h2 id="配置详解"><a href="#配置详解" class="headerlink" title="配置详解"></a>配置详解</h2><p>模板中的前2个Sheet页为配置专用。<br>Sheet1任务配置，用于定义需要执行SQL语句，对应的数据源，以及结果集显示的区域等。<br>Sheet2参数配置，用于定义各种参数，如邮件收件人、代理服务器、数据源的用户名密码等。<br>从第3个Sheet页开始是内容页面，可以有多个Sheet页，需要提前定义好表头、样式、汇总函数、图表等。将需要填充内容的区域留空。  </p>
-<h3 id="Sheet1-任务配置"><a href="#Sheet1-任务配置" class="headerlink" title="Sheet1-任务配置"></a>Sheet1-任务配置</h3><p>任务配置，存放于Sheet1中</p>
-<p><strong>表样截图</strong></p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/s63cr.jpg"></p>
-<p><strong>字段解释</strong></p>
-<table>
-<thead>
-<tr>
-<th>名称</th>
-<th>解释</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>任务名称</td>
-<td>任务的中文说明</td>
-</tr>
-<tr>
-<td>生效标识</td>
-<td>Y-生效/N-失效。</td>
-</tr>
-<tr>
-<td>数据源</td>
-<td>数据源名称。数据源的详细参数需要在Sheet2中配置。</td>
-</tr>
-<tr>
-<td>SQL</td>
-<td>查询SQL语句。</td>
-</tr>
-<tr>
-<td>SHEET页</td>
-<td>结果集显示的Sheet页。因为前两页是配置专用，所以数值需要从3开始。</td>
-</tr>
-<tr>
-<td>横向坐标</td>
-<td>结果集起始的横向X轴坐标。数值从1开始。</td>
-</tr>
-<tr>
-<td>纵向坐标</td>
-<td>结果集起始的纵向Y轴坐标。数值从1开始。</td>
-</tr>
-<tr>
-<td>单元格样式</td>
-<td>LEFT-左对齐/CENTER-居中对齐</td>
-</tr>
-</tbody></table>
-<p><strong>配置示例</strong></p>
-<table>
-<thead>
-<tr>
-<th>任务名称</th>
-<th>生效标识</th>
-<th>数据源</th>
-<th>SQL</th>
-<th>SHEET页</th>
-<th>横向坐标</th>
-<th>纵向坐标</th>
-<th>单元格样式</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>预计使用人数</td>
-<td>N</td>
-<td>mobsale</td>
-<td>select foo from bar</td>
-<td>3</td>
-<td>3</td>
-<td>3</td>
-<td>CENTER</td>
-</tr>
-<tr>
-<td>累计登录次数</td>
-<td>N</td>
-<td>mobsale</td>
-<td>select foo from bar</td>
-<td>3</td>
-<td>5</td>
-<td>3</td>
-<td>CENTER</td>
-</tr>
-<tr>
-<td>累计登录人数</td>
-<td>N</td>
-<td>mobsale</td>
-<td>select foo from bar</td>
-<td>3</td>
-<td>6</td>
-<td>3</td>
-<td>CENTER</td>
-</tr>
-<tr>
-<td>本日登录次数</td>
-<td>Y</td>
-<td>mobsale</td>
-<td>select foo from bar</td>
-<td>3</td>
-<td>7</td>
-<td>3</td>
-<td>CENTER</td>
-</tr>
-<tr>
-<td>本日登录人数</td>
-<td>N</td>
-<td>mobsale</td>
-<td>select foo from bar</td>
-<td>3</td>
-<td>8</td>
-<td>3</td>
-<td>CENTER</td>
-</tr>
-<tr>
-<td>使用清单</td>
-<td>N</td>
-<td>mobsale</td>
-<td>select foo from bar</td>
-<td>4</td>
-<td>1</td>
-<td>2</td>
-<td>LEFT</td>
-</tr>
-<tr>
-<td>工号使用情况</td>
-<td>N</td>
-<td>mobsale</td>
-<td>select foo from bar</td>
-<td>5</td>
-<td>1</td>
-<td>2</td>
-<td>LEFT</td>
-</tr>
-</tbody></table>
-<p><strong>说明</strong></p>
-<ol>
-<li>spider-man会读取所有”生效标识”为Y的任务，并依次执行</li>
-<li>对于select语句，执行后会生成一个x行y列的结果集</li>
-<li>结果集会写入Excel的特定的Sheet页的特定区域，具体可以配置”SHEET页”、”横向坐标”、”纵向坐标”3个参数</li>
-<li>单元格样式可以配置成”LEFT”（左对齐）或”CENTER”（居中对齐）</li>
-<li>支持update/insert/create table/create index等语句，一般用于生成中间表。此类语句不需要指定Sheet页及坐标。</li>
-<li>SQL语句中可以插入参数占位符，格式为<code>$&#123;param_name&#125;</code>。参数的值可以在Sheet2中定义。</li>
-</ol>
-<h3 id="Sheet2-邮箱配置"><a href="#Sheet2-邮箱配置" class="headerlink" title="Sheet2-邮箱配置"></a>Sheet2-邮箱配置</h3><p>邮箱配置，存放于Sheet2中</p>
-<p><strong>表样截图</strong></p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/59ohk.jpg"></p>
-<p><strong>配置示例</strong><br>参数名称|键|值<br>–|–|–<br>邮件-发送开关|mail.enable|Y<br>邮件-收件人|mail.to.list|foo@bar.com<br>邮件-抄送人|mail.cc.list|yourname@qq.com<br>邮件-标题|mail.subject|XXX系统业务日报表<br>邮件-附件名|mail.attachment|业务报表<br>邮件-正文|mail.message|您好：<br>邮件-服务器IP|mail.smtp.host|smtp.qq.com<br>邮件-服务器端口|mail.smtp.port|465<br>邮件-用户名|mail.sender.username|yourname@qq.com<br>邮件-密码|mail.sender.password|blablablablabla<br>邮件-发件人|mail.from|yourname@qq.com<br>邮件-代理服务器开关|mail.proxy.enable|Y<br>邮件-代理服务器IP|mail.proxy.host|127.0.0.1<br>邮件-代理服务器端口|mail.proxy.port|1080</p>
-<p><strong>说明</strong></p>
-<ol>
-<li>注意键的命名<code>mail.xxx</code>是固定的，请不要随意增删。</li>
-<li>代理服务器类型必须为SOCKS4/5</li>
-<li>附件名称如果为中文，最好不要超过4个汉字</li>
-</ol>
-<h3 id="Sheet2-数据源配置"><a href="#Sheet2-数据源配置" class="headerlink" title="Sheet2-数据源配置"></a>Sheet2-数据源配置</h3><p>数据源配置，存放于Sheet2中</p>
-<p><strong>MySQL数据源示例</strong></p>
-<table>
-<thead>
-<tr>
-<th>参数名称</th>
-<th>键</th>
-<th>值</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>数据源类型</td>
-<td>db.testdb.driver</td>
-<td>com.mysql.jdbc.Driver</td>
-</tr>
-<tr>
-<td>数据源地址</td>
-<td>db.testdb.url</td>
-<td>jdbc:mysql://127.0.0.1:3306/dbname</td>
-</tr>
-<tr>
-<td>数据源用户名</td>
-<td>db.testdb.username</td>
-<td>yourname</td>
-</tr>
-<tr>
-<td>数据源密码</td>
-<td>db.testdb.password</td>
-<td>yourpass</td>
-</tr>
-</tbody></table>
-<p><strong>Oracle数据源示例</strong></p>
-<table>
-<thead>
-<tr>
-<th>参数名称</th>
-<th>键</th>
-<th>值</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>数据源类型</td>
-<td>db.testdb.driver</td>
-<td>oracle.jdbc.driver.OracleDriver</td>
-</tr>
-<tr>
-<td>数据源地址</td>
-<td>db.testdb.url</td>
-<td>jdbc:oracle:thin:@127.0.0.1:1521:sid</td>
-</tr>
-<tr>
-<td>数据源用户名</td>
-<td>db.testdb.username</td>
-<td>yourname</td>
-</tr>
-<tr>
-<td>数据源密码</td>
-<td>db.testdb.password</td>
-<td>yourpass</td>
-</tr>
-</tbody></table>
-<p><strong>说明</strong></p>
-<ol>
-<li>键的格式为：<code>db.xxx.yyy</code>。xxx是自定义的数据源名称。yyy是固定的，不要随意修改。</li>
-</ol>
-<h3 id="Sheet2-SQL参数配置"><a href="#Sheet2-SQL参数配置" class="headerlink" title="Sheet2-SQL参数配置"></a>Sheet2-SQL参数配置</h3><p>SQL参数配置，存放于Sheet2中</p>
-<p><strong>配置示例</strong><br>参数名称|键|值<br>–|–|–<br>SQL参数|sql.start_date|2010-1-1<br>SQL参数|sql.end_date|2012-1-1</p>
-<p><strong>说明</strong></p>
-<ol>
-<li>SQL参数的格式为<code>sql.xxx</code>，其中<code>xxx</code>为参数名。</li>
-<li>SQL参数的值，会替换Sheet1中SQL语句中的占位符，从而拼成完整的的SQL语句。</li>
-<li>例如：<code>sql.end_date = 2012-1-1</code>这一行配置，会将Sheet1中SQL语句里的<code>$&#123;end_date&#125;</code>这个占位符替换为<code>2012-1-1</code></li>
-</ol>
-<h3 id="Sheet3-SheetN-模版配置详解"><a href="#Sheet3-SheetN-模版配置详解" class="headerlink" title="Sheet3~SheetN 模版配置详解"></a>Sheet3~SheetN 模版配置详解</h3><p><strong>表样截图</strong><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/iufpu.jpg"></p>
-<p>模版配置非常灵活，可以根据需求配置多个Sheet页。</p>
-<p>模版Sheet页中中主要是预先定义好表头、颜色、Excel公式等。数据部分留空，等待程序运行后填入。</p>
-<p>一般而言，可以分为详单页、汇总页、函数页这3类。</p>
-<p><strong>详单页</strong></p>
-<p>展示一个详单，行数不确定。<br>只需要定义好一个表头即可，从每二行开始，都是自动填充的详单数据。</p>
-<p><strong>汇总页</strong></p>
-<p>行数、列数是固定的，用于展示SUM出来的汇总数据。</p>
-<blockquote>
-<p>汇总页的提取，如果SQL比较复杂，可以分开配置多个任务，每个任务只填充特定的一列数据。</p>
-</blockquote>
-<p><strong>函数页</strong></p>
-<p>与汇总页类似，但本身并没有填充数据，而是填接使用Excel函数，获取其它Sheet页的原始数据，并进行加工与展示。</p>
-<blockquote>
-<p>注意，如果报表中存在SUMPRODUCT函数，POI正常情况下不会计算最终结果，需要打开Excel后手工执行<code>Ctrl+Alt+F9</code>进行刷新。<br>但可以在函数后面加入<code>+(NOW()*0)</code>参数,强制POI计算结果。<br>例如： <code>=SUMPRODUCT((&#39;业务发展-按个人&#39;!$A$2:A$9999=O4)*(&#39;业务发展-按个人&#39;!$B$2:B$9999=&quot;营维经理&quot;)*&#39;业务发展-按个人&#39;!H$2:H$9999)+(NOW()*0)</code></p>
-</blockquote>
-<h2 id="服务器部署"><a href="#服务器部署" class="headerlink" title="服务器部署"></a>服务器部署</h2><ul>
-<li>运行环境要求：JRE版本1.7及以上。</li>
-<li>在本机执行<code>gradle build</code>构建项目，将生成的<code>build/libs/report-man-1.0.jar</code>上传至服务器。</li>
-<li>在jar包所在路径下新建template及report两个目录。其中template中存放模板，report目录用于存放生成的报表。</li>
-<li>可以使用<code>crontab -e</code>配置定时执行</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201710/ELK%E5%88%86%E5%B8%83%E5%BC%8F%E6%97%A5%E5%BF%97%E5%B9%B3%E5%8F%B0%E5%88%9D%E6%AD%A5%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201710/ELK%E5%88%86%E5%B8%83%E5%BC%8F%E6%97%A5%E5%BF%97%E5%B9%B3%E5%8F%B0%E5%88%9D%E6%AD%A5%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">ELK分布式日志平台初步配置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-09-21 15:53:59" itemprop="dateCreated datePublished" datetime="2017-09-21T15:53:59+08:00">2017-09-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>ELK = Elasticsearch + Logstash + Kibana ，是一套非常流行的分布式日志采集、处理、汇总及展示工具。</p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/wmhco.png"></p>
-<ul>
-<li>Logstash - 日志采集、过滤，并转发给Elasticsearch</li>
-<li>Elasticsearch - 搜索引擎，存储、索引、分析日志</li>
-<li>Kibana - WEB界面，查询并展示Elasticsearch的数据</li>
-</ul>
-<p>本文主要介绍ELK日志平台初步搭建及配置。</p>
-<h2 id="Elastic官网"><a href="#Elastic官网" class="headerlink" title="Elastic官网"></a>Elastic官网</h2><p><a target="_blank" rel="noopener" href="https://www.elastic.co/start">https://www.elastic.co/start</a></p>
-<h2 id="安装Elasticsearch"><a href="#安装Elasticsearch" class="headerlink" title="安装Elasticsearch"></a>安装Elasticsearch</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;artifacts.elastic.co&#x2F;downloads&#x2F;elasticsearch&#x2F;elasticsearch-5.6.0.tar.gz</span><br><span class="line">tar -zxvf elasticsearch-5.6.0.tar.gz</span><br><span class="line">bin&#x2F;elasticsearch-plugin install x-pack  # 安装XPack（可选）</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>网络不稳定时，可能需要挂$$代理+Proxifier</p>
-</blockquote>
-<h2 id="安装Kibana"><a href="#安装Kibana" class="headerlink" title="安装Kibana"></a>安装Kibana</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;artifacts.elastic.co&#x2F;downloads&#x2F;kibana&#x2F;kibana-5.6.0-darwin-x86_64.tar.gz</span><br><span class="line">tar -zxvf kibana-5.6.0-darwin-x86_64.tar.gz</span><br><span class="line">bin&#x2F;kibana-plugin install x-pack # 安装XPack（可选）</span><br></pre></td></tr></table></figure>
-<h2 id="安装Logstash"><a href="#安装Logstash" class="headerlink" title="安装Logstash"></a>安装Logstash</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https:&#x2F;&#x2F;artifacts.elastic.co&#x2F;downloads&#x2F;logstash&#x2F;logstash-5.6.1.tar.gz</span><br><span class="line">tar -zxvf logstash-5.6.1.tar.gz</span><br></pre></td></tr></table></figure>
-<h2 id="配置Logstash"><a href="#配置Logstash" class="headerlink" title="配置Logstash"></a>配置Logstash</h2><p>vi logstash.conf</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">  file &#123;</span><br><span class="line">      path &#x3D;&gt; &quot;&#x2F;opt&#x2F;logs&#x2F;busi&#x2F;playground.log&quot;</span><br><span class="line">      ignore_older &#x3D;&gt; 0</span><br><span class="line">      sincedb_path &#x3D;&gt; &quot;&#x2F;dev&#x2F;null&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">output &#123;</span><br><span class="line">  elasticsearch &#123;</span><br><span class="line">    hosts &#x3D;&gt; [&quot;localhost:9200&quot;]</span><br><span class="line">    user &#x3D;&gt; &quot;elastic&quot;</span><br><span class="line">    password &#x3D;&gt; &quot;changeme&quot;</span><br><span class="line">  &#125;</span><br><span class="line">  stdout &#123; codec &#x3D;&gt; rubydebug &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>注意如果安装了XPack，在output中需要配置elasticsearch的用户名及密码</p>
-</blockquote>
-<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;elasticsearch</span><br><span class="line">bin&#x2F;kibana</span><br><span class="line">bin&#x2F;logstash -f logstash.conf</span><br></pre></td></tr></table></figure>
-<h2 id="登录Kibana控制台"><a href="#登录Kibana控制台" class="headerlink" title="登录Kibana控制台"></a>登录Kibana控制台</h2><p><a target="_blank" rel="noopener" href="http://localhost:5601/">http://localhost:5601</a></p>
-<p>初始用户名密码： elastic/changeme</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201710/ZipKin%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8%E9%93%BE%E8%B7%9F%E8%B8%AA%E5%B7%A5%E5%85%B7%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201710/ZipKin%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8%E9%93%BE%E8%B7%9F%E8%B8%AA%E5%B7%A5%E5%85%B7%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Zipkin微服务调用链跟踪工具配置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-09-21 15:52:40" itemprop="dateCreated datePublished" datetime="2017-09-21T15:52:40+08:00">2017-09-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Zipkin是一套Twitter开发的开源的APM工具 (Application Performance Management) ，可以用于微服务的调用链监控。</p>
-<p>类似的APM系统还有：PinPoint、Google Dapper、淘宝鹰眼等。</p>
-<p>相比起PinPoint，Zipkin的优势是语言无关性，但是对代码有一定的入侵。</p>
-<p>Zipkin包含4个组件：</p>
-<ul>
-<li>Collector 收集器</li>
-<li>Storage 存储，默认是InMemory</li>
-<li>API 查询接口</li>
-<li>UI WEB界面</li>
-</ul>
-<p>运行示意图：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/zmv23.png"></p>
-<h2 id="官网及GitHub"><a href="#官网及GitHub" class="headerlink" title="官网及GitHub"></a>官网及GitHub</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://zipkin.io/">官网: zipkin.io</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/openzipkin/zipkin">GitHub: openzipkin/zipkin</a></li>
-</ul>
-<h2 id="服务端安装及运行"><a href="#服务端安装及运行" class="headerlink" title="服务端安装及运行"></a>服务端安装及运行</h2><p>Zipkin服务端提供了多种运行方式，都很简便。使用源码方式可以有更多的可定制性。</p>
-<h3 id="Docker方式"><a href="#Docker方式" class="headerlink" title="Docker方式"></a>Docker方式</h3><p>Docker方式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 9411:9411 openzipkin&#x2F;zipkin</span><br></pre></td></tr></table></figure>
-<h3 id="JAR包方式"><a href="#JAR包方式" class="headerlink" title="JAR包方式"></a>JAR包方式</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget -O zipkin.jar &#39;https:&#x2F;&#x2F;search.maven.org&#x2F;remote_content?g&#x3D;io.zipkin.java&amp;a&#x3D;zipkin-server&amp;v&#x3D;LATEST&amp;c&#x3D;exec&#39;</span><br><span class="line">java -jar zipkin.jar</span><br></pre></td></tr></table></figure>
-<h3 id="源码方式"><a href="#源码方式" class="headerlink" title="源码方式"></a>源码方式</h3><p>pom.xml:  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependencyManagement&gt;</span><br><span class="line">  &lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">      &lt;groupId&gt;org.springframework.cloud&lt;&#x2F;groupId&gt;</span><br><span class="line">      &lt;artifactId&gt;spring-cloud-dependencies&lt;&#x2F;artifactId&gt;</span><br><span class="line">      &lt;version&gt;Dalston.SR2&lt;&#x2F;version&gt;</span><br><span class="line">      &lt;type&gt;pom&lt;&#x2F;type&gt;</span><br><span class="line">      &lt;scope&gt;import&lt;&#x2F;scope&gt;</span><br><span class="line">    &lt;&#x2F;dependency&gt;</span><br><span class="line">  &lt;&#x2F;dependencies&gt;</span><br><span class="line">&lt;&#x2F;dependencyManagement&gt;</span><br><span class="line"></span><br><span class="line">&lt;dependencies&gt;</span><br><span class="line">  &lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;io.zipkin.java&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;zipkin-autoconfigure-ui&lt;&#x2F;artifactId&gt;</span><br><span class="line">  &lt;&#x2F;dependency&gt;</span><br><span class="line">  &lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;io.zipkin.java&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;zipkin-server&lt;&#x2F;artifactId&gt;</span><br><span class="line">  &lt;&#x2F;dependency&gt;</span><br><span class="line">&lt;&#x2F;dependencies&gt;</span><br></pre></td></tr></table></figure>
-<p>application.yml:  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">server.port: 9411</span><br><span class="line">spring.application.name: zen-zipkin</span><br></pre></td></tr></table></figure>
-<h2 id="服务端WEB界面"><a href="#服务端WEB界面" class="headerlink" title="服务端WEB界面"></a>服务端WEB界面</h2><p>服务端启动后，以在浏览器中看一下WEB界面是否正常：<br><a target="_blank" rel="noopener" href="http://localhost:9411/">http://localhost:9411</a></p>
-<h2 id="微服务端配置"><a href="#微服务端配置" class="headerlink" title="微服务端配置"></a>微服务端配置</h2><p>pom.xml:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.springframework.cloud&lt;&#x2F;groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;spring-cloud-sleuth-zipkin&lt;&#x2F;artifactId&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
-<p>application.yml:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">spring:</span><br><span class="line">  zipkin:</span><br><span class="line">    base-url: http:&#x2F;&#x2F;localhost:9411</span><br><span class="line">  sleuth:</span><br><span class="line">    sampler:</span><br><span class="line">      percentage: 1.0</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>其中percentage是采样率，默认0.1</p>
-</blockquote>
-<p>当微服务启动后，就可以在Zipkin的界面中进行调用链的监控了：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/4yzav.jpg"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201710/Swagger%E9%85%8D%E7%BD%AE%E5%85%A8%E5%B1%80ResponseModel/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201710/Swagger%E9%85%8D%E7%BD%AE%E5%85%A8%E5%B1%80ResponseModel/" class="post-title-link" itemprop="url">Swagger配置全局Response Model</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-09-21 15:49:31" itemprop="dateCreated datePublished" datetime="2017-09-21T15:49:31+08:00">2017-09-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="关于响应"><a href="#关于响应" class="headerlink" title="关于响应"></a>关于响应</h2><p>老的HTTP+JSON RPC接口，无论成功/失败，响应格式一般是固定的，例如：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;code&quot;:&quot;000&quot;,</span><br><span class="line">  &quot;message&quot;:&quot;成功&quot;,</span><br><span class="line">  &quot;data&quot;:&#123;</span><br><span class="line">    &quot;productId&quot;:&quot;123&quot;,</span><br><span class="line">    &quot;productName&quot;:&quot;产品名称&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>REST风格接口中，一般是这样处理：<br>如果业务处理成功，HTTP STATUS返回2XX，BODY直接返回业务内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;productId&quot;:&quot;123&quot;,</span><br><span class="line">  &quot;productName&quot;:&quot;产品名称&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果业务处理失败，HTTP STATUS返回4XX或5XX，这时才会展现报错信息：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;code&quot;:&quot;999&quot;,</span><br><span class="line">  &quot;message&quot;:&quot;失败原因&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>业务成功和业务失败，会对外使用两套不同的模型。</p>
-<h2 id="Swagger中的展示"><a href="#Swagger中的展示" class="headerlink" title="Swagger中的展示"></a>Swagger中的展示</h2><p>Swagger中默认只会展示业务处理成功时的模型：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/itjdj.jpg"></p>
-<p>Response Messages中的Response Model不会显示：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/8rx8t.jpg"></p>
-<p>如果吹毛求疵的话，我们需要将业务失败时模型的内容展示出来，例如这样：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/asyr7.jpg"></p>
-<h2 id="注解方式配置"><a href="#注解方式配置" class="headerlink" title="注解方式配置"></a>注解方式配置</h2><p>使用注解方式，可以单独为一个API配置Response Model</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@ApiResponses(&#123;</span><br><span class="line">        @ApiResponse(code &#x3D; 400, message &#x3D; &quot;业务逻辑异常&quot;, response &#x3D; ApiError.class),</span><br><span class="line">        @ApiResponse(code &#x3D; 407, message &#x3D; &quot;XX异常&quot;, response &#x3D; ApiError.class),</span><br><span class="line">        ... ...</span><br><span class="line">        @ApiResponse(code &#x3D; 500, message &#x3D; &quot;服务器内部错误&quot;, response &#x3D; ApiError.class)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-<p>这样做的缺点显而易见，每个Controller上都会有一大堆的、重复的@ApiResponses注解，以至于把正常的业务代码淹没。</p>
-<h2 id="全局配置"><a href="#全局配置" class="headerlink" title="全局配置"></a>全局配置</h2><p>通过Swagger的全局配置，可以自定义默认的Response Model。</p>
-<p>首先，在任何一个Controller上，添加至少一个@ApiResponses注解，标明response的类。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@ApiResponses(&#123;@ApiResponse(code &#x3D; 500, message &#x3D; &quot;服务器内部错误&quot;, response &#x3D; ApiError.class)&#125;)</span><br></pre></td></tr></table></figure>
-<p>然后，在Swagger配置类的Docket上加入globalResponseMessage</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@Bean</span><br><span class="line">public Docket userApi() &#123;</span><br><span class="line">    List&lt;ResponseMessage&gt; responseMessageList &#x3D; new ArrayList&lt;&gt;();</span><br><span class="line">    responseMessageList.add(new ResponseMessageBuilder().code(404).message(&quot;找不到资源&quot;).responseModel(new ModelRef(&quot;ApiError&quot;)).build());</span><br><span class="line">    responseMessageList.add(new ResponseMessageBuilder().code(409).message(&quot;业务逻辑异常&quot;).responseModel(new ModelRef(&quot;ApiError&quot;)).build());</span><br><span class="line">    responseMessageList.add(new ResponseMessageBuilder().code(422).message(&quot;参数校验异常&quot;).responseModel(new ModelRef(&quot;ApiError&quot;)).build());</span><br><span class="line">    responseMessageList.add(new ResponseMessageBuilder().code(500).message(&quot;服务器内部错误&quot;).responseModel(new ModelRef(&quot;ApiError&quot;)).build());</span><br><span class="line">    responseMessageList.add(new ResponseMessageBuilder().code(503).message(&quot;Hystrix异常&quot;).responseModel(new ModelRef(&quot;ApiError&quot;)).build());</span><br><span class="line"></span><br><span class="line">    return new Docket(DocumentationType.SWAGGER_2)</span><br><span class="line"></span><br><span class="line">            .globalResponseMessage(RequestMethod.GET, responseMessageList)</span><br><span class="line">            .globalResponseMessage(RequestMethod.POST, responseMessageList)</span><br><span class="line">            .globalResponseMessage(RequestMethod.PUT, responseMessageList)</span><br><span class="line">            .globalResponseMessage(RequestMethod.DELETE, responseMessageList)</span><br><span class="line"></span><br><span class="line">            .build()</span><br><span class="line">            .apiInfo(apiInfo());</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>请注意第一条不能省略，new ModelRef(“ApiError”)，会查询之前定义@ApiResponse的response中指定的class</p>
-</blockquote>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/" class="post-title-link" itemprop="url">使用dockerfile插件打包微服务镜像</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-09-16 10:42:53" itemprop="dateCreated datePublished" datetime="2017-09-16T10:42:53+08:00">2017-09-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:34:50" itemprop="dateModified" datetime="2018-11-06T15:34:50+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>使用spotify的dockerfile maven插件，可以帮助我们将maven与docker进行集成，更快速的在maven构建过程中进行docker镜像的打包操作。<br>配置仍然是基于Dockerfile的，插件只是辅助。  </p>
-<p>请注意，插件的名称是 <strong>spotify</strong> 的 <strong>dockerfile-maven-plugin</strong> ，而非 <strong>docker-maven-plugin</strong> 。</p>
-<p>详情可访问 <a target="_blank" rel="noopener" href="https://github.com/spotify/dockerfile-maven">github页面</a></p>
-<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>首先准备一个spring-boot工程，假设工程名为playground。另外本机需要安装docker，过程都不再赘述。<br>本文平台为macOS12，docker在不同平台下可能有所差异。  </p>
-<p>由于dockerhub访问较慢，可以用$$先自行搭建一个socks5代理来加速访问。代理不是必须的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export ALL_PROXY&#x3D;socks5:&#x2F;&#x2F;xx.xx.xx.xx:xx</span><br></pre></td></tr></table></figure>
-<h2 id="建立Dockerfile"><a href="#建立Dockerfile" class="headerlink" title="建立Dockerfile"></a>建立Dockerfile</h2><p>在工程目录下新建一个Dockerfile，基于openjdk的镜像：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">FROM openjdk:8-jdk-alpine</span><br><span class="line">VOLUME &#x2F;tmp</span><br><span class="line">ADD target&#x2F;playground-1.1.0.jar app.jar</span><br><span class="line">ENV JAVA_OPTS&#x3D;&quot;&quot;</span><br><span class="line">ENTRYPOINT [ &quot;sh&quot;, &quot;-c&quot;, &quot;java $JAVA_OPTS -Djava.security.egd&#x3D;file:&#x2F;dev&#x2F;.&#x2F;urandom -jar &#x2F;app.jar&quot; ]</span><br></pre></td></tr></table></figure>
-<h2 id="使用docker命令构建镜像"><a href="#使用docker命令构建镜像" class="headerlink" title="使用docker命令构建镜像"></a>使用docker命令构建镜像</h2><p>在使用Maven插件之前，可以试着先用docker命令来进行打包：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t&#x3D;&quot;yourname&#x2F;playground:latest&quot; .</span><br></pre></td></tr></table></figure>
-<p>查看镜像是否生成：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker images</span><br></pre></td></tr></table></figure>
-<p>然后可以使用<code>docker push</code>推送镜像：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker push yourname&#x2F;playground</span><br></pre></td></tr></table></figure>
-<h3 id="编辑pom-xml"><a href="#编辑pom-xml" class="headerlink" title="编辑pom.xml"></a>编辑pom.xml</h3><p>测试通过后，就可以在pom.xml中添加spotify插件了</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;properties&gt;</span><br><span class="line">   &lt;docker.image.prefix&gt;yourname&lt;&#x2F;docker.image.prefix&gt;</span><br><span class="line">&lt;&#x2F;properties&gt;</span><br><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;plugins&gt;</span><br><span class="line">        &lt;plugin&gt;</span><br><span class="line">            &lt;groupId&gt;com.spotify&lt;&#x2F;groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;dockerfile-maven-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">            &lt;version&gt;1.3.4&lt;&#x2F;version&gt;</span><br><span class="line">            &lt;configuration&gt;</span><br><span class="line">                &lt;repository&gt;$&#123;docker.image.prefix&#125;&#x2F;$&#123;project.artifactId&#125;&lt;&#x2F;repository&gt;</span><br><span class="line">            &lt;&#x2F;configuration&gt;</span><br><span class="line">        &lt;&#x2F;plugin&gt;</span><br><span class="line">    &lt;&#x2F;plugins&gt;</span><br><span class="line">&lt;&#x2F;build&gt;</span><br></pre></td></tr></table></figure>
-<p>另外还可以添加一个execution，在maven的install生命周期自动进行build和push。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;executions&gt;</span><br><span class="line">	&lt;execution&gt;</span><br><span class="line">		&lt;id&gt;default&lt;&#x2F;id&gt;</span><br><span class="line">		&lt;phase&gt;install&lt;&#x2F;phase&gt;</span><br><span class="line">		&lt;goals&gt;</span><br><span class="line">			&lt;goal&gt;build&lt;&#x2F;goal&gt;</span><br><span class="line">			&lt;goal&gt;push&lt;&#x2F;goal&gt;</span><br><span class="line">		&lt;&#x2F;goals&gt;</span><br><span class="line">	&lt;&#x2F;execution&gt;</span><br><span class="line">&lt;&#x2F;executions&gt;</span><br></pre></td></tr></table></figure>
-<h3 id="使用插件构建镜像"><a href="#使用插件构建镜像" class="headerlink" title="使用插件构建镜像"></a>使用插件构建镜像</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn install dockerfile:build</span><br></pre></td></tr></table></figure>
-<h3 id="使用插件推送镜像"><a href="#使用插件推送镜像" class="headerlink" title="使用插件推送镜像"></a>使用插件推送镜像</h3><p>在使用dockerfile-maven-plugin推送前，需要先编辑一下<code>~/.docker/config.json</code>，添加用户名及密码，否则会报认证失败。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;auths&quot;: &#123;</span><br><span class="line">    &quot;https:&#x2F;&#x2F;index.docker.io&#x2F;v1&#x2F;&quot;: &#123;</span><br><span class="line">      &quot;Username&quot;: &quot;xxxxxx&quot;,</span><br><span class="line">      &quot;Secret&quot;: &quot;xxxxxx&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;credsStore&quot;: &quot;osxkeychain&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>然后直接运行即可：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn dockerfile:push</span><br></pre></td></tr></table></figure>
-<h2 id="运行镜像"><a href="#运行镜像" class="headerlink" title="运行镜像"></a>运行镜像</h2><p>最后，可以使用<code>docker run</code>命令可以将镜像启动，在浏览器中查看一下运行情况</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -p 8080:8080 -t yourname&#x2F;playground</span><br></pre></td></tr></table></figure>
-<p>使用<code>docker logs</code>简单查看日志</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker ps</span><br><span class="line">docker logs f4d7e737f47f</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201709/%E4%BD%BF%E7%94%A8Postman+Newman+Jenkins%E5%AE%9E%E7%8E%B0%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201709/%E4%BD%BF%E7%94%A8Postman+Newman+Jenkins%E5%AE%9E%E7%8E%B0%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="post-title-link" itemprop="url">Postman+Newman+Jenkins实现REST自动回归测试</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-09-16 10:35:24" itemprop="dateCreated datePublished" datetime="2017-09-16T10:35:24+08:00">2017-09-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>本文主要介绍如何使用Postman+Newman+Jenkins，实现微服务自动化的回归测试。  </p>
-<h2 id="所需工具"><a href="#所需工具" class="headerlink" title="所需工具"></a>所需工具</h2><ul>
-<li>Postman：用于编写测试用例，导出.json格式的测试脚本</li>
-<li>Newman：命令行方式执行postman导出的测试脚本</li>
-<li>Jenkins：实现测试的自动化</li>
-</ul>
-<h2 id="Postman的下载"><a href="#Postman的下载" class="headerlink" title="Postman的下载"></a>Postman的下载</h2><p>官网：<br><a target="_blank" rel="noopener" href="https://www.getpostman.com/">https://www.getpostman.com/</a>  </p>
-<h2 id="Newman的安装"><a href="#Newman的安装" class="headerlink" title="Newman的安装"></a>Newman的安装</h2><p>Newman可以运行Postman生成的.json测试用例，生成.html格式的测试报告。  </p>
-<p>可以直接使用npm进行安装：  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install newman --global;</span><br></pre></td></tr></table></figure>
-<p>更多文档，可以参考GitHub：<br><a target="_blank" rel="noopener" href="https://github.com/postmanlabs/newman">https://github.com/postmanlabs/newman</a></p>
-<h2 id="测试过程"><a href="#测试过程" class="headerlink" title="测试过程"></a>测试过程</h2><ol>
-<li>   使用Postman编写微服务接口的测试用例，并导出json文件。</li>
-<li>   Jenkins创建测试项目，使用newman来执行测试脚本，生成测试报告。</li>
-<li>   将测试项目与工程构建项目关联，使之在构建发布到测试环境后触发执行。</li>
-</ol>
-<h2 id="使用Postman编写测试用例"><a href="#使用Postman编写测试用例" class="headerlink" title="使用Postman编写测试用例"></a>使用Postman编写测试用例</h2><ol>
-<li><p>根据swagger服务契约，使用Postman工具，传入测试参数并模拟调用。  </p>
-</li>
-<li><p>调用后，可以点击左侧的文件夹图标，新建一个Collection。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/hvksa.jpg"></p>
-</li>
-<li><p>点击右侧的Save按钮，将本次测试脚本保存到刚才创建的Collection中。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2oixb.jpg"></p>
-</li>
-<li><p>继续进行其它API的调用，并保存至Collection中。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/859qm.jpg"></p>
-</li>
-<li><p>点击Collection上的省略号图标，并选择Export，将测试用例导出保存为.json文件。</p>
-</li>
-<li><p>上传到服务器相应目录下。</p>
-</li>
-</ol>
-<h2 id="配置Jenkins测试项目"><a href="#配置Jenkins测试项目" class="headerlink" title="配置Jenkins测试项目"></a>配置Jenkins测试项目</h2><p>接下来配置Jenkins，用于触发调用newman进行测试。</p>
-<ol>
-<li>创建一个自由风格的Jenkins项目  </li>
-<li>在构建一栏，输入以下脚本，用于触发newman测试<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/ktuvx.jpg">  <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">newman run /home/deployer/functest/foobar/foobar.json --reporters cli,html,json,junit --reporter-html-export /home/deployer/functest_report/foobar/foobar_report.html</span><br></pre></td></tr></table></figure></li>
-<li>可以在主项目的构建配置中，增加构建后操作，构建完成后自动触发执行这个测试项目<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/791n9.jpg"></li>
-</ol>
-<h2 id="查看测试结果"><a href="#查看测试结果" class="headerlink" title="查看测试结果"></a>查看测试结果</h2><ol>
-<li>可以在Jenkins的日志中直接查看结果</li>
-<li>也可以用Web容器将生成的.html测试报告暴露出来，直接通过浏览器访问</li>
-</ol>
-<h2 id="自动化回归测试的必要性"><a href="#自动化回归测试的必要性" class="headerlink" title="自动化回归测试的必要性"></a>自动化回归测试的必要性</h2><p>Postman、Selenium这样的动化的回归测试真的有必要吗，它能够帮助我们发现多少问题，为了实现它我们要多付出多大的代价？<br>说到底，这是一个有关”性价比”的问题。  </p>
-<p>首先从组织结构上来看，如果项目的规模大到了有专门的测试团队，那么无疑会大大降低测试团队的工作量。<br>但如果是开发人员兼职做测试，那么多花点心思在controller层的集成测试上，可以会用更少的时间，达到差不多的效果。  </p>
-<p>有时间会再写一下关于实践中单元测试、集成测试的一些取舍，以及手工回归测试与swagger参数示例等方面的内容。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/201709/swagger2markup%E7%94%9F%E6%88%90%E9%9D%99%E6%80%81API%E6%96%87%E6%A1%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201709/swagger2markup%E7%94%9F%E6%88%90%E9%9D%99%E6%80%81API%E6%96%87%E6%A1%A3/" class="post-title-link" itemprop="url">swagger2markup生成静态API文档</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-09-16 10:32:35" itemprop="dateCreated datePublished" datetime="2017-09-16T10:32:35+08:00">2017-09-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>swagger我们已经不陌生了，另外可以借助于swagger-ui，可以实现动态的、可测试的API文档。  </p>
-<p>本文主要介绍如何使用swagger2markup生成静态的HTML及PDF文档。  </p>
-<p>生成的文档样式如下：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/29fxd.jpg"></p>
-<h2 id="swagger2markup主页"><a href="#swagger2markup主页" class="headerlink" title="swagger2markup主页"></a>swagger2markup主页</h2><p>GitHub主页：<br><a target="_blank" rel="noopener" href="https://github.com/Swagger2Markup/swagger2markup">https://github.com/Swagger2Markup/swagger2markup</a></p>
-<h2 id="实现方式"><a href="#实现方式" class="headerlink" title="实现方式"></a>实现方式</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/qlz5j.jpg"></p>
-<p>swagger2markup的实现方式比较绕，pom.xml里的依赖也比较多，而且每次构建都生成文档的话，需要耗费较长的时间。<br>所以<strong>不建议直接集成到工程内部</strong>，可以将它独立成一个工程出来，专门用于生成文档。  </p>
-<h2 id="配置及代码"><a href="#配置及代码" class="headerlink" title="配置及代码"></a>配置及代码</h2><p>配置及代码不多，就不上传github了，在下面直接贴出来。</p>
-<p>实现方式大体是：</p>
-<ol>
-<li>运行单元测试采集远程的swagger.json文件并保存到本地</li>
-<li>maven插件将swagger.json转换为asciidoc</li>
-<li>将asciidoc再转为html+pdf。  </li>
-</ol>
-<p>用到了custom.baseurl这个JVM自定义的参数。默认情况下采集127.0.0.1:8080下的应用。<br>也可以在mvn后面指定<code>-Dcustom.baseurl=xx.xx.xx.xx</code>来实现自定义的采集，如果微服务较多，可以用start.sh脚本来进行批量采集</p>
-<h3 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span> <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.foo.bar<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>apidocs<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>jar<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">name</span>&gt;</span>apidocs<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">description</span>&gt;</span>ApiDocs<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">project.build.sourceEncoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">project.build.sourceEncoding</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">project.reporting.outputEncoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">project.reporting.outputEncoding</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">java.version</span>&gt;</span>1.8<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">custom.baseurl</span>&gt;</span>127.0.0.1:8080<span class="tag">&lt;/<span class="name">custom.baseurl</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">swagger2markup.version</span>&gt;</span>1.3.1<span class="tag">&lt;/<span class="name">swagger2markup.version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">asciidoctor.input.directory</span>&gt;</span>$&#123;project.basedir&#125;/src/docs/asciidoc<span class="tag">&lt;/<span class="name">asciidoctor.input.directory</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">swagger.output.dir</span>&gt;</span>$&#123;project.build.directory&#125;/swagger<span class="tag">&lt;/<span class="name">swagger.output.dir</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">swagger.snippetOutput.dir</span>&gt;</span>$&#123;project.build.directory&#125;/asciidoc/snippets<span class="tag">&lt;/<span class="name">swagger.snippetOutput.dir</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">generated.asciidoc.directory</span>&gt;</span>$&#123;project.build.directory&#125;/asciidoc/generated<span class="tag">&lt;/<span class="name">generated.asciidoc.directory</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">asciidoctor.html.output.directory</span>&gt;</span>$&#123;project.build.directory&#125;/asciidoc/html<span class="tag">&lt;/<span class="name">asciidoctor.html.output.directory</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">asciidoctor.pdf.output.directory</span>&gt;</span>$&#123;project.build.directory&#125;/asciidoc/pdf<span class="tag">&lt;/<span class="name">asciidoctor.pdf.output.directory</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">swagger.input</span>&gt;</span>$&#123;swagger.output.dir&#125;/swagger.json<span class="tag">&lt;/<span class="name">swagger.input</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.5.4.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--springboot--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--swagger2markup--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.swagger2markup<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>swagger2markup-spring-restdocs-ext<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;swagger2markup.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.springfox<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springfox-staticdocs<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.4.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.robwin<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>assertj-swagger<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.2.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.restdocs<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-restdocs-mockmvc<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">resources</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">resource</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">directory</span>&gt;</span>src/main/resources<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">filtering</span>&gt;</span>true<span class="tag">&lt;/<span class="name">filtering</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">resources</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">compilerVersion</span>&gt;</span>$&#123;java.version&#125;<span class="tag">&lt;/<span class="name">compilerVersion</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">source</span>&gt;</span>$&#123;java.version&#125;<span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">target</span>&gt;</span>$&#123;java.version&#125;<span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">encoding</span>&gt;</span>UTF-8<span class="tag">&lt;/<span class="name">encoding</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- prevents endPosTable exception for maven compile --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">useIncrementalCompilation</span>&gt;</span>false<span class="tag">&lt;/<span class="name">useIncrementalCompilation</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-surefire-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">systemPropertyVariables</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">io.springfox.staticdocs.outputDir</span>&gt;</span>$&#123;swagger.output.dir&#125;<span class="tag">&lt;/<span class="name">io.springfox.staticdocs.outputDir</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">io.springfox.staticdocs.snippetsOutputDir</span>&gt;</span>$&#123;swagger.snippetOutput.dir&#125;</span><br><span class="line">            <span class="tag">&lt;/<span class="name">io.springfox.staticdocs.snippetsOutputDir</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">custom.baseurl</span>&gt;</span>$&#123;custom.baseurl&#125;<span class="tag">&lt;/<span class="name">custom.baseurl</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">systemPropertyVariables</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">&lt;!-- First, use the swagger2markup plugin to generate asciidoc --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.swagger2markup<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>swagger2markup-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;swagger2markup.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.swagger2markup<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>swagger2markup-import-files-ext<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;swagger2markup.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.github.swagger2markup<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>swagger2markup-spring-restdocs-ext<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;swagger2markup.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">swaggerInput</span>&gt;</span>$&#123;swagger.input&#125;<span class="tag">&lt;/<span class="name">swaggerInput</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">outputDir</span>&gt;</span>$&#123;generated.asciidoc.directory&#125;<span class="tag">&lt;/<span class="name">outputDir</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">config</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">swagger2markup.markupLanguage</span>&gt;</span>ASCIIDOC<span class="tag">&lt;/<span class="name">swagger2markup.markupLanguage</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">swagger2markup.pathsGroupedBy</span>&gt;</span>TAGS<span class="tag">&lt;/<span class="name">swagger2markup.pathsGroupedBy</span>&gt;</span></span><br><span class="line"></span><br><span class="line">            <span class="tag">&lt;<span class="name">swagger2markup.extensions.dynamicOverview.contentPath</span>&gt;</span></span><br><span class="line">              $&#123;project.basedir&#125;/src/docs/asciidoc/extensions/overview</span><br><span class="line">            <span class="tag">&lt;/<span class="name">swagger2markup.extensions.dynamicOverview.contentPath</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">swagger2markup.extensions.dynamicDefinitions.contentPath</span>&gt;</span></span><br><span class="line">              $&#123;project.basedir&#125;/src/docs/asciidoc/extensions/definitions</span><br><span class="line">            <span class="tag">&lt;/<span class="name">swagger2markup.extensions.dynamicDefinitions.contentPath</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">swagger2markup.extensions.dynamicPaths.contentPath</span>&gt;</span>$&#123;project.basedir&#125;/src/docs/asciidoc/extensions/paths</span><br><span class="line">            <span class="tag">&lt;/<span class="name">swagger2markup.extensions.dynamicPaths.contentPath</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">swagger2markup.extensions.dynamicSecurity.contentPath</span>&gt;</span></span><br><span class="line">              $&#123;project.basedir&#125;src/docs/asciidoc/extensions/security/</span><br><span class="line">            <span class="tag">&lt;/<span class="name">swagger2markup.extensions.dynamicSecurity.contentPath</span>&gt;</span></span><br><span class="line"></span><br><span class="line">            <span class="tag">&lt;<span class="name">swagger2markup.extensions.springRestDocs.snippetBaseUri</span>&gt;</span>$&#123;swagger.snippetOutput.dir&#125;</span><br><span class="line">            <span class="tag">&lt;/<span class="name">swagger2markup.extensions.springRestDocs.snippetBaseUri</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">swagger2markup.extensions.springRestDocs.defaultSnippets</span>&gt;</span>true</span><br><span class="line">            <span class="tag">&lt;/<span class="name">swagger2markup.extensions.springRestDocs.defaultSnippets</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">config</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">phase</span>&gt;</span>test<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">goal</span>&gt;</span>convertSwagger2markup<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">&lt;!-- Run the generated asciidoc through Asciidoctor to generate</span></span><br><span class="line"><span class="comment">           other documentation types, such as PDFs or HTML5 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.asciidoctor<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>asciidoctor-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.5.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- Include Asciidoctor PDF for pdf generation --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.asciidoctor<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>asciidoctorj-pdf<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.5.0-alpha.10.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.jruby<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jruby-complete<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.21<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- Configure generic document generation settings --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">sourceDirectory</span>&gt;</span>$&#123;asciidoctor.input.directory&#125;<span class="tag">&lt;/<span class="name">sourceDirectory</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">sourceDocumentName</span>&gt;</span>index.adoc<span class="tag">&lt;/<span class="name">sourceDocumentName</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">attributes</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">doctype</span>&gt;</span>book<span class="tag">&lt;/<span class="name">doctype</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">toc</span>&gt;</span>left<span class="tag">&lt;/<span class="name">toc</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">toclevels</span>&gt;</span>3<span class="tag">&lt;/<span class="name">toclevels</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">numbered</span>&gt;</span><span class="tag">&lt;/<span class="name">numbered</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">hardbreaks</span>&gt;</span><span class="tag">&lt;/<span class="name">hardbreaks</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">sectlinks</span>&gt;</span><span class="tag">&lt;/<span class="name">sectlinks</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">sectanchors</span>&gt;</span><span class="tag">&lt;/<span class="name">sectanchors</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">generated</span>&gt;</span>$&#123;generated.asciidoc.directory&#125;<span class="tag">&lt;/<span class="name">generated</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">attributes</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- Since each execution can only handle one backend, run</span></span><br><span class="line"><span class="comment">             separate executions for each desired output type --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>output-html<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">phase</span>&gt;</span>test<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">goal</span>&gt;</span>process-asciidoc<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">backend</span>&gt;</span>html5<span class="tag">&lt;/<span class="name">backend</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>$&#123;asciidoctor.html.output.directory&#125;<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line"></span><br><span class="line">          <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>output-pdf<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">phase</span>&gt;</span>test<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">goal</span>&gt;</span>process-asciidoc<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">backend</span>&gt;</span>pdf<span class="tag">&lt;/<span class="name">backend</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>$&#123;asciidoctor.pdf.output.directory&#125;<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">&lt;!-- specify the main class for the manifest --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-jar-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.4<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">archive</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">manifest</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">addClasspath</span>&gt;</span>true<span class="tag">&lt;/<span class="name">addClasspath</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">classpathPrefix</span>&gt;</span>lib/<span class="tag">&lt;/<span class="name">classpathPrefix</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">mainClass</span>&gt;</span>io.github.robwin.swagger2markup.petstore.Application<span class="tag">&lt;/<span class="name">mainClass</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">archive</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">&lt;!-- copy dependencies to the lib directory --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-dependency-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">phase</span>&gt;</span>package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">goal</span>&gt;</span>copy-dependencies<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>$&#123;project.build.directory&#125;/lib<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">&lt;!-- copy the generated documents --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-resources-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.7<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>copy-resources<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">phase</span>&gt;</span>prepare-package<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">goal</span>&gt;</span>copy-resources<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>$&#123;project.build.outputDirectory&#125;/static/docs<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">resources</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">resource</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">directory</span>&gt;</span>$&#123;asciidoctor.html.output.directory&#125;<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">resource</span>&gt;</span></span><br><span class="line">                  <span class="tag">&lt;<span class="name">directory</span>&gt;</span>$&#123;asciidoctor.pdf.output.directory&#125;<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">resources</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="JUnit测试类"><a href="#JUnit测试类" class="headerlink" title="JUnit测试类"></a>JUnit测试类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.sitech.sdtools;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.junit.Test;</span><br><span class="line"><span class="keyword">import</span> org.junit.runner.RunWith;</span><br><span class="line"><span class="keyword">import</span> org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;</span><br><span class="line"><span class="keyword">import</span> org.springframework.test.context.junit4.SpringRunner;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.client.RestTemplate;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.BufferedWriter;</span><br><span class="line"><span class="keyword">import</span> java.nio.charset.StandardCharsets;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Files;</span><br><span class="line"><span class="keyword">import</span> java.nio.file.Paths;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RunWith(SpringRunner.class)</span></span><br><span class="line"><span class="meta">@AutoConfigureRestDocs(outputDir = &quot;build/asciidoc/snippets&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Swagger2MarkupTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> RestTemplate restTemplate = <span class="keyword">new</span> RestTemplate();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">createSpringfoxSwaggerJson</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String baseurl = System.getProperty(<span class="string">&quot;custom.baseurl&quot;</span>);</span><br><span class="line">        String swaggerUrl = <span class="string">&quot;http://&quot;</span> + baseurl + <span class="string">&quot;/v2/api-docs&quot;</span>;</span><br><span class="line">        String outputDir = System.getProperty(<span class="string">&quot;io.springfox.staticdocs.outputDir&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;swaggerUrl: &quot;</span> + swaggerUrl);</span><br><span class="line">        System.out.println(<span class="string">&quot;outputDir: &quot;</span> + outputDir);</span><br><span class="line"></span><br><span class="line">        String swaggerJson = restTemplate.getForObject(swaggerUrl, String.class);</span><br><span class="line"></span><br><span class="line">        Files.createDirectories(Paths.get(outputDir));</span><br><span class="line">        <span class="keyword">try</span> (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputDir, <span class="string">&quot;swagger.json&quot;</span>), StandardCharsets.UTF_8)) &#123;</span><br><span class="line">            writer.write(swaggerJson);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h3 id="批量shell脚本"><a href="#批量shell脚本" class="headerlink" title="批量shell脚本"></a>批量shell脚本</h3><p>start.sh  </p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/usr/bin/env bash</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 自定义工程名及URL</span></span><br><span class="line">prjnames=(&quot;project1&quot; &quot;project2&quot; &quot;project3&quot;)</span><br><span class="line">prjurls=(&quot;xx.xx.xx.xx:7477&quot; &quot;xx.xx.xx.xx:23053&quot; &quot;xx.xx.xx.xx:24275&quot;)</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 默认参数</span></span><br><span class="line">datestr=`date +%Y%m%d`</span><br><span class="line">srcdir=./target/asciidoc/html</span><br><span class="line">destdir=./src/docs/html/$&#123;datestr&#125;</span><br><span class="line">mkdir $&#123;destdir&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> 循环生成文档</span></span><br><span class="line">for prjname in $&#123;prjnames[@]&#125;</span><br><span class="line">do</span><br><span class="line">    prjurl=$&#123;prjurls[$&#123;i&#125;]&#125;</span><br><span class="line">    echo &quot;文档生成开始 - $&#123;prjname&#125; - $&#123;prjurl&#125;&quot;</span><br><span class="line"></span><br><span class="line">    mvn clean test -Dcustom.baseurl=$&#123;prjurl&#125;</span><br><span class="line">    cp $&#123;srcdir&#125;/index.html $&#123;destdir&#125;/$&#123;prjname&#125;.html</span><br><span class="line"></span><br><span class="line">    i=$((i+1))</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
-
-<h2 id="单文档生成步骤"><a href="#单文档生成步骤" class="headerlink" title="单文档生成步骤"></a>单文档生成步骤</h2><ol>
-<li>先本机将需要生成API文档的工程启动，IP及端口指定为127.0.0.1:8080</li>
-<li>在本工程下运行<code>mvn clean test</code></li>
-<li>在target/asciidoc/html中查看API文档并拷贝出来</li>
-</ol>
-<h2 id="批量文档生成步骤"><a href="#批量文档生成步骤" class="headerlink" title="批量文档生成步骤"></a>批量文档生成步骤</h2><ol>
-<li>在DCOS中将所有服务启动</li>
-<li>修改start.sh中的prjurls</li>
-<li>执行<code>./start.sh</code></li>
-<li>在<code>src/docs/html/日期/</code>中查看生成的API文档</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/16/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><span class="page-number current">17</span><a class="page-number" href="/page/18/">18</a><span class="space">&hellip;</span><a class="page-number" href="/page/23/">23</a><a class="extend next" rel="next" href="/page/18/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/page/16/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><span class="page-number current">17</span><a class="page-number" href="/page/18/">18</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/18/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1637,7 +1203,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">223</span>
+          <span class="site-state-item-count">231</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1675,7 +1241,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

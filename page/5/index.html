@@ -148,6 +148,641 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202204/GOST%E7%AB%AF%E5%8F%A3%E5%A4%8D%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202204/GOST%E7%AB%AF%E5%8F%A3%E5%A4%8D%E7%94%A8/" class="post-title-link" itemprop="url">GOST端口复用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-04-16 15:17:59" itemprop="dateCreated datePublished" datetime="2022-04-16T15:17:59+08:00">2022-04-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:18:01" itemprop="dateModified" datetime="2022-11-02T17:18:01+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网及下载"><a href="#官网及下载" class="headerlink" title="官网及下载"></a>官网及下载</h2><p><a target="_blank" rel="noopener" href="https://github.com/ginuerzh/gost">https://github.com/ginuerzh/gost</a></p>
+<h2 id="跳板机"><a href="#跳板机" class="headerlink" title="跳板机"></a>跳板机</h2><ul>
+<li>使用10.80.8.237</li>
+<li>复用Nginx的8080端口</li>
+</ul>
+<h2 id="服务端Gost"><a href="#服务端Gost" class="headerlink" title="服务端Gost"></a>服务端Gost</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./gost -L <span class="string">&quot;ws://172.17.0.1:31314?path=/gost&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="服务端Nginx转发配置"><a href="#服务端Nginx转发配置" class="headerlink" title="服务端Nginx转发配置"></a>服务端Nginx转发配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">location &#x2F;ray &#123;</span><br><span class="line">    proxy_redirect off;</span><br><span class="line">    proxy_pass http:&#x2F;&#x2F;172.17.0.1:31313;</span><br><span class="line">    proxy_http_version 1.1;</span><br><span class="line">    proxy_set_header Upgrade $http_upgrade;</span><br><span class="line">    proxy_set_header Connection &quot;upgrade&quot;;</span><br><span class="line">    proxy_set_header Host $http_host;</span><br><span class="line">    proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="本机DockerEC"><a href="#本机DockerEC" class="headerlink" title="本机DockerEC"></a>本机DockerEC</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name ecweifang --device /dev/net/tun --cap-add NET_ADMIN -itd -p 127.0.0.1:7011:1080 -e EC_VER=7.6.3 -e CLI_OPTS=<span class="string">&quot;-d https://xx.xx.xx.xx -u username -p password&quot;</span> hagb/docker-easyconnect:cli</span><br></pre></td></tr></table></figure>
+<h2 id="本机Gost"><a href="#本机Gost" class="headerlink" title="本机Gost"></a>本机Gost</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./gost -L=:7013 -F=<span class="string">&quot;ws://10.80.8.237:8080?path=/gost&quot;</span></span><br></pre></td></tr></table></figure>
+<h3 id="本机Proxifier配置"><a href="#本机Proxifier配置" class="headerlink" title="本机Proxifier配置"></a>本机Proxifier配置</h3><ul>
+<li>gost进程 + 10.80.8.237网段 –&gt; 127.0.0.1:7011</li>
+<li>任意进程 + 10.80.8.*网段 –&gt; 127.0.0.1:7013</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202204/V2Ray%E7%AB%AF%E5%8F%A3%E5%A4%8D%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202204/V2Ray%E7%AB%AF%E5%8F%A3%E5%A4%8D%E7%94%A8/" class="post-title-link" itemprop="url">V2Ray端口复用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-04-16 15:17:59" itemprop="dateCreated datePublished" datetime="2022-04-16T15:17:59+08:00">2022-04-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:18:35" itemprop="dateModified" datetime="2022-11-02T17:18:35+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网及下载"><a href="#官网及下载" class="headerlink" title="官网及下载"></a>官网及下载</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.v2ray.com/chapter_00/install.html">https://www.v2ray.com/chapter_00/install.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/v2ray/v2ray-core/releases">https://github.com/v2ray/v2ray-core/releases</a></li>
+</ul>
+<h2 id="跳板机"><a href="#跳板机" class="headerlink" title="跳板机"></a>跳板机</h2><ul>
+<li>使用10.80.8.237</li>
+<li>复用Nginx的8080端口</li>
+<li>方式为vmess-over-websocket</li>
+</ul>
+<h2 id="V2ray服务器搭建"><a href="#V2ray服务器搭建" class="headerlink" title="V2ray服务器搭建"></a>V2ray服务器搭建</h2><ul>
+<li>v2ray安装路径为<code>/opt/v2ray</code></li>
+<li>nginx配置文件路径为<code>/dubhe/nginx/conf</code></li>
+</ul>
+<p>配置服务端config.json，<code>vi config.json</code>: </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;log&quot;</span>: &#123;</span><br><span class="line">    <span class="attr">&quot;access&quot;</span>: <span class="string">&quot;/opt/v2ray/access.log&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;error&quot;</span>: <span class="string">&quot;/opt/v2ray/error.log&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;loglevel&quot;</span>: <span class="string">&quot;debug&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">&quot;inbounds&quot;</span>: [&#123;</span><br><span class="line">    <span class="attr">&quot;port&quot;</span>: <span class="number">31313</span>,</span><br><span class="line">    <span class="attr">&quot;listen&quot;</span>: <span class="string">&quot;172.17.0.1&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;protocol&quot;</span>: <span class="string">&quot;vmess&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;settings&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;clients&quot;</span>: [&#123;</span><br><span class="line">        <span class="attr">&quot;id&quot;</span>: <span class="string">&quot;7255a312-be4b-9315-65c9-123412341234&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;alterId&quot;</span>: <span class="number">64</span></span><br><span class="line">      &#125;]</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">&quot;streamSettings&quot;</span>: &#123;</span><br><span class="line">      <span class="attr">&quot;network&quot;</span>: <span class="string">&quot;ws&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;wsSettings&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;path&quot;</span>: <span class="string">&quot;/ray/&quot;</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;],</span><br><span class="line">  <span class="attr">&quot;outbounds&quot;</span>: [&#123;</span><br><span class="line">    <span class="attr">&quot;protocol&quot;</span>: <span class="string">&quot;freedom&quot;</span>,</span><br><span class="line">    <span class="attr">&quot;settings&quot;</span>: &#123;&#125;</span><br><span class="line">  &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>启动v2ray:  </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./v2ray --config config.json</span><br></pre></td></tr></table></figure>
+<p>配置Nginx的default.conf:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">location &#x2F;ray &#123;</span><br><span class="line">    proxy_redirect off;</span><br><span class="line">    proxy_pass http:&#x2F;&#x2F;172.17.0.1:31313;</span><br><span class="line">    proxy_http_version 1.1;</span><br><span class="line">    proxy_set_header Upgrade $http_upgrade;</span><br><span class="line">    proxy_set_header Connection &quot;upgrade&quot;;</span><br><span class="line">    proxy_set_header Host $http_host;</span><br><span class="line">    proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>重启Nginx:  </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker restart nginx</span><br></pre></td></tr></table></figure>
+<h2 id="本机DockerEasyConnect启动"><a href="#本机DockerEasyConnect启动" class="headerlink" title="本机DockerEasyConnect启动"></a>本机DockerEasyConnect启动</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name ecweifang --device /dev/net/tun --cap-add NET_ADMIN -itd -p 127.0.0.1:7011:1080 -e EC_VER=7.6.3 -e CLI_OPTS=<span class="string">&quot;-d https://xx.xx.xx.xx -u username -p password&quot;</span> hagb/docker-easyconnect:cli</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>占用端口7011</p>
+</blockquote>
+<h2 id="本机Proxifier配置"><a href="#本机Proxifier配置" class="headerlink" title="本机Proxifier配置"></a>本机Proxifier配置</h2><ul>
+<li>v2ray进程 + 10.80.8.237网段 –&gt; 127.0.0.1:7011</li>
+<li>任意进程 + 10.80.8.*网段 –&gt; 127.0.0.1:7011</li>
+</ul>
+<h2 id="V2ray客户端配置"><a href="#V2ray客户端配置" class="headerlink" title="V2ray客户端配置"></a>V2ray客户端配置</h2><p>vi weifang.json</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;inbounds&quot;</span> : [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;listen&quot;</span> : <span class="string">&quot;127.0.0.1&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;port&quot;</span> : <span class="number">7012</span>,</span><br><span class="line">      <span class="attr">&quot;protocol&quot;</span> : <span class="string">&quot;socks&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;tag&quot;</span> : <span class="string">&quot;socksinbound&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;settings&quot;</span> : &#123;</span><br><span class="line">        <span class="attr">&quot;auth&quot;</span> : <span class="string">&quot;noauth&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;udp&quot;</span> : <span class="literal">false</span>,</span><br><span class="line">        <span class="attr">&quot;ip&quot;</span> : <span class="string">&quot;127.0.0.1&quot;</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">&quot;outbounds&quot;</span> : [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;protocol&quot;</span> : <span class="string">&quot;vmess&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;settings&quot;</span> : &#123;</span><br><span class="line">        <span class="attr">&quot;vnext&quot;</span> : [</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="attr">&quot;address&quot;</span> : <span class="string">&quot;10.80.8.237&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;users&quot;</span> : [</span><br><span class="line">              &#123;</span><br><span class="line">                <span class="attr">&quot;id&quot;</span> : <span class="string">&quot;7255a312-be4b-9315-65c9-123412341234&quot;</span>,</span><br><span class="line">                <span class="attr">&quot;alterId&quot;</span> : <span class="number">64</span>,</span><br><span class="line">                <span class="attr">&quot;security&quot;</span> : <span class="string">&quot;auto&quot;</span>,</span><br><span class="line">                <span class="attr">&quot;level&quot;</span> : <span class="number">0</span></span><br><span class="line">              &#125;</span><br><span class="line">            ],</span><br><span class="line">            <span class="attr">&quot;port&quot;</span> : <span class="number">8080</span></span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">&quot;streamSettings&quot;</span> : &#123;</span><br><span class="line">        <span class="attr">&quot;wsSettings&quot;</span> : &#123;</span><br><span class="line">          <span class="attr">&quot;path&quot;</span> : <span class="string">&quot;\/ray\/&quot;</span>,</span><br><span class="line">          <span class="attr">&quot;headers&quot;</span> : &#123;</span><br><span class="line"></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">&quot;tlsSettings&quot;</span> : &#123;</span><br><span class="line">          <span class="attr">&quot;allowInsecure&quot;</span> : <span class="literal">false</span>,</span><br><span class="line">          <span class="attr">&quot;alpn&quot;</span> : [</span><br><span class="line">            <span class="string">&quot;http\/1.1&quot;</span></span><br><span class="line">          ],</span><br><span class="line">          <span class="attr">&quot;serverName&quot;</span> : <span class="string">&quot;&quot;</span>,</span><br><span class="line">          <span class="attr">&quot;allowInsecureCiphers&quot;</span> : <span class="literal">false</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">&quot;security&quot;</span> : <span class="string">&quot;none&quot;</span>,</span><br><span class="line">        <span class="attr">&quot;network&quot;</span> : <span class="string">&quot;ws&quot;</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>本机客户端启动:  </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./v2ray --config weifang.json</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>占用端口7012</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202203/K3S%E9%A2%84%E7%A0%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202203/K3S%E9%A2%84%E7%A0%94/" class="post-title-link" itemprop="url">K3S预研</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-03-16 10:40:00" itemprop="dateCreated datePublished" datetime="2022-03-16T10:40:00+08:00">2022-03-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:17:32" itemprop="dateModified" datetime="2022-11-02T17:17:32+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://docs.rancher.cn/docs/k3s/quick-start/_index">https://docs.rancher.cn/docs/k3s/quick-start/_index</a></p>
+<h2 id="在线安装"><a href="#在线安装" class="headerlink" title="在线安装"></a>在线安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># server</span></span><br><span class="line">curl -sfL http://rancher-mirror.cnrancher.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn sh -</span><br><span class="line">cat /var/lib/rancher/k3s/server/node-token</span><br><span class="line"></span><br><span class="line"><span class="comment"># node</span></span><br><span class="line">curl -sfL http://rancher-mirror.cnrancher.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn K3S_URL=https://10.193.2.8:6443 K3S_TOKEN=K103d30bcbca9e48b6c642e0f92af0d656e465527b5929345537ae086b7fa8ea2e4::server:9bc179e5cfb5b8c09eac21c9ce145a58 sh -</span><br><span class="line"></span><br><span class="line">vi /etc/rancher/k3s/k3s.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="Registry安装"><a href="#Registry安装" class="headerlink" title="Registry安装"></a>Registry安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">yum install -y yum-utils</span><br><span class="line">yum-config-manager --add-repo http:&#x2F;&#x2F;mirrors.aliyun.com&#x2F;docker-ce&#x2F;linux&#x2F;centos&#x2F;docker-ce.repo</span><br><span class="line">yum install docker-ce docker-ce-cli containerd.io</span><br><span class="line">service docker start</span><br><span class="line">docker run -d -p 5000:5000 --restart&#x3D;always --name registry registry:2</span><br><span class="line">docker run -d -p 5000:5000 -v &#x2F;data&#x2F;registry:&#x2F;var&#x2F;lib&#x2F;registry registry:2</span><br><span class="line"></span><br><span class="line">http:&#x2F;&#x2F;10.193.2.11:5000</span><br></pre></td></tr></table></figure>
+<h2 id="Harbor离线安装"><a href="#Harbor离线安装" class="headerlink" title="Harbor离线安装"></a>Harbor离线安装</h2><p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1763874">https://cloud.tencent.com/developer/article/1763874</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202201/JumpServer%E5%A0%A1%E5%9E%92%E6%9C%BA%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202201/JumpServer%E5%A0%A1%E5%9E%92%E6%9C%BA%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">JumpServer堡垒机部署</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-01-07 13:03:27" itemprop="dateCreated datePublished" datetime="2022-01-07T13:03:27+08:00">2022-01-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:17:26" itemprop="dateModified" datetime="2022-11-02T17:17:26+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://www.jumpserver.org/">https://www.jumpserver.org/</a></p>
+<h2 id="启停"><a href="#启停" class="headerlink" title="启停"></a>启停</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;jmsctl.sh start</span><br><span class="line">.&#x2F;jmsctl.sh stop</span><br><span class="line">.&#x2F;jmsctl.sh restart</span><br></pre></td></tr></table></figure>
+<h2 id="WEB访问"><a href="#WEB访问" class="headerlink" title="WEB访问"></a>WEB访问</h2><p><a target="_blank" rel="noopener" href="http://10.193.50.29/">http://10.193.50.29</a></p>
+<h2 id="SSH-SFTP"><a href="#SSH-SFTP" class="headerlink" title="SSH/SFTP"></a>SSH/SFTP</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh -p2222 jxd@10.193.50.29</span><br><span class="line">sftp -P2222 jxd@10.193.50.29</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202112/GatewayWorker%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202112/GatewayWorker%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">GatewayWorker学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-12-30 16:09:34" itemprop="dateCreated datePublished" datetime="2021-12-30T16:09:34+08:00">2021-12-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:16:43" itemprop="dateModified" datetime="2022-11-02T17:16:43+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.workerman.net/doc/gateway-worker/">https://www.workerman.net/doc/gateway-worker/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.php.net/manual/zh/function.pack.php">https://www.php.net/manual/zh/function.pack.php</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000008305573">https://segmentfault.com/a/1190000008305573</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.programminghunter.com/article/545083672/">https://www.programminghunter.com/article/545083672/</a></li>
+</ul>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /Users/bluexiii/Documents/code/evayinfo/agric/agric_pf</span><br><span class="line">php artisan gatewayworker start</span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> /Users/bluexiii/Documents/code/evayinfo/agric/agric_pf/storage/logs</span><br><span class="line">tail -f laravel.log</span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> /Users/bluexiii/Documents/code/playground/python-playground/socket_test</span><br><span class="line">python full_duplex_client.py</span><br></pre></td></tr></table></figure>
+<h2 id="报文拼接"><a href="#报文拼接" class="headerlink" title="报文拼接"></a>报文拼接</h2><h3 id="首尾"><a href="#首尾" class="headerlink" title="首尾"></a>首尾</h3><p>起始 1字节 eb<br>结束 1字节 d7</p>
+<h3 id="控制域"><a href="#控制域" class="headerlink" title="控制域"></a>控制域</h3><p>功能码 6bit   01       000001<br>长度  10bit  4+34=38  0000100110  </p>
+<p>二进制   00000100 00100110<br>十六进制 04 26</p>
+<h3 id="发送接收序列"><a href="#发送接收序列" class="headerlink" title="发送接收序列"></a>发送接收序列</h3><p>发送序列 2字节 00 01<br>接收序列 2字节 00 01</p>
+<h3 id="响应报文"><a href="#响应报文" class="headerlink" title="响应报文"></a>响应报文</h3><p>EB 08 0C 00 01 00 01 8A EC AA 56 3C 82 9C 34 D7<br>EB 30 08 00 00 00 00 61 D3 DB FC D7  时间: 61d3dd97  1641274775  2022-01-04 13:39:35</p>
+<h2 id="测试报文"><a href="#测试报文" class="headerlink" title="测试报文"></a>测试报文</h2><h3 id="登录"><a href="#登录" class="headerlink" title="登录"></a>登录</h3><p>硬件版本号(2字节) 硬件版本号  1  00 01<br>固件版本号(4字节) 固件版本号  20  00 01<br>唯一序列号(8字节)  8A EC AA 56 3C 82 9C 34<br>CCID(20 Byte)  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41</p>
+<p>eb 04 26 00 01 00 01 00 01 00 00 00 14 8a ec aa 56 3c 82 9c 34 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 d7<br>eb080c000100018aecaa563c829c34d7<br>eb30080000000061d406a6d7</p>
+<h3 id="心跳"><a href="#心跳" class="headerlink" title="心跳"></a>心跳</h3><p>功能码 6bit   04       001000<br>长度  10bit  4+0=4  0000000100<br>0010000000000100 2004</p>
+<p>eb 20 04 00 01 00 01 d7</p>
+<h3 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h3><p>功能码 6bit   08       000100<br>长度  10bit  4+0=4  0000000100<br>0001000000000100  10 04</p>
+<p>eb 10 04 00 01 00 01 d7</p>
+<h3 id="LORA传感器数据上传-32-0x20"><a href="#LORA传感器数据上传-32-0x20" class="headerlink" title="LORA传感器数据上传 32 0x20"></a>LORA传感器数据上传 32 0x20</h3><p>传感器ID (4字节)   45 6F 00 22<br>时间戳(4字节)      61 d3 dd 97<br>数据条数 (1字节)   02<br>测量值1编号 (2字节) 00 01<br>测量值1 (4字节)  00 00 00 01<br>测量值2编号 (2字节) 00 02<br>测量值2 (4字节) 00 00 00 02</p>
+<p>功能码 6bit   32       100000<br>长度  10bit  4+21=25  0000011001<br>1000000000011001 80 19</p>
+<p>eb 80 19 00 01 00 01 45 6f 00 22 61 d3 dd 97 02 00 01 00 00 00 01 00 02 00 00 00 02 d7<br>eb 10 04 00 01 00 01 d7</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202112/%E7%89%A9%E8%81%94%E7%BD%91%E5%B9%B3%E5%8F%B0%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202112/%E7%89%A9%E8%81%94%E7%BD%91%E5%B9%B3%E5%8F%B0%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">物联网平台学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-12-28 09:52:22" itemprop="dateCreated datePublished" datetime="2021-12-28T09:52:22+08:00">2021-12-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:17:15" itemprop="dateModified" datetime="2022-11-02T17:17:15+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="mongodb"><a href="#mongodb" class="headerlink" title="mongodb"></a>mongodb</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://mongoing.com/archives/79755">https://mongoing.com/archives/79755</a>  MongoDB大数据量模型设计最佳实践</li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/news/836347">https://cloud.tencent.com/developer/news/836347</a> 千亿级数据迁移mongodb成本节省及性能优化实践</li>
+<li><a target="_blank" rel="noopener" href="https://developer.aliyun.com/article/66477">https://developer.aliyun.com/article/66477</a>  MongoDB数据建模小案例：物联网时序数据库建模</li>
+</ul>
+<h2 id="influxdb"><a href="#influxdb" class="headerlink" title="influxdb"></a>influxdb</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/100146332">https://zhuanlan.zhihu.com/p/100146332</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000020803478">https://segmentfault.com/a/1190000020803478</a></li>
+<li><a target="_blank" rel="noopener" href="https://jasper-zhang1.gitbooks.io/influxdb/content/Concepts/insights_tradeoffs.html">https://jasper-zhang1.gitbooks.io/influxdb/content/Concepts/insights_tradeoffs.html</a></li>
+</ul>
+<h2 id="iot协议"><a href="#iot协议" class="headerlink" title="iot协议"></a>iot协议</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/145690649">https://zhuanlan.zhihu.com/p/145690649</a>  IOT（物联网）的七大通信协议</li>
+<li><a target="_blank" rel="noopener" href="https://www.infoq.cn/article/9mftp8yl2sxdxuii6pza">https://www.infoq.cn/article/9mftp8yl2sxdxuii6pza</a>  物联网主流通信协议解读</li>
+<li><a target="_blank" rel="noopener" href="https://www.tuya.com/cn/news-details/K9qsr88oopbtp">https://www.tuya.com/cn/news-details/K9qsr88oopbtp</a> 细数你不知道的物联网常用通信协议</li>
+</ul>
+<h2 id="物联网平台"><a href="#物联网平台" class="headerlink" title="物联网平台"></a>物联网平台</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://help.aliyun.com/product/30520.html">https://help.aliyun.com/product/30520.html</a>  阿里云物联网平台</li>
+<li><a target="_blank" rel="noopener" href="http://www.woshipm.com/pd/4394950.html">http://www.woshipm.com/pd/4394950.html</a>  物联网平台的产品架构</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202112/Setuptool%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202112/Setuptool%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Setuptool学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-12-27 15:50:03" itemprop="dateCreated datePublished" datetime="2021-12-27T15:50:03+08:00">2021-12-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:16:55" itemprop="dateModified" datetime="2022-11-02T17:16:55+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Setuptool"><a href="#Setuptool" class="headerlink" title="Setuptool"></a>Setuptool</h2><h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://pypi.org/project/setuptools/">https://pypi.org/project/setuptools/</a></li>
+<li><a target="_blank" rel="noopener" href="https://packaging.python.org/en/latest/tutorials/installing-packages/">https://packaging.python.org/en/latest/tutorials/installing-packages/</a></li>
+</ul>
+<h3 id="教程"><a href="#教程" class="headerlink" title="教程"></a>教程</h3><p><a target="_blank" rel="noopener" href="https://www.escapelife.site/posts/fc616494.html">https://www.escapelife.site/posts/fc616494.html</a><br><a target="_blank" rel="noopener" href="https://pycharm.iswbm.com/">https://pycharm.iswbm.com/</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/276461821">https://zhuanlan.zhihu.com/p/276461821</a></p>
+<h3 id="打egg包"><a href="#打egg包" class="headerlink" title="打egg包"></a>打egg包</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python setup.py bdist_egg</span><br></pre></td></tr></table></figure>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python setup.py install</span><br><span class="line">python setup.py develop</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="pyinstaller"><a href="#pyinstaller" class="headerlink" title="pyinstaller"></a>pyinstaller</h2><h3 id="官网-1"><a href="#官网-1" class="headerlink" title="官网"></a>官网</h3><ul>
+<li><a target="_blank" rel="noopener" href="http://www.pyinstaller.org/">http://www.pyinstaller.org/</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/pyinstaller/pyinstaller">https://github.com/pyinstaller/pyinstaller</a></li>
+</ul>
+<h3 id="教程-1"><a href="#教程-1" class="headerlink" title="教程"></a>教程</h3><ul>
+<li><a target="_blank" rel="noopener" href="http://zllbook.tudouwa.fun/Python%E5%AE%9E%E6%88%98/Python%E8%BF%9B%E9%98%B6/Python%E6%89%93%E5%8C%85%E5%B7%A5%E5%85%B7%E6%B1%87%E6%80%BB%E4%B8%8E%E4%BD%BF%E7%94%A8.html">http://zllbook.tudouwa.fun/Python%E5%AE%9E%E6%88%98/Python%E8%BF%9B%E9%98%B6/Python%E6%89%93%E5%8C%85%E5%B7%A5%E5%85%B7%E6%B1%87%E6%80%BB%E4%B8%8E%E4%BD%BF%E7%94%A8.html</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202112/Scrapyd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202112/Scrapyd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Scrapyd学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-12-27 15:33:53" itemprop="dateCreated datePublished" datetime="2021-12-27T15:33:53+08:00">2021-12-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2022-11-02 17:16:51" itemprop="dateModified" datetime="2022-11-02T17:16:51+08:00">2022-11-02</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://python-scrapyd-api.readthedocs.io/en/latest/">https://python-scrapyd-api.readthedocs.io/en/latest/</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/scrapy/scrapyd-client">https://github.com/scrapy/scrapyd-client</a></li>
+</ul>
+<h2 id="scrapyd"><a href="#scrapyd" class="headerlink" title="scrapyd"></a>scrapyd</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">pip install scrapyd</span><br><span class="line"></span><br><span class="line">vi /etc/scrapyd/scrapyd.conf</span><br><span class="line">[scrapyd]</span><br><span class="line">eggs_dir    = /data/scrapyd/eggs</span><br><span class="line">logs_dir    = /data/scrapyd/logs</span><br><span class="line">items_dir   = /data/scrapyd/items</span><br><span class="line">jobs_to_keep = 100</span><br><span class="line">dbs_dir     = /data/scrapyd/dbs</span><br><span class="line">max_proc    = 0</span><br><span class="line">max_proc_per_cpu = 10</span><br><span class="line">finished_to_keep = 100</span><br><span class="line">poll_interval = 5.0</span><br><span class="line">bind_address = 0.0.0.0</span><br><span class="line">http_port   = 6800</span><br><span class="line">debug       = off</span><br><span class="line">runner      = scrapyd.runner</span><br><span class="line">application = scrapyd.app.application</span><br><span class="line">launcher    = scrapyd.launcher.Launcher</span><br><span class="line">webroot     = scrapyd.website.Root</span><br><span class="line"></span><br><span class="line">[services]</span><br><span class="line">schedule.json     = scrapyd.webservice.Schedule</span><br><span class="line">cancel.json       = scrapyd.webservice.Cancel</span><br><span class="line">addversion.json   = scrapyd.webservice.AddVersion</span><br><span class="line">listprojects.json = scrapyd.webservice.ListProjects</span><br><span class="line">listversions.json = scrapyd.webservice.ListVersions</span><br><span class="line">listspiders.json  = scrapyd.webservice.ListSpiders</span><br><span class="line">delproject.json   = scrapyd.webservice.DeleteProject</span><br><span class="line">delversion.json   = scrapyd.webservice.DeleteVersion</span><br><span class="line">listjobs.json     = scrapyd.webservice.ListJobs</span><br><span class="line">daemonstatus.json = scrapyd.webservice.DaemonStatus</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">nohup scrapyd&gt;scrapyd.log 2&gt;&amp;1 &amp;</span><br><span class="line"></span><br><span class="line">open http://10.211.55.101:6800</span><br><span class="line"></span><br><span class="line"><span class="comment"># scrapyd服务器提前安装依赖</span></span><br><span class="line">pip install -r requirements.txt</span><br></pre></td></tr></table></figure>
+<h3 id="HTTP-API"><a href="#HTTP-API" class="headerlink" title="HTTP API"></a>HTTP API</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;daemonstatus.json</span><br><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;addversion.json -F project&#x3D;hydrabot -F version&#x3D;1.0.0 -F egg&#x3D;@hydrabot.egg</span><br><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;schedule.json -d project&#x3D;hydrabot -d spider&#x3D;teacher -d task_id&#x3D;1 -d entry_id&#x3D;3070</span><br><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;cancel.json -d project&#x3D;hydrabot -d job&#x3D;6487ec79947edab326d6db28a2d86S11e8247444</span><br><span class="line"></span><br><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;listprojects.json</span><br><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;listversions.json?project&#x3D;hydrabot</span><br><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;listspiders.json?project&#x3D;hydrabot</span><br><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;listjobs.json?project&#x3D;hydrabot</span><br><span class="line"></span><br><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;delversion.json -d project&#x3D;hydrabot -d version&#x3D;1.0.0</span><br><span class="line">curl http:&#x2F;&#x2F;10.211.55.101:6800&#x2F;delproject.json -d project&#x3D;hydrabot</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="scrapyd-client"><a href="#scrapyd-client" class="headerlink" title="scrapyd-client"></a>scrapyd-client</h2><h3 id="本机安装"><a href="#本机安装" class="headerlink" title="本机安装"></a>本机安装</h3><p>pip3 install scrapyd-deploy<br>pip3 install scrapyd-client</p>
+<p>scrapyd-deploy -h</p>
+<h3 id="配置scrapy-cfg"><a href="#配置scrapy-cfg" class="headerlink" title="配置scrapy.cfg"></a>配置scrapy.cfg</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[settings]</span><br><span class="line">default &#x3D; settings.default</span><br><span class="line"></span><br><span class="line">[deploy:node5]</span><br><span class="line">url &#x3D; http:&#x2F;&#x2F;10.194.99.5:6800&#x2F;</span><br><span class="line">project &#x3D; hydrabot</span><br><span class="line"></span><br><span class="line">[deploy:node6]</span><br><span class="line">url &#x3D; http:&#x2F;&#x2F;10.194.99.6:6800&#x2F;</span><br><span class="line">project &#x3D; hydrabot</span><br><span class="line"></span><br><span class="line">[deploy:node7]</span><br><span class="line">url &#x3D; http:&#x2F;&#x2F;10.194.99.7:6800&#x2F;</span><br><span class="line">project &#x3D; hydrabot</span><br><span class="line"></span><br><span class="line">[deploy:node8]</span><br><span class="line">url &#x3D; http:&#x2F;&#x2F;10.194.99.8:6800&#x2F;</span><br><span class="line">project &#x3D; hydrabot</span><br></pre></td></tr></table></figure>
+<h3 id="CLI"><a href="#CLI" class="headerlink" title="CLI"></a>CLI</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 部署到一个节点</span></span><br><span class="line">scrapyd-deploy node8</span><br><span class="line"></span><br><span class="line"><span class="comment"># 部署到全部节点</span></span><br><span class="line">scrapyd-deploy -a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出工程</span></span><br><span class="line">scrapyd-client -t http://10.194.99.8:6800 projects</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看计划任务</span></span><br><span class="line">scrapyd-client -t http://10.194.99.8:6800  schedule -p hydrabot \istic </span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出爬虫</span></span><br><span class="line">scrapyd-client -t http://10.194.99.8:6800 spiders -p hydrabot</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202112/TiDB%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -295,842 +930,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202112/ES%E8%87%B3ES%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202112/ES%E8%87%B3ES%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB/" class="post-title-link" itemprop="url">ES至ES数据迁移</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-12-02 17:54:35" itemprop="dateCreated datePublished" datetime="2021-12-02T17:54:35+08:00">2021-12-02</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-11-02 17:16:32" itemprop="dateModified" datetime="2022-11-02T17:16:32+08:00">2022-11-02</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/document/product/845/35568">https://cloud.tencent.com/document/product/845/35568</a></li>
-<li><a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/170095.html">https://help.aliyun.com/document_detail/170095.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://bbs.huaweicloud.com/blogs/detail/265963">https://bbs.huaweicloud.com/blogs/detail/265963</a></li>
-<li><a target="_blank" rel="noopener" href="https://elasticsearch.cn/question/6648">https://elasticsearch.cn/question/6648</a></li>
-<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903753322102798">https://juejin.cn/post/6844903753322102798</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/fancyBrain/p/13614082.html">https://www.cnblogs.com/fancyBrain/p/13614082.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/laoyang360/article/details/113361967">https://blog.csdn.net/laoyang360/article/details/113361967</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/logstash/current/plugins-inputs-elasticsearch.html#plugins-inputs-elasticsearch-socket_timeout_seconds">https://www.elastic.co/guide/en/logstash/current/plugins-inputs-elasticsearch.html#plugins-inputs-elasticsearch-socket_timeout_seconds</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.elastic.co/guide/en/logstash/6.8/plugins-inputs-elasticsearch.html">https://www.elastic.co/guide/en/logstash/6.8/plugins-inputs-elasticsearch.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/w903328615/article/details/115404900">https://blog.csdn.net/w903328615/article/details/115404900</a></li>
-</ul>
-<h2 id="主机"><a href="#主机" class="headerlink" title="主机"></a>主机</h2><ul>
-<li>老ES: <a target="_blank" rel="noopener" href="http://10.20.41.30:9200/">http://10.20.41.30:9200</a>  </li>
-<li>新ES: <a target="_blank" rel="noopener" href="http://10.194.98.4:9200/">http://10.194.98.4:9200</a></li>
-<li>Logstash: 10.194.98.3</li>
-</ul>
-<h2 id="索引梳理"><a href="#索引梳理" class="headerlink" title="索引梳理"></a>索引梳理</h2><table>
-<thead>
-<tr>
-<th>名称</th>
-<th>UUID</th>
-<th>Lucene 文档</th>
-<th>储存空间</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ci_thesis</td>
-<td>OJeVZnhkSJiMTNw0TmViuA</td>
-<td>24503853</td>
-<td>84 GB</td>
-</tr>
-<tr>
-<td>cnki-data</td>
-<td>S8JyLIldR4C3ikH2jq_qUQ</td>
-<td>12432339</td>
-<td>48.8 GB</td>
-</tr>
-<tr>
-<td>elantender</td>
-<td>vKC7Iv8lQQeO1i3iYCT-PA</td>
-<td>307</td>
-<td>6.66 MB</td>
-</tr>
-<tr>
-<td>elantender2</td>
-<td>hfut5RfWSo-2VT8S72ytxw</td>
-<td>2564581</td>
-<td>58.5 GB</td>
-</tr>
-<tr>
-<td>elantender3</td>
-<td>XQ-qAY_NSjuYK2b17FUkmg</td>
-<td>800</td>
-<td>16 MB</td>
-</tr>
-<tr>
-<td>ieee-data</td>
-<td>K3juwXaKQVW-0J72NiJ5Pw</td>
-<td>2774971</td>
-<td>32.1 GB</td>
-</tr>
-<tr>
-<td>lunwen-cn</td>
-<td>7bQJ8sE4Tvi5L8aBQvfzeg</td>
-<td>12340949</td>
-<td>47.3 GB</td>
-</tr>
-<tr>
-<td>policies</td>
-<td>AxRTd-uVQ_q6C4iw9l9soA</td>
-<td>472817</td>
-<td>13.9 GB</td>
-</tr>
-<tr>
-<td>policies_hydrabot</td>
-<td>EO4sAmmVQ2m_-PyczXOczQ</td>
-<td>2099896</td>
-<td>92.8 GB</td>
-</tr>
-<tr>
-<td>rc_patents2</td>
-<td>DBSI6NwEQyaf92Kscl0ciw</td>
-<td>25016403</td>
-<td>132 GB</td>
-</tr>
-<tr>
-<td>springer-data</td>
-<td>SjopLNkNRXmEQWfGw5B2LA</td>
-<td>2416686</td>
-<td>29.4 GB</td>
-</tr>
-</tbody></table>
-<h3 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h3><p>vi /etc/logstash/logstash.yml</p>
-<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">pipeline.batch.size:</span> <span class="number">1000</span></span><br><span class="line"><span class="attr">pipeline.batch.delay:</span> <span class="number">500</span></span><br></pre></td></tr></table></figure>
-<p>vi /etc/logstash/jvm.options</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-Xms8g</span><br><span class="line">-Xmx8g</span><br></pre></td></tr></table></figure>
-<h3 id="模板1"><a href="#模板1" class="headerlink" title="模板1"></a>模板1</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">	elasticsearch &#123;</span><br><span class="line">		hosts &#x3D;&gt; &quot;10.20.41.30:9200&quot;</span><br><span class="line">		index &#x3D;&gt; &quot;policies_hydrabot&quot;</span><br><span class="line">		query &#x3D;&gt; &#39;&#123;&quot;query&quot;: &#123;&quot;range&quot;: &#123;&quot;createTime&quot;: &#123;&quot;gte&quot;: &quot;2021-1-1 00:00:00&quot;,&quot;lt&quot;: &quot;2021-10-1 00:00:00&quot;&#125;&#125;&#125;&#125;&#39;</span><br><span class="line">        docinfo &#x3D;&gt; true</span><br><span class="line">        size &#x3D;&gt; 1000</span><br><span class="line">        scroll &#x3D;&gt; &quot;1m&quot;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">	mutate &#123;</span><br><span class="line">		remove_field &#x3D;&gt; [&quot;@timestamp&quot;, &quot;@version&quot;]</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">	elasticsearch &#123;</span><br><span class="line">		hosts &#x3D;&gt; [&quot;http:&#x2F;&#x2F;10.194.98.4:9200&quot;]</span><br><span class="line">        index &#x3D;&gt; &quot;%&#123;[@metadata][_index]&#125;&quot;</span><br><span class="line">        document_type &#x3D;&gt; &quot;%&#123;[@metadata][_type]&#125;&quot;</span><br><span class="line">        document_id &#x3D;&gt; &quot;%&#123;[@metadata][_id]&#125;&quot;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="模板2"><a href="#模板2" class="headerlink" title="模板2"></a>模板2</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">    elasticsearch &#123;</span><br><span class="line">                hosts &#x3D;&gt; [&quot;10.20.41.30:9200&quot;]</span><br><span class="line">        index &#x3D;&gt; &quot;rc_patents2&quot;</span><br><span class="line">        docinfo &#x3D;&gt; true</span><br><span class="line">        size &#x3D;&gt; 1000</span><br><span class="line">        scroll &#x3D;&gt; &quot;5m&quot;</span><br><span class="line">        request_timeout_seconds &#x3D;&gt; 600</span><br><span class="line">        socket_timeout_seconds &#x3D;&gt; 600</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">    elasticsearch &#123;</span><br><span class="line">                hosts &#x3D;&gt; [&quot;http:&#x2F;&#x2F;10.194.98.4:9200&quot;]</span><br><span class="line">        index &#x3D;&gt; &quot;%&#123;[@metadata][_index]&#125;&quot;</span><br><span class="line">        document_type &#x3D;&gt; &quot;%&#123;[@metadata][_type]&#125;&quot;</span><br><span class="line">        document_id &#x3D;&gt; &quot;%&#123;[@metadata][_id]&#125;&quot;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="模板3"><a href="#模板3" class="headerlink" title="模板3"></a>模板3</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">    elasticsearch &#123;</span><br><span class="line">        hosts &#x3D;&gt; [&quot;http:&#x2F;&#x2F;10.194.98.4:9200&quot;]</span><br><span class="line">        index &#x3D;&gt; &quot;rc_patents2&quot;</span><br><span class="line">        docinfo &#x3D;&gt; true</span><br><span class="line">        size &#x3D;&gt; 1000</span><br><span class="line">        scroll &#x3D;&gt; &quot;5m&quot;</span><br><span class="line">        request_timeout_seconds &#x3D;&gt; 600</span><br><span class="line">        socket_timeout_seconds &#x3D;&gt; 600</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">  csv &#123;</span><br><span class="line">    fields &#x3D;&gt; [&quot;applyDate&quot;,&quot;applyID&quot;,&quot;applyMan&quot;,&quot;host&quot;,&quot;id&quot;, &quot;industry_category1_zh&quot;, &quot;industry_category2_tag&quot;, &quot;industry_category2_zh&quot;, &quot;industry_jinan_names&quot;, &quot;industry_jinan_tags&quot;, &quot;inventor&quot;,&quot;mainID&quot;,&quot;openDate&quot;, &quot;openID&quot;, &quot;ownerAdd&quot;, &quot;ownerCode&quot;, &quot;path&quot;, &quot;proxyCompany&quot;,&quot;proxyMan&quot;,&quot;status&quot;,&quot;summary&quot;,&quot;ten_power_names&quot;, &quot;ten_power_tags&quot;, &quot;ten_power_unionNames&quot;,&quot;title&quot;, &quot;type&quot;,&quot;urlMd5&quot;]</span><br><span class="line">    path &#x3D;&gt; &quot;&#x2F;data&#x2F;rc_patents2.csv&quot;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="执行"><a href="#执行" class="headerlink" title="执行"></a>执行</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/data/logstash-7.15.2/bin/logstash <span class="string">&quot;--path.settings&quot;</span> <span class="string">&quot;/data/logstash-7.15.2/config&quot;</span> -f logstash.conf</span><br></pre></td></tr></table></figure>
-
-<h2 id="分时间查询迁移"><a href="#分时间查询迁移" class="headerlink" title="分时间查询迁移"></a>分时间查询迁移</h2><h3 id="policies-hydrabot"><a href="#policies-hydrabot" class="headerlink" title="policies_hydrabot"></a>policies_hydrabot</h3><p>分时段查询:  </p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="attr">&quot;query&quot;</span>: &#123;<span class="attr">&quot;bool&quot;</span>: &#123;<span class="attr">&quot;must_not&quot;</span>: &#123;<span class="attr">&quot;exists&quot;</span>: &#123;<span class="attr">&quot;field&quot;</span>: <span class="string">&quot;createTime&quot;</span>&#125;&#125;&#125;&#125;&#125;  <span class="number">41724</span> <span class="number">41717</span></span><br><span class="line">&#123;<span class="attr">&quot;query&quot;</span>: &#123;<span class="attr">&quot;range&quot;</span>: &#123;<span class="attr">&quot;createTime&quot;</span>: &#123;<span class="attr">&quot;lt&quot;</span>: <span class="string">&quot;2000-1-1 00:00:00&quot;</span>&#125;&#125;&#125;&#125;  <span class="number">1679</span>  <span class="number">1679</span></span><br><span class="line">&#123;<span class="attr">&quot;query&quot;</span>: &#123;<span class="attr">&quot;range&quot;</span>: &#123;<span class="attr">&quot;createTime&quot;</span>: &#123;<span class="attr">&quot;gte&quot;</span>: <span class="string">&quot;2000-1-1 00:00:00&quot;</span>,<span class="attr">&quot;lt&quot;</span>: <span class="string">&quot;2020-1-1 00:00:00&quot;</span>&#125;&#125;&#125;&#125;  <span class="number">520994</span>  <span class="number">520909</span>  <span class="number">534371</span> <span class="number">525134</span></span><br><span class="line">&#123;<span class="attr">&quot;query&quot;</span>: &#123;<span class="attr">&quot;range&quot;</span>: &#123;<span class="attr">&quot;createTime&quot;</span>: &#123;<span class="attr">&quot;gte&quot;</span>: <span class="string">&quot;2020-1-1 00:00:00&quot;</span>,<span class="attr">&quot;lt&quot;</span>: <span class="string">&quot;2021-1-1 00:00:00&quot;</span>&#125;&#125;&#125;&#125;  <span class="number">578494</span> <span class="number">578452</span>  <span class="number">585849</span> <span class="number">580347</span></span><br><span class="line">&#123;<span class="attr">&quot;query&quot;</span>: &#123;<span class="attr">&quot;range&quot;</span>: &#123;<span class="attr">&quot;createTime&quot;</span>: &#123;<span class="attr">&quot;gte&quot;</span>: <span class="string">&quot;2021-1-1 00:00:00&quot;</span>,<span class="attr">&quot;lt&quot;</span>: <span class="string">&quot;2021-10-1 00:00:00&quot;</span>&#125;&#125;&#125;&#125; <span class="number">711246</span> <span class="number">711180</span>  <span class="number">726068</span> <span class="number">715264</span></span><br><span class="line">&#123;<span class="attr">&quot;query&quot;</span>: &#123;<span class="attr">&quot;range&quot;</span>: &#123;<span class="attr">&quot;createTime&quot;</span>: &#123;<span class="attr">&quot;gte&quot;</span>: <span class="string">&quot;2021-10-1 00:00:00&quot;</span>,<span class="attr">&quot;lt&quot;</span>: <span class="string">&quot;2021-12-1 00:00:00&quot;</span>&#125;&#125;&#125;&#125;  <span class="number">269026</span> <span class="number">262501</span></span><br><span class="line">&#123;<span class="attr">&quot;query&quot;</span>: &#123;<span class="attr">&quot;range&quot;</span>: &#123;<span class="attr">&quot;createTime&quot;</span>: &#123;<span class="attr">&quot;gte&quot;</span>: <span class="string">&quot;2021-12-1 00:00:00&quot;</span>&#125;&#125;&#125;&#125;   <span class="number">67924</span>  <span class="number">67913</span></span><br><span class="line">&#123;<span class="attr">&quot;query&quot;</span>: &#123;<span class="attr">&quot;range&quot;</span>: &#123;<span class="attr">&quot;ggsj&quot;</span>: &#123;<span class="attr">&quot;gt&quot;</span>: <span class="string">&quot;1638720000000&quot;</span>&#125;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="踩坑"><a href="#踩坑" class="headerlink" title="踩坑"></a>踩坑</h2><ul>
-<li>jvm.options参数中，将栈内存调到物理内存50%</li>
-<li>logstash.yml参数中，将batch.size调大，降低请求频次，避免output es被写死</li>
-<li>使用7.X的logstash，可以向下兼容6.X的ES</li>
-<li>7.X的logstash，可以配置input的timeout参数，避免网络闪断造成的scroll重置，重复插入数据问题</li>
-<li>7.X的logstash，可以明显降低output es的lucene缓存占用</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202112/ES%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202112/ES%E9%9B%86%E7%BE%A4%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">ES集群部署</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-12-02 13:39:48" itemprop="dateCreated datePublished" datetime="2021-12-02T13:39:48+08:00">2021-12-02</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-11-02 17:16:38" itemprop="dateModified" datetime="2022-11-02T17:16:38+08:00">2022-11-02</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/658e5a884fc3">https://www.jianshu.com/p/658e5a884fc3</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/144635583">https://zhuanlan.zhihu.com/p/144635583</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/xibei19921101/article/details/112527812">https://blog.csdn.net/xibei19921101/article/details/112527812</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_32690999/article/details/78505533">https://blog.csdn.net/qq_32690999/article/details/78505533</a></li>
-<li><a target="_blank" rel="noopener" href="https://developer.aliyun.com/article/784170">https://developer.aliyun.com/article/784170</a></li>
-<li><a target="_blank" rel="noopener" href="https://learnku.com/articles/40400">https://learnku.com/articles/40400</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-elasticsearch-on-centos-7">https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-elasticsearch-on-centos-7</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.letianbiji.com/elasticsearch/es7-set-replica-shard-num.html">https://www.letianbiji.com/elasticsearch/es7-set-replica-shard-num.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1638738">https://cloud.tencent.com/developer/article/1638738</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.letianbiji.com/elasticsearch/es7-set-replica-shard-num.html">https://www.letianbiji.com/elasticsearch/es7-set-replica-shard-num.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://discuss.elastic.co/t/elasticsearch-is-not-starting-when-bootstrap-memory-lock-is-set-to-true/120962/13">https://discuss.elastic.co/t/elasticsearch-is-not-starting-when-bootstrap-memory-lock-is-set-to-true/120962/13</a></li>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/37608486/using-mlockall-to-disable-swapping">https://stackoverflow.com/questions/37608486/using-mlockall-to-disable-swapping</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.huoding.com/2015/08/02/460">https://blog.huoding.com/2015/08/02/460</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/9752709bfea4">https://www.jianshu.com/p/9752709bfea4</a></li>
-</ul>
-<h2 id="服务器"><a href="#服务器" class="headerlink" title="服务器"></a>服务器</h2><ul>
-<li>10.194.98.4</li>
-<li>10.194.98.5</li>
-<li>10.194.98.6</li>
-</ul>
-<h2 id="Elasticsearch部署"><a href="#Elasticsearch部署" class="headerlink" title="Elasticsearch部署"></a>Elasticsearch部署</h2><h3 id="RPM方式"><a href="#RPM方式" class="headerlink" title="RPM方式"></a>RPM方式</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rpm -ivh jdk-8u311-linux-x64.rpm</span><br><span class="line">rpm -ivh elasticsearch-6.8.20.rpm</span><br></pre></td></tr></table></figure>
-<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>vi /etc/elasticsearch/elasticsearch.yml</p>
-<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">cluster.name:</span> <span class="string">elan-cluster</span></span><br><span class="line"><span class="attr">node.name:</span> <span class="string">node-04</span></span><br><span class="line"><span class="attr">path.data:</span> <span class="string">/data/elasticsearch/data</span></span><br><span class="line"><span class="attr">path.logs:</span> <span class="string">/data/elasticsearch/logs</span></span><br><span class="line"><span class="attr">network.host:</span> <span class="number">10.194</span><span class="number">.98</span><span class="number">.4</span></span><br><span class="line"><span class="attr">http.port:</span> <span class="number">9200</span></span><br><span class="line"><span class="attr">discovery.zen.ping.unicast.hosts:</span> [<span class="string">&quot;10.194.98.4&quot;</span>, <span class="string">&quot;10.194.98.5&quot;</span>, <span class="string">&quot;10.194.98.6&quot;</span>]</span><br><span class="line"><span class="attr">discovery.zen.minimum_master_nodes:</span> <span class="number">2</span></span><br><span class="line"><span class="attr">bootstrap.memory_lock:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">http.cors.enabled:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">http.cors.allow-origin:</span> <span class="string">&quot;*&quot;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable elasticsearch</span><br><span class="line">systemctl start elasticsearch</span><br><span class="line"></span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart elasticsearch</span><br></pre></td></tr></table></figure>
-<h3 id="IK分词插件"><a href="#IK分词插件" class="headerlink" title="IK分词插件"></a>IK分词插件</h3><p><a target="_blank" rel="noopener" href="https://github.com/medcl/elasticsearch-analysis-ik">https://github.com/medcl/elasticsearch-analysis-ik</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;usr&#x2F;share&#x2F;elasticsearch&#x2F;plugins</span><br><span class="line">mkdir ik &amp;&amp; cd ik</span><br><span class="line">cp ~&#x2F;pkg&#x2F;elasticsearch-analysis-ik-6.8.20.zip &#x2F;usr&#x2F;share&#x2F;elasticsearch&#x2F;plugins&#x2F;ik</span><br><span class="line">unzip elasticsearch-analysis-ik-6.8.20.zip</span><br></pre></td></tr></table></figure>
-<h3 id="评分插件"><a href="#评分插件" class="headerlink" title="评分插件"></a>评分插件</h3><p>自研插件，无下载地址<br>mkdir elasticSearch-plugin-score</p>
-<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p><a target="_blank" rel="noopener" href="http://10.194.98.4:9200/">http://10.194.98.4:9200</a><br><a target="_blank" rel="noopener" href="http://10.194.98.4:9200/_cat/nodes?pretty">http://10.194.98.4:9200/_cat/nodes?pretty</a><br><a target="_blank" rel="noopener" href="http://10.194.98.4:9200/_cat/plugins">http://10.194.98.4:9200/_cat/plugins</a></p>
-<h2 id="Kibana部署"><a href="#Kibana部署" class="headerlink" title="Kibana部署"></a>Kibana部署</h2><h3 id="RPM方式-1"><a href="#RPM方式-1" class="headerlink" title="RPM方式"></a>RPM方式</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpm -ivh kibana-6.8.20-x86_64.rpm</span><br></pre></td></tr></table></figure>
-<h3 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h3><p>vi /etc/kibana/kibana.yml</p>
-<h3 id="启动-1"><a href="#启动-1" class="headerlink" title="启动"></a>启动</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable kibana</span><br><span class="line">systemctl start kibana</span><br><span class="line">systemctl restart kibana</span><br></pre></td></tr></table></figure>
-<h3 id="测试-1"><a href="#测试-1" class="headerlink" title="测试"></a>测试</h3><p><a target="_blank" rel="noopener" href="http://10.194.98.4:5601/">http://10.194.98.4:5601</a></p>
-<h2 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h2><h3 id="memory-lock"><a href="#memory-lock" class="headerlink" title="memory_lock"></a>memory_lock</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/elasticsearch/elasticsearch.yml</span><br><span class="line">bootstrap.memory_lock: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">ulimit</span> -l unlimited</span><br><span class="line"></span><br><span class="line">vi /etc/security/limits.conf</span><br><span class="line">elasticsearch - nofile 65535</span><br><span class="line"></span><br><span class="line">vi /etc/systemd/system/elasticsearch.service.d/elasticsearch.conf</span><br><span class="line">[Service]</span><br><span class="line">LimitMEMLOCK=infinity</span><br><span class="line">LimitNPROC=4096</span><br><span class="line">LimitNOFILE=65536</span><br><span class="line"></span><br><span class="line">vi /etc/sysconfig/elasticsearch</span><br><span class="line">MAX_OPEN_FILES=65535</span><br><span class="line">MAX_LOCKED_MEMORY=unlimited</span><br></pre></td></tr></table></figure>
-<h3 id="禁用自平衡"><a href="#禁用自平衡" class="headerlink" title="禁用自平衡"></a>禁用自平衡</h3><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">gateway.expected_nodes:</span> <span class="number">3</span></span><br><span class="line"><span class="attr">gateway.recover_after_nodes:</span> <span class="number">3</span></span><br><span class="line"><span class="comment">#禁用集群新创建索引分配</span></span><br><span class="line"><span class="attr">cluster.routing.allocation.enable:</span> <span class="literal">false</span> </span><br><span class="line"><span class="comment">#禁用集群自动平衡</span></span><br><span class="line"><span class="attr">cluster.routing.rebalance.enable:</span> <span class="literal">false</span></span><br></pre></td></tr></table></figure>
-<h2 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GET &#x2F;_cat</span><br><span class="line">GET &#x2F;_cat&#x2F;indices?v</span><br><span class="line">GET &#x2F;_cat&#x2F;health?v</span><br><span class="line">GET &#x2F;_cluster&#x2F;health?level&#x3D;indices&amp;pretty</span><br><span class="line">GET &#x2F;_cat&#x2F;nodes?v&amp;h&#x3D;id,port,v,m,fdp,mc,mcs,sc,sm,qcm,fm,im,siwm,svmm&amp;pretty&#x3D;true</span><br><span class="line">GET &#x2F;_cat&#x2F;allocation?v&amp;h&#x3D;shards,disk.indices,disk.used,disk.avail</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/PHP%E4%BE%9D%E8%B5%96%E5%8C%85%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202111/PHP%E4%BE%9D%E8%B5%96%E5%8C%85%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">PHP依赖包学习笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-11-30 10:47:34" itemprop="dateCreated datePublished" datetime="2021-11-30T10:47:34+08:00">2021-11-30</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-11-02 17:16:00" itemprop="dateModified" datetime="2022-11-02T17:16:00+08:00">2022-11-02</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="jenssegers-mongodb"><a href="#jenssegers-mongodb" class="headerlink" title="jenssegers/mongodb"></a>jenssegers/mongodb</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/jenssegers/laravel-mongodb">https://github.com/jenssegers/laravel-mongodb</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/484fb19c9389">https://www.jianshu.com/p/484fb19c9389</a></li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000018922161">https://segmentfault.com/a/1190000018922161</a></li>
-</ul>
-<h2 id="guzzlehttp-guzzle"><a href="#guzzlehttp-guzzle" class="headerlink" title="guzzlehttp/guzzle"></a>guzzlehttp/guzzle</h2><p>Guzzle是一个PHP的HTTP客户端，用来轻而易举地发送请求，并集成到我们的WEB服务上。</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://docs.guzzlephp.org/">https://docs.guzzlephp.org/</a></li>
-<li><a target="_blank" rel="noopener" href="https://guzzle-cn.readthedocs.io/zh_CN/latest/">https://guzzle-cn.readthedocs.io/zh_CN/latest/</a></li>
-</ul>
-<h2 id="pda-pheanstalk"><a href="#pda-pheanstalk" class="headerlink" title="pda/pheanstalk"></a>pda/pheanstalk</h2><p>Beanstalkd 是一个高性能，轻量级的分布式内存队列，C 代码，典型的类 Memcached 设计，协议和使用方式都是同样的风格，所以使用过 memcached 的用户会觉得 Beanstalkd 似曾相识。<br>pheanstalk是一个操作 beanstalkd 的 php 客户端。</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/pheanstalk/pheanstalk">https://github.com/pheanstalk/pheanstalk</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.kancloud.cn/vson/php-message-queue/895573">https://www.kancloud.cn/vson/php-message-queue/895573</a></li>
-</ul>
-<h2 id="predis-predis"><a href="#predis-predis" class="headerlink" title="predis/predis"></a>predis/predis</h2><p>predis是php连接redis的操作库</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/predis/predis">https://github.com/predis/predis</a></li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000012404974">https://segmentfault.com/a/1190000012404974</a></li>
-</ul>
-<h2 id="doctrine-dbal"><a href="#doctrine-dbal" class="headerlink" title="doctrine/dbal"></a>doctrine/dbal</h2><p>在Laravel中，使用migration作为数据库的版本控制工具，当需要对已存在的数据表作更改，需要额外引入doctrine/dbal扩展</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/doctrine/dbal">https://github.com/doctrine/dbal</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/f33db09d3ed6">https://www.jianshu.com/p/f33db09d3ed6</a></li>
-</ul>
-<h2 id="kittinan-php-crc"><a href="#kittinan-php-crc" class="headerlink" title="kittinan/php-crc"></a>kittinan/php-crc</h2><p>Calculates CRC checksums for input data</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://packagist.org/packages/kittinan/php-crc">https://packagist.org/packages/kittinan/php-crc</a></li>
-</ul>
-<h2 id="simplesoftwareio-simple-qrcode"><a href="#simplesoftwareio-simple-qrcode" class="headerlink" title="simplesoftwareio/simple-qrcode"></a>simplesoftwareio/simple-qrcode</h2><p>Simple QrCode 是基于Bacon/BaconQrCode 开发，适用于Laravel框架的软件包. 我们的目的是让二维码能更加便捷的使用在Laravel框架的项目里</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/SimpleSoftwareIO/simple-qrcode">https://github.com/SimpleSoftwareIO/simple-qrcode</a></li>
-</ul>
-<h2 id="menthe-aliyun-ueditor"><a href="#menthe-aliyun-ueditor" class="headerlink" title="menthe/aliyun-ueditor"></a>menthe/aliyun-ueditor</h2><p>UEditor 是由百度web前端研发部开发所见即所得富文本web编辑器，此包为laravel5的支持,新增多语言配置,可自由部署前端代码</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/menthe/aliyun-ueditor">https://github.com/menthe/aliyun-ueditor</a></li>
-</ul>
-<h2 id="laravel-passport"><a href="#laravel-passport" class="headerlink" title="laravel/passport"></a>laravel/passport</h2><p>Passport提供完整的 OAuth2 服务端实现</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://laravel.com/docs/8.x/passport">https://laravel.com/docs/8.x/passport</a></li>
-<li><a target="_blank" rel="noopener" href="https://learnku.com/docs/laravel/8.x/passport/9420">https://learnku.com/docs/laravel/8.x/passport/9420</a></li>
-</ul>
-<h2 id="alibabacloud-client"><a href="#alibabacloud-client" class="headerlink" title="alibabacloud/client"></a>alibabacloud/client</h2><p>短信服务（Short Message Service）是阿里云为用户提供的一种通信服务的能力。</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://packagist.org/packages/alibabacloud/client">https://packagist.org/packages/alibabacloud/client</a></li>
-<li><a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/112186.html">https://help.aliyun.com/document_detail/112186.html</a></li>
-</ul>
-<h2 id="jenssegers-agent"><a href="#jenssegers-agent" class="headerlink" title="jenssegers/agent"></a>jenssegers/agent</h2><p>laravel-agent 是一个为 Laravel 定制的客户端识别扩展包，基于 Mobile Detect , 提供了非常优雅的接口.</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/jenssegers/agent">https://github.com/jenssegers/agent</a></li>
-<li><a target="_blank" rel="noopener" href="https://learnku.com/laravel/t/782/extended-recommendation-laravel-user-agent-easily-identify-client-information">https://learnku.com/laravel/t/782/extended-recommendation-laravel-user-agent-easily-identify-client-information</a></li>
-</ul>
-<h2 id="dariuszp-cli-progress-bar"><a href="#dariuszp-cli-progress-bar" class="headerlink" title="dariuszp/cli-progress-bar"></a>dariuszp/cli-progress-bar</h2><p>Progress bar for cli apps</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/dariuszp/cli-progress-bar">https://github.com/dariuszp/cli-progress-bar</a></li>
-</ul>
-<h2 id="overtrue-laravel-wechat"><a href="#overtrue-laravel-wechat" class="headerlink" title="overtrue/laravel-wechat"></a>overtrue/laravel-wechat</h2><p>微信 SDK for Laravel / Lumen， 基于 overtrue/wechat</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/overtrue/laravel-wechat">https://github.com/overtrue/laravel-wechat</a></li>
-</ul>
-<h2 id="imangazaliev-didom"><a href="#imangazaliev-didom" class="headerlink" title="imangazaliev/didom"></a>imangazaliev/didom</h2><p>HTML 解析器</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/Imangazaliev/DiDOM">https://github.com/Imangazaliev/DiDOM</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.muyuanzhan.com/tutorials/php/1030.html">https://www.muyuanzhan.com/tutorials/php/1030.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/cunjie3951/article/details/106905467">https://blog.csdn.net/cunjie3951/article/details/106905467</a></li>
-</ul>
-<h2 id="bvtvd-laravel-gateway-worker"><a href="#bvtvd-laravel-gateway-worker" class="headerlink" title="bvtvd/laravel-gateway-worker"></a>bvtvd/laravel-gateway-worker</h2><p>GatewayWorker 是基于 Workerman 开发的一个 TCP 长连接框架，实现了单发、群送、广播等长连接必用的接口</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/bvtvd/laravel-gateway-worker">https://github.com/bvtvd/laravel-gateway-worker</a></li>
-<li><a target="_blank" rel="noopener" href="https://learnku.com/articles/25208">https://learnku.com/articles/25208</a></li>
-</ul>
-<h2 id="fideloper-proxy"><a href="#fideloper-proxy" class="headerlink" title="fideloper/proxy"></a>fideloper/proxy</h2><p>如果您的站点位于代理（例如负载均衡器）后面，则您的 Web 应用程序可能存在以下一些问题：<br>重定向和 PHP 生成的 URL 在其 Web 地址，协议和 / 或端口方面可能不准确。<br>可能无法为每个用户创建唯一会话，从而导致可能访问不正确的帐户，或者无法让用户完全登录<br>记录或其他数据收集过程数据可能看起来来自一个位置（代理本身），使您无法区分各个客户端所采取的流量 / 操作。</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/fideloper/TrustedProxy">https://github.com/fideloper/TrustedProxy</a></li>
-<li><a target="_blank" rel="noopener" href="https://learnku.com/docs/the-laravel-way/5.6/Tao-5-6/2947">https://learnku.com/docs/the-laravel-way/5.6/Tao-5-6/2947</a></li>
-</ul>
-<h2 id="laravel-tinker"><a href="#laravel-tinker" class="headerlink" title="laravel/tinker"></a>laravel/tinker</h2><p>tinker 允许您从交互式 shell 中的命令行与 Laravel 应用程序进行交互</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://laravelacademy.org/post/4935.html">https://laravelacademy.org/post/4935.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://learnku.com/articles/7338/understand-laravel-tinker-shell">https://learnku.com/articles/7338/understand-laravel-tinker-shell</a></li>
-</ul>
-<h2 id="laravelcollective-html"><a href="#laravelcollective-html" class="headerlink" title="laravelcollective/html"></a>laravelcollective/html</h2><p>Laravel提供了各种内置的标签，以方便，安全地处理HTML表单。所有 HTML 的主要元素都是可以使用Laravel来产生的。</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/LaravelCollective/html">https://github.com/LaravelCollective/html</a></li>
-<li><a target="_blank" rel="noopener" href="https://laravelcollective.com/docs">https://laravelcollective.com/docs</a></li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000011580448">https://segmentfault.com/a/1190000011580448</a></li>
-</ul>
-<h2 id="maatwebsite-excel"><a href="#maatwebsite-excel" class="headerlink" title="maatwebsite/excel"></a>maatwebsite/excel</h2><p>Excel 工具包</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/SpartnerNL/Laravel-Excel">https://github.com/SpartnerNL/Laravel-Excel</a></li>
-<li><a target="_blank" rel="noopener" href="https://learnku.com/articles/32391">https://learnku.com/articles/32391</a></li>
-</ul>
-<h2 id="workerman-workerman"><a href="#workerman-workerman" class="headerlink" title="workerman/workerman"></a>workerman/workerman</h2><p>workerman是一款开源高性能PHP应用容器</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.workerman.net/">https://www.workerman.net/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/walkor/Workerman">https://github.com/walkor/Workerman</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.kancloud.cn/walkor/workerman/640361">https://www.kancloud.cn/walkor/workerman/640361</a></li>
-</ul>
-<h2 id="workerman-mqtt"><a href="#workerman-mqtt" class="headerlink" title="workerman/mqtt"></a>workerman/mqtt</h2><p>一个基于workerman的异步mqtt客户端库，可用于接收或者发送mqtt协议的消息</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://www.workerman.net/doc/workerman/components/workemran-mqtt.html">https://www.workerman.net/doc/workerman/components/workemran-mqtt.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/walkor/mqtt">https://github.com/walkor/mqtt</a></li>
-</ul>
-<h2 id="mrgoon-aliyun-sms"><a href="#mrgoon-aliyun-sms" class="headerlink" title="mrgoon/aliyun-sms"></a>mrgoon/aliyun-sms</h2><p>阿里云提供的短信服务</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://packagist.org/packages/mrgoon/aliyun-sms">https://packagist.org/packages/mrgoon/aliyun-sms</a></li>
-<li><a target="_blank" rel="noopener" href="https://laravelacademy.org/post/9502">https://laravelacademy.org/post/9502</a></li>
-</ul>
-<h2 id="overtrue-laravel-pinyin"><a href="#overtrue-laravel-pinyin" class="headerlink" title="overtrue/laravel-pinyin"></a>overtrue/laravel-pinyin</h2><p>Laravel 中文转拼音</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/overtrue/laravel-pinyin">https://github.com/overtrue/laravel-pinyin</a></li>
-<li><a target="_blank" rel="noopener" href="https://learnku.com/laravel/t/573/laravel-chinese-pinyin-overtruelaravel-pinyin">https://learnku.com/laravel/t/573/laravel-chinese-pinyin-overtruelaravel-pinyin</a></li>
-</ul>
-<h2 id="zircote-swagger-php"><a href="#zircote-swagger-php" class="headerlink" title="zircote/swagger-php"></a>zircote/swagger-php</h2><p>接口API的定义</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/zircote/swagger-php">https://github.com/zircote/swagger-php</a></li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000015913371">https://segmentfault.com/a/1190000015913371</a></li>
-</ul>
-<h2 id="jenssegers-imagehash"><a href="#jenssegers-imagehash" class="headerlink" title="jenssegers/imagehash"></a>jenssegers/imagehash</h2><p>图片摘要</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/jenssegers/imagehash">https://github.com/jenssegers/imagehash</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/Laravel%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202111/Laravel%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Laravel学习笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-11-30 09:20:27" itemprop="dateCreated datePublished" datetime="2021-11-30T09:20:27+08:00">2021-11-30</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-11-02 17:15:35" itemprop="dateModified" datetime="2022-11-02T17:15:35+08:00">2022-11-02</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="资料"><a href="#资料" class="headerlink" title="资料"></a>资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://laravel.com/">https://laravel.com/</a></li>
-<li><a target="_blank" rel="noopener" href="https://learnku.com/docs/laravel/6.x">https://learnku.com/docs/laravel/6.x</a></li>
-<li><a target="_blank" rel="noopener" href="https://laravelacademy.org/books/php-tutorial">https://laravelacademy.org/books/php-tutorial</a></li>
-</ul>
-<h2 id="安装Laravel命令行"><a href="#安装Laravel命令行" class="headerlink" title="安装Laravel命令行"></a>安装Laravel命令行</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装laravel安装器</span></span><br><span class="line">composer global require laravel/installer</span><br><span class="line">laravel --version</span><br><span class="line">Laravel Installer 4.2.9</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看composer配置路径</span></span><br><span class="line">composer global about</span><br><span class="line">/Users/bluexiii/.composer/vendor/bin</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将composer的bin目录加入PATH</span></span><br><span class="line">vi ~/.zshrc</span><br><span class="line"><span class="built_in">export</span> PATH=<span class="string">&quot;/Users/bluexiii/.composer/vendor/bin:<span class="variable">$PATH</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 新建laravel工程</span></span><br><span class="line">laravel new blog</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试启动</span></span><br><span class="line">php artisan serve</span><br></pre></td></tr></table></figure>
-<h2 id="工程初始化"><a href="#工程初始化" class="headerlink" title="工程初始化"></a>工程初始化</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编辑.env</span></span><br><span class="line">cp .env.example .env</span><br><span class="line">vi .env</span><br><span class="line">DB_CONNECTION=mysql</span><br><span class="line">DB_HOST=127.0.0.1</span><br><span class="line">DB_PORT=3306</span><br><span class="line">DB_DATABASE=agric</span><br><span class="line">DB_USERNAME=agric</span><br><span class="line">DB_PASSWORD=sw123</span><br><span class="line"></span><br><span class="line">MONGO_HOST=127.0.0.1</span><br><span class="line">MONGO_PORT=27017</span><br><span class="line">MONGO_DATABASE=agric</span><br><span class="line">MONGO_USERNAME=agric</span><br><span class="line">MONGO_PASSWORD=sw123</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在.env中生成KEY</span></span><br><span class="line">php artisan key:generate </span><br><span class="line"></span><br><span class="line"><span class="comment"># 建表</span></span><br><span class="line">php artisan migrate</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入基础数据</span></span><br><span class="line">php artisan db:seed </span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动Server</span></span><br><span class="line">php artisan serve </span><br></pre></td></tr></table></figure>
-<h2 id="Artisan命令行用法"><a href="#Artisan命令行用法" class="headerlink" title="Artisan命令行用法"></a>Artisan命令行用法</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看命令列表</span></span><br><span class="line">php artisan list</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看帮助</span></span><br><span class="line">php artisan <span class="built_in">help</span> migrate</span><br><span class="line"></span><br><span class="line"><span class="comment"># 其它</span></span><br><span class="line">php artisan config:cache <span class="comment"># 生成配置缓存(开发环境会造成.env修改无效)</span></span><br><span class="line">php artisan config:clear <span class="comment"># 取消配置缓存</span></span><br><span class="line">php artisan passport:keys <span class="comment"># 生成Oauth密钥对</span></span><br></pre></td></tr></table></figure>
-<h2 id="日志打印SQL"><a href="#日志打印SQL" class="headerlink" title="日志打印SQL"></a>日志打印SQL</h2><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">boot</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    Schema::defaultStringLength(<span class="number">191</span>);</span><br><span class="line">    DB::listen(<span class="function"><span class="keyword">function</span>(<span class="params"><span class="variable">$query</span></span>) </span>&#123;</span><br><span class="line">        Log::info(</span><br><span class="line">            <span class="variable">$query</span>-&gt;sql,</span><br><span class="line">            <span class="variable">$query</span>-&gt;bindings,</span><br><span class="line">            <span class="variable">$query</span>-&gt;time</span><br><span class="line">        );</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="本地仓库"><a href="#本地仓库" class="headerlink" title="本地仓库"></a>本地仓库</h2><p>vi composer.json</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&quot;require&quot;: &#123;</span><br><span class="line">    &quot;harris/sw_common&quot;: &quot;dev-master&quot;,</span><br><span class="line">&#125;,</span><br><span class="line">&quot;repositories&quot;: [&#123;</span><br><span class="line">    &quot;type&quot;: &quot;path&quot;,</span><br><span class="line">    &quot;url&quot;: &quot;/Users/bluexiii/Documents/code/evayinfo/idatasky/harris-sw_common&quot;</span><br><span class="line">&#125;]</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/Composer%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202111/Composer%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Composer学习笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-11-30 09:18:54" itemprop="dateCreated datePublished" datetime="2021-11-30T09:18:54+08:00">2021-11-30</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-11-02 17:15:24" itemprop="dateModified" datetime="2022-11-02T17:15:24+08:00">2022-11-02</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.phpcomposer.com/00-intro.html">https://docs.phpcomposer.com/00-intro.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.runoob.com/w3cnote/composer-install-and-usage.html">https://www.runoob.com/w3cnote/composer-install-and-usage.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://developer.aliyun.com/composer">https://developer.aliyun.com/composer</a></li>
-<li><a target="_blank" rel="noopener" href="https://pkg.xyz/">https://pkg.xyz/</a></li>
-</ul>
-<h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看版本</span></span><br><span class="line">composer --version</span><br><span class="line"></span><br><span class="line"><span class="comment"># 升级到最新版本 </span></span><br><span class="line">composer self-update</span><br><span class="line"></span><br><span class="line"><span class="comment"># 版本降级为1.x最新</span></span><br><span class="line">composer self-update --1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 版本降级为1.X指定版本</span></span><br><span class="line">composer self-update 1.10.20</span><br><span class="line"></span><br><span class="line"><span class="comment"># 版本回滚到2.X</span></span><br><span class="line">composer self-update --rollback</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置阿里云镜像源</span></span><br><span class="line">composer config -g repo.packagist composer https://mirrors.aliyun.com/composer/</span><br><span class="line">composer config --<span class="built_in">unset</span> repos.packagist</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调试参数</span></span><br><span class="line">-vvv</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装依赖包(composer.json配置)</span></span><br><span class="line">composer install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装依赖包(忽略系统依赖)</span></span><br><span class="line">composer install --ignore-platform-reqs</span><br><span class="line"></span><br><span class="line"><span class="comment"># 直接安装依赖</span></span><br><span class="line">composer require monolog/monolog</span><br><span class="line"></span><br><span class="line"><span class="comment"># 直接删除依赖</span></span><br><span class="line">composer remove monolog/monolog</span><br><span class="line"></span><br><span class="line"><span class="comment"># 忽略内存限制</span></span><br><span class="line">COMPOSER_MEMORY_LIMIT=-1 composer require jenssegers/mongodb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 更新依赖</span></span><br><span class="line">composer update</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清理缓存 </span></span><br><span class="line">rm -rv vendor</span><br><span class="line">rm composer.lock</span><br><span class="line">composer clearcache</span><br><span class="line"></span><br><span class="line"><span class="comment"># 其它</span></span><br><span class="line">composer search monolog <span class="comment"># 搜索</span></span><br><span class="line">composer show 列出所有已经安装的包</span><br><span class="line">composer dump-autoload</span><br><span class="line">php artisan optimize</span><br></pre></td></tr></table></figure>
-<h2 id="杂项"><a href="#杂项" class="headerlink" title="杂项"></a>杂项</h2><ul>
-<li>Laravel6.X项目，应使用1.X版本compser，避免install时报错</li>
-</ul>
-<h3 id="composer-install-报错"><a href="#composer-install-报错" class="headerlink" title="composer install 报错"></a>composer install 报错</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; @php artisan package:discover</span><br><span class="line">In PackageManifest.php line 122: </span><br><span class="line">  Undefined index: name  </span><br><span class="line">Script @php artisan package:discover handling the post-autoload-dump event returned with error code 1</span><br></pre></td></tr></table></figure>
-<p><a target="_blank" rel="noopener" href="https://exerror.com/packagemanifest-php-line-122-undefined-index-name/">https://exerror.com/packagemanifest-php-line-122-undefined-index-name/</a></p>
-<p>115行左右</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># $packages = json_decode($this-&gt;files-&gt;get($path), true);</span></span><br><span class="line"><span class="variable">$installed</span> = json_decode(<span class="variable">$this</span>-&gt;files-&gt;get(<span class="variable">$path</span>), <span class="literal">true</span>);</span><br><span class="line"><span class="variable">$packages</span> = <span class="variable">$installed</span>[<span class="string">&#x27;packages&#x27;</span>] ?? <span class="variable">$installed</span>;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/mysql%E4%B8%8Emongo%E5%A4%87%E4%BB%BD%E8%84%9A%E6%9C%AC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202111/mysql%E4%B8%8Emongo%E5%A4%87%E4%BB%BD%E8%84%9A%E6%9C%AC/" class="post-title-link" itemprop="url">mysql与mongo备份脚本</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-11-23 14:06:22" itemprop="dateCreated datePublished" datetime="2021-11-23T14:06:22+08:00">2021-11-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-11-02 17:15:54" itemprop="dateModified" datetime="2022-11-02T17:15:54+08:00">2022-11-02</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="MySQL备份"><a href="#MySQL备份" class="headerlink" title="MySQL备份"></a>MySQL备份</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment"># ##################################################################</span></span><br><span class="line"><span class="comment"># MySQL定时备份</span></span><br><span class="line"><span class="comment"># crontab -e</span></span><br><span class="line"><span class="comment"># 30 01 * * *    . $HOME/.bash_profile; cd /data/dump/hydrabot_policy; ./dump_mysql.sh</span></span><br><span class="line"><span class="comment"># ##################################################################</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 环境变量</span></span><br><span class="line">USERNAME=root</span><br><span class="line">PASSWORD=yourpass</span><br><span class="line">DATABASE=hydrabot_policy_prd</span><br><span class="line">BASE_DIR=/data/dump/hydrabot_policy</span><br><span class="line">DUMP_FILE=<span class="variable">$BASE_DIR</span>/hydrabot_policy_prd_`date +%Y%m%d%H%M%S`.sql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 备份</span></span><br><span class="line"><span class="built_in">cd</span> <span class="variable">$BASE_DIR</span></span><br><span class="line">mysqldump -u<span class="variable">$USERNAME</span> -p<span class="variable">$PASSWORD</span> <span class="variable">$DATABASE</span> &gt; <span class="variable">$DUMP_FILE</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 压缩dmp</span></span><br><span class="line">gzip <span class="variable">$DUMP_FILE</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除旧的dmp</span></span><br><span class="line">find <span class="variable">$BASE_DIR</span> -name <span class="string">&quot;*.sql.gz&quot;</span> -mtime +7 -<span class="built_in">exec</span> rm &#123;&#125; \;</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="MongoDB备份"><a href="#MongoDB备份" class="headerlink" title="MongoDB备份"></a>MongoDB备份</h2><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/24439068/tar-gzip-mongo-dump-like-mysql">https://stackoverflow.com/questions/24439068/tar-gzip-mongo-dump-like-mysql</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mongodump --host &lt;host-ip&gt; --port 27017 --db &lt;database&gt;  --authenticationDatabase admin --username &lt;username&gt; --password &lt;password&gt; --gzip --archive &gt;  dump_`date <span class="string">&quot;+%Y-%m-%d&quot;</span>`.gz</span><br><span class="line">mongodump --host &lt;host-ip&gt; --port 27017 --db &lt;database&gt;  --authenticationDatabase admin --username &lt;username&gt; --password &lt;password&gt; --gzip --archive=mongodump.gz</span><br></pre></td></tr></table></figure>
-<h3 id="Shell"><a href="#Shell" class="headerlink" title="Shell"></a>Shell</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line"># ##################################################################</span><br><span class="line"># MongoDB定时备份</span><br><span class="line"># crontab -e</span><br><span class="line"># 30 01 * * *    . $HOME&#x2F;.bash_profile; cd &#x2F;data&#x2F;dump&#x2F;policy_content; .&#x2F;dump_mongo.sh</span><br><span class="line"># ##################################################################</span><br><span class="line"></span><br><span class="line"># 环境变量</span><br><span class="line">DATABASE&#x3D;hydrabot</span><br><span class="line">COLLECTION&#x3D;policy_content</span><br><span class="line">BASE_DIR&#x3D;&#x2F;data&#x2F;dump&#x2F;policy_content</span><br><span class="line">DUMP_FILE&#x3D;$BASE_DIR&#x2F;policy_content_&#96;date +%Y%m%d%H%M%S&#96;.gz</span><br><span class="line"></span><br><span class="line"># 备份</span><br><span class="line">cd $BASE_DIR</span><br><span class="line">mongodump -d $DATABASE -c $COLLECTION --gzip --archive &gt; $DUMP_FILE</span><br><span class="line"></span><br><span class="line"># 删除旧的dmp</span><br><span class="line">find $BASE_DIR -name &quot;*.gz&quot; -mtime +3 -exec rm &#123;&#125; \;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/Minio%E7%AD%96%E7%95%A5%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202111/Minio%E7%AD%96%E7%95%A5%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Minio策略配置</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-11-12 13:37:53" itemprop="dateCreated datePublished" datetime="2021-11-12T13:37:53+08:00">2021-11-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-11-02 17:15:41" itemprop="dateModified" datetime="2022-11-02T17:15:41+08:00">2022-11-02</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://min.io/download#/linux">https://min.io/download#/linux</a></li>
-<li><a target="_blank" rel="noopener" href="http://docs.minio.org.cn/docs/master/minio-client-complete-guide">http://docs.minio.org.cn/docs/master/minio-client-complete-guide</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/minio/minio/issues/5279">https://github.com/minio/minio/issues/5279</a></li>
-</ul>
-<h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">./mc config host add minio http://localhost:9000 admin password --api s3v4</span><br><span class="line">./mc list</span><br><span class="line"></span><br><span class="line">./mc policy get minio/images</span><br><span class="line"></span><br><span class="line">./mc policy <span class="built_in">set</span> public minio/images</span><br><span class="line">./mc policy set-json ./policy.json minio/images</span><br></pre></td></tr></table></figure>
-<h2 id="自定义policy-json"><a href="#自定义policy-json" class="headerlink" title="自定义policy.json"></a>自定义policy.json</h2><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;Version&quot;</span>: <span class="string">&quot;2012-10-17&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;Statement&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">&quot;Action&quot;</span>: [</span><br><span class="line">        <span class="string">&quot;s3:GetObject&quot;</span></span><br><span class="line">      ],</span><br><span class="line">      <span class="attr">&quot;Effect&quot;</span>: <span class="string">&quot;Allow&quot;</span>,</span><br><span class="line">      <span class="attr">&quot;Principal&quot;</span>: &#123;</span><br><span class="line">        <span class="attr">&quot;AWS&quot;</span>: [</span><br><span class="line">          <span class="string">&quot;*&quot;</span></span><br><span class="line">        ]</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="attr">&quot;Resource&quot;</span>: [</span><br><span class="line">        <span class="string">&quot;arn:aws:s3:::images/*&quot;</span></span><br><span class="line">      ],</span><br><span class="line">      <span class="attr">&quot;Sid&quot;</span>: <span class="string">&quot;&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://blog.bluexiii.com/202111/ES%E5%AF%BC%E5%87%BACSV/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/202111/ES%E5%AF%BC%E5%87%BACSV/" class="post-title-link" itemprop="url">ES导出CSV</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-11-03 17:39:16" itemprop="dateCreated datePublished" datetime="2021-11-03T17:39:16+08:00">2021-11-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2022-11-02 17:15:30" itemprop="dateModified" datetime="2022-11-02T17:15:30+08:00">2022-11-02</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1639594">https://cloud.tencent.com/developer/article/1639594</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/taraslayshchuk/es2csv/blob/master/docs/EXAMPLES.rst">https://github.com/taraslayshchuk/es2csv/blob/master/docs/EXAMPLES.rst</a></li>
-</ul>
-<h2 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/taraslayshchuk/es2csv">https://github.com/taraslayshchuk/es2csv</a></li>
-</ul>
-<h2 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h2><ul>
-<li>-i  索引名</li>
-<li>-q  query dsl</li>
-<li>-a 认证信息   格式：user: password</li>
-<li>-u  esurl 格式： <a target="_blank" rel="noopener" href="http://ip:9200/">http://ip:9200</a></li>
-<li>-o 命名</li>
-<li>-r  qurey formated</li>
-</ul>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 需要python2.7环境</span></span><br><span class="line">conda  create --name py27 python=2.7</span><br><span class="line">conda activate py27</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装es2csv</span></span><br><span class="line">pip install es2csv</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导出</span></span><br><span class="line">es2csv -i policies_hydrabot -u  10.20.41.30:9200  -o dump.csv -r -q <span class="string">&#x27;&#123;&quot;_source&quot;:[&quot;title&quot;,&quot;url&quot;,&quot;collectTime&quot;,&quot;createTime&quot;],&quot;query&quot;: &#123;&quot;range&quot;: &#123;&quot;collectTime&quot;: &#123;&quot;gt&quot;: &quot;2021-10-01 00:00:00&quot;&#125;&#125;&#125;&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/23/">23</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1196,7 +999,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">223</span>
+          <span class="site-state-item-count">231</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1234,7 +1037,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
