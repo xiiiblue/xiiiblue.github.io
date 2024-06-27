@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="学习路径 响应式: Java8 -&gt; Netty -&gt; VertX -&gt; Reactor -&gt; WebFlux 周边组件: r2dbc 后端框架: hs-web、easy-orm 其它: NIO&#x2F;AIO&#x2F;Reactor、IO多路复用  Java8 Java8 in Action  Netty https:&#x2F;&#x2F;dongzl.github.io&#x2F;netty-handbook&#x2F;#">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Reactor学习笔记">
+<meta property="og:url" content="http://www.bluexiii.com/202310/Reactor%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="学习路径 响应式: Java8 -&gt; Netty -&gt; VertX -&gt; Reactor -&gt; WebFlux 周边组件: r2dbc 后端框架: hs-web、easy-orm 其它: NIO&#x2F;AIO&#x2F;Reactor、IO多路复用  Java8 Java8 in Action  Netty https:&#x2F;&#x2F;dongzl.github.io&#x2F;netty-handbook&#x2F;#">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-10-11T07:06:02.144Z">
+<meta property="article:modified_time" content="2024-06-27T03:24:21.247Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.bluexiii.com/202310/Reactor%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Reactor学习笔记 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202310/Reactor%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Reactor学习笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-10-11 15:06:02" itemprop="dateCreated datePublished" datetime="2023-10-11T15:06:02+08:00">2023-10-11</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-06-27 11:24:21" itemprop="dateModified" datetime="2024-06-27T11:24:21+08:00">2024-06-27</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="学习路径"><a href="#学习路径" class="headerlink" title="学习路径"></a>学习路径</h2><ul>
+<li>响应式: Java8 -&gt; Netty -&gt; VertX -&gt; Reactor -&gt; WebFlux</li>
+<li>周边组件: r2dbc</li>
+<li>后端框架: hs-web、easy-orm</li>
+<li>其它: NIO/AIO/Reactor、IO多路复用</li>
+</ul>
+<h2 id="Java8"><a href="#Java8" class="headerlink" title="Java8"></a>Java8</h2><ul>
+<li>Java8 in Action</li>
+</ul>
+<h2 id="Netty"><a href="#Netty" class="headerlink" title="Netty"></a>Netty</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://dongzl.github.io/netty-handbook/#/_content/chapter01">https://dongzl.github.io/netty-handbook/#/_content/chapter01</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/dongzl/netty-handbook">https://github.com/dongzl/netty-handbook</a></li>
+</ul>
+<h2 id="VertX"><a href="#VertX" class="headerlink" title="VertX"></a>VertX</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://start.vertx.io/">https://start.vertx.io/</a>  脚手架</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/vert-x3/vertx-examples">https://github.com/vert-x3/vertx-examples</a>  示例</li>
+<li><a target="_blank" rel="noopener" href="https://vertx-china.github.io/docs/">https://vertx-china.github.io/docs/</a>  中文文档</li>
+<li><a target="_blank" rel="noopener" href="https://lang-yu.gitbook.io/vert.x/01-index/01-1-functional-programming">https://lang-yu.gitbook.io/vert.x/01-index/01-1-functional-programming</a></li>
+</ul>
+<h2 id="Reactor"><a href="#Reactor" class="headerlink" title="Reactor"></a>Reactor</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://projectreactor.io/learn">https://projectreactor.io/learn</a>  Reactor官网</li>
+<li><a target="_blank" rel="noopener" href="https://projectreactor.io/docs/core/release/reference/#which-operator">https://projectreactor.io/docs/core/release/reference/#which-operator</a>  Reactor3官网教程</li>
+<li><a target="_blank" rel="noopener" href="https://easywheelsoft.github.io/reactor-core-zh/index.html">https://easywheelsoft.github.io/reactor-core-zh/index.html</a>  Reactor3教程中文翻译</li>
+<li><a target="_blank" rel="noopener" href="https://potoyang.gitbook.io/spring-in-action-v5/di-10-zhang-reactor-jie-shao/10.3-tong-yong-xiang-ying-shi-cao-zuo-shi-zhan/10.3.3-zhuan-huan-he-guo-lv-xiang-ying-shi-liu">https://potoyang.gitbook.io/spring-in-action-v5/di-10-zhang-reactor-jie-shao/10.3-tong-yong-xiang-ying-shi-cao-zuo-shi-zhan/10.3.3-zhuan-huan-he-guo-lv-xiang-ying-shi-liu</a>  Spring实战电子书</li>
+<li><a target="_blank" rel="noopener" href="https://tech.io/playgrounds/929/reactive-programming-with-reactor-3/Intro">https://tech.io/playgrounds/929/reactive-programming-with-reactor-3/Intro</a>  互动练习</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/HikariShine/LearnReactive/blob/master/src/main/java/com/hikarishine/learn/reactive/handon/Part02Mono.java">https://github.com/HikariShine/LearnReactive/blob/master/src/main/java/com/hikarishine/learn/reactive/handon/Part02Mono.java</a>  互动练习答案</li>
+<li><a target="_blank" rel="noopener" href="https://skyao.io/learning-reactor/docs.html">https://skyao.io/learning-reactor/docs.html</a>  Reactor学习笔记</li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000024499748">https://segmentfault.com/a/1190000024499748</a>  Java反应式框架Reactor中的Mono和Flux</li>
+<li><a target="_blank" rel="noopener" href="https://www.cnkirito.moe/comparing-rxjava/">https://www.cnkirito.moe/comparing-rxjava/</a>  八个层面比较 Java 8, RxJava, Reactor</li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7ee89f70dfe5">https://www.jianshu.com/p/7ee89f70dfe5</a>  Spring Reactor 入门与实践</li>
+<li><a target="_blank" rel="noopener" href="https://www.infoq.cn/article/reactor-by-example">https://www.infoq.cn/article/reactor-by-example</a>  Reactor 实例解析</li>
+<li><a target="_blank" rel="noopener" href="https://mercyblitz.github.io/2018/07/25/Reactive-Programming-%E4%B8%80%E7%A7%8D%E6%8A%80%E6%9C%AF-%E5%90%84%E8%87%AA%E8%A1%A8%E8%BF%B0/">https://mercyblitz.github.io/2018/07/25/Reactive-Programming-一种技术-各自表述/</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/luo15242208310/article/details/112060578">https://blog.csdn.net/luo15242208310/article/details/112060578</a>  reactor merge vs concat、flatMap vs concatMap</li>
+</ul>
+<h2 id="WebFlux"><a href="#WebFlux" class="headerlink" title="WebFlux"></a>WebFlux</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.spring.io/spring-framework/reference/web/webflux.html">https://docs.spring.io/spring-framework/reference/web/webflux.html</a>  官网教程</li>
+<li><a target="_blank" rel="noopener" href="https://www.baeldung.com/spring-webflux">https://www.baeldung.com/spring-webflux</a>  教程</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/piomin/sample-spring-cloud-webflux">https://github.com/piomin/sample-spring-cloud-webflux</a>  示例</li>
+</ul>
+<h2 id="HsWeb"><a href="#HsWeb" class="headerlink" title="HsWeb"></a>HsWeb</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-framework">https://github.com/hs-web/hsweb-framework</a>   GitHub hsweb</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-easy-orm">https://github.com/hs-web/hsweb-easy-orm</a>    GitHub easy-orm</li>
+<li><a target="_blank" rel="noopener" href="https://docs.hsweb.io/framework/">https://docs.hsweb.io/framework/</a>           用户手册</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/zhou-hao/hsweb4-examples">https://github.com/zhou-hao/hsweb4-examples</a>   示例</li>
+</ul>
+<h2 id="r2dbc"><a href="#r2dbc" class="headerlink" title="r2dbc"></a>r2dbc</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://r2dbc.io/">https://r2dbc.io/</a></li>
+<li><a target="_blank" rel="noopener" href="https://spring.io/projects/spring-data-r2dbc">https://spring.io/projects/spring-data-r2dbc</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/spring-projects/spring-data-examples/tree/main/r2dbc/example">https://github.com/spring-projects/spring-data-examples/tree/main/r2dbc/example</a>  示例代码</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/r2dbc/r2dbc-pool">https://github.com/r2dbc/r2dbc-pool</a> 连接池</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/asyncer-io/r2dbc-mysql">https://github.com/asyncer-io/r2dbc-mysql</a>  驱动</li>
+</ul>
+<h2 id="其它工具"><a href="#其它工具" class="headerlink" title="其它工具"></a>其它工具</h2><h3 id="BlockHound"><a href="#BlockHound" class="headerlink" title="BlockHound"></a>BlockHound</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/reactor/BlockHound">https://github.com/reactor/BlockHound</a></li>
+</ul>
+<h3 id="reactor-ql"><a href="#reactor-ql" class="headerlink" title="reactor-ql"></a>reactor-ql</h3><ul>
+<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/reactor-ql.html#device-properties-latest">http://doc.jetlinks.cn/dev-guide/reactor-ql.html#device-properties-latest</a></li>
+</ul>
+<h2 id="其它参考文档"><a href="#其它参考文档" class="headerlink" title="其它参考文档"></a>其它参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/yq1czn3c5qkrpv4g">https://hanta.yuque.com/px7kg1/nn1gdr/yq1czn3c5qkrpv4g</a>  JetLinks响应式编程说明</li>
+<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/reactor.html#null%E5%A4%84%E7%90%86">http://doc.jetlinks.cn/dev-guide/reactor.html#null%E5%A4%84%E7%90%86</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/flydean/p/13935084.html">https://www.cnblogs.com/flydean/p/13935084.html</a> 响应式编程简介之:Reactor </li>
+<li><a target="_blank" rel="noopener" href="https://xwjie.github.io/webflux/webflux-study-path.html">https://xwjie.github.io/webflux/webflux-study-path.html</a>  webflux学习路径</li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903631133622285">https://juejin.cn/post/6844903631133622285</a>  聊聊Spring Reactor反应式编程</li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/7011463863602249741">https://juejin.cn/post/7011463863602249741</a>  反应式编程教程</li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000042359463">https://segmentfault.com/a/1190000042359463</a>  Reactor 之 onErrorContinue 和 onErrorResume</li>
+<li><a target="_blank" rel="noopener" href="https://www.jdon.com/53431.html">https://www.jdon.com/53431.html</a>  Spring响应式Reactive编程的10个陷阱</li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/flydean/p/13957083.html">https://www.cnblogs.com/flydean/p/13957083.html</a> Reactor中的Thread和Scheduler </li>
+<li><a target="_blank" rel="noopener" href="https://www.cnkirito.moe/comparing-rxjava/">https://www.cnkirito.moe/comparing-rxjava/</a>  八个层面比较 Java 8, RxJava, Reactor</li>
+<li><a target="_blank" rel="noopener" href="https://cheng-dp.github.io/2018/08/11/nio-aio-reactor-proactor/">https://cheng-dp.github.io/2018/08/11/nio-aio-reactor-proactor/</a>   NIO、AIO和Reactor、Proactor模式</li>
+<li><a target="_blank" rel="noopener" href="https://www.xiaolincoding.com/os/8_network_system/selete_poll_epoll.html">https://www.xiaolincoding.com/os/8_network_system/selete_poll_epoll.html</a>   IO多路复用Select，poll和epoll</li>
+</ul>
+<h2 id="编程范式"><a href="#编程范式" class="headerlink" title="编程范式"></a>编程范式</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/7008369009628282894">https://juejin.cn/post/7008369009628282894</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.freecodecamp.org/chinese/news/an-introduction-to-programming-paradigms/">https://www.freecodecamp.org/chinese/news/an-introduction-to-programming-paradigms/</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/282291911">https://zhuanlan.zhihu.com/p/282291911</a></li>
+<li><a target="_blank" rel="noopener" href="https://wx-chevalier.github.io/books/designpattern-notes/01.%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/">https://wx-chevalier.github.io/books/designpattern-notes/01.%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/</a></li>
+<li><a target="_blank" rel="noopener" href="https://seekplum.github.io/programming-paradigm/">https://seekplum.github.io/programming-paradigm/</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Programming_paradigm">https://en.wikipedia.org/wiki/Programming_paradigm</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stream_processing">https://en.wikipedia.org/wiki/Stream_processing</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/202309/ThingsBoard%E5%88%9D%E6%8E%A2/" rel="prev" title="ThingsBoard初探">
+      <i class="fa fa-chevron-left"></i> ThingsBoard初探
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/202312/SRS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="next" title="SRS学习笔记">
+      SRS学习笔记 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84"><span class="nav-number">1.</span> <span class="nav-text">学习路径</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java8"><span class="nav-number">2.</span> <span class="nav-text">Java8</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Netty"><span class="nav-number">3.</span> <span class="nav-text">Netty</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VertX"><span class="nav-number">4.</span> <span class="nav-text">VertX</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reactor"><span class="nav-number">5.</span> <span class="nav-text">Reactor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WebFlux"><span class="nav-number">6.</span> <span class="nav-text">WebFlux</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HsWeb"><span class="nav-number">7.</span> <span class="nav-text">HsWeb</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#r2dbc"><span class="nav-number">8.</span> <span class="nav-text">r2dbc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E5%AE%83%E5%B7%A5%E5%85%B7"><span class="nav-number">9.</span> <span class="nav-text">其它工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#BlockHound"><span class="nav-number">9.1.</span> <span class="nav-text">BlockHound</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reactor-ql"><span class="nav-number">9.2.</span> <span class="nav-text">reactor-ql</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E5%AE%83%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">10.</span> <span class="nav-text">其它参考文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F"><span class="nav-number">11.</span> <span class="nav-text">编程范式</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">273</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

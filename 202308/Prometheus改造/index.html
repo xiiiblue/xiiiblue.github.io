@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="参考 https:&#x2F;&#x2F;github.com&#x2F;prometheus-community&#x2F;helm-charts https:&#x2F;&#x2F;artifacthub.io&#x2F;packages&#x2F;helm&#x2F;prometheus-community&#x2F;prometheus  helm方式安装123456789101112131415161718# 安装helm repo add prometheus-community h">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Prometheus改造">
+<meta property="og:url" content="http://www.bluexiii.com/202308/Prometheus%E6%94%B9%E9%80%A0/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="参考 https:&#x2F;&#x2F;github.com&#x2F;prometheus-community&#x2F;helm-charts https:&#x2F;&#x2F;artifacthub.io&#x2F;packages&#x2F;helm&#x2F;prometheus-community&#x2F;prometheus  helm方式安装123456789101112131415161718# 安装helm repo add prometheus-community h">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-08-17T02:45:54.523Z">
+<meta property="article:modified_time" content="2024-06-27T03:23:16.471Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.bluexiii.com/202308/Prometheus%E6%94%B9%E9%80%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Prometheus改造 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202308/Prometheus%E6%94%B9%E9%80%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Prometheus改造
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-08-17 10:45:54" itemprop="dateCreated datePublished" datetime="2023-08-17T10:45:54+08:00">2023-08-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-06-27 11:23:16" itemprop="dateModified" datetime="2024-06-27T11:23:16+08:00">2024-06-27</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/prometheus-community/helm-charts">https://github.com/prometheus-community/helm-charts</a></li>
+<li><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/prometheus-community/prometheus">https://artifacthub.io/packages/helm/prometheus-community/prometheus</a></li>
+</ul>
+<h2 id="helm方式安装"><a href="#helm方式安装" class="headerlink" title="helm方式安装"></a>helm方式安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">helm repo add prometheus-community https://prometheus-community.github.io/helm-charts</span><br><span class="line">helm repo update</span><br><span class="line">helm install prometheus prometheus-community/prometheus  --namespace prometheus --create-namespace</span><br><span class="line"></span><br><span class="line"><span class="comment"># UI</span></span><br><span class="line">http://prometheus-server.prometheus:80  <span class="comment"># DNS</span></span><br><span class="line">http://10.193.36.41:30022   <span class="comment"># NodePort</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">prometheus-prometheus-node-exporter.prometheus</span><br><span class="line">node-exporter.kubesphere-monitoring-system</span><br><span class="line">prometheus-k8s.kubesphere-monitoring-system</span><br><span class="line"></span><br><span class="line"><span class="comment"># 打开prometheus</span></span><br><span class="line">kubectl port-forward --namespace kubesphere-monitoring-system service/prometheus-k8s 9090:9090</span><br><span class="line">open http://localhost:9090</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="pom-xml配置"><a href="#pom-xml配置" class="headerlink" title="pom.xml配置"></a>pom.xml配置</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.micrometer<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>micrometer-registry-prometheus<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.3.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="Nacos配置"><a href="#Nacos配置" class="headerlink" title="Nacos配置"></a>Nacos配置</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">management:</span></span><br><span class="line">  <span class="attr">endpoints:</span></span><br><span class="line">    <span class="attr">web:</span></span><br><span class="line">      <span class="attr">exposure:</span></span><br><span class="line">        <span class="attr">include:</span> <span class="string">&#x27;health,prometheus&#x27;</span></span><br></pre></td></tr></table></figure>
+<h2 id="临时测试"><a href="#临时测试" class="headerlink" title="临时测试"></a>临时测试</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 本机测试</span></span><br><span class="line"><span class="built_in">cd</span> /Users/bluexiii/Documents/code/devops/dubhe-app/dubhe-metadata/dubhe-metadata-biz/target</span><br><span class="line"><span class="built_in">export</span> NACOS_HOST=10.193.36.41</span><br><span class="line"><span class="built_in">export</span> NACOS_PORT=30101</span><br><span class="line"><span class="built_in">export</span> NACOS_USERNAME=nacos</span><br><span class="line"><span class="built_in">export</span> NACOS_PASSWORD=nacos</span><br><span class="line">java -jar dubhe-metadata-biz.jar</span><br><span class="line">open http://localhost:8600/actuator/prometheus</span><br><span class="line"></span><br><span class="line"><span class="comment"># K8S测试 dubhe-metadata.dubhe-dev</span></span><br><span class="line">kubectl port-forward --namespace dubhe-dev service/dubhe-metadata 8600:8600</span><br><span class="line">open http://localhost:8600/actuator/prometheus</span><br></pre></td></tr></table></figure>
+<h2 id="prometheus配置"><a href="#prometheus配置" class="headerlink" title="prometheus配置"></a>prometheus配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- job_name: <span class="string">&quot;应用详细指标&quot;</span></span><br><span class="line">  metrics_path: <span class="string">&quot;/actuator/prometheus&quot;</span></span><br><span class="line">  static_configs:</span><br><span class="line">    - targets:</span><br><span class="line">        [</span><br><span class="line">          <span class="string">&quot;dubhe-metadata.dubhe-dev:8600&quot;</span>,</span><br><span class="line">          <span class="string">&quot;dubhe-quality.dubhe-dev:8604&quot;</span></span><br><span class="line">        ]</span><br><span class="line">      labels:</span><br><span class="line">        application: <span class="string">&quot;开发环境&quot;</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Grafana-配置"><a href="#Grafana-配置" class="headerlink" title="Grafana 配置"></a>Grafana 配置</h2><p>复用Loki的Grafana:<br><a target="_blank" rel="noopener" href="http://10.193.36.41:30016/">http://10.193.36.41:30016</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/202308/SkyWalking%E9%83%A8%E7%BD%B2/" rel="prev" title="SkyWalking部署">
+      <i class="fa fa-chevron-left"></i> SkyWalking部署
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/202309/%E7%89%A9%E8%81%94%E7%BD%91%E5%B9%B3%E5%8F%B0%E9%80%89%E5%9E%8B/" rel="next" title="物联网平台选型">
+      物联网平台选型 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#helm%E6%96%B9%E5%BC%8F%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">helm方式安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pom-xml%E9%85%8D%E7%BD%AE"><span class="nav-number">3.</span> <span class="nav-text">pom.xml配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Nacos%E9%85%8D%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">Nacos配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%B4%E6%97%B6%E6%B5%8B%E8%AF%95"><span class="nav-number">5.</span> <span class="nav-text">临时测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#prometheus%E9%85%8D%E7%BD%AE"><span class="nav-number">6.</span> <span class="nav-text">prometheus配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Grafana-%E9%85%8D%E7%BD%AE"><span class="nav-number">7.</span> <span class="nav-text">Grafana 配置</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">273</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

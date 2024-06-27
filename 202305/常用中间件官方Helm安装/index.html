@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="MySQLhttps:&#x2F;&#x2F;artifacthub.io&#x2F;packages&#x2F;helm&#x2F;bitnami&#x2F;mysql 123456789101112131415161718192021# 添加仓库helm repo add bitnami https:&#x2F;&#x2F;charts.bitnami.com&#x2F;bitnamihelm repo update# 拉取chart(可选)helm pull bitnami&#x2F;my">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常用中间件官方Helm安装">
+<meta property="og:url" content="http://www.bluexiii.com/202305/%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%98%E6%96%B9Helm%E5%AE%89%E8%A3%85/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="MySQLhttps:&#x2F;&#x2F;artifacthub.io&#x2F;packages&#x2F;helm&#x2F;bitnami&#x2F;mysql 123456789101112131415161718192021# 添加仓库helm repo add bitnami https:&#x2F;&#x2F;charts.bitnami.com&#x2F;bitnamihelm repo update# 拉取chart(可选)helm pull bitnami&#x2F;my">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-05-29T06:25:09.000Z">
+<meta property="article:modified_time" content="2024-06-27T03:24:06.989Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.bluexiii.com/202305/%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%98%E6%96%B9Helm%E5%AE%89%E8%A3%85/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>常用中间件官方Helm安装 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202305/%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%98%E6%96%B9Helm%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          常用中间件官方Helm安装
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-29 14:25:09" itemprop="dateCreated datePublished" datetime="2023-05-29T14:25:09+08:00">2023-05-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-06-27 11:24:06" itemprop="dateModified" datetime="2024-06-27T11:24:06+08:00">2024-06-27</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/mysql">https://artifacthub.io/packages/helm/bitnami/mysql</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/mysql --version 9.9.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami mysql 9.9.1</span><br><span class="line">helm install mysql ./mysql --namespace mysql --create-namespace</span><br><span class="line">helm status mysql -n mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># DNS</span></span><br><span class="line">mysql.mysql.svc.cluster.local:3306</span><br><span class="line"><span class="comment"># 查看root用户名</span></span><br><span class="line">MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace mysql mysql -o jsonpath=<span class="string">&quot;&#123;.data.mysql-root-password&#125;&quot;</span> | base64 -d)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$MYSQL_ROOT_PASSWORD</span>  <span class="comment"># rVrmiKcXOo</span></span><br><span class="line"><span class="comment"># 运行客户端</span></span><br><span class="line">kubectl run mysql-client --rm --tty -i --restart=<span class="string">&#x27;Never&#x27;</span> --image  docker.io/bitnami/mysql:8.0.33-debian-11-r7 --namespace mysql --env MYSQL_ROOT_PASSWORD=<span class="variable">$MYSQL_ROOT_PASSWORD</span> --<span class="built_in">command</span> -- bash</span><br><span class="line">mysql -h mysql.mysql.svc.cluster.local -uroot -p<span class="string">&quot;<span class="variable">$MYSQL_ROOT_PASSWORD</span>&quot;</span></span><br><span class="line"><span class="comment"># 本机port-forward</span></span><br><span class="line">kubectl port-forward --namespace mysql svc/mysql 3306:3306</span><br></pre></td></tr></table></figure>
+<h2 id="Redis"><a href="#Redis" class="headerlink" title="Redis"></a>Redis</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/redis">https://artifacthub.io/packages/helm/bitnami/redis</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo bitnami/redis --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/redis --version 17.10.3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami redis 17.10.3</span><br><span class="line">helm install redis ./redis --namespace redis --create-namespace</span><br><span class="line">helm status redis -n redis</span><br><span class="line"></span><br><span class="line"><span class="comment"># DNS</span></span><br><span class="line">redis-master.redis.svc.cluster.local <span class="keyword">for</span> <span class="built_in">read</span>/write operations (port 6379)</span><br><span class="line">redis-replicas.redis.svc.cluster.local <span class="keyword">for</span> read-only operations (port 6379)</span><br><span class="line"><span class="comment"># 查看密码</span></span><br><span class="line"><span class="built_in">export</span> REDIS_PASSWORD=$(kubectl get secret --namespace redis redis -o jsonpath=<span class="string">&quot;&#123;.data.redis-password&#125;&quot;</span> | base64 -d)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$REDIS_PASSWORD</span> <span class="comment"># 4BEkvq5vdW</span></span><br><span class="line"><span class="comment"># 运行Client</span></span><br><span class="line">kubectl run --namespace redis redis-client --restart=<span class="string">&#x27;Never&#x27;</span>  --env REDIS_PASSWORD=<span class="variable">$REDIS_PASSWORD</span>  --image docker.io/bitnami/redis:7.0.11-debian-11-r7 --<span class="built_in">command</span> -- sleep infinity</span><br><span class="line">kubectl <span class="built_in">exec</span> --tty -i redis-client --namespace redis -- bash</span><br><span class="line">REDISCLI_AUTH=<span class="string">&quot;<span class="variable">$REDIS_PASSWORD</span>&quot;</span> redis-cli -h redis-master</span><br><span class="line"><span class="comment"># 本机port-forward</span></span><br><span class="line">kubectl port-forward --namespace redis svc/redis-master 6379:6379</span><br><span class="line">REDISCLI_AUTH=<span class="string">&quot;<span class="variable">$REDIS_PASSWORD</span>&quot;</span> redis-cli -h 127.0.0.1 -p 6379</span><br></pre></td></tr></table></figure>
+<h2 id="Zookeeper"><a href="#Zookeeper" class="headerlink" title="Zookeeper"></a>Zookeeper</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/zookeeper">https://artifacthub.io/packages/helm/bitnami/zookeeper</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo bitnami/zookeeper --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/zookeeper --version 11.3.2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami zookeeper 11.3.2</span><br><span class="line">helm install zookeeper ./zookeeper --namespace zookeeper --create-namespace</span><br><span class="line">helm status zookeeper -n zookeeper</span><br><span class="line"></span><br><span class="line"><span class="comment"># DNS</span></span><br><span class="line">zookeeper.zookeeper.svc.cluster.local</span><br><span class="line"><span class="comment"># 客户端</span></span><br><span class="line"><span class="built_in">export</span> POD_NAME=$(kubectl get pods --namespace zookeeper -l <span class="string">&quot;app.kubernetes.io/name=zookeeper,app.kubernetes.io/instance=zookeeper,app.kubernetes.io/component=zookeeper&quot;</span> -o jsonpath=<span class="string">&quot;&#123;.items[0].metadata.name&#125;&quot;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$POD_NAME</span></span><br><span class="line">kubectl <span class="built_in">exec</span> -it  --namespace zookeeper <span class="variable">$POD_NAME</span> -- zkCli.sh</span><br><span class="line"><span class="comment"># 本机port-forward</span></span><br><span class="line">kubectl port-forward --namespace zookeeper svc/zookeeper 2181:2181</span><br><span class="line">zkCli.sh 127.0.0.1:2181</span><br></pre></td></tr></table></figure>
+<h2 id="Minio"><a href="#Minio" class="headerlink" title="Minio"></a>Minio</h2><p><a target="_blank" rel="noopener" href="https://helm.min.io/">https://helm.min.io/</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add minio https://helm.min.io/</span><br><span class="line">helm update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo minio/minio --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull minio/minio --version 8.0.10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart minio minio 8.0.10</span><br><span class="line">helm install minio ./minio --namespace minio --create-namespace</span><br><span class="line">helm status minio -n minio</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本机portforward</span></span><br><span class="line"><span class="built_in">export</span> POD_NAME=$(kubectl get pods --namespace minio -l <span class="string">&quot;release=minio&quot;</span> -o jsonpath=<span class="string">&quot;&#123;.items[0].metadata.name&#125;&quot;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$POD_NAME</span></span><br><span class="line">kubectl port-forward <span class="variable">$POD_NAME</span> 9000 --namespace minio</span><br><span class="line"><span class="comment"># 查看access_key/secret_key</span></span><br><span class="line">ACCESS_KEY=$(kubectl get secret minio --namespace minio -o jsonpath=<span class="string">&quot;&#123;.data.accesskey&#125;&quot;</span> | base64 --decode) </span><br><span class="line">SECRET_KEY=$(kubectl get secret minio --namespace minio -o jsonpath=<span class="string">&quot;&#123;.data.secretkey&#125;&quot;</span> | base64 --decode)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$ACCESS_KEY</span> <span class="variable">$SECRET_KEY</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/nginx">https://artifacthub.io/packages/helm/bitnami/nginx</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo bitnami/nginx --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/nginx --version 14.2.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami nginx 14.2.1</span><br><span class="line">helm install nginx ./nginx --namespace nginx --create-namespace</span><br><span class="line">helm status nginx -n nginx</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> SERVICE_PORT=$(kubectl get --namespace nginx -o jsonpath=<span class="string">&quot;&#123;.spec.ports[0].port&#125;&quot;</span> services nginx)</span><br><span class="line"><span class="built_in">export</span> SERVICE_IP=$(kubectl get svc --namespace nginx nginx -o jsonpath=<span class="string">&#x27;&#123;.status.loadBalancer.ingress[0].ip&#125;&#x27;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;http://<span class="variable">$&#123;SERVICE_IP&#125;</span>:<span class="variable">$&#123;SERVICE_PORT&#125;</span>&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="Neo4j"><a href="#Neo4j" class="headerlink" title="Neo4j"></a>Neo4j</h2><p><a target="_blank" rel="noopener" href="https://github.com/neo4j-contrib/neo4j-helm">https://github.com/neo4j-contrib/neo4j-helm</a><br><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/neo4j-helm-charts/neo4j">https://artifacthub.io/packages/helm/neo4j-helm-charts/neo4j</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编辑镜像清单</span></span><br><span class="line">dockemon edit</span><br><span class="line">neo4j:4.4.10-enterprise</span><br><span class="line">gcr.io/neo4j-helm/restore:4.1.0-1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 推送离线镜像</span></span><br><span class="line">dockemon image</span><br><span class="line"></span><br><span class="line"><span class="comment"># 手工下载Chart</span></span><br><span class="line">https://github.com/neo4j-contrib/neo4j-helm/releases</span><br><span class="line">tar -zxvf neo4j-4.4.10.1.tgz &amp; <span class="built_in">cd</span> neo4j</span><br><span class="line"><span class="comment"># 注意修改values.yaml，pvc.size改小</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Chart安装</span></span><br><span class="line">helm install neo4j ./neo4j --<span class="built_in">set</span> core.standalone=<span class="literal">true</span> --<span class="built_in">set</span> acceptLicenseAgreement=yes --<span class="built_in">set</span> neo4jPassword=abcd1234 --namespace neo4j --create-namespace</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/202305/Longhorn%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" rel="prev" title="Longhorn离线部署">
+      <i class="fa fa-chevron-left"></i> Longhorn离线部署
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/202305/Rancher%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" rel="next" title="Rancher离线部署">
+      Rancher离线部署 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL"><span class="nav-number">1.</span> <span class="nav-text">MySQL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis"><span class="nav-number">2.</span> <span class="nav-text">Redis</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zookeeper"><span class="nav-number">3.</span> <span class="nav-text">Zookeeper</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Minio"><span class="nav-number">4.</span> <span class="nav-text">Minio</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Nginx"><span class="nav-number">5.</span> <span class="nav-text">Nginx</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Neo4j"><span class="nav-number">6.</span> <span class="nav-text">Neo4j</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">273</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -148,7 +148,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201803/HBase%E5%AE%89%E8%A3%85/">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202008/%E5%B8%B8%E7%94%A8%E6%8E%A8%E6%B5%81%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -162,7 +162,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201803/HBase%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Ubuntu16.04下HBase安装笔记</a>
+            <a href="/202008/%E5%B8%B8%E7%94%A8%E6%8E%A8%E6%B5%81%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7/" class="post-title-link" itemprop="url">常用推流测试工具</a>
         </h2>
 
         <div class="post-meta">
@@ -172,15 +172,8 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2018-03-27 13:34:29" itemprop="dateCreated datePublished" datetime="2018-03-27T13:34:29+08:00">2018-03-27</time>
+              <time title="Created: 2021-01-05 14:04:17" itemprop="dateCreated datePublished" datetime="2021-01-05T14:04:17+08:00">2021-01-05</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:30:08" itemprop="dateModified" datetime="2018-11-06T15:30:08+08:00">2018-11-06</time>
-              </span>
 
           
 
@@ -193,566 +186,110 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="基础准备"><a href="#基础准备" class="headerlink" title="基础准备"></a>基础准备</h2><ul>
-<li>JDK</li>
-<li>Hadoop</li>
-<li>SSH Server</li>
-</ul>
-<h2 id="下载HBase"><a href="#下载HBase" class="headerlink" title="下载HBase"></a>下载HBase</h2><p><a target="_blank" rel="noopener" href="https://hbase.apache.org/">https://hbase.apache.org/</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf hbase-1.4.2-bin.tar.gz</span><br><span class="line">sudo mv hbase-1.4.2 &#x2F;opt&#x2F;hbase</span><br></pre></td></tr></table></figure>
-<h2 id="系统环境变量"><a href="#系统环境变量" class="headerlink" title="系统环境变量"></a>系统环境变量</h2><p>export HBASE_MANAGES_ZK=true<br>export HBASE_HOME=/opt/hbase<br>export PATH=$PATH:/opt/hbase/bin</p>
-<h2 id="写死JAVA-HOME"><a href="#写死JAVA-HOME" class="headerlink" title="写死JAVA_HOME"></a>写死JAVA_HOME</h2><p>vi ./conf/hbase-env.sh</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME&#x3D;&#x2F;usr&#x2F;lib&#x2F;jvm&#x2F;java-8-oracle&#x2F;jre&#x2F;</span><br></pre></td></tr></table></figure>
-<h2 id="单机模式配置"><a href="#单机模式配置" class="headerlink" title="单机模式配置"></a>单机模式配置</h2><p>vi hbase-site.xml</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.rootdir&lt;&#x2F;name&gt;</span><br><span class="line">        &lt;value&gt;file:&#x2F;&#x2F;&#x2F;tmp&#x2F;hbase-$&#123;user.name&#125;&#x2F;hbase&lt;&#x2F;value&gt;</span><br><span class="line">    &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<h2 id="伪分布模式配置"><a href="#伪分布模式配置" class="headerlink" title="伪分布模式配置"></a>伪分布模式配置</h2><p>vi hbase-site.xml</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.rootdir&lt;&#x2F;name&gt;</span><br><span class="line">        &lt;value&gt;hdfs:&#x2F;&#x2F;localhost:9000&#x2F;hbase&lt;&#x2F;value&gt;</span><br><span class="line">    &lt;&#x2F;property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.cluster.distributed&lt;&#x2F;name&gt;</span><br><span class="line">        &lt;value&gt;true&lt;&#x2F;value&gt;</span><br><span class="line">    &lt;&#x2F;property&gt;</span><br><span class="line">&lt;&#x2F;configuration&gt;</span><br></pre></td></tr></table></figure>
-<p>启动Hadoop：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;start-all.sh</span><br></pre></td></tr></table></figure>
-<h2 id="Hbase启停"><a href="#Hbase启停" class="headerlink" title="Hbase启停"></a>Hbase启停</h2><p>启停:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;bin&#x2F;start-hbase.sh</span><br><span class="line">.&#x2F;bin&#x2F;stop-hbase.sh</span><br></pre></td></tr></table></figure>
-<p>查看进程：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jps</span><br></pre></td></tr></table></figure>
-<p>WEB控制台:<br><a target="_blank" rel="noopener" href="http://localhost:45005/master-status">http://localhost:45005/master-status</a></p>
-<h2 id="HBase-Shell"><a href="#HBase-Shell" class="headerlink" title="HBase Shell"></a>HBase Shell</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;bin&#x2F;hbase shell</span><br><span class="line">help</span><br></pre></td></tr></table></figure>
-
-<p>常用命令：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">status</span><br><span class="line">create &#39;test&#39;, &#39;cf&#39;</span><br><span class="line">list &#39;test&#39;</span><br><span class="line">describe &#39;test&#39;</span><br><span class="line"></span><br><span class="line">disable &#39;test&#39;</span><br><span class="line">drop &#39;test&#39;</span><br><span class="line">exists &#39;test&#39;</span><br><span class="line"></span><br><span class="line">put &#39;test&#39;, &#39;row1&#39;, &#39;cf:a&#39;, &#39;value1&#39;</span><br><span class="line">put &#39;test&#39;, &#39;row2&#39;, &#39;cf:b&#39;, &#39;value2&#39;</span><br><span class="line">put &#39;test&#39;, &#39;row3&#39;, &#39;cf:c&#39;, &#39;value3&#39;</span><br><span class="line"></span><br><span class="line">scan &#39;test&#39;</span><br><span class="line">get &#39;test&#39;, &#39;row1&#39;</span><br></pre></td></tr></table></figure>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8818e8d40da4">https://www.jianshu.com/p/8818e8d40da4</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/352213f109e5">https://www.jianshu.com/p/352213f109e5</a><br><a target="_blank" rel="noopener" href="https://www.shiyanlou.com/courses/37">https://www.shiyanlou.com/courses/37</a><br><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html">https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201803/Ubuntu%E4%B8%8B%E5%BC%80%E5%90%AFIDEA%E5%90%88%E5%B1%80%E8%8F%9C%E5%8D%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201803/Ubuntu%E4%B8%8B%E5%BC%80%E5%90%AFIDEA%E5%90%88%E5%B1%80%E8%8F%9C%E5%8D%95/" class="post-title-link" itemprop="url">Ubuntu下开启IntelliJ IDEA顶部全局菜单</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-03-27 13:32:41" itemprop="dateCreated datePublished" datetime="2018-03-27T13:32:41+08:00">2018-03-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:31:04" itemprop="dateModified" datetime="2018-11-06T15:31:04+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="安装jayatana"><a href="#安装jayatana" class="headerlink" title="安装jayatana"></a>安装jayatana</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:danjaredg&#x2F;jayatana</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install jayatana</span><br></pre></td></tr></table></figure>
-<h2 id="编辑idea64-vmoptions"><a href="#编辑idea64-vmoptions" class="headerlink" title="编辑idea64.vmoptions"></a>编辑idea64.vmoptions</h2><p>vi /path/to/idea/bin/idea64.vmoptions<br>追加一行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-javaagent:&#x2F;usr&#x2F;share&#x2F;java&#x2F;jayatanaag.jar</span><br></pre></td></tr></table></figure>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000060530--Ubuntu-No-global-menu-with-Jayatana">https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000060530--Ubuntu-No-global-menu-with-Jayatana</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201803/Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85instantclient/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201803/Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85instantclient/" class="post-title-link" itemprop="url">Ubuntu 16.04下安装InstantClient12.2</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-03-27 13:31:28" itemprop="dateCreated datePublished" datetime="2018-03-27T13:31:28+08:00">2018-03-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:30:54" itemprop="dateModified" datetime="2018-11-06T15:30:54+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><p><a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/database/database-technologies/instant-client/downloads/index.html">http://www.oracle.com/technetwork/database/database-technologies/instant-client/downloads/index.html</a></p>
-<p>选择：<br>Instant Client for Linux x86-64</p>
-<p>下载以下两个ZIP包：</p>
+          <h2 id="Android推流"><a href="#Android推流" class="headerlink" title="Android推流"></a>Android推流</h2><h3 id="RTSP-Camera"><a href="#RTSP-Camera" class="headerlink" title="RTSP Camera"></a>RTSP Camera</h3><p><a target="_blank" rel="noopener" href="https://play.google.com/store/apps/details?id=com.miv.rtspcamera&amp;hl=zh">https://play.google.com/store/apps/details?id=com.miv.rtspcamera&amp;hl=zh</a></p>
+<p>播流地址：  </p>
 <ul>
-<li>instantclient-basic-linux.x64-12.2.0.1.0.zip  </li>
-<li>instantclient-sqlplus-linux.x64-12.2.0.1.0.zip  </li>
+<li>RTSP  rtsp://10.10.38.141:5554</li>
+<li>HLS   <a target="_blank" rel="noopener" href="http://10.10.38.141:8080/playlist.m3u">http://10.10.38.141:8080/playlist.m3u</a></li>
 </ul>
-<h2 id="解压安装"><a href="#解压安装" class="headerlink" title="解压安装"></a>解压安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">unzip instantclient-basic-linux.x64-12.2.0.1.0.zip</span><br><span class="line">unzip instantclient-sqlplus-linux.x64-12.2.0.1.0.zip</span><br><span class="line">sudo mv instantclient_12_2 &#x2F;opt&#x2F;instantclient</span><br></pre></td></tr></table></figure>
-<h2 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export ORACLE_HOME&#x3D;&#x2F;opt&#x2F;instantclient</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;&#x2F;opt&#x2F;instantclient</span><br><span class="line">export TNS_ADMIN&#x3D;&#x2F;opt&#x2F;instantclient</span><br><span class="line">export PATH&#x3D;$PATH:&#x2F;opt&#x2F;instantclient</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201803/Phoenix%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201803/Phoenix%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Ubuntu16.04下Phoenix安装笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-03-26 09:57:55" itemprop="dateCreated datePublished" datetime="2018-03-26T09:57:55+08:00">2018-03-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:30:18" itemprop="dateModified" datetime="2018-11-06T15:30:18+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Phoenix与Hive区别"><a href="#Phoenix与Hive区别" class="headerlink" title="Phoenix与Hive区别"></a>Phoenix与Hive区别</h2><p>Hive是HDFS的SQL层，适用于非实时场景<br>Phoenix是HBase的SQL层，适用于实时查询</p>
-<h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://phoenix.apache.org/">https://phoenix.apache.org/</a></p>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiangxizhishi/article/details/77203478">https://blog.csdn.net/xiangxizhishi/article/details/77203478</a> Hive、HBase、Impala的简单对比<br><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/41254468">https://www.zhihu.com/question/41254468</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/d862337247b1">https://www.jianshu.com/p/d862337247b1</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201803/Ubuntu%E8%BF%9E%E6%8E%A5Android%E6%89%8B%E6%9C%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201803/Ubuntu%E8%BF%9E%E6%8E%A5Android%E6%89%8B%E6%9C%BA/" class="post-title-link" itemprop="url">Ubuntu连接Android手机</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-03-22 15:46:21" itemprop="dateCreated datePublished" datetime="2018-03-22T15:46:21+08:00">2018-03-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:31:35" itemprop="dateModified" datetime="2018-11-06T15:31:35+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="解决Ubuntu无法识别Android手机的问题"><a href="#解决Ubuntu无法识别Android手机的问题" class="headerlink" title="解决Ubuntu无法识别Android手机的问题"></a>解决Ubuntu无法识别Android手机的问题</h2><ol>
-<li>安装mtp相关的包：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libmtp-common mtp-tools libmtp-dev libmtp-runtime libmtp9</span><br></pre></td></tr></table></figure></li>
-<li>查看手机的USB信息<br>执行：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsusb</span><br></pre></td></tr></table></figure>
-记录下新增的一条USB设备的信息，以坚果Pro1为例：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bus 002 Device 011: ID 29a9:7020  </span><br></pre></td></tr></table></figure></li>
-<li>编辑69-libmtp.rules<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi &#x2F;lib&#x2F;udev&#x2F;rules.d&#x2F;69-libmtp.rules</span><br></pre></td></tr></table></figure>
-新增一行：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ATTR&#123;idVendor&#125;&#x3D;&#x3D;&quot;29a9&quot;, ATTR&#123;idProduct&#125;&#x3D;&#x3D;&quot;7020&quot;, SYMLINK+&#x3D;&quot;libmtp-%k&quot;, ENV&#123;ID_MTP_DEVICE&#125;&#x3D;&quot;1&quot;, ENV&#123;ID_MEDIA_PLAYER&#125;&#x3D;&quot;1&quot;</span><br></pre></td></tr></table></figure>
-注意替换掉其中的idVendor和idProduct</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201803/ubuntu%E4%B8%8B%E8%A7%A3%E5%86%B3Flash%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201803/ubuntu%E4%B8%8B%E8%A7%A3%E5%86%B3Flash%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">Ubuntu下解决Flash中文乱码问题</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-03-22 14:39:55" itemprop="dateCreated datePublished" datetime="2018-03-22T14:39:55+08:00">2018-03-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:31:15" itemprop="dateModified" datetime="2018-11-06T15:31:15+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="修改sansserif-conf"><a href="#修改sansserif-conf" class="headerlink" title="修改sansserif.conf"></a>修改sansserif.conf</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo cp &#x2F;etc&#x2F;fonts&#x2F;conf.d&#x2F;49-sansserif.conf &#x2F;etc&#x2F;fonts&#x2F;conf.d&#x2F;49-sansserif.conf.bak</span><br><span class="line"></span><br><span class="line">sudo vi &#x2F;etc&#x2F;fonts&#x2F;conf.d&#x2F;49-sansserif.conf</span><br></pre></td></tr></table></figure>
-<p>倒数第4行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;string&gt;sans-serif&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
-<p>改为</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;string&gt;sans&lt;&#x2F;string&gt;</span><br></pre></td></tr></table></figure>
-<h2 id="其它相关操作"><a href="#其它相关操作" class="headerlink" title="其它相关操作"></a>其它相关操作</h2><p>查看所有字体</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fc-list</span><br></pre></td></tr></table></figure>
-<p>查看中文字体</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fc-list :lang&#x3D;zh-cn</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201803/Ubuntu%E4%BB%8EU%E7%9B%98%E5%88%B6%E4%BD%9CISO%E9%95%9C%E5%83%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201803/Ubuntu%E4%BB%8EU%E7%9B%98%E5%88%B6%E4%BD%9CISO%E9%95%9C%E5%83%8F/" class="post-title-link" itemprop="url">Ubuntu从U盘制作ISO镜像</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-03-22 13:40:27" itemprop="dateCreated datePublished" datetime="2018-03-22T13:40:27+08:00">2018-03-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:31:26" itemprop="dateModified" datetime="2018-11-06T15:31:26+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="从启动U盘制作ISO镜像"><a href="#从启动U盘制作ISO镜像" class="headerlink" title="从启动U盘制作ISO镜像"></a>从启动U盘制作ISO镜像</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dd if&#x3D;&#x2F;dev&#x2F;sdx of&#x3D;&#x2F;path&#x2F;to&#x2F;new.iso</span><br></pre></td></tr></table></figure>
-<h2 id="从ISO镜像制作启动U盘"><a href="#从ISO镜像制作启动U盘" class="headerlink" title="从ISO镜像制作启动U盘"></a>从ISO镜像制作启动U盘</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dd if&#x3D;&#x2F;path&#x2F;to&#x2F;iso of&#x3D;&#x2F;dev&#x2F;sdx</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201801/gitflow%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201801/gitflow%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">gitflow笔记</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2018-01-22 11:09:54" itemprop="dateCreated datePublished" datetime="2018-01-22T11:09:54+08:00">2018-01-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>macOS:  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install git-flow-avh</span><br></pre></td></tr></table></figure>
-<p>Ubuntu:  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install git-flow</span><br></pre></td></tr></table></figure>
-<p>Windows:  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -q -O - --no-check-certificate https:&#x2F;&#x2F;raw.github.com&#x2F;petervanderdoes&#x2F;gitflow-avh&#x2F;develop&#x2F;contrib&#x2F;gitflow-installer.sh install stable | bash</span><br></pre></td></tr></table></figure>
-<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>在一个已有的版本库中执行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow init</span><br></pre></td></tr></table></figure>
+<h3 id="RTMP-Camera"><a href="#RTMP-Camera" class="headerlink" title="RTMP Camera"></a>RTMP Camera</h3><p><a target="_blank" rel="noopener" href="https://play.google.com/store/apps/details?id=com.miv.rtmpcamera&amp;hl=en_US">https://play.google.com/store/apps/details?id=com.miv.rtmpcamera&amp;hl=en_US</a></p>
+<p>RTMP推流：<br>rtmp://10.30.22.242:1935/hls/mystream</p>
 <blockquote>
-<p>默认有master及develop两个长期分支</p>
+<p>需要提前搭建nginx-with-rtmp</p>
 </blockquote>
-<h2 id="分支说明"><a href="#分支说明" class="headerlink" title="分支说明"></a>分支说明</h2><p>主要分支：</p>
-<ul>
-<li>master: 永远处在即将发布(production-ready)状态</li>
-<li>develop: 最新的开发状态</li>
-</ul>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-01-22-11-08-40.png" alt="2018-01-22-11-08-40"></p>
-<p>辅助分支：</p>
-<ul>
-<li>feature: 开发新功能的分支, 基于 develop, 完成后 merge 回 develop</li>
-<li>release: 准备要发布版本的分支, 用来修复 bug. 基于 develop, 完成后 merge 回 develop 和 master</li>
-<li>hotfix: 修复 master 上的问题, 等不及 release 版本就必须马上上线. 基于 master, 完成后 merge 回 master 和 develop</li>
-</ul>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-01-22-11-09-25.png" alt="2018-01-22-11-09-25"></p>
-<h2 id="Feature-新特性"><a href="#Feature-新特性" class="headerlink" title="Feature 新特性"></a>Feature 新特性</h2><h3 id="新特性帮助"><a href="#新特性帮助" class="headerlink" title="新特性帮助"></a>新特性帮助</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature help</span><br></pre></td></tr></table></figure>
-<h3 id="增加新特性"><a href="#增加新特性" class="headerlink" title="增加新特性"></a>增加新特性</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature start rss-feed</span><br></pre></td></tr></table></figure>
-<h3 id="完成新特性"><a href="#完成新特性" class="headerlink" title="完成新特性"></a>完成新特性</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature finish rss-feed</span><br></pre></td></tr></table></figure>
+<h2 id="OBS推流"><a href="#OBS推流" class="headerlink" title="OBS推流"></a>OBS推流</h2><p><a target="_blank" rel="noopener" href="https://obsproject.com/">https://obsproject.com/</a></p>
+<h2 id="ffmpeg推流"><a href="#ffmpeg推流" class="headerlink" title="ffmpeg推流"></a>ffmpeg推流</h2><h3 id="推视频文件"><a href="#推视频文件" class="headerlink" title="推视频文件"></a>推视频文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -i &#x2F;tmp&#x2F;test.mp4 -f flv rtmp:&#x2F;&#x2F;10.30.22.242:1935&#x2F;hls&#x2F;mystream</span><br><span class="line">ffmpeg -i &#x2F;tmp&#x2F;test2.flv -f flv rtmp:&#x2F;&#x2F;10.30.22.242:1935&#x2F;hls&#x2F;mystream</span><br></pre></td></tr></table></figure>
+<h3 id="推USB摄像头"><a href="#推USB摄像头" class="headerlink" title="推USB摄像头"></a>推USB摄像头</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># Windows列出设备</span><br><span class="line">ffplay -f dshow -i video&#x3D;&quot;USB2.0 Camera&quot;</span><br><span class="line"></span><br><span class="line"># macOS列出设备</span><br><span class="line">ffmpeg -f avfoundation -list_devices true -i &quot;&quot;</span><br><span class="line"></span><br><span class="line"># 只推摄像头</span><br><span class="line">ffmpeg -f avfoundation -framerate 30 -video_size 1280x720 -i &quot;0&quot; -vcodec libx264 -acodec libfaac -f flv rtmp:&#x2F;&#x2F;10.30.22.242:1935&#x2F;hls&#x2F;mystream</span><br><span class="line"></span><br><span class="line"># 推摄像头+麦克风</span><br><span class="line">ffmpeg -f avfoundation -framerate 30 -video_size 1280x720 -i &quot;0:1&quot; -vcodec libx264 -preset ultrafast -acodec libmp3lame -ar 44100 -ac 1 -f flv rtmp:&#x2F;&#x2F;10.30.22.242:1935&#x2F;hls&#x2F;mystream</span><br></pre></td></tr></table></figure>
+<h3 id="推桌面录屏"><a href="#推桌面录屏" class="headerlink" title="推桌面录屏"></a>推桌面录屏</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -f avfoundation -pixel_format uyvy422 -i &quot;1&quot; -f flv rtmp:&#x2F;&#x2F;10.30.22.242:1935&#x2F;hls&#x2F;mystream</span><br><span class="line">ffmpeg -f avfoundation -i &quot;1&quot; -vcodec libx264 -preset ultrafast -acodec libfaac -f flv rtmp:&#x2F;&#x2F;10.30.22.242:1935&#x2F;hls&#x2F;mystream</span><br></pre></td></tr></table></figure>
+      
+    </div>
 
-<h2 id="Publish-推送"><a href="#Publish-推送" class="headerlink" title="Publish 推送"></a>Publish 推送</h2><p>此部分为可选。新特性分支可以只存在于本机，不向远程仓库推送</p>
-<h3 id="推送新特性"><a href="#推送新特性" class="headerlink" title="推送新特性"></a>推送新特性</h3><p>可以使用publish命令将一个feature分支推到远程服务器</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature publish rss-feed</span><br></pre></td></tr></table></figure>
-<p>或者直接：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin feature&#x2F;rss-feed</span><br></pre></td></tr></table></figure>
-<h3 id="取得一个发布的新特性分支"><a href="#取得一个发布的新特性分支" class="headerlink" title="取得一个发布的新特性分支"></a>取得一个发布的新特性分支</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature pull origin rss-feed</span><br></pre></td></tr></table></figure>
-<h2 id="Release-发布"><a href="#Release-发布" class="headerlink" title="Release 发布"></a>Release 发布</h2><p>release分支是基于develop分支的</p>
-<h2 id="准备Release"><a href="#准备Release" class="headerlink" title="准备Release"></a>准备Release</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow release start 1.1.5</span><br><span class="line">Switched to a new branch &#39;release&#x2F;1.1.5&#39;</span><br></pre></td></tr></table></figure>
-<p>现在，可以在release/1.1.5分支，开始最后的准备工作，例如项目里的某些文件需要记录版本号</p>
-<h2 id="完成Release"><a href="#完成Release" class="headerlink" title="完成Release"></a>完成Release</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow release finish 1.1.5</span><br></pre></td></tr></table></figure>
-<p>git-flow自动做了以下事情：</p>
-<ol>
-<li>拉取远程仓库，以确保目前是最新的版本。</li>
-<li>release的内容会被合并到 master和develop两个分支中去，这样不仅产品代码为最新的版本，而且新的功能分支也将基于最新代码。</li>
-<li>为便于识别和做历史参考，release提交会被标记上这个release的名字（在我们的例子里是 1.1.5）</li>
-<li>清理操作，版本分支会被删除，并且回到develop</li>
-</ol>
-<h2 id="Hotfix-紧急修复"><a href="#Hotfix-紧急修复" class="headerlink" title="Hotfix 紧急修复"></a>Hotfix 紧急修复</h2><p>hotfix分支是基于master分支的</p>
-<h3 id="开始Hotfix"><a href="#开始Hotfix" class="headerlink" title="开始Hotfix"></a>开始Hotfix</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix start missing-link</span><br></pre></td></tr></table></figure>
-<h3 id="完成Hotfix"><a href="#完成Hotfix" class="headerlink" title="完成Hotfix"></a>完成Hotfix</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix finish VERSION</span><br></pre></td></tr></table></figure>
-<h2 id="命令汇总"><a href="#命令汇总" class="headerlink" title="命令汇总"></a>命令汇总</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-01-22-11-09-49.png" alt="2018-01-22-11-09-49"></p>
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202008/SRS%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202008/SRS%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">SRS配置笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-05 14:04:05" itemprop="dateCreated datePublished" datetime="2021-01-05T14:04:05+08:00">2021-01-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://ossrs.net/srs.release/releases/">http://ossrs.net/srs.release/releases/</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs">https://github.com/ossrs/srs</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs/wiki/v3_CN_Home">https://github.com/ossrs/srs/wiki/v3_CN_Home</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs/wiki/v3_CN_Docs">https://github.com/ossrs/srs/wiki/v3_CN_Docs</a></li>
+</ul>
+<h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://gitee.com/winlinvip/srs.oschina.git srs</span><br><span class="line"><span class="built_in">cd</span> srs/trunk </span><br><span class="line">git remote set-url origin https://github.com/ossrs/srs.git</span><br><span class="line">git pull</span><br><span class="line"></span><br><span class="line">./configure --osx</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">./objs/srs -c conf/srs.conf</span><br><span class="line">./objs/srs -c conf/hls.conf</span><br><span class="line">./objs/srs -c conf/http.flv.live.conf</span><br><span class="line">./objs/srs -c conf/dash.conf</span><br><span class="line"></span><br><span class="line">[2020-08-19 08:35:47.917][Trace][4124][388] RTMP listen at tcp://0.0.0.0:1935, fd=7</span><br><span class="line">[2020-08-19 08:35:47.917][Trace][4124][388] HTTP-Server listen at tcp://0.0.0.0:8080, fd=8</span><br><span class="line">[2020-08-19 08:35:47.929][Trace][4124][388] signal installed, reload=1, reopen=30, fast_quit=15, grace_quit=3</span><br><span class="line">[2020-08-19 08:35:47.929][Trace][4124][388] http: api mount /console to ./objs/nginx/html/console</span><br></pre></td></tr></table></figure>
+<h2 id="模拟推流"><a href="#模拟推流" class="headerlink" title="模拟推流"></a>模拟推流</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>((;;)); <span class="keyword">do</span> \</span><br><span class="line">    ./objs/ffmpeg/bin/ffmpeg -re -i ./doc/source.200kbps.768x320.flv \</span><br><span class="line">    -vcodec copy -acodec copy \</span><br><span class="line">    -f flv -y rtmp://127.0.0.1/live/livestream; \</span><br><span class="line">    sleep 1; \</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>RTMP流地址 rtmp://127.0.0.1:1935/live/livestream</li>
+<li>HLS流地址  <a target="_blank" rel="noopener" href="http://127.0.0.1:8080/live/livestream.m3u8">http://127.0.0.1:8080/live/livestream.m3u8</a></li>
+<li>HTTP FLV  <a target="_blank" rel="noopener" href="http://127.0.0.1:8080/live/livestream.flv">http://127.0.0.1:8080/live/livestream.flv</a></li>
+<li>DASH流地址 <a target="_blank" rel="noopener" href="http://192.168.1.170:8080/live/livestream.mpd">http://192.168.1.170:8080/live/livestream.mpd</a></li>
+</ul>
+<h2 id="API"><a href="#API" class="headerlink" title="API"></a>API</h2><ul>
+<li>versions    /api/v1/versions    获取服务器版本信息</li>
+<li>summaries    /api/v1/summaries    获取服务器的摘要信息</li>
+<li>rusages    /api/v1/rusages    获取服务器资源使用信息</li>
+<li>self_proc_stats    /api/v1/self_proc_stats    获取服务器进程信息</li>
+<li>system_proc_stats    /api/v1/system_proc_stats    获取服务器所有进程情况</li>
+<li>meminfos    /api/v1/meminfos    获取服务器内存使用情况</li>
+<li>authors    /api/v1/authors    获取作者、版权和License信息</li>
+<li>features    /api/v1/features    获取系统支持的功能列表</li>
+<li>requests    /api/v1/requests    获取请求的信息，即当前发起的请求的详细信息</li>
+<li>vhosts    /api/v1/vhosts    获取服务器上的vhosts信息</li>
+<li>streams    /api/v1/streams    获取服务器的streams信息</li>
+<li>clients    /api/v1/clients    获取服务器的clients信息，默认获取前10个</li>
+<li>configs    /api/v1/configs    CUID配置，RAW API</li>
+</ul>
 <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://danielkummer.github.io/git-flow-cheatsheet/index.zh_CN.html">https://danielkummer.github.io/git-flow-cheatsheet/index.zh_CN.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.git-tower.com/learn/git/ebook/cn/command-line/advanced-topics/git-flow">https://www.git-tower.com/learn/git/ebook/cn/command-line/advanced-topics/git-flow</a></li>
-<li><a target="_blank" rel="noopener" href="http://stormzhang.com/git/2014/01/29/git-flow/">http://stormzhang.com/git/2014/01/29/git-flow/</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/feixiangsmile/article/details/105881467">使用SRS和Nginx配置HLS、RTMP方式视频直播</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/dd3f58392aa0">MAC 搭建RTMP服务器nginx 和 srs</a></li>
 </ul>
 
       
@@ -773,7 +310,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201801/f7-vue-webpack/">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202008/nginx-rtmp%E9%85%8D%E7%BD%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -787,7 +324,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201801/f7-vue-webpack/" class="post-title-link" itemprop="url">F7+Vue+WebPack移动端单页应用脚手架</a>
+            <a href="/202008/nginx-rtmp%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">nginx-rtmp配置</a>
         </h2>
 
         <div class="post-meta">
@@ -797,15 +334,8 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2018-01-11 14:11:49" itemprop="dateCreated datePublished" datetime="2018-01-11T14:11:49+08:00">2018-01-11</time>
+              <time title="Created: 2021-01-05 14:03:53" itemprop="dateCreated datePublished" datetime="2021-01-05T14:03:53+08:00">2021-01-05</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
 
           
 
@@ -818,239 +348,33 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="1-简介"><a href="#1-简介" class="headerlink" title="1 简介"></a>1 简介</h2><p>F7-VUE-WEBPACK-SCAFFOLD，是一个基于Webpack + Vue + Framework7构建的移动端单页应用脚手架，可内嵌于Cordova等平台中。</p>
-<h2 id="2-快速上手"><a href="#2-快速上手" class="headerlink" title="2 快速上手"></a>2 快速上手</h2><p>下面介绍一下如何在零基础的情况下，快速搭建好开发环境，并完成代码克隆、编辑、测试、构建、发布等一系列 开发流程。</p>
-<h3 id="2-1-安装node-js与npm"><a href="#2-1-安装node-js与npm" class="headerlink" title="2.1 安装node.js与npm"></a>2.1 安装node.js与npm</h3><p>node.js是一个基于Chrome  V8引擎的JavaScrip运行时，它是前端工程化的基础。npm是node.js的包管理工具。</p>
-<ul>
-<li>Windows用户</li>
-</ul>
-<p>访问 <a target="_blank" rel="noopener" href="https://nodejs.org/zh-cn/">node.js官网</a> ，并下载安装包进行安装</p>
-<ul>
-<li>macOS用户<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install node</span><br></pre></td></tr></table></figure></li>
-<li>Ubuntu用户<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install nodejs</span><br></pre></td></tr></table></figure>
-<h3 id="2-2-安装git"><a href="#2-2-安装git" class="headerlink" title="2.2 安装git"></a>2.2 安装git</h3></li>
-<li>Windows用户请先下载安装 <a target="_blank" rel="noopener" href="http://gitforwindows.org/">msysgit</a> 。另外最好安装一个命令行模拟器，例如cygwin。</li>
-<li>macOS与Ubuntu默认已经安装。</li>
-</ul>
-<h3 id="2-3-前端编辑器"><a href="#2-3-前端编辑器" class="headerlink" title="2.3 前端编辑器"></a>2.3 前端编辑器</h3><p>提前准备好一个适用于前端开发编辑器或IDE。<br>推荐 JetBrains的 <a target="_blank" rel="noopener" href="https://www.jetbrains.com/webstorm/">WebStorm</a> 或 微软的 <a target="_blank" rel="noopener" href="https://code.visualstudio.com/">VSCode</a>。</p>
-<h3 id="2-4-克隆源码"><a href="#2-4-克隆源码" class="headerlink" title="2.4 克隆源码"></a>2.4 克隆源码</h3><p>源码使用git进行版本控制，托管在私有的GitLab上。</p>
-<p>使用git clone命令将版本库克隆到本地：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;xiiiblue&#x2F;f7-vue-webpack-scaffold.git</span><br></pre></td></tr></table></figure>
-<h3 id="2-5-安装依赖"><a href="#2-5-安装依赖" class="headerlink" title="2.5 安装依赖"></a>2.5 安装依赖</h3><p>进入到工程目录，执行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install</span><br></pre></td></tr></table></figure>
-<p>npm会将依赖的模块自动下载并安装到<code>./node_modules</code>目录下。</p>
-<p>如果在内网环境中，无法直连，可以加入<code>--proxy</code>参数，使用代理服务器进行连接， 例如： <code>--proxy socks://IP:PORT</code></p>
-<h3 id="2-6-运行开发服务器"><a href="#2-6-运行开发服务器" class="headerlink" title="2.6 运行开发服务器"></a>2.6 运行开发服务器</h3><p>安装好依赖之后，在工程目录下执行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm run dev</span><br></pre></td></tr></table></figure>
-<p>会在3000端口上启动一个开发用的HTTP服务器。</p>
-<p>接下来访问 <a target="_blank" rel="noopener" href="http://127.0.0.1:3000/">http://127.0.0.1:3000</a> ，就可以看到应用首页了。</p>
-<h3 id="2-7-修改代码"><a href="#2-7-修改代码" class="headerlink" title="2.7 修改代码"></a>2.7 修改代码</h3><p>修改任意一个文件，如<code>src/pages/mamage/about.vue</code> ，修改完成后保存，会在浏览器上立即看到结果。</p>
-<h3 id="2-8-代码构建"><a href="#2-8-代码构建" class="headerlink" title="2.8 代码构建"></a>2.8 代码构建</h3><p>开发完成后，如果需要在本机构建工程，则需要执行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm run build</span><br></pre></td></tr></table></figure>
-<p>编译好的文件会生成在<code>dist</code>目录中</p>
-<h3 id="2-9-持续集成"><a href="#2-9-持续集成" class="headerlink" title="2.9 持续集成"></a>2.9 持续集成</h3><p>正常情况下，不需要在本机进行构建。</p>
-<p>将代码push到GitLab上之后，仅需要在工程目录下执行脚本：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;pushtag.sh</span><br></pre></td></tr></table></figure>
-<p>Jenkins会自动完成构建、老代码备份、发布等一系列操作。</p>
-<h2 id="3-应用概述"><a href="#3-应用概述" class="headerlink" title="3 应用概述"></a>3 应用概述</h2><h3 id="3-1-技术特性"><a href="#3-1-技术特性" class="headerlink" title="3.1 技术特性"></a>3.1 技术特性</h3><ul>
-<li>模块化 - 使用Webpack+Babel将所有资源打包同步加载</li>
-<li>组件化 - 使用Vue单页面组件方式开发，降低耦合，并将内容、样式、逻辑3个关注点分离</li>
-<li>规范化 - 使用Eslint，强制约束编码规范</li>
-<li>自动化 - 使用Jenkins实现前端执续集成，自动完成构建、备份、部署等操作</li>
-</ul>
-<h3 id="3-2-主要依赖"><a href="#3-2-主要依赖" class="headerlink" title="3.2 主要依赖"></a>3.2 主要依赖</h3><ul>
-<li>webpack <code>^2.2.1</code> - 资源打包</li>
-<li>vue <code>^2.2.2</code> - 数据-视图绑定，组件化</li>
-<li>vuex <code>^2.2.1</code> - 状态管理</li>
-<li>framework7 <code>^1.6.5</code>  - 移动端UI框架</li>
-<li>framework7-vue <code>^0.9.4</code>  - f7的vue整合</li>
-<li>lodash <code>^4.17.4</code>  - 通用工具库</li>
-<li>moment <code>^2.17.1</code>  - 时间工具库</li>
-<li>axios  <code>^0.15.3</code>  - 网络请求</li>
-<li>eslint <code>^3.14.1</code>  - 代码质量管理</li>
-<li>babel-core <code>^6.22.1</code> - ES6转译</li>
-</ul>
-<h3 id="3-3-目录及用途"><a href="#3-3-目录及用途" class="headerlink" title="3.3 目录及用途"></a>3.3 目录及用途</h3><ul>
-<li>src/entry/index.js - 应用入口</li>
-<li>src/entry/index.html - 空白HTML模板</li>
-<li>src/routes.js - APP路由</li>
-<li>src/util.js - 工具封装</li>
-<li>src/assets/fonts - 图标字体，使用IconFont生成</li>
-<li>src/assets/style - 样式，使用LESS编写</li>
-<li>src/components - 存放后缀为.vue的组件</li>
-<li>src/components/index.html - 基础HTML页面结构，不需要改动</li>
-<li>src/components/index.vue - 初始化空白页面组件，不需要改动</li>
-<li>src/components/public - 公共组件</li>
-<li>src/components/console - 控制台相关组件</li>
-<li>src/components/home - 主界面</li>
-<li>src/components/manage - 系统管理</li>
-<li>src/components/playground - 功能展示</li>
-<li>src/components/showcase - 组件展示</li>
-<li>src/store - vuex状态</li>
-<li>static/img - 图片</li>
-<li>static/mock/api - 后台服务mock</li>
-<li>static/mock/localstorage - 原生APP中本地变量（LocalStorage）的mock</li>
-</ul>
-<h2 id="4-开发进阶"><a href="#4-开发进阶" class="headerlink" title="4 开发进阶"></a>4 开发进阶</h2><h3 id="4-1-模块热替换"><a href="#4-1-模块热替换" class="headerlink" title="4.1 模块热替换"></a>4.1 模块热替换</h3><p>模块热替换(HMR)是webpack提供的最有用的功能之一。它允许在运行时更新各种模块，而无需进行完全刷新。  </p>
-<p>它通过WebSocket等技术实现，当修改完一段代码后，直接保存，就可以立即在浏览器上查看到结果，大幅提升开发效率。</p>
-<h3 id="4-2-Vue单文件组件"><a href="#4-2-Vue单文件组件" class="headerlink" title="4.2 Vue单文件组件"></a>4.2 Vue单文件组件</h3><p>使用Vue实现数据视图绑定以及组件化。  </p>
-<p>Vue是一套用于构建用户界面的渐进式框架，Vue 的核心库只关注视图层，易于上手，能够为复杂的单页应用提供驱动。  </p>
-<p>一个最简单的Vue单文件组件内容如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- my-component.vue --&gt;</span><br><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;div&gt;This will be pre-compiled&lt;&#x2F;div&gt;</span><br><span class="line">&lt;&#x2F;template&gt;</span><br><span class="line">&lt;script src&#x3D;&quot;.&#x2F;my-component.js&quot;&gt;&lt;&#x2F;script&gt;</span><br><span class="line">&lt;style src&#x3D;&quot;.&#x2F;my-component.css&quot;&gt;&lt;&#x2F;style&gt;</span><br></pre></td></tr></table></figure>
-<p>Vue的单文件组件，解决了复杂项目中的全局定义、字符串模板、不支持 CSS、没有构建步骤等痛点。</p>
-<p>在同一个文件中，同时包含了内容、样式和功能。</p>
-<p>关注点分离不等于文件类型分离，在现代 UI 开发中，我们已经发现相比于把代码库分离成三个大的层次并将其相互交织起来，把它们划分为松散耦合的组件再将其组合起来更合理一些。</p>
-<p>在一个组件里，其模板、逻辑和样式是内部耦合的，并且把他们搭配在一起实际上使得组件更加内聚且更可维护。  </p>
-<h3 id="4-3-基础工具封装"><a href="#4-3-基础工具封装" class="headerlink" title="4.3 基础工具封装"></a>4.3 基础工具封装</h3><p>util.js 中封装了一些基础功能，请直接使用，不要再进行重复开发。</p>
-<ul>
-<li>复制到剪贴板 - copyToClipboard(msg) </li>
-<li>获取URL参数 - getUrlParam(key) </li>
-<li>格式化路由名称 - formatRoute(initPage) </li>
-<li>服务调用 - svcInvoke(payload, callback) </li>
-<li>调试参数打印 - log(msg) </li>
-<li>读取APP本地变量 - getLocalStorage(key, callback)</li>
-<li>写入APP本地变量 - setLocalStorage(key, value, callback)</li>
-<li>读取Vuex状态 - getState(module, key)</li>
-<li>写入Vuex状态 - setState(module, obj)</li>
-<li>检查对象中的无效键 - checkUndefined(obj)</li>
-</ul>
-<h3 id="4-4-Eslint代码检测"><a href="#4-4-Eslint代码检测" class="headerlink" title="4.4 Eslint代码检测"></a>4.4 Eslint代码检测</h3><p>ESLint 是一个开源的 JavaScript 代码检查工具。  </p>
-<p>代码检查是一种静态的分析，常用于寻找有问题的模式或者代码，并且不依赖于具体的编码风格。  </p>
-<p>对大多数编程语言来说都会有代码检查，一般来说编译程序会内置检查工具。 </p>
-<p>JavaScript 是一个动态的弱类型语言，在开发中比较容易出错。因为没有编译程序，为了寻找 JavaScript 代码错误通常需要在执行过程中不断调试。ESLint可以让程序员在编码的过程中发现问题而不是在执行的过程中。</p>
-<p>Eslint的规则已经配置好，在WebStorm这样的IDE中可以自动识别，直接使用即可。</p>
-<h3 id="4-5-Framework7页面结构"><a href="#4-5-Framework7页面结构" class="headerlink" title="4.5 Framework7页面结构"></a>4.5 Framework7页面结构</h3><p>Framework7是一个开源的WEB APP前端框架，用于构建IOS 和 Android 风格的应用，它本身提供了很完善的UI组件和工具。</p>
-<p>通过F7-Vue插件，Framework7可以和Vue进行整合，它的基础页面结构如下：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- ... metas and styles ... --&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- App Root Element --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app&quot;</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- Status bar overlay for full screen mode (Cordova or PhoneGap) --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">f7-statusbar</span>&gt;</span><span class="tag">&lt;/<span class="name">f7-statusbar</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- Views --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">f7-views</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- Your main view, should have &quot;main&quot; prop --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">f7-view</span> <span class="attr">main</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- Pages container, because we use fixed navbar and toolbar, it has additional appropriate props --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">f7-pages</span> <span class="attr">navbar-fixed</span> <span class="attr">toolbar-fixed</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- Initial Page --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">f7-page</span>&gt;</span></span><br><span class="line">              <span class="comment">&lt;!-- Top Navbar--&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">f7-navbar</span> <span class="attr">title</span>=<span class="string">&quot;Awesome App&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">f7-navbar</span>&gt;</span></span><br><span class="line">              <span class="comment">&lt;!-- Toolbar--&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">f7-toolbar</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">f7-link</span>&gt;</span>Link 1<span class="tag">&lt;/<span class="name">f7-link</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">f7-link</span>&gt;</span>Link 2<span class="tag">&lt;/<span class="name">f7-link</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;/<span class="name">f7-toolbar</span>&gt;</span></span><br><span class="line">              <span class="comment">&lt;!-- Page Content --&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">p</span>&gt;</span>Page content goes here<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">f7-link</span> <span class="attr">href</span>=<span class="string">&quot;/about/&quot;</span>&gt;</span>About App<span class="tag">&lt;/<span class="name">f7-link</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">f7-page</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">f7-pages</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">f7-view</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">f7-views</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- ... scripts ... --&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>在调试过程中，页面结构在在vue-devtools中也可以比较方便的查看。</p>
-<h3 id="4-6-Vuex状态管理"><a href="#4-6-Vuex状态管理" class="headerlink" title="4.6 Vuex状态管理"></a>4.6 Vuex状态管理</h3><p>Vuex 是一个专为 Vue.js 应用程序开发的状态管理模式。</p>
-<p>它采用集中式存储管理应用的所有组件的状态，并以相应的规则保证状态以一种可预测的方式发生变化。</p>
-<p>Vuex 也集成到 Vue 的官方调试工具 devtools extension，提供了诸如零配置的 time-travel 调试、状态快照导入导出等高级调试功能。</p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/bdhg9.png"></p>
-<p>以下是一个表示“单向数据流”理念的极简示意：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/dcny6.png"></p>
-<p>但当我们的应用遇到多个组件共享状态时，单向数据流的简洁性很容易被破坏：</p>
-<ul>
-<li>多个视图依赖于同一状态。</li>
-<li>来自不同视图的行为需要变更同一状态。</li>
-</ul>
-<p>Vuex把组件的共享状态抽取出来，以一个全局单例模式管理。在这种模式下，我们的组件树构成了一个巨大的“视图”，不管在树的哪个位置，任何组件都能获取状态或者触发行为。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/f96ls.png"></p>
-<p>Vuex的各模块的代码存放于<code>src/store</code>目录中，如果在Mutation中仅做简单的增删改查，可以参考env.js的写法。  </p>
-<p>如果应用规模继续扩大，模型与REST调用也可以抽离出来，放在这一层的action中。</p>
-<h3 id="4-7-环境变量"><a href="#4-7-环境变量" class="headerlink" title="4.7 环境变量"></a>4.7 环境变量</h3><p>使用Vuex的env模块来存放环境变量，下面详细解释一下各个环境变量意义：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">const state &#x3D; &#123;</span><br><span class="line">  appName: &#39;应用名称&#39;,  &#x2F;&#x2F; 应用名称</span><br><span class="line">  appVersion: &#39;1.0.0&#39;, &#x2F;&#x2F; 版本号</span><br><span class="line">  appCopyright: &#39;Copyright © 2017 公司名称&#39;,  &#x2F;&#x2F; 版权信息</span><br><span class="line">  profile: &#39;dev&#39;,  &#x2F;&#x2F; 服务环境，可以传入dev&#x2F;test&#x2F;prod，以区分开发、测试、生产</span><br><span class="line">  apiBaseUrl: &#39;&#x2F;path&#x2F;to&#x2F;proxy&#39;,  &#x2F;&#x2F; 服务调用地址</span><br><span class="line">  mockApiUrl: &#39;static&#x2F;mock&#x2F;api&#x2F;&#39;,  &#x2F;&#x2F; API Mock的路径</span><br><span class="line">  mockLocalStorageUrl: &#39;static&#x2F;mock&#x2F;localstorage&#x2F;&#39;,  &#x2F;&#x2F; LocalStorage Mock的路径</span><br><span class="line">  debugTag: &#39;off&#39;,  &#x2F;&#x2F; DEBUG模式的开关</span><br><span class="line">  initPage: null,  &#x2F;&#x2F; 初始化页面，中间以.分割，例如传入manage.about，则首页会渲染成&#x2F;manage&#x2F;about&#x2F;。如果不传入，或路由不存在，则渲染默认首页。</span><br><span class="line">  staffId: null,  &#x2F;&#x2F; 工号</span><br><span class="line">  eparchyCode: null, &#x2F;&#x2F; 地市</span><br><span class="line">  token: null,  &#x2F;&#x2F; 调用后台服务的token</span><br><span class="line">  lastUrl: null,  &#x2F;&#x2F; 原生与HTML5混合功能点中，点击左上角返回按钮，将要返回的UIBOX名</span><br><span class="line">  nextUrl: null,  &#x2F;&#x2F; 原生与HTML5混合功能点中，点击下一步将要跳到的UIBOX名</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="4-8-页面路由"><a href="#4-8-页面路由" class="headerlink" title="4.8 页面路由"></a>4.8 页面路由</h3><p>页面路由，使用了Framework7中集成的routes。  </p>
-<p>路由信息配置在<code>src/routes.js</code>中，已经做了简单的封装，配置示例如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">export default [</span><br><span class="line">  staticRoute(&#39;&#x2F;home&#x2F;index&#39;, &#39;主页&#39;),</span><br><span class="line">  staticRoute(&#39;&#x2F;manage&#x2F;about&#39;, &#39;关于&#39;),</span><br><span class="line">  staticRoute(&#39;&#x2F;playground&#x2F;localstoragesave&#39;, &#39;LocalStorage存取&#39;),</span><br><span class="line">  staticRoute(&#39;&#x2F;playground&#x2F;routeparam&#39;, &#39;页面间传值&#39;),</span><br><span class="line">  staticRoute(&#39;&#x2F;playground&#x2F;routeparamsub&#x2F;:id&#39;, &#39;页面间传值接收&#39;),</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
-<p>每当新增了一个.vue的单文件组件后，仅需要在routes.js中新增一行，写明路由名称与页面标题即可。</p>
-<p>路由名称与真实的文件路径是对应的，建议使用二级目录进行管理。  </p>
-<p>.vue组件中，<f7-page>与<navbar>节点，不需要手工录入标题、class等信息，直接复制下面的模板即可：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;f7-page :name&#x3D;&quot;$route.route.name&quot; :class&#x3D;&quot;$route.route.name&quot;&gt;</span><br><span class="line">    &lt;navbar :title&#x3D;&quot;$route.route.title&quot;&gt;&lt;&#x2F;navbar&gt;</span><br><span class="line">  &lt;&#x2F;f7-page&gt;</span><br><span class="line">&lt;&#x2F;template&gt;</span><br></pre></td></tr></table></figure>
-<h3 id="4-9-图标字体"><a href="#4-9-图标字体" class="headerlink" title="4.9 图标字体"></a>4.9 图标字体</h3><p>页面中的图标，统一封装为字体文件，方便加载。</p>
-<p>这里使用了阿里巴巴的iconfont来进行制作，网址为： <a target="_blank" rel="noopener" href="http://www.iconfont.cn/">http://www.iconfont.cn/</a></p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/l67r4.png"></p>
-<p>使用上比较简单，注册好用户后，将选中的图标添加到购物车，或主动上传图标，然后添加到某一个”工程”中，即可导出生成好的字体文件与CSS样式。  </p>
-<p>字体文件存放于 <code>src/assets/fonts</code> 目录，直接覆盖即可。</p>
-<h3 id="4-10-静态资源"><a href="#4-10-静态资源" class="headerlink" title="4.10 静态资源"></a>4.10 静态资源</h3><p>静态资源：例如图片和Mock文件，不会被WebPack打包，需要统一存放在 <code>static</code> 目录。</p>
-<p>在CSS等代码中，可以用相对路径来进行引用，打包时会自动修改替换URL。  </p>
-<h3 id="4-11-LESS样式"><a href="#4-11-LESS样式" class="headerlink" title="4.11 LESS样式"></a>4.11 LESS样式</h3><p>使用LESS进行样式的开发，WebPack打包后会转译为CSS。  </p>
-<p>公共的样式文件位于 <code>src/assets/styles</code> 目录，入口是 <code>app.less</code></p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/hs7uy.png"></p>
-<p>在<code>mixins.less</code>中，定义了基础的颜色、相对路径等信息，其它的.less中可以直接引用它。</p>
-<p>私有的样式，可以直接写在.vue组件中。</p>
-<h3 id="4-12-组件展示"><a href="#4-12-组件展示" class="headerlink" title="4.12 组件展示"></a>4.12 组件展示</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/tlqeg.png"><br>代码存放于 <code>src/pages/showcase/</code> 目录</p>
-<p>演示Framework7的各个组件的用法，方便在开发页面时使用。</p>
-<h3 id="4-13-功能展示"><a href="#4-13-功能展示" class="headerlink" title="4.13 功能展示"></a>4.13 功能展示</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/mhur0.png"></p>
-<p>代码存放于 <code>src/pages/playground/</code> 目录</p>
-<p>演示服务调用、UIBOX跳转等用法。</p>
-<h2 id="5-本机调试"><a href="#5-本机调试" class="headerlink" title="5 本机调试"></a>5 本机调试</h2><h3 id="5-1-测试URL"><a href="#5-1-测试URL" class="headerlink" title="5.1 测试URL"></a>5.1 测试URL</h3><p>运行<code>npm run dev</code>后，默认的测试URL是：  </p>
-<p><a target="_blank" rel="noopener" href="http://127.0.0.1:3000/">http://127.0.0.1:3000/</a></p>
-<p>也可以在URL中以键值对的方式传入环境变量，例如：</p>
-<p><a target="_blank" rel="noopener" href="http://127.0.0.1:3000/?debugTag=on&amp;profile=test">http://127.0.0.1:3000/?debugTag=on&amp;profile=test</a></p>
-<p>PC调试中，一般都会传入debugTag和profile两个环境变量，前者是默认开启DEBUG模式，后者决定REST服务调用是开发、测试、还是生产环境。</p>
-<p>所有传入的参数，都会存入名为env的状态中，作为系统环境变量。  </p>
-<p>请注意，URL传递环境变量的的优先级最高。例如，已经通过URL方式传入了一个staffId的环境变量，那么通过LocalStorage传入的staffId环境变量则不会生效。</p>
-<h3 id="5-2-反向代理"><a href="#5-2-反向代理" class="headerlink" title="5.2 反向代理"></a>5.2 反向代理</h3><p>反向代理在本机调试时非常有用，可以将前端页面与后端服务拉到同一个域下，在不开启CORS的情况下，前端可以直接调用到后台服务。</p>
-<p>生产环境中，反向代理一般用Nginx实现。 本机调试环境中，由于Express已经自带，可以直接在<code>config/index.js</code>中，开启并修改其配置。</p>
-<p>配置示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxyTable: &#123;&#39;&#x2F;reverseproxy&#39;: &#39;http:&#x2F;&#x2F;xxx.xxx.xxx.xxx:xxx&#39;&#125;,</span><br></pre></td></tr></table></figure>
-<p>此时如果访问 <a target="_blank" rel="noopener" href="http://127.0.0.1:3000/reverseproxy/whatever">http://127.0.0.1:3000/reverseproxy/whatever</a> ，请求会被转发到后面配置的服务器上，而不是访问本机的文件。</p>
-<h3 id="5-3-chrome-devtools"><a href="#5-3-chrome-devtools" class="headerlink" title="5.3 chrome-devtools"></a>5.3 chrome-devtools</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/es4kx.png"></p>
-<p>推荐使用Chrome浏览器进行调试。Chrome的DevTools，比Safari等浏览器的功能要完善一些。  </p>
-<p>篇幅原因，具体使用方法不再赘述。  </p>
-<h3 id="5-4-vue-devtools"><a href="#5-4-vue-devtools" class="headerlink" title="5.4 vue-devtools"></a>5.4 vue-devtools</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/uo502.png"></p>
-<p>vue-devtools是一个Chrome插件，安装后会集成在原有的chrome-devtools里面。</p>
-<p>如果页面是使用vue进行开发，且处于开发环境，vue-devtools则会被激活。</p>
-<p>GitHub地址： <a target="_blank" rel="noopener" href="https://github.com/vuejs/vue-devtools">https://github.com/vuejs/vue-devtools</a></p>
-<p>安装比较简单，直接在Chrome商店中搜索即可。</p>
-<h3 id="5-5-API-Mock"><a href="#5-5-API-Mock" class="headerlink" title="5.5 API Mock"></a>5.5 API Mock</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/9dgo7.png"></p>
-<p>在前端界面复杂的交互逻辑中，需要大量依赖后端REST服务提供的数据来进行驱动。</p>
-<p>真实的开发流程中，前端不可能等待后端服务完全写好之后才开始进行开发。  </p>
-<p>此时就需要API Mock，后端只要将请求/响应的格式约定好，并提供一个简单的样例给前端，保存成静态的.json文件即可。  </p>
-<p>每个服务的API mock分为两个.json文件，存放于<code>static/mock/api</code>中。  </p>
-<p>例如登录服务：<br>login.req.json  - 请求报文<br>login.resp.json  - 响应报文  </p>
-<p>当profile=dev时，网络请求会自动指向这个.json文件，而不是去请求真实的服务。</p>
+          <h2 id="Windows预编译版下载地址"><a href="#Windows预编译版下载地址" class="headerlink" title="Windows预编译版下载地址"></a>Windows预编译版下载地址</h2><p><a target="_blank" rel="noopener" href="http://nginx-win.ecsds.eu/download/">http://nginx-win.ecsds.eu/download/</a><br><a target="_blank" rel="noopener" href="http://nginx-win.ecsds.eu/download/nginx%201.7.11.3%20Gryphon.zip">http://nginx-win.ecsds.eu/download/nginx%201.7.11.3%20Gryphon.zip</a></p>
 <blockquote>
-<p>请注意：API Mock的触发条件是环境变量中 <strong>profile=dev</strong></p>
+<p>直接安装即可，不做赘述</p>
 </blockquote>
-<h3 id="5-6-LocalStorage-Mock"><a href="#5-6-LocalStorage-Mock" class="headerlink" title="5.6 LocalStorage Mock"></a>5.6 LocalStorage Mock</h3><p>LocalStorage，是移动开发平台原生APP的本地变量的，在PC调试的过程中，是无法获取LocalStorage的，这时就需要进行mock。</p>
-<p>与API mock类似，也是将内容保存成静态的.json文件，路径位于<code>mock/localstorage</code>，文件名即变量名。</p>
-<p>当框架读取LocalStorage时，且发现当前是PC环境时，会自动模拟读取这个.json文件。  </p>
+<h2 id="yamdi"><a href="#yamdi" class="headerlink" title="yamdi"></a>yamdi</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>yamdi用于为rtmp点播文件添加索引</p>
+<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p><a target="_blank" rel="noopener" href="http://yamdi.sourceforge.net/">http://yamdi.sourceforge.net/</a><br><a target="_blank" rel="noopener" href="https://github.com/ioppermann/yamdi/releases">https://github.com/ioppermann/yamdi/releases</a></p>
+<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc yamdi.c -o yamdi -O2 -Wall</span><br><span class="line">cp yamdi &#x2F;usr&#x2F;local&#x2F;bin</span><br></pre></td></tr></table></figure>
+<h2 id="nginx-rtmp"><a href="#nginx-rtmp" class="headerlink" title="nginx-rtmp"></a>nginx-rtmp</h2><ul>
+<li><h3 id="源码下载"><a href="#源码下载" class="headerlink" title="源码下载"></a>源码下载</h3></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/arut/nginx-rtmp-module">nginx-rtmp-module</a></li>
+<li><a target="_blank" rel="noopener" href="http://nginx.org/en/download.html">nginx</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.openssl.org/source/">openssl</a></li>
+</ul>
+<h3 id="编译安装"><a href="#编译安装" class="headerlink" title="编译安装"></a>编译安装</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;configure --prefix&#x3D;&#x2F;opt&#x2F;nginx-rtmp --with-openssl&#x3D;..&#x2F;openssl-1.1.1g --add-module&#x3D;..&#x2F;nginx-rtmp-module-1.2.1 --with-debug</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">worker_processes  1;</span><br><span class="line"></span><br><span class="line">error_log  logs/error.log debug;</span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  1024;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">rtmp &#123;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen 1935;</span><br><span class="line"></span><br><span class="line">        application hls &#123;</span><br><span class="line">             live on;  <span class="comment">#启用rtmp直播</span></span><br><span class="line">                       <span class="comment">#地址为rtmp://[server]:[rtmp_port]/[app]/[stream]</span></span><br><span class="line">             hls on;   <span class="comment">#启用hls直播</span></span><br><span class="line">                       <span class="comment">#地址为http://[server]:[http_port]/[app]/[stream].m3u8</span></span><br><span class="line">                       <span class="comment">#需要配合下面http段设置使用</span></span><br><span class="line">             hls_path nginx-rtmp-module/tmp/app/;</span><br><span class="line">             hls_fragment 5s;</span><br><span class="line">             recorder rec &#123;  <span class="comment">#启用录制</span></span><br><span class="line">               record all manual;  <span class="comment">#手动控制录制启停</span></span><br><span class="line">               record_suffix _rec.flv;</span><br><span class="line">               record_path nginx-rtmp-module/tmp/rec/;  <span class="comment">#录制保存地址</span></span><br><span class="line">               record_unique on;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">       application vod2&#123;  <span class="comment">#rtmp点播</span></span><br><span class="line">       		play nginx-rtmp-module/tmp/rec/;    </span><br><span class="line">       &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen      18080;</span><br><span class="line"></span><br><span class="line">        location /<span class="built_in">stat</span> &#123;  <span class="comment">#服务器状态</span></span><br><span class="line">            rtmp_stat all;</span><br><span class="line">            rtmp_stat_stylesheet stat.xsl;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location /stat.xsl &#123;</span><br><span class="line">            root nginx-rtmp-module/;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location /control &#123; <span class="comment">#控制器</span></span><br><span class="line">            rtmp_control all;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">	    location /hls/ &#123;  <span class="comment">#hls直播地址</span></span><br><span class="line">           <span class="comment">#server hls fragments</span></span><br><span class="line">           types&#123;</span><br><span class="line">             application/vnd.apple.mpegurl m3u8;</span><br><span class="line">             video/mp2t ts;</span><br><span class="line">           &#125;</span><br><span class="line">           <span class="built_in">alias</span> nginx-rtmp-module/tmp/app/;</span><br><span class="line">           expires -1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location /vod/&#123;  <span class="comment">#hls点播地址</span></span><br><span class="line">            <span class="built_in">alias</span> nginx-rtmp-module/tmp/rec/;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">            root nginx-rtmp-module/<span class="built_in">test</span>/www/;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>请注意：LocalStorage Mock的触发条件是 <strong>非真机环境（PC浏览器）</strong></p>
+<p>注意拷贝stat.xsl到相应目录下</p>
 </blockquote>
-<h2 id="6-真机联调"><a href="#6-真机联调" class="headerlink" title="6 真机联调"></a>6 真机联调</h2><h3 id="6-1-真机样式调整"><a href="#6-1-真机样式调整" class="headerlink" title="6.1 真机样式调整"></a>6.1 真机样式调整</h3><p>由于真实手机的WebView上样式呈现，与PC端有很多差异，所以界面开发完成后，需要分别对Android和IOS进行真机调试。</p>
-<p>Android手机的调试，可以借助Chrome浏览器的DevTool实现，可以在PC上展示DOM节点，CSS样式等，并可以实时修改CSS并在手机上查看到结果。  </p>
-<p>IOS手机，也可以借助Safari浏览器的DevTool实现，过程类似，不再赘述。</p>
-<h3 id="6-2-DEBUG控制台呼出"><a href="#6-2-DEBUG控制台呼出" class="headerlink" title="6.2 DEBUG控制台呼出"></a>6.2 DEBUG控制台呼出</h3><p>代码最终会运行在移动开发平台的Shell（类似Cordova）中，经常会有原生&lt;–&gt;HTML5页面间的互相调用，由于缺乏调试工具，且访问原生能力的API不是很完善，联调会变的异常困难。  </p>
-<p>目前已经开发了一套DEBUG控制台，包含一系列的工具，方便真机情况下的联调。  </p>
-<p>3秒钟内，连续点击标题栏右上角10次，会激活DEBUG模式。  </p>
-<p>这时，标题栏右上角会出现一个齿轮图标，点击图标后会在右侧呼出控制台。</p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/lyj7q.png"></p>
-<h3 id="6-3-控制台日志"><a href="#6-3-控制台日志" class="headerlink" title="6.3 控制台日志"></a>6.3 控制台日志</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/9bd1w.png"></p>
-<p>编码过程中，推荐使用<code>util.log()</code>，代替<code>console.log()</code>进行日志输出。</p>
-<p>DEBUG模式中，使用<code>util.log()</code>打印的日志，会出现在此处。  </p>
-<p>请注意，为保证性能，仅保留最新的100条日志。  </p>
-<p>点击右侧的”复制到剪贴板”按钮后，可以将内容拷贝出来，方便发送到PC查看。  </p>
-<h3 id="6-4-系统环境变量"><a href="#6-4-系统环境变量" class="headerlink" title="6.4 系统环境变量"></a>6.4 系统环境变量</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/1ou1l.png"></p>
-<p>在此页面，可以修改所有的环境变量。 </p>
-<p>例如可以实时变更开发/测试/生产这3个Profile，以便让APP调用不同环境的后台服务。     </p>
-<h3 id="6-5-服务模拟调用"><a href="#6-5-服务模拟调用" class="headerlink" title="6.5 服务模拟调用"></a>6.5 服务模拟调用</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/nmbkr.png"></p>
-<p>该功能点提供了一个简易的REST Client，类似PostMan。<br>输入一段JSON请求后，点击调用可以获取响应。  </p>
-<h3 id="6-6-页面变量查询"><a href="#6-6-页面变量查询" class="headerlink" title="6.6 页面变量查询"></a>6.6 页面变量查询</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/qjrzq.png"></p>
-<p>此功能点，会展示主视图中，Vue组件的所有的Data变量。</p>
-<p>点击某个变量后，会展开显示其内容，并可以复制到剪贴板。  </p>
-<p>对应PC端vue-devtools中的位置如下：</p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/3sfix.png"></p>
-<h3 id="6-7-状态查询"><a href="#6-7-状态查询" class="headerlink" title="6.7 状态查询"></a>6.7 状态查询</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/iznjg.png"></p>
-<p>可以查看VueX的各个状态(系统相关的env和console这两个状态不会显示)  ，实现PC端vue-devtools类似的功能。</p>
-<h3 id="6-8-状态写入"><a href="#6-8-状态写入" class="headerlink" title="6.8 状态写入"></a>6.8 状态写入</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/bq883.png"></p>
-<p>在此界面，可以手工添加/修改/删除某个VueX状态的值。<br>注意，点击重置按钮后，整个状态节点会被清空。 </p>
-<h3 id="6-9-LocalStorage查询"><a href="#6-9-LocalStorage查询" class="headerlink" title="6.9 LocalStorage查询"></a>6.9 LocalStorage查询</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/znxuu.png"></p>
-<p>LocalStorage，是原生外壳的本地变量的，可用于保存应用的状态，也是原生与HTML5交互的唯一手段。</p>
-<p>请注意，这里的LocalStorage，虽然名称一样，但并不是浏览器中的那个本地存储。  </p>
-<h3 id="6-10-LocalStorage写入"><a href="#6-10-LocalStorage写入" class="headerlink" title="6.10 LocalStorage写入"></a>6.10 LocalStorage写入</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/6j7zc.png"></p>
-<p>此功能点，用于伪造一个LocalStorage，方便真机测试。</p>
-<p>输入键值对，点击写入按钮即可。 </p>
-<blockquote>
-<p>请注意，变量值一般是JSON字符串。    </p>
-</blockquote>
-<h3 id="6-11-模拟登录"><a href="#6-11-模拟登录" class="headerlink" title="6.11 模拟登录"></a>6.11 模拟登录</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/481vv.png"></p>
-<p>打开一个模拟登录界面，登录后会获取一些环境变量并覆盖到env状态中去。  </p>
-<h3 id="6-12-打开登录界面"><a href="#6-12-打开登录界面" class="headerlink" title="6.12 打开登录界面"></a>6.12 打开登录界面</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/g6wqs.png"><br>弹出内置的登录界面</p>
-<h3 id="6-13-页面强制刷新"><a href="#6-13-页面强制刷新" class="headerlink" title="6.13 页面强制刷新"></a>6.13 页面强制刷新</h3><p>强制刷新主视图的组件。 这在某些没有启用下拉刷新的页面中非常有用，可以在修改环境变量或其它状态后使用。</p>
-<p>请注意，这里的”刷新”是指Vue组件的刷新，并不是指浏览器中的F5刷新。  </p>
-<p>​    </p>
-<h2 id="7-知识储备"><a href="#7-知识储备" class="headerlink" title="7 知识储备"></a>7 知识储备</h2><p>在正式动手开发之前，需要对前端开发语言、工具、流程等有一个大概的了解。  </p>
-<p>以下简单列举了一些官网及教程，可以有选择性的查看。  </p>
-<h3 id="7-1-JavaScript"><a href="#7-1-JavaScript" class="headerlink" title="7.1 JavaScript"></a>7.1 JavaScript</h3><p><a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000">https://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000</a></p>
-<h3 id="7-2-ES2015"><a href="#7-2-ES2015" class="headerlink" title="7.2 ES2015"></a>7.2 ES2015</h3><p><a target="_blank" rel="noopener" href="https://babeljs.io/learn-es2015/">https://babeljs.io/learn-es2015/</a><br><a target="_blank" rel="noopener" href="http://yanhaijing.com/javascript/2015/09/11/learn-es2015/">http://yanhaijing.com/javascript/2015/09/11/learn-es2015/</a></p>
-<h3 id="7-3-NPM"><a href="#7-3-NPM" class="headerlink" title="7.3 NPM"></a>7.3 NPM</h3><p><a target="_blank" rel="noopener" href="https://www.npmjs.com/">https://www.npmjs.com/</a><br><a target="_blank" rel="noopener" href="http://javascript.ruanyifeng.com/nodejs/npm.html">http://javascript.ruanyifeng.com/nodejs/npm.html</a><br><a target="_blank" rel="noopener" href="http://www.runoob.com/nodejs/nodejs-npm.html">http://www.runoob.com/nodejs/nodejs-npm.html</a><br><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/e958a74a0fd7">http://www.jianshu.com/p/e958a74a0fd7</a></p>
-<h3 id="7-4-Webpack"><a href="#7-4-Webpack" class="headerlink" title="7.4 Webpack"></a>7.4 Webpack</h3><p><a target="_blank" rel="noopener" href="https://webpack.js.org/">https://webpack.js.org/</a><br><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000006178770">https://segmentfault.com/a/1190000006178770</a><br><a target="_blank" rel="noopener" href="https://llp0574.github.io/2016/11/29/getting-started-with-webpack2/">https://llp0574.github.io/2016/11/29/getting-started-with-webpack2/</a><br><a target="_blank" rel="noopener" href="https://github.com/vuejs-templates/webpack">https://github.com/vuejs-templates/webpack</a></p>
-<h3 id="7-5-Framework7-amp-F7-VUE"><a href="#7-5-Framework7-amp-F7-VUE" class="headerlink" title="7.5 Framework7 &amp; F7-VUE"></a>7.5 Framework7 &amp; F7-VUE</h3><p><a target="_blank" rel="noopener" href="https://framework7.io/docs/">https://framework7.io/docs/</a><br><a target="_blank" rel="noopener" href="https://framework7.io/vue/">https://framework7.io/vue/</a></p>
-<h3 id="7-6-vue"><a href="#7-6-vue" class="headerlink" title="7.6 vue"></a>7.6 vue</h3><p><a target="_blank" rel="noopener" href="https://cn.vuejs.org/v2/guide/">https://cn.vuejs.org/v2/guide/</a></p>
-<h3 id="7-7-vuex"><a href="#7-7-vuex" class="headerlink" title="7.7 vuex"></a>7.7 vuex</h3><p><a target="_blank" rel="noopener" href="https://vuex.vuejs.org/zh-cn/">https://vuex.vuejs.org/zh-cn/</a></p>
-<h3 id="7-8-lodash"><a href="#7-8-lodash" class="headerlink" title="7.8 lodash"></a>7.8 lodash</h3><p><a target="_blank" rel="noopener" href="https://lodash.com/docs/4.17.4">https://lodash.com/docs/4.17.4</a><br><a target="_blank" rel="noopener" href="http://lodash.think2011.net/">http://lodash.think2011.net/</a></p>
-<h3 id="7-9-eslint"><a href="#7-9-eslint" class="headerlink" title="7.9 eslint"></a>7.9 eslint</h3><p><a target="_blank" rel="noopener" href="https://cn.eslint.org/">https://cn.eslint.org/</a></p>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><h3 id="rtmp监控"><a href="#rtmp监控" class="headerlink" title="rtmp监控"></a>rtmp监控</h3><p><a target="_blank" rel="noopener" href="http://localhost:18080/stat">http://localhost:18080/stat</a></p>
+<h3 id="rtmp推流"><a href="#rtmp推流" class="headerlink" title="rtmp推流"></a>rtmp推流</h3><p>地址：<br>rtmp://10.30.22.242:1935/hls/mystream</p>
+<h3 id="rtmp直播"><a href="#rtmp直播" class="headerlink" title="rtmp直播"></a>rtmp直播</h3><p>rtmp://127.0.0.1:1935/hls/mystream</p>
+<h3 id="hls直播"><a href="#hls直播" class="headerlink" title="hls直播"></a>hls直播</h3><p><a target="_blank" rel="noopener" href="http://127.0.0.1:18080/hls/mystream.m3u8">http://127.0.0.1:18080/hls/mystream.m3u8</a></p>
+<h3 id="录制视频"><a href="#录制视频" class="headerlink" title="录制视频"></a>录制视频</h3><p><a target="_blank" rel="noopener" href="http://127.0.0.1:18080/control/record/start?app=hls&amp;name=mystream&amp;rec=rec">http://127.0.0.1:18080/control/record/start?app=hls&amp;name=mystream&amp;rec=rec</a><br><a target="_blank" rel="noopener" href="http://127.0.0.1:18080/control/record/stop?app=hls&amp;name=mystream&amp;rec=rec">http://127.0.0.1:18080/control/record/stop?app=hls&amp;name=mystream&amp;rec=rec</a></p>
+<h3 id="为rtmp点播文件添加索引"><a href="#为rtmp点播文件添加索引" class="headerlink" title="为rtmp点播文件添加索引"></a>为rtmp点播文件添加索引</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;tmp&#x2F;rec</span><br><span class="line">yamdi -i mystream-1597303714_rec.flv -o mystream-1597303714_rec_idx.flv</span><br></pre></td></tr></table></figure>
+<h3 id="rtmp点播"><a href="#rtmp点播" class="headerlink" title="rtmp点播"></a>rtmp点播</h3><p>rtmp://127.0.0.1:1935/vod2/mystream-1597303714_rec_idx.flv</p>
+<h3 id="制作hls点播分片文件"><a href="#制作hls点播分片文件" class="headerlink" title="制作hls点播分片文件"></a>制作hls点播分片文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cd nginx-rtmp&#x2F;nginx-rtmp-module&#x2F;tmp&#x2F;rec</span><br><span class="line"></span><br><span class="line">ffmpeg -i mystream-1597303714_rec.flv -acodec copy -bsf:a h264_mp4toannexb -g 105 -vcodec libx264 -vprofile baseline -bf 0 -bufsize 850k -bsf:v dump_extra -map 0 -f segment -segment_format mpegts -segment_list &quot;mystream-1597303714_rec.m3u8&quot; -segment_time 10 mystream-1597303714_rec-%d.ts</span><br><span class="line"></span><br><span class="line">ffmpeg -i mystream-1597303714_rec.flv -acodec copy -bsf:a aac_adtstoasc -g 105 -vcodec libx264 -vprofile baseline -bf 0 -bufsize 850k -bsf:v dump_extra -map 0 -f segment -segment_format mpegts -segment_list &quot;mystream-1597303714_rec.m3u8&quot; -segment_time 10 mystream-1597303714_rec-%d.ts</span><br></pre></td></tr></table></figure>
+<h3 id="hls点播"><a href="#hls点播" class="headerlink" title="hls点播"></a>hls点播</h3><p><a target="_blank" rel="noopener" href="http://127.0.0.1:18080/vod/mystream-1597303714_rec.m3u8">http://127.0.0.1:18080/vod/mystream-1597303714_rec.m3u8</a></p>
 
       
     </div>
@@ -1070,7 +394,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201711/12factor/">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202008/nginx-http-flv%E9%85%8D%E7%BD%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -1084,7 +408,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201711/12factor/" class="post-title-link" itemprop="url">The Twelve-Factor App</a>
+            <a href="/202008/nginx-http-flv%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">nginx-http-flv配置</a>
         </h2>
 
         <div class="post-meta">
@@ -1094,15 +418,8 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2017-11-09 11:20:16" itemprop="dateCreated datePublished" datetime="2017-11-09T11:20:16+08:00">2017-11-09</time>
+              <time title="Created: 2021-01-05 14:03:41" itemprop="dateCreated datePublished" datetime="2021-01-05T14:03:41+08:00">2021-01-05</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:32:46" itemprop="dateModified" datetime="2018-11-06T15:32:46+08:00">2018-11-06</time>
-              </span>
 
           
 
@@ -1115,10 +432,600 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="地址"><a href="#地址" class="headerlink" title="地址"></a>地址</h2><p><a target="_blank" rel="noopener" href="https://12factor.net/zh_cn">https://12factor.net/zh_cn</a></p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>12-Factor 为构建如下的 SaaS 应用提供了方法论：<br>使用标准化流程自动配置，从而使新的开发者花费最少的学习成本加入这个项目。<br>和操作系统之间尽可能的划清界限，在各个系统中提供最大的可移植性。<br>适合部署在现代的云计算平台，从而在服务器和系统管理方面节省资源。<br>将开发环境和生产环境的差异降至最低，并使用持续交付实施敏捷开发。<br>可以在工具、架构和开发流程不发生明显变化的前提下实现扩展。</p>
-<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><p>I. 基准代码<br>一份基准代码，多份部署<br>II. 依赖<br>显式声明依赖关系<br>III. 配置<br>在环境中存储配置<br>IV. 后端服务<br>把后端服务当作附加资源<br>V. 构建，发布，运行<br>严格分离构建和运行<br>VI. 进程<br>以一个或多个无状态进程运行应用<br>VII. 端口绑定<br>通过端口绑定提供服务<br>VIII. 并发<br>通过进程模型进行扩展<br>IX. 易处理<br>快速启动和优雅终止可最大化健壮性<br>X. 开发环境与线上环境等价<br>尽可能的保持开发，预发布，线上环境相同<br>XI. 日志<br>把日志当作事件流<br>XII. 管理进程<br>后台管理任务当作一次性进程运行</p>
-<p>12-factor应用本身从不考虑存储自己的输出流。 不应该试图去写或者管理日志文件。相反，每一个运行的进程都会直接的标准输出（stdout）事件流。开发环境中，开发人员可以通过这些数据流，实时在终端看到应用的活动。</p>
+          <h2 id="github"><a href="#github" class="headerlink" title="github"></a>github</h2><p><a target="_blank" rel="noopener" href="https://github.com/winshining/nginx-http-flv-module/blob/master/README.CN.md">https://github.com/winshining/nginx-http-flv-module/blob/master/README.CN.md</a></p>
+<h2 id="源码下载"><a href="#源码下载" class="headerlink" title="源码下载"></a>源码下载</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/winshining/nginx-http-flv-module">nginx-http-flv</a></li>
+<li><a target="_blank" rel="noopener" href="http://nginx.org/en/download.html">nginx</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.openssl.org/source/">openssl</a></li>
+</ul>
+<h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;configure --prefix&#x3D;&#x2F;opt&#x2F;nginx-flv --with-openssl&#x3D;..&#x2F;openssl-1.1.1g --add-module&#x3D;..&#x2F;nginx-http-flv-module-1.2.7 --with-debug</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line">worker_processes  1; #运行在Windows上时，设置为1，因为Windows不支持Unix domain socket</span><br><span class="line"></span><br><span class="line">error_log logs/error.log error;</span><br><span class="line"></span><br><span class="line">events &#123;</span><br><span class="line">    worker_connections  4096;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">http &#123;</span><br><span class="line">    include       mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    keepalive_timeout  65;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">            root   /opt/nginx-flv/html;</span><br><span class="line">            index  index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">            root   html;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location /live &#123;</span><br><span class="line">            flv_live on; #打开HTTP播放FLV直播流功能</span><br><span class="line">            chunked_transfer_encoding on; #支持&#x27;Transfer-Encoding: chunked&#x27;方式回复</span><br><span class="line"></span><br><span class="line">            add_header &#x27;Access-Control-Allow-Origin&#x27; &#x27;*&#x27;; #添加额外的HTTP头</span><br><span class="line">            add_header &#x27;Access-Control-Allow-Credentials&#x27; &#x27;true&#x27;; #添加额外的HTTP头</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location /hls &#123;</span><br><span class="line">            types &#123;</span><br><span class="line">                application/vnd.apple.mpegurl m3u8;</span><br><span class="line">                video/mp2t ts;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            root /opt/nginx-flv/tmp;</span><br><span class="line">            add_header &#x27;Cache-Control&#x27; &#x27;no-cache&#x27;;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location /dash &#123;</span><br><span class="line">            root /opt/nginx-flv/tmp;</span><br><span class="line">            add_header &#x27;Cache-Control&#x27; &#x27;no-cache&#x27;;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location /stat &#123;</span><br><span class="line">            #推流播放和录制统计数据的配置</span><br><span class="line"></span><br><span class="line">            rtmp_stat all;</span><br><span class="line">            rtmp_stat_stylesheet stat.xsl;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location /stat.xsl &#123;</span><br><span class="line">            root /opt/nginx-flv/html/rtmp; #指定stat.xsl的位置</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        location /control &#123;</span><br><span class="line">            rtmp_control all; #rtmp控制模块的配置</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">rtmp_auto_push on;</span><br><span class="line">rtmp_auto_push_reconnect 1s;</span><br><span class="line">rtmp_socket_dir /opt/nginx-flv/tmp;</span><br><span class="line"></span><br><span class="line">rtmp &#123;</span><br><span class="line">    out_queue           4096;</span><br><span class="line">    out_cork            8;</span><br><span class="line">    max_streams         128;</span><br><span class="line">    timeout             15s;</span><br><span class="line">    drop_idle_publisher 15s;</span><br><span class="line"></span><br><span class="line">    log_interval 5s; #log模块在access.log中记录日志的间隔时间，对调试非常有用</span><br><span class="line">    log_size     1m; #log模块用来记录日志的缓冲区大小</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen 1935;</span><br><span class="line">        # server_name www.test.*; #用于虚拟主机名后缀通配</span><br><span class="line"></span><br><span class="line">        application myapp &#123;</span><br><span class="line">            live on;</span><br><span class="line">            gop_cache on; #打开GOP缓存，减少首屏等待时间</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        application hls &#123;</span><br><span class="line">            gop_cache on;</span><br><span class="line">            live on;</span><br><span class="line">            hls on;</span><br><span class="line">            hls_path /opt/nginx-flv/tmp/hls;</span><br><span class="line"></span><br><span class="line">            hls_fragment 5s;</span><br><span class="line">            recorder rec &#123;  #启用录制</span><br><span class="line">                record all manual;  #手动控制录制启停</span><br><span class="line">                record_suffix _rec.flv;</span><br><span class="line">                record_path /opt/nginx-flv/tmp/record;  #录制保存地址</span><br><span class="line">                record_unique on;</span><br><span class="line">           &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        application dash &#123;</span><br><span class="line">            gop_cache on;</span><br><span class="line">            live on;</span><br><span class="line">            dash on;</span><br><span class="line">            dash_path /opt/nginx-flv/tmp/dash;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意拷贝stat.xsl到相应目录下</p>
+</blockquote>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><h3 id="rtmp监控"><a href="#rtmp监控" class="headerlink" title="rtmp监控"></a>rtmp监控</h3><p><a target="_blank" rel="noopener" href="http://127.0.0.1/stat">http://127.0.0.1/stat</a></p>
+<h3 id="rtmp推流"><a href="#rtmp推流" class="headerlink" title="rtmp推流"></a>rtmp推流</h3><p>rtmp://10.30.22.242:1935/hls/mystream<br>rtmp://10.30.22.242:1935/dash/mystream<br>rtmp://10.30.22.242:1935/myapp/mystream</p>
+<h3 id="rtmp直播"><a href="#rtmp直播" class="headerlink" title="rtmp直播"></a>rtmp直播</h3><p>rtmp://127.0.0.1:1935/hls/mystream<br>rtmp://127.0.0.1:1935/myapp/mystream</p>
+<h3 id="hls直播"><a href="#hls直播" class="headerlink" title="hls直播"></a>hls直播</h3><p><a target="_blank" rel="noopener" href="http://127.0.0.1/hls/mystream.m3u8">http://127.0.0.1/hls/mystream.m3u8</a></p>
+<h2 id="flv直播"><a href="#flv直播" class="headerlink" title="flv直播"></a>flv直播</h2><p><a target="_blank" rel="noopener" href="http://127.0.0.1/live?port=1935&amp;app=hls&amp;stream=mystream">http://127.0.0.1/live?port=1935&amp;app=hls&amp;stream=mystream</a></p>
+<h3 id="dash直播"><a href="#dash直播" class="headerlink" title="dash直播"></a>dash直播</h3><p><a target="_blank" rel="noopener" href="http://127.0.0.1/dash/mystream.mpd">http://127.0.0.1/dash/mystream.mpd</a></p>
+<h3 id="录制视频"><a href="#录制视频" class="headerlink" title="录制视频"></a>录制视频</h3><p><a target="_blank" rel="noopener" href="http://127.0.0.1/control/record/start?app=hls&amp;name=mystream&amp;rec=rec">http://127.0.0.1/control/record/start?app=hls&amp;name=mystream&amp;rec=rec</a><br><a target="_blank" rel="noopener" href="http://127.0.0.1/control/record/stop?app=hls&amp;name=mystream&amp;rec=rec">http://127.0.0.1/control/record/stop?app=hls&amp;name=mystream&amp;rec=rec</a></p>
+<h2 id="ffplay"><a href="#ffplay" class="headerlink" title="ffplay"></a>ffplay</h2><p>ffplay -i rtmp://127.0.0.1:1935/hls/mystream -fflags nobuffer -analyzeduration 1000000<br>ffplay “<a target="_blank" rel="noopener" href="http://127.0.0.1/live?port=1935&amp;app=hls&amp;stream=mystream&quot;">http://127.0.0.1/live?port=1935&amp;app=hls&amp;stream=mystream&quot;</a></p>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/winshining/article/details/74910586">https://blog.csdn.net/winshining/article/details/74910586</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/winshining/article/details/79492099">https://blog.csdn.net/winshining/article/details/79492099</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/winshining/article/details/81512775">https://blog.csdn.net/winshining/article/details/81512775</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202008/Livego%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202008/Livego%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Livego配置笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-05 14:03:30" itemprop="dateCreated datePublished" datetime="2021-01-05T14:03:30+08:00">2021-01-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/gwuhaolin/livego/blob/master/README_cn.md">https://github.com/gwuhaolin/livego/blob/master/README_cn.md</a></li>
+</ul>
+<h2 id="二进制下载"><a href="#二进制下载" class="headerlink" title="二进制下载"></a>二进制下载</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/gwuhaolin/livego/releases">https://github.com/gwuhaolin/livego/releases</a></li>
+</ul>
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;livego</span><br><span class="line"></span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] HLS server enable....</span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] HTTP-FLV listen On :7001</span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] HTTP-API listen On :8090</span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] RTMP Listen On :1935</span><br><span class="line">INFO[2020-08-18T16:55:13+08:00] HLS listen On :7002</span><br></pre></td></tr></table></figure>
+<h2 id="获取channelkey"><a href="#获取channelkey" class="headerlink" title="获取channelkey"></a>获取channelkey</h2><p>访问 <a target="_blank" rel="noopener" href="http://localhost:8090/control/get?room=movie">http://localhost:8090/control/get?room=movie</a> 获取一个房间的 channelkey(channelkey用于推流，movie用于播放)</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl http://localhost:8090/control/get?room=movie</span><br><span class="line">rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk</span><br></pre></td></tr></table></figure>
+<h2 id="推流"><a href="#推流" class="headerlink" title="推流"></a>推流</h2><p>通过RTMP协议推送视频流到地址 rtmp://localhost:1935/{appname}/{channelkey} (appname默认是live)</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -re -i test.mp4 -c copy -f flv rtmp://127.0.0.1:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk</span><br></pre></td></tr></table></figure>
+<h2 id="播放"><a href="#播放" class="headerlink" title="播放"></a>播放</h2><ul>
+<li>RTMP: rtmp://127.0.0.1:1935/live/movie</li>
+<li>FLV:  <a target="_blank" rel="noopener" href="http://127.0.0.1:7001/live/movie.flv">http://127.0.0.1:7001/live/movie.flv</a></li>
+<li>HLS:  <a target="_blank" rel="noopener" href="http://127.0.0.1:7002/live/movie.m3u8">http://127.0.0.1:7002/live/movie.m3u8</a></li>
+</ul>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;livego  -h</span><br><span class="line">Usage of .&#x2F;livego:</span><br><span class="line">      --api_addr string       HTTP管理访问监听地址 (default &quot;:8090&quot;)</span><br><span class="line">      --config_file string    配置文件路径 (默认 &quot;livego.yaml&quot;)</span><br><span class="line">      --flv_dir string        输出的 flv 文件路径 flvDir&#x2F;APP&#x2F;KEY_TIME.flv (默认 &quot;tmp&quot;)</span><br><span class="line">      --gop_num int           gop 数量 (default 1)</span><br><span class="line">      --hls_addr string       HLS 服务监听地址 (默认 &quot;:7002&quot;)</span><br><span class="line">      --hls_keep_after_end    Maintains the HLS after the stream ends</span><br><span class="line">      --httpflv_addr string   HTTP-FLV server listen address (默认 &quot;:7001&quot;)</span><br><span class="line">      --level string          日志等级 (默认 &quot;info&quot;)</span><br><span class="line">      --read_timeout int      读超时时间 (默认 10)</span><br><span class="line">      --rtmp_addr string      RTMP 服务监听地址 (默认 &quot;:1935&quot;)</span><br><span class="line">      --write_timeout int     写超时时间 (默认 10)</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202008/ffmpeg&ffplay&ffprobe%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202008/ffmpeg&ffplay&ffprobe%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">ffmpeg&ffplay&ffprobe常用命令</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-05 14:03:21" itemprop="dateCreated datePublished" datetime="2021-01-05T14:03:21+08:00">2021-01-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://ffmpeg.org/ffmpeg.html">ffmpeg官网</a></li>
+</ul>
+<h2 id="ffprobe"><a href="#ffprobe" class="headerlink" title="ffprobe"></a>ffprobe</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看媒体文件信息</span></span><br><span class="line">ffprobe test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出文件的格式信息</span></span><br><span class="line">ffprobe -show_format test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 以json格式输出每个流最详细的信息</span></span><br><span class="line">ffprobe -print_format json -show_streams test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 显示帧信息</span></span><br><span class="line">ffprobe  -show_streams test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看包信息</span></span><br><span class="line">ffprobe -show_packets test.mp4</span><br></pre></td></tr></table></figure>
+<h2 id="ffplay"><a href="#ffplay" class="headerlink" title="ffplay"></a>ffplay</h2><h3 id="常用示例"><a href="#常用示例" class="headerlink" title="常用示例"></a>常用示例</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 播放音视频文件</span></span><br><span class="line">ffplay test.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 循环播放</span></span><br><span class="line">ffplay test.mp4 -loop 3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放音频流</span></span><br><span class="line">ffplay test.mp4 -ast 1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放视频流</span></span><br><span class="line">ffplay test.mp4 -vst 0</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放rtmp流</span></span><br><span class="line">ffplay -i rtmp://127.0.0.1:1935/hls/mystream -fflags nobuffer -analyzeduration 1000000</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放裸数据音频</span></span><br><span class="line">ffplay 原始文件(pcm文件) -f 格式 -channels 声道数 -ar 采样率</span><br><span class="line"><span class="comment"># 播放裸数据视频</span></span><br><span class="line">ffplay 原始格式(例如-f rawvideo) 格式(例如-pixel_format yuv420p) 宽高(例如-s 480*480) 原始文件(yuv)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 播放裸数据RGB</span></span><br><span class="line">ffplay -f rawvideo -pixel_format rgb24 -s 480*480 texture.rgb</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+<h3 id="常用参数"><a href="#常用参数" class="headerlink" title="常用参数"></a>常用参数</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 通用参数</span></span><br><span class="line">-f fmt	指定格式(音频或视频格式)</span><br><span class="line">-i filename	指定输入文件名，在linux下当然也能指定:0.0(屏幕录制)或摄像头</span><br><span class="line">-y	覆盖已有文件</span><br><span class="line">-t duration	记录时长为</span><br><span class="line">-fs limit_size 设置文件大小上限</span><br><span class="line">-ss time_off	从指定的时间(s)开始， [-]hh:mm:ss[.xxx]的格式也支持</span><br><span class="line">-re 代表按照帧率发送,作为推流工具一定要加入参数,否则ffmpeg会按照最高速率向流媒体服务器不停发送数据</span><br><span class="line"></span><br><span class="line"><span class="comment"># 视频参数</span></span><br><span class="line">-b 指定比特率(bits/s)，似乎ffmpeg是自动VBR的，指定了就大概是平均比特率</span><br><span class="line">-bitexact    使用标准比特率</span><br><span class="line">-vb    指定视频比特率(bits/s)</span><br><span class="line">-vframes number    设置转换多少桢(frame)的视频</span><br><span class="line">-r rate    帧速率(fps) （可以改，确认非标准桢率会导致音画不同步，所以只能设定为15或者29.97）</span><br><span class="line">-s size    指定分辨率 (320x240)</span><br><span class="line">-aspect aspect    设置视频长宽比(4:3, 16:9 or 1.3333, 1.7777)</span><br><span class="line">-croptop size    设置顶部切除尺寸(<span class="keyword">in</span> pixels)</span><br><span class="line">-cropbottom size    设置底部切除尺寸(<span class="keyword">in</span> pixels)</span><br><span class="line">-cropleft size    设置左切除尺寸 (<span class="keyword">in</span> pixels)</span><br><span class="line">-cropright size    设置右切除尺寸 (<span class="keyword">in</span> pixels)</span><br><span class="line">-padtop size    设置顶部补齐尺寸(<span class="keyword">in</span> pixels)</span><br><span class="line">-padbottom size    底补齐(<span class="keyword">in</span> pixels)</span><br><span class="line">-padleft size    左补齐(<span class="keyword">in</span> pixels)</span><br><span class="line">-padright size    右补齐(<span class="keyword">in</span> pixels)</span><br><span class="line">-padcolor color    补齐带颜色(000000-FFFFFF)</span><br><span class="line">-vn    取消视频</span><br><span class="line">-vcodec codec    强制使用codec编解码方式(<span class="string">&#x27;copy&#x27;</span> to copy stream)</span><br><span class="line">-sameq    使用同样视频质量作为源（VBR）</span><br><span class="line">-pass n    选择处理遍数（1或者2）。两遍编码非常有用。第一遍生成统计信息，第二遍生成精确的请求的码率</span><br><span class="line">-passlogfile file    选择两遍的纪录文件名为file</span><br><span class="line">-newvideo    在现在的视频流后面加入新的视频流</span><br><span class="line"></span><br><span class="line"><span class="comment"># 高级视频选项</span></span><br><span class="line">-pix_fmt format    <span class="built_in">set</span> pixel format, <span class="string">&#x27;list&#x27;</span> as argument shows all the pixel formats supported</span><br><span class="line">-intra    仅适用帧内编码</span><br><span class="line">-qscale q    以&lt;数值&gt;质量为基础的VBR，取值0.01-255，约小质量越好</span><br><span class="line">-loop_input    设置输入流的循环数(目前只对图像有效)</span><br><span class="line">-loop_output    设置输出视频的循环数，比如输出gif时设为0表示无限循环</span><br><span class="line">-g int    设置图像组大小</span><br><span class="line">-cutoff int    设置截止频率</span><br><span class="line">-qmin int    设定最小质量，与-qmax（设定最大质量）共用，比如-qmin 10 -qmax 31</span><br><span class="line">-qmax int    设定最大质量</span><br><span class="line">-qdiff int    量化标度间最大偏差 (VBR)</span><br><span class="line">-bf int    使用frames B 帧，支持mpeg1,mpeg2,mpeg4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 音频参数</span></span><br><span class="line">-ab    设置比特率(单位：bit/s，也许老版是kb/s)前面-ac设为立体声时要以一半比特率来设置，比如192kbps的就设成96，转换 默认比特率都较小，要听到较高品质声音的话建议设到160kbps（80）以上。</span><br><span class="line">-aframes number    设置转换多少桢(frame)的音频</span><br><span class="line">-aq quality    设置音频质量 (指定编码)</span><br><span class="line">-ar rate    设置音频采样率 (单位：Hz)，PSP只认24000</span><br><span class="line">-ac channels    设置声道数，1就是单声道，2就是立体声，转换单声道的TVrip可以用1（节省一半容量），高品质的DVDrip就可以用2</span><br><span class="line">-an    取消音频</span><br><span class="line">-acodec codec    指定音频编码(<span class="string">&#x27;copy&#x27;</span> to copy stream)</span><br><span class="line">-vol volume    设置录制音量大小(默认为256) &lt;百分比&gt; ，某些DVDrip的AC3轨音量极小，转换时可以用这个提高音量，比如200就是原来的2倍</span><br><span class="line">-newaudio    在现在的音频流后面加入新的音频流</span><br><span class="line"></span><br><span class="line"><span class="comment"># 字幕参数</span></span><br><span class="line">-sn    取消字幕</span><br><span class="line">-scodec codec    设置字幕编码(<span class="string">&#x27;copy&#x27;</span> to copy stream)</span><br><span class="line">-newsubtitle    在当前字幕后新增</span><br><span class="line">-slang code    设置字幕所用的ISO 639编码(3个字母)</span><br><span class="line">Audio/Video 抓取选项:</span><br><span class="line">-vc channel    设置视频捕获通道(只对DV1394)</span><br><span class="line">-tvstd standard    设置电视标准 NTSC PAL(SECAM)	</span><br></pre></td></tr></table></figure>
+
+<h2 id="ffmpeg"><a href="#ffmpeg" class="headerlink" title="ffmpeg"></a>ffmpeg</h2><h3 id="参数格式"><a href="#参数格式" class="headerlink" title="参数格式"></a>参数格式</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg &#123;1&#125; &#123;2&#125; -i &#123;3&#125; &#123;4&#125; &#123;5&#125;</span><br><span class="line">1. 全局参数</span><br><span class="line">2. 输入文件参数</span><br><span class="line">3. 输入文件</span><br><span class="line">4. 输出文件参数</span><br><span class="line">5. 输出文件</span><br><span class="line"></span><br><span class="line">ffmpeg \</span><br><span class="line">-y \ # 全局参数</span><br><span class="line">-c:a libfdk_aac -c:v libx264 \ # 输入文件参数</span><br><span class="line">-i input.mp4 \ # 输入文件</span><br><span class="line">-c:v libvpx-vp9 -c:a libvorbis \ # 输出文件参数</span><br><span class="line">output.webm # 输出文件</span><br></pre></td></tr></table></figure>
+<h3 id="常用参数-1"><a href="#常用参数-1" class="headerlink" title="常用参数"></a>常用参数</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-c：指定编码器</span><br><span class="line">-c copy：直接复制，不经过重新编码（这样比较快）</span><br><span class="line">-c:v：指定视频编码器</span><br><span class="line">-c:a：指定音频编码器</span><br><span class="line">-i：指定输入文件</span><br><span class="line">-an：去除音频流</span><br><span class="line">-vn： 去除视频流</span><br><span class="line">-preset：指定输出的视频质量，会影响文件的生成速度，有以下几个可用的值 ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow。</span><br><span class="line">-y：不经过确认，输出时直接覆盖同名文件。</span><br></pre></td></tr></table></figure>
+<h3 id="常用示例-1"><a href="#常用示例-1" class="headerlink" title="常用示例"></a>常用示例</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 转换编码格式</span></span><br><span class="line">ffmpeg -i input.mp4 -c:v libx264 output.mp4</span><br><span class="line">ffmpeg -i input.mp4 -c:v libx265 output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 转换容器格式</span></span><br><span class="line">ffmpeg -i input.mp4 -c copy output.webm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 调整码率</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-minrate 964K -maxrate 3856K -bufsize 2000K \</span><br><span class="line">output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 改变分辨率（transsizing）</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-vf scale=480:-1 \</span><br><span class="line">output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 提取音频</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-vn -c:a copy \</span><br><span class="line">output.aac</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加音轨</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-i input.aac -i input.mp4 \</span><br><span class="line">output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 连续截图1秒钟</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-y \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-ss 00:01:24 -t 00:00:01 \</span><br><span class="line">output_%3d.jpg</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定一帧截图</span></span><br><span class="line"><span class="comment"># -vframes 1指定只截取一帧，-q:v 2表示输出的图片质量</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-ss 00:01:24 \</span><br><span class="line">-i input.mp4 \</span><br><span class="line">-vframes 1 -q:v 2 \</span><br><span class="line">output.jpg</span><br><span class="line"></span><br><span class="line"><span class="comment"># 裁剪</span></span><br><span class="line">ffmpeg -ss 00:01:50 -i input.mp4 -t 10.5 -c copy output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 为音频添加封面</span></span><br><span class="line"><span class="comment"># -loop 1参数表示图片无限循环，-shortest参数表示音频文件结束，输出视频就结束。</span></span><br><span class="line">ffmpeg \</span><br><span class="line">-loop 1 \</span><br><span class="line">-i cover.jpg -i input.mp3 \</span><br><span class="line">-c:v libx264 -c:a aac -b:a 192k -shortest \</span><br><span class="line">output.mp4</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="其它示例"><a href="#其它示例" class="headerlink" title="其它示例"></a>其它示例</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># 列出ffmpeg支持的所有格式</span></span><br><span class="line">ffmpeg -formats</span><br><span class="line"></span><br><span class="line"><span class="comment"># 剪切一段媒体文件,将文件从50秒开始剪切20秒,输入到新文件,-ss是指定时间,-t是指定时长 提取一个视频中的音频文件</span></span><br><span class="line"></span><br><span class="line">ffmpeg -i input.mp4 -ss 00:00:50.0 -codec copy -t 20 output,mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 提取一个视频中的音频文件</span></span><br><span class="line">ffmpeg -i input.mp4 -vn -acodec copy output.m4a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使一个视频中的音频静音</span></span><br><span class="line">ffmpeg -i input.mp4 -an -vcodec copy output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从MP4文件中导出H264裸流</span></span><br><span class="line">ffmpeg -i test.mp4 -an -vcodec copy -bsf:v h264_mp4toannexb output.h264</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用aac和h264文件生成mp4文件</span></span><br><span class="line">ffmpeg -i input.aac -i input.h264 -acodec copy -bsf:a aac_adtstoasc -vcodec copy -f mp4 output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 对音频文件的编码做转换</span></span><br><span class="line">ffmpeg -i input.wav -acodec libfdk_aac output.aac</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从wav文件导出pcm裸数据</span></span><br><span class="line">ffmpeg -i input.wav -acodec pcm_s16le -f s16le output.pcm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将mp4导出为gif,参数设置为宽度100,帧率10,只处理前五秒</span></span><br><span class="line">ffmpeg -i test.mp4 -vf sacle=100:-1 -t 5 -r 10 output.gif</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将视频画面生成图片,参数为每四秒截取一张,生成缩略图</span></span><br><span class="line">ffmpeg -i test.mp4 -r 0.25 frames_%04d.png</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将两路声音合并,例如添加背景音乐,输出时间是以较短的为准</span></span><br><span class="line">ffmpeg -i input.wav -i bgm.wav -filter_complex amix=inputs=2:deration=shortest output.wav</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 视频添加水印,视频宽度为100,水印宽度为20</span></span><br><span class="line">ffmpeg -i test.mp4 -i image.png -filter_complex <span class="string">&#x27;[0:v][1:v]overlay=100-20-10:10:1[out]&#x27;</span> -map <span class="string">&#x27;[out]&#x27;</span> output.mp4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将视频推送到流媒体服务器(-re表示实际速度)</span></span><br><span class="line">ffmpeg -re -i test.mp4 -acodec copy -vcodec copy -f flv rtmp://10.30.22.242:1935/hls/mystream</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将流媒体服务器的流dump到本地</span></span><br><span class="line">ffmpeg -i rtmp://10.30.22.242:1935/hls/mystream -acodec copy -vcodec copy -f flv output.flv</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2020/01/ffmpeg.html">FFmpeg 视频处理入门教程</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/6844903550229676039">ffprobe,ffplay ffmpeg常用的命令行命令</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/146359917">FFmpeg常用技巧</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.longqi.cf/tools/2015/02/13/ffmpegcn/">ffmpeg中文手册</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202008/Anaconda%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202008/Anaconda%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Anaconda常用操作</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-05 14:03:13" itemprop="dateCreated datePublished" datetime="2021-01-05T14:03:13+08:00">2021-01-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="换源"><a href="#换源" class="headerlink" title="换源"></a>换源</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/</span><br><span class="line">conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/</span><br><span class="line">conda config --<span class="built_in">set</span> show_channel_urls yes</span><br><span class="line"></span><br><span class="line">conda config --show channels</span><br></pre></td></tr></table></figure>
+
+<h2 id="查看版本等信息"><a href="#查看版本等信息" class="headerlink" title="查看版本等信息"></a>查看版本等信息</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">conda info</span><br><span class="line">conda -V/--version</span><br></pre></td></tr></table></figure>
+<h2 id="环境查看"><a href="#环境查看" class="headerlink" title="环境查看"></a>环境查看</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">conda env list</span><br><span class="line">conda info -e</span><br></pre></td></tr></table></figure>
+<h2 id="环境管理"><a href="#环境管理" class="headerlink" title="环境管理"></a>环境管理</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建新环境</span></span><br><span class="line">conda create --name newenv python=3.6</span><br><span class="line"></span><br><span class="line"><span class="comment"># 复制新环境</span></span><br><span class="line">conda create -n newenv --<span class="built_in">clone</span> base</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除环境</span></span><br><span class="line">conda remove --name newenv --all</span><br><span class="line"></span><br><span class="line"><span class="comment"># 激活环境</span></span><br><span class="line">conda activate newenv</span><br><span class="line"></span><br><span class="line"><span class="comment"># 退出环境</span></span><br><span class="line">conda deactivate</span><br></pre></td></tr></table></figure>
+<h2 id="环境导入导出"><a href="#环境导入导出" class="headerlink" title="环境导入导出"></a>环境导入导出</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导出</span></span><br><span class="line">conda env <span class="built_in">export</span> &gt; environment.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入</span></span><br><span class="line">conda env create -f .../environment.yaml</span><br></pre></td></tr></table></figure>
+<h2 id="包管理"><a href="#包管理" class="headerlink" title="包管理"></a>包管理</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">conda list <span class="comment"># 查看已经安装的包</span></span><br><span class="line">conda update conda <span class="comment"># 升级conda自身</span></span><br><span class="line">conda search requests <span class="comment"># 查询某个包</span></span><br><span class="line">conda install requests <span class="comment"># 安装新包</span></span><br><span class="line">conda install -n <span class="built_in">test</span> requests <span class="comment"># 将包安装到指定环境</span></span><br><span class="line">conda update --all <span class="comment"># 更新所有包</span></span><br><span class="line">conda update requests <span class="comment"># 升级包</span></span><br><span class="line">conda remove requests <span class="comment"># 移除包</span></span><br><span class="line">conda remove -n <span class="built_in">test</span> requests <span class="comment"># 从指定环境中移除包</span></span><br></pre></td></tr></table></figure>
+<h2 id="requirements-txt导入导出"><a href="#requirements-txt导入导出" class="headerlink" title="requirements.txt导入导出"></a>requirements.txt导入导出</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># pip批量导出包含环境中所有组件的requirements.txt文件</span></span><br><span class="line">pip freeze &gt; requirements.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># pip批量安装requirements.txt文件中包含的组件依赖</span></span><br><span class="line">pip install -r requirements.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># conda批量导出包含环境中所有组件的requirements.txt文件</span></span><br><span class="line">conda list -e &gt; requirements.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># conda批量安装requirements.txt文件中包含的组件依赖</span></span><br><span class="line">conda install --yes --file requirements.txt</span><br></pre></td></tr></table></figure>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://jakevdp.github.io/blog/2016/08/25/conda-myths-and-misconceptions/">https://jakevdp.github.io/blog/2016/08/25/conda-myths-and-misconceptions/</a></li>
+<li><a target="_blank" rel="noopener" href="http://lizhiqiang.me/conda/">http://lizhiqiang.me/conda/</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-TypeScript%E7%BC%96%E7%A0%81%E9%A3%8E%E6%A0%BC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-TypeScript%E7%BC%96%E7%A0%81%E9%A3%8E%E6%A0%BC/" class="post-title-link" itemprop="url">研发规约-TypeScript编码风格</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-05 14:02:56" itemprop="dateCreated datePublished" datetime="2021-01-05T14:02:56+08:00">2021-01-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://acexking.github.io/2019/08/14/typescript/">https://acexking.github.io/2019/08/14/typescript/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/55701103">https://www.zhihu.com/question/55701103</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/microsoft/TypeScript/blob/master/doc/spec.md">https://github.com/microsoft/TypeScript/blob/master/doc/spec.md</a></li>
+<li><a target="_blank" rel="noopener" href="https://scarletsky.github.io/2017/12/23/write-javascript-document-by-jsdoc/">https://scarletsky.github.io/2017/12/23/write-javascript-document-by-jsdoc/</a></li>
+<li><a target="_blank" rel="noopener" href="https://jsdoc.app/about-getting-started.html">https://jsdoc.app/about-getting-started.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://hamednourhani.gitbooks.io/typescript-book/docs/tips/null.html">https://hamednourhani.gitbooks.io/typescript-book/docs/tips/null.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://basarat.gitbook.io/typescript/recap/null-undefined">https://basarat.gitbook.io/typescript/recap/null-undefined</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1125664">https://cloud.tencent.com/developer/article/1125664</a></li>
+</ul>
+<h2 id="tslint"><a href="#tslint" class="headerlink" title="tslint"></a>tslint</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/microsoft/typescript-tslint-plugin">https://github.com/microsoft/typescript-tslint-plugin</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/vvakame/typescript-project-sample/blob/master/tslint.json">https://github.com/vvakame/typescript-project-sample/blob/master/tslint.json</a></li>
+</ul>
+<h2 id="命名"><a href="#命名" class="headerlink" title="命名"></a>命名</h2><ul>
+<li>类型名使用 PascalCase</li>
+<li>接口名前不要加 I</li>
+<li>枚举值使用 PascalCase</li>
+<li>函数名使用 camelCase</li>
+<li>属性和局部变量名使用 camelCase</li>
+<li>使用UPPER_SNAKE_CASE来命名常量</li>
+<li>私有属性名不要使用 _ 前缀</li>
+<li>命名时尽可能地使用全名（而非缩写）</li>
+</ul>
+<h2 id="风格"><a href="#风格" class="headerlink" title="风格"></a>风格</h2><ul>
+<li>使用单引号括起字符串</li>
+<li>总是使用大括号括起循环体和条件体开大括号</li>
+<li>总是放在其关联语句的同一行（大括号不换行）</li>
+<li>圆括号内侧不留空格；在圆括号内的逗号、冒号和分号后空一格。</li>
+<li>每个定义使用单独的语句。  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// BAD: </span></span><br><span class="line"><span class="keyword">var</span> x = <span class="number">1</span>, y = <span class="number">2</span>;</span><br><span class="line"><span class="comment">// GOOD:  </span></span><br><span class="line"><span class="keyword">var</span> x = <span class="number">1</span>; </span><br><span class="line"><span class="keyword">var</span> y = <span class="number">2</span>;</span><br></pre></td></tr></table></figure></li>
+<li>const &gt; let &gt; var</li>
+<li>当单行无法容下参数声明时, 在多行显示, 且参数必须对齐. 同理, 类成员, 数组成员接口成员也需要对齐</li>
+<li>行末是否使用分号，不硬性规定</li>
+<li>对于跨越多行的数组字面量, 对象字面量/import/export/type字面量/函数形参列表/函数调用实参等, 都应该尾随逗号  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> trailingWhitespace = &#123;</span><br><span class="line">foo: <span class="string">&#x27;string&#x27;</span>,</span><br><span class="line">bar: <span class="number">1</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="注释"><a href="#注释" class="headerlink" title="注释"></a>注释</h2></li>
+<li>使用<code>// </code>作为单行注释, 注释内容前面必须有空格</li>
+<li>每个文件开头必须提供关于这个文件的注释.说明文件的内容, TODO, 更新日期, 权限等信息</li>
+<li>使用/** …*/作为多行注释, 并使用JSDoc格式对代码进行文档化</li>
+</ul>
+<h2 id="箭头函数"><a href="#箭头函数" class="headerlink" title="箭头函数"></a>箭头函数</h2><ul>
+<li>只有一个参数时,可以省略括号  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> arrowFunctiono = <span class="function"><span class="params">i</span> =&gt;</span> i </span><br></pre></td></tr></table></figure></li>
+<li>如果可以尽量使用简写的返回  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> shorthandReturno = <span class="function">() =&gt;</span> <span class="literal">true</span></span><br></pre></td></tr></table></figure></li>
+<li>别保存 this 的引用。优先使用箭头函数  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="built_in">this</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2></li>
+<li>new 操作始终加上()</li>
+<li>使用函数声明代替函数表达式  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// BAD:</span></span><br><span class="line"><span class="keyword">const</span> foo = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="comment">// GOOD:</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>) </span>&#123;&#125;</span><br></pre></td></tr></table></figure></li>
+<li>不要使用 arguments。可以选择 rest 语法 … 替代。  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">concatenateAll</span>(<span class="params">...args</span>) </span>&#123;</span><br><span class="line"><span class="keyword">return</span> args.join(<span class="string">&#x27;&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="对象"><a href="#对象" class="headerlink" title="对象"></a>对象</h2></li>
+<li>只有在必要时, 才添加引号  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> objo = &#123;</span><br><span class="line">foo: <span class="string">&#x27;string&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;foo bar&#x27;</span>: <span class="number">1</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>优先使用object spread 语法  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// BAD:</span></span><br><span class="line"><span class="keyword">let</span> objectAssign = <span class="built_in">Object</span>.assign(&#123;&#125;, obj1)</span><br><span class="line"><span class="comment">// GOOD:</span></span><br><span class="line"><span class="keyword">let</span> objectSpread = &#123; ...obj1 &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h2></li>
+<li>始终显式设置成员的可见性, 这样可以提醒你慎重考虑属性的可见性, 避免将因为省略描述符而将私有成员暴露出去  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Membero</span> </span>&#123;</span><br><span class="line">  <span class="keyword">public</span> <span class="function"><span class="title">foo</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">  <span class="comment">// do somthing</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="操作符-表达式"><a href="#操作符-表达式" class="headerlink" title="操作符/表达式"></a>操作符/表达式</h2></li>
+<li>二元操作符中的字面量应该始终在变量的右边</li>
+<li>不要比较boolean 字面量  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//BAD:</span></span><br><span class="line"><span class="keyword">let</span> baz = ok === <span class="literal">true</span> ? <span class="string">&#x27;foo&#x27;</span> : <span class="string">&#x27;baz&#x27;</span></span><br><span class="line"><span class="comment">// GOOD:</span></span><br><span class="line">baz = ok ? <span class="string">&#x27;foo&#x27;</span> : <span class="string">&#x27;baz&#x27;</span></span><br></pre></td></tr></table></figure></li>
+<li>当使用if语句比较超过三个时, 考虑使用switch</li>
+<li>优先使用字符串模板  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">temp = <span class="string">`print<span class="subst">$&#123;hello&#125;</span> <span class="subst">$&#123;world&#125;</span>`</span></span><br></pre></td></tr></table></figure>
+<h2 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h2></li>
+<li>导入默认导出, 最好匹配库默认的导出名  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// BAD:</span></span><br><span class="line"><span class="keyword">import</span> IReact <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span></span><br><span class="line"><span class="comment">// GOOD:</span></span><br><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span></span><br></pre></td></tr></table></figure></li>
+<li>为了减少打包体积, 避免引入整个模块, 而是按需引入需要的子模块. 典型的应用就是lodash  <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// BAD:</span></span><br><span class="line"><span class="keyword">import</span> _ <span class="keyword">from</span> <span class="string">&#x27;lodash&#x27;</span></span><br><span class="line"><span class="comment">// GOOD:</span></span><br><span class="line"><span class="keyword">import</span> findIndex <span class="keyword">from</span> <span class="string">&#x27;lodash/findIndex&#x27;</span></span><br></pre></td></tr></table></figure>
+<h2 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h2></li>
+<li>除非类型/函数需要在多个组件中共享，否则不要导出(export)</li>
+<li>在文件中，类型定义应该放在最前面</li>
+<li>使用 undefined，不要使用 null </li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-ModelMapper%E5%AF%B9%E5%83%8F%E6%98%A0%E5%B0%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-ModelMapper%E5%AF%B9%E5%83%8F%E6%98%A0%E5%B0%84/" class="post-title-link" itemprop="url">研发规约-ModelMapper对像映射</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-05 14:02:50" itemprop="dateCreated datePublished" datetime="2021-01-05T14:02:50+08:00">2021-01-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>项目中经常需要将Model和DTO互转，产生很多<code>getXXX/setXXX</code>的模板化代码。使用ModelMapper可以简化转换步骤。</p>
+<h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="http://modelmapper.org/">http://modelmapper.org/</a></p>
+<h2 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.modelmapper<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>modelmapper<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="对象示例"><a href="#对象示例" class="headerlink" title="对象示例"></a>对象示例</h2><p>源对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Assume getters and setters on each class</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Order</span> </span>&#123;</span><br><span class="line">  Customer customer;</span><br><span class="line">  Address billingAddress;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Customer</span> </span>&#123;</span><br><span class="line">  Name name;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Name</span> </span>&#123;</span><br><span class="line">  String firstName;</span><br><span class="line">  String lastName;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Address</span> </span>&#123;</span><br><span class="line">  String street;</span><br><span class="line">  String city;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>目标对象：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Assume getters and setters</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">OrderDTO</span> </span>&#123;</span><br><span class="line">  String customerFirstName;</span><br><span class="line">  String customerLastName;</span><br><span class="line">  String billingStreet;</span><br><span class="line">  String billingCity;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="自动转换"><a href="#自动转换" class="headerlink" title="自动转换"></a>自动转换</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ModelMapper modelMapper = <span class="keyword">new</span> ModelMapper();</span><br><span class="line">OrderDTO orderDTO = modelMapper.map(order, OrderDTO.class);</span><br></pre></td></tr></table></figure>
+<h2 id="自定义转换"><a href="#自定义转换" class="headerlink" title="自定义转换"></a>自定义转换</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">modelMapper.typeMap(Order.class, OrderDTO.class).addMappings(mapper -&gt; &#123;</span><br><span class="line">  mapper.map(src -&gt; src.getBillingAddress().getStreet(),</span><br><span class="line">      Destination::setBillingStreet);</span><br><span class="line">  mapper.map(src -&gt; src.getBillingAddress().getCity(),</span><br><span class="line">      Destination::setBillingCity);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h2 id="转换配置"><a href="#转换配置" class="headerlink" title="转换配置"></a>转换配置</h2><p>ModelMapper有Standard、Loose、Strict 3种模式： </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);</span><br></pre></td></tr></table></figure>
+<p>参考文档：<br><a target="_blank" rel="noopener" href="http://modelmapper.org/user-manual/configuration/#matching-strategies">http://modelmapper.org/user-manual/configuration/#matching-strategies</a></p>
+<h2 id="转换校验"><a href="#转换校验" class="headerlink" title="转换校验"></a>转换校验</h2><p>assert手工校验：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">assertEquals(order.getCustomer().getName().getFirstName(), orderDTO.getCustomerFirstName());</span><br></pre></td></tr></table></figure>
+<p>ModelMapper自动校验：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">modelMapper.createTypeMap(Order.class, OrderDTO.class);</span><br><span class="line">modelMapper.addMappings(<span class="keyword">new</span> OrderMap());</span><br><span class="line">modelMapper.validate();</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Angular%E7%BC%96%E7%A0%81%E9%A3%8E%E6%A0%BC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Angular%E7%BC%96%E7%A0%81%E9%A3%8E%E6%A0%BC/" class="post-title-link" itemprop="url">研发规约-Angular编码风格</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2021-01-05 14:02:40" itemprop="dateCreated datePublished" datetime="2021-01-05T14:02:40+08:00">2021-01-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://angular.cn/guide/styleguide">https://angular.cn/guide/styleguide</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/29784072">https://zhuanlan.zhihu.com/p/29784072</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/codelyzer">https://www.npmjs.com/package/codelyzer</a></li>
+</ul>
+<h2 id="单一职责"><a href="#单一职责" class="headerlink" title="单一职责"></a>单一职责</h2><ul>
+<li>一个文件定义一样东西，比如一个组件、一个服务、一个管道、一个指令</li>
+<li>每个文件最多不要超过400行</li>
+<li>定义功能单一的函数</li>
+<li>一个函数最多不要超过75行</li>
+</ul>
+<h2 id="命名规范"><a href="#命名规范" class="headerlink" title="命名规范"></a>命名规范</h2><ul>
+<li>文件名采用<code>feature.type.**</code>，feature表示特性，type表示类型<ul>
+<li>模块用 <code>.module.ts</code></li>
+<li>路由模块用 <code>-routing.module.ts</code></li>
+<li>组件用 <code>.component.ts|html|css</code></li>
+<li>服务用 <code>.service.ts</code></li>
+<li>管道用 <code>.pipe.ts</code></li>
+<li>指令用 <code>.directive.ts</code></li>
+<li>类型用 <code>.model.ts</code></li>
+<li>数据用 <code>.data.ts</code></li>
+</ul>
+</li>
+<li>用”-“来分割单词，比如<code>hero-list.component.ts</code></li>
+<li>单元测试文件名保持和测试对象一致，并以<code>.spec.ts</code>结尾</li>
+<li>端到端测试文件名保持和测试对象一致，并以<code>.e2e-spec.ts</code>结尾</li>
+<li>类名用大写驼峰规则，并且保持跟文件名的一致<ul>
+<li>模块：比如<code>app.module.ts</code>定义的类名为<code>AppModule</code></li>
+<li>路由模块：比如<code>app-routing.module.ts</code>定义的类名为<code>AppRoutingModule</code></li>
+<li>组件：比如<code>hero-list.component.ts</code>定义的类名为<code>HeroListComponent</code></li>
+<li>服务：比如<code>logger.service.ts</code>定义的类名为<code>LoggerService</code></li>
+<li>管道：比如<code>address.pipe.ts</code>定义的类名为<code>AddressPipe</code></li>
+<li>指令：比如<code>highlight.directive.ts</code>定义的类名为<code>HighlightDirective</code></li>
+<li>类型：按模块来划分，一个<code>.model.ts</code>定义多个类型</li>
+<li>数据：比如<code>address-book.data.ts</code>定义的变量名为<code>addressBook</code></li>
+</ul>
+</li>
+<li>脚本启动入口的文件名规定为main.ts，里面不包括任何业务逻辑，但要记得处理失败的情况</li>
+<li>指令选择器的命名采用小写驼峰规则，比如<code>clickOutSide</code></li>
+<li>组件选择器的命名采用分隔符“-”连接小写字母的形式，比如<code>hero-list</code></li>
+</ul>
+<h2 id="代码规范"><a href="#代码规范" class="headerlink" title="代码规范"></a>代码规范</h2><ul>
+<li>类命名采用大写驼峰规则</li>
+<li>常量定义用<code>const</code>，并且全部大写，如果有多个单词，用“_”连接，比如<code>HERO_URL</code></li>
+<li>支持ES6的环境下，禁止使用<code>var</code>定义变量</li>
+<li>变量命名尽量控制在3个单词以内，有常见缩写形式的单词可采用缩写形式</li>
+<li>接口类型用大写驼峰规则，不建议以I为前缀，考虑用类代替接口</li>
+<li>属性和方法名用小写驼峰，私有属性和方法不建议以“_”为前缀</li>
+<li>建议用空一行的方式来区分第三方库的导入和项目本身文件的导入</li>
+</ul>
+<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><ul>
+<li>好的项目结构的准则就是快速定位，快速识别，尽可能保持扁平，不要写冗余／重复代码</li>
+<li>把所有项目代码放入src文件夹，为每个特性创建文件夹</li>
+<li>第三方库放在src外的一个文件夹</li>
+<li>每个组件、服务、管道、指令都独成一个文件</li>
+<li>当组件有多个附属文件时（htm，css，ts，spec.ts），建议创建一个独立的文件夹</li>
+</ul>
+<h2 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h2><ul>
+<li>在<code>src/app</code>下创建根模块，建议命名为<code>app.module.ts</code></li>
+<li>为每个特性创建一个模块，并且保持文件夹命名和模块命名一致</li>
+<li>共享模块建议用<code>SharedModule</code>命名，放在<code>app/shared/shared.module.ts</code>中</li>
+<li>在共享模块中定义复用的组件、指令和管道，避免在共享模块中定义服务</li>
+<li>在共享模块中导入所有必需的模块，比如<code>CommonModule</code>和<code>FormsModule</code>，导出所有复用的模块、组件、指令、管道</li>
+<li>考虑将只用一次的类放在核心特性模块中，并且仅在根模块中导入，建议写<code>guard.ts</code>来保证</li>
+<li>核心特性模块建议用<code>CoreModule</code>命名，放在<code>app/core/core.module.ts</code>中</li>
+<li>将单例服务放在核心特性模块中，比如<code>ExceptionService</code>和<code>LoggerService</code></li>
+<li>在核心特性模块中导入所有必需的模块，比如<code>CommonModule</code>和<code>FormsModule</code>，导出所有定义的组件，服务等</li>
+<li>将全局仅用一次的组件放在核心特性模块，然后只在<code>AppModule</code>中导入，比如<code>NavComponent</code>和<code>SpinnerComponent</code></li>
+<li>独立的特性模块可以做成懒加载模块，避免在任何地方导入懒加载模块，不然模块就会直接加载</li>
+</ul>
+<h2 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h2><ul>
+<li>当模板/样式超过3行时，写成单独文件</li>
+<li>删除无样式定义的样式文件</li>
+<li>模板/样式的定义与组件命名保持一致</li>
+<li>导入时使用相对路径</li>
+<li>用装饰器<code>@Input</code>和<code>@Output</code>来修改输入输出数据，而不是使用元数据中的<code>inputs</code>和<code>outputs</code>属性</li>
+<li>不推荐重命名输入输出数据</li>
+<li>按照变量，构造器，生命周期函数，一般方法的顺序定义；一般方法按页面的功能模块放一起，被调用的方法写在后面；变量和方法均先公有后私有排列；</li>
+<li>组件中只写跟视图相关的逻辑，把其他的业务逻辑放在服务中</li>
+<li>将可复用的业务逻辑放在服务中</li>
+<li>不推荐事件命名加上on前缀</li>
+<li>将展示逻辑放在组件的类中，而不是在模板中</li>
+</ul>
+<h2 id="指令"><a href="#指令" class="headerlink" title="指令"></a>指令</h2><ul>
+<li>当有跟模板无关的展示逻辑时，使用属性指令，比如<code>[highlight]</code>指令</li>
+<li>推荐使用<code>@HostListener</code>和<code>@HostBinding</code>，而不是元数据的<code>host</code>属性</li>
+</ul>
+<h2 id="服务"><a href="#服务" class="headerlink" title="服务"></a>服务</h2><ul>
+<li>保持单例服务的使用规则，服务用来在特性模块或者应用中共享数据和方法</li>
+<li>跟函数一样，一个服务只有一个目的</li>
+<li>把服务注入在最高层的组件／模块中，使得该单例服务能在子组件、子模块中共享</li>
+<li>使用<code>@Injectable</code>装饰服务类，而不是<code>@Inject</code>装饰参数</li>
+<li>跟数据相关的操作，比如<code>xhr</code>请求，本地储存等抽象成服务</li>
+</ul>
+<h2 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h2><ul>
+<li>需要生命周期钩子时，实现相关的接口，可有效防止错误</li>
+</ul>
+<h2 id="辅助工具"><a href="#辅助工具" class="headerlink" title="辅助工具"></a>辅助工具</h2><ul>
+<li>用codelyzer来保持代码遵守该指南，当然你可以根据自己情况调整</li>
+<li>使用IDE的代码片段工具来快速生成具有一致性的代码片段，比如给VS Code安装snippets</li>
+</ul>
 
       
     </div>
@@ -1137,7 +1044,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/16/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><span class="page-number current">17</span><a class="page-number" href="/page/18/">18</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/18/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/page/16/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><span class="page-number current">17</span><a class="page-number" href="/page/18/">18</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/18/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1203,7 +1110,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">231</span>
+          <span class="site-state-item-count">273</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1241,7 +1148,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="hsweb-easy-ormhttps:&#x2F;&#x2F;github.com&#x2F;hs-web&#x2F;hsweb-easy-ormorg.hswebframework:hsweb-easy-orm:4.1.2-SNAPSHOT hsweb-frameworkhttps:&#x2F;&#x2F;github.com&#x2F;hs-web&#x2F;hsweb-frameworkorg.hswebframework.web:4.0.17-SNAPSHOT re">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JetLinks依赖梳理">
+<meta property="og:url" content="http://www.bluexiii.com/202312/JetLinks%E4%BE%9D%E8%B5%96%E6%A2%B3%E7%90%86/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="hsweb-easy-ormhttps:&#x2F;&#x2F;github.com&#x2F;hs-web&#x2F;hsweb-easy-ormorg.hswebframework:hsweb-easy-orm:4.1.2-SNAPSHOT hsweb-frameworkhttps:&#x2F;&#x2F;github.com&#x2F;hs-web&#x2F;hsweb-frameworkorg.hswebframework.web:4.0.17-SNAPSHOT re">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-01-21T05:54:23.000Z">
+<meta property="article:modified_time" content="2024-06-27T03:24:30.408Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://www.bluexiii.com/202312/JetLinks%E4%BE%9D%E8%B5%96%E6%A2%B3%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>JetLinks依赖梳理 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BlueXIII's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/202312/JetLinks%E4%BE%9D%E8%B5%96%E6%A2%B3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JetLinks依赖梳理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-01-21 13:54:23" itemprop="dateCreated datePublished" datetime="2024-01-21T13:54:23+08:00">2024-01-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-06-27 11:24:30" itemprop="dateModified" datetime="2024-06-27T11:24:30+08:00">2024-06-27</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="hsweb-easy-orm"><a href="#hsweb-easy-orm" class="headerlink" title="hsweb-easy-orm"></a>hsweb-easy-orm</h2><p><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-easy-orm">https://github.com/hs-web/hsweb-easy-orm</a><br>org.hswebframework:hsweb-easy-orm:4.1.2-SNAPSHOT</p>
+<h2 id="hsweb-framework"><a href="#hsweb-framework" class="headerlink" title="hsweb-framework"></a>hsweb-framework</h2><p><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-framework">https://github.com/hs-web/hsweb-framework</a><br>org.hswebframework.web:4.0.17-SNAPSHOT</p>
+<h2 id="reactor-excel"><a href="#reactor-excel" class="headerlink" title="reactor-excel"></a>reactor-excel</h2><p><a target="_blank" rel="noopener" href="https://github.com/hs-web/reactor-excel">https://github.com/hs-web/reactor-excel</a><br>org.hswebframework:reactor-excel:1.0.6-SNAPSHOT</p>
+<h2 id="jetlinks-core"><a href="#jetlinks-core" class="headerlink" title="jetlinks-core"></a>jetlinks-core</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-core">https://github.com/jetlinks/jetlinks-core</a><br>org.jetlinks:jetlinks-core:1.2.2-SNAPSHOT</p>
+<h2 id="jetlinks-supports"><a href="#jetlinks-supports" class="headerlink" title="jetlinks-supports"></a>jetlinks-supports</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-supports">https://github.com/jetlinks/jetlinks-supports</a><br>org.jetlinks:jetlinks-supports:1.2.2-SNAPSHOT</p>
+<h2 id="rule-engine"><a href="#rule-engine" class="headerlink" title="rule-engine"></a>rule-engine</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/rule-engine">https://github.com/jetlinks/rule-engine</a><br>org.jetlinks:rule-engine:1.2.2-SNAPSHOT</p>
+<h2 id="reactor-ql"><a href="#reactor-ql" class="headerlink" title="reactor-ql"></a>reactor-ql</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/reactor-ql">https://github.com/jetlinks/reactor-ql</a><br>org.jetlinks:reactor-ql:1.0.17-SNAPSHOT</p>
+<h2 id="jetlinks-plugin"><a href="#jetlinks-plugin" class="headerlink" title="jetlinks-plugin"></a>jetlinks-plugin</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-plugin">https://github.com/jetlinks/jetlinks-plugin</a><br>org.jetlinks.plugin:jetlinks-plugin:1.0.2-SNAPSHOT</p>
+<h2 id="jetlinks-community"><a href="#jetlinks-community" class="headerlink" title="jetlinks-community"></a>jetlinks-community</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-community">https://github.com/jetlinks/jetlinks-community</a><br>org.jetlinks.community:jetlinks-community:2.2.0-SNAPSHOT</p>
+<h2 id="jetlinks-ui-vue"><a href="#jetlinks-ui-vue" class="headerlink" title="jetlinks-ui-vue"></a>jetlinks-ui-vue</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-ui-vue">https://github.com/jetlinks/jetlinks-ui-vue</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/202401/RocketMQ%E9%83%A8%E7%BD%B2/" rel="prev" title="RocketMQ部署">
+      <i class="fa fa-chevron-left"></i> RocketMQ部署
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/202403/%E7%89%A9%E8%81%94%E7%BD%91%E5%B9%B3%E5%8F%B0%E5%8E%8B%E6%B5%8B/" rel="next" title="物联网平台压测报告">
+      物联网平台压测报告 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#hsweb-easy-orm"><span class="nav-number">1.</span> <span class="nav-text">hsweb-easy-orm</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hsweb-framework"><span class="nav-number">2.</span> <span class="nav-text">hsweb-framework</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reactor-excel"><span class="nav-number">3.</span> <span class="nav-text">reactor-excel</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jetlinks-core"><span class="nav-number">4.</span> <span class="nav-text">jetlinks-core</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jetlinks-supports"><span class="nav-number">5.</span> <span class="nav-text">jetlinks-supports</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rule-engine"><span class="nav-number">6.</span> <span class="nav-text">rule-engine</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reactor-ql"><span class="nav-number">7.</span> <span class="nav-text">reactor-ql</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jetlinks-plugin"><span class="nav-number">8.</span> <span class="nav-text">jetlinks-plugin</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jetlinks-community"><span class="nav-number">9.</span> <span class="nav-text">jetlinks-community</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jetlinks-ui-vue"><span class="nav-number">10.</span> <span class="nav-text">jetlinks-ui-vue</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">273</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

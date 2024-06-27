@@ -148,7 +148,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201706/spring-boot%E4%BD%BF%E7%94%A8slf4j+log4j/">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201907/20190731macOS%E4%B8%8B%E6%89%B9%E9%87%8Fgbk%E8%BD%ACutf8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -162,7 +162,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201706/spring-boot%E4%BD%BF%E7%94%A8slf4j+log4j/" class="post-title-link" itemprop="url">Untitled</a>
+            <a href="/201907/20190731macOS%E4%B8%8B%E6%89%B9%E9%87%8Fgbk%E8%BD%ACutf8/" class="post-title-link" itemprop="url">macOS下批量gbk转utf8</a>
         </h2>
 
         <div class="post-meta">
@@ -172,7 +172,7 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2017-06-08 15:39:41" itemprop="dateCreated datePublished" datetime="2017-06-08T15:39:41+08:00">2017-06-08</time>
+              <time title="Created: 2019-07-31 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
             </span>
 
           
@@ -186,23 +186,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="spring-boot中使用slf4j-log4j"><a href="#spring-boot中使用slf4j-log4j" class="headerlink" title="spring-boot中使用slf4j+log4j"></a>spring-boot中使用slf4j+log4j</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><blockquote>
-<p>spring-boot默认是使用slf4j+logback做日志输出的， 本文主要演示如何切换为slf4j+log4j。<br>正常情况下，建议直接使用logback。</p>
-</blockquote>
-<p>在某SpringBoot项目中，因为要使用ELK做日志采集，局方要求使用log4j并给出了一组日志格式规范:  </p>
-<ol>
-<li>日志分为xxx-info和xxx-error两个文件，分开打印  </li>
-<li>日志格式要求为  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%d&#123;yyyy-MM-dd HH:mm:ss&#125; [%-5p](%-30c&#123;1&#125;) [TxId : %X&#123;PtxId&#125; , SpanId : %X&#123;PspanId&#125;] [ET:%X&#123;ENV_TYPE&#125;,AN:%X&#123;APP_NAME&#125;,SN:%X&#123;SERVICE_NAME&#125;,CN:%X&#123;CONTAINER_NAME&#125;,CI:%X&#123;CONTAINER_IP&#125;] %m%n</span><br></pre></td></tr></table></figure>
-所以只能有两种方案可供选择：  </li>
-<li>配置logback，并保证与之前的log4j的行为一致  </li>
-<li>将logback切换为log4j  </li>
-</ol>
-<p>由于面对日志格式中的一大堆%比较头大，于是选择了不怎么优雅的方案2，切换为log4j。</p>
-<h2 id="配置Maven依赖"><a href="#配置Maven依赖" class="headerlink" title="配置Maven依赖"></a>配置Maven依赖</h2><p>首先要显式的引入spring-boot-starter，并将其中的spring-boot-starter-logging排除掉<br>然后新增一个spring-boot-starter-log4j的依赖  </p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-logging<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-log4j<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.5.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="配置log4j"><a href="#配置log4j" class="headerlink" title="配置log4j"></a>配置log4j</h2><p>新建src/resource/log4j.properties，按正常方式配置即可<br>下面是一个双日志输出的样例：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">log4j.rootCategory&#x3D;info,file_info,file_error,stdout</span><br><span class="line">log4j.logger.org.springframework.web.filter.CommonsRequestLoggingFilter&#x3D;debug,file_info,stdout</span><br><span class="line">log4j.additivity.org.springframework.web.filter.CommonsRequestLoggingFilter&#x3D;false</span><br><span class="line"></span><br><span class="line">log4j.appender.stdout&#x3D;org.apache.log4j.ConsoleAppender</span><br><span class="line">log4j.appender.stdout.Target&#x3D;System.out</span><br><span class="line">log4j.appender.stdout.layout&#x3D;org.apache.log4j.PatternLayout</span><br><span class="line">log4j.appender.stdout.layout.ConversionPattern&#x3D;%d&#123;yyyy-MM-dd HH:mm:ss&#125; %-5p %c&#123;1&#125;:%L - %m%n</span><br><span class="line"></span><br><span class="line">log4j.appender.file_info&#x3D;org.apache.log4j.RollingFileAppender</span><br><span class="line">log4j.appender.file_info.layout&#x3D;org.apache.log4j.PatternLayout</span><br><span class="line">log4j.appender.file_info.MaxFileSize&#x3D;100MB</span><br><span class="line">log4j.appender.file_info.MaxBackupIndex&#x3D;10</span><br><span class="line">log4j.appender.file_info.layout.ConversionPattern&#x3D;%d&#123;yyyy-MM-dd HH:mm:ss&#125; [%-5p](%-30c&#123;1&#125;) [TxId : %X&#123;PtxId&#125; , SpanId : %X&#123;PspanId&#125;] [ET:%X&#123;ENV_TYPE&#125;,AN:%X&#123;APP_NAME&#125;,SN:%X&#123;SERVICE_NAME&#125;,CN:%X&#123;CONTAINER_NAME&#125;,CI:%X&#123;CONTAINER_IP&#125;] %m%n</span><br><span class="line">log4j.appender.file_info.Threshold&#x3D;DEBUG</span><br><span class="line">log4j.appender.file_info.append&#x3D;true</span><br><span class="line">log4j.appender.file_info.File&#x3D;&#x2F;opt&#x2F;logs&#x2F;busi&#x2F;crm_sdtools-info.log</span><br><span class="line"></span><br><span class="line">log4j.appender.file_error&#x3D;org.apache.log4j.RollingFileAppender</span><br><span class="line">log4j.appender.file_error.layout&#x3D;org.apache.log4j.PatternLayout</span><br><span class="line">log4j.appender.file_error.MaxFileSize&#x3D;100MB</span><br><span class="line">log4j.appender.file_error.MaxBackupIndex&#x3D;10</span><br><span class="line">log4j.appender.file_error.layout.ConversionPattern&#x3D;%d&#123;yyyy-MM-dd HH:mm:ss&#125; [%-5p](%-30c&#123;1&#125;) [TxId : %X&#123;PtxId&#125; , SpanId : %X&#123;PspanId&#125;] [ET:%X&#123;ENV_TYPE&#125;,AN:%X&#123;APP_NAME&#125;,SN:%X&#123;SERVICE_NAME&#125;,CN:%X&#123;CONTAINER_NAME&#125;,CI:%X&#123;CONTAINER_IP&#125;] %m%n</span><br><span class="line">log4j.appender.file_error.Threshold&#x3D;ERROR</span><br><span class="line">log4j.appender.file_error.append&#x3D;true</span><br><span class="line">log4j.appender.file_error.File&#x3D;&#x2F;opt&#x2F;logs&#x2F;busi&#x2F;crm_sdtools-error.log</span><br></pre></td></tr></table></figure>
+          <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew install enca</span><br><span class="line">find . -name &quot;*.java&quot; -exec enconv -L zh_CN -x UTF-8 &#123;&#125; \;</span><br></pre></td></tr></table></figure>
       
     </div>
 
@@ -221,7 +205,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201706/%E9%81%97%E7%95%99%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8Resty%E7%AE%80%E5%8C%96REST%E8%B0%83%E7%94%A8/">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201907/20190731rsync%E5%A4%87%E4%BB%BD%E7%A4%BA%E4%BE%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -235,7 +219,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201706/%E9%81%97%E7%95%99%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8Resty%E7%AE%80%E5%8C%96REST%E8%B0%83%E7%94%A8/" class="post-title-link" itemprop="url">在遗留工程中使用Resty简化REST调用</a>
+            <a href="/201907/20190731rsync%E5%A4%87%E4%BB%BD%E7%A4%BA%E4%BE%8B/" class="post-title-link" itemprop="url">rsync同步</a>
         </h2>
 
         <div class="post-meta">
@@ -245,15 +229,8 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2017-06-08 15:34:57" itemprop="dateCreated datePublished" datetime="2017-06-08T15:34:57+08:00">2017-06-08</time>
+              <time title="Created: 2019-07-31 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:44:09" itemprop="dateModified" datetime="2018-11-06T15:44:09+08:00">2018-11-06</time>
-              </span>
 
           
 
@@ -266,30 +243,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Spring3.0以下的遗留工程，由于无法使用RestTemplate，所以调用REST接口时会比较繁琐。<br>通过使用第三方REST户端框架Resty，可以大幅简化调用过程。<br>Resty的优势是使用简单，不需要引入过多的依赖。但相比于resttemplate/jersey/resteasy等，Resty还是过于小众，而且已有2年时间没有维护，异常处理也不是很完善。所以只建议在老旧项目中使用。<br>本文演示了Resty各种用法，包括代理设置、Header设置等。  </p>
-<h2 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h2><p>对于较老的项目，直接下载并添加resty-0.3.2.jar</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://repo1.maven.org/maven2/us/monoid/web/resty/0.3.2/resty-0.3.2.jar</span><br></pre></td></tr></table></figure>
-<p>如果项目使用了maven或gradle，直接添加依赖即可</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>us.monoid.web<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>resty<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.3.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile &#x27;us.monoid.web:resty:0.3.2&#x27;</span><br></pre></td></tr></table></figure>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>初始化</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String baseUrl = <span class="string">&quot;http://127.0.0.1:8080/foobar&quot;</span>;</span><br><span class="line">Resty resty = <span class="keyword">new</span> Resty();</span><br></pre></td></tr></table></figure>
-<p>设置代理</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">resty.setProxy(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">8888</span>);</span><br></pre></td></tr></table></figure>
-<p>设置token</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">resty.setOptions(<span class="keyword">new</span> Resty.Option() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">apply</span><span class="params">(URLConnection aConnection)</span> </span>&#123;</span><br><span class="line">        aConnection.setRequestProperty(<span class="string">&quot;Authorization&quot;</span>, <span class="string">&quot;Bearer foobarboobarfoobar&quot;</span>);</span><br><span class="line">        <span class="keyword">super</span>.apply(aConnection);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>GET 查询</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">String restUrl = baseUrl + <span class="string">&quot;/users/4038488549360733&quot;</span>;</span><br><span class="line">JSONObject jsonObject = resty.json(restUrl).object();</span><br><span class="line">String serialNumber = jsonObject.getString(<span class="string">&quot;serialNumber&quot;</span>);</span><br></pre></td></tr></table></figure>
-<p>PUT 修改</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">String restUrl = baseUrl + <span class="string">&quot;/users/4038488549360733&quot;</span>;</span><br><span class="line">String jsonStr = <span class="string">&quot;&#123;\&quot;brandCode\&quot;:\&quot;3G02\&quot;&#125;&quot;</span>;</span><br><span class="line">resty.json(restUrl, Resty.put(<span class="keyword">new</span> Content(<span class="string">&quot;application/json&quot;</span>, jsonStr.getBytes())));</span><br></pre></td></tr></table></figure>
-<p>POST 新增</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">String restUrl = baseUrl + <span class="string">&quot;/users&quot;</span>;</span><br><span class="line">String jsonStr = <span class="string">&quot;&#123;\&quot;brandCode\&quot;:\&quot;3G03\&quot;&#125;&quot;</span>;</span><br><span class="line">resty.json(restUrl, <span class="keyword">new</span> Content(<span class="string">&quot;application/json&quot;</span>, jsonStr.getBytes()));</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>DELETE 删除</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String restUrl = baseUrl + <span class="string">&quot;/users/4038488549360733&quot;</span>;</span><br><span class="line">resty.json(restUrl, Resty.delete());</span><br></pre></td></tr></table></figure>
-<p>综合示例</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">String serialNumber = <span class="string">&quot;12345678&quot;</span>;</span><br><span class="line">String restUrl;</span><br><span class="line">JSONObject jsonObject;</span><br><span class="line">JSONArray jsonArray;</span><br><span class="line">String itemId = <span class="string">&quot;&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 查询用户信息，通过serialNumber取到userId</span></span><br><span class="line">    restUrl = baseUrl + <span class="string">&quot;/users?serialNumber=&quot;</span> + serialNumber;</span><br><span class="line">    jsonObject = resty.json(restUrl).object();</span><br><span class="line">    System.out.println(jsonObject);</span><br><span class="line">    String userId = jsonObject.getString(<span class="string">&quot;userId&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 查询资费信息，通过userId取到所有资费</span></span><br><span class="line">    restUrl = baseUrl + <span class="string">&quot;/discnts?userId=&quot;</span> + userId;</span><br><span class="line">    jsonArray = resty.json(restUrl).array();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; jsonArray.length(); i++) &#123;</span><br><span class="line">        jsonObject = jsonArray.getJSONObject(i);</span><br><span class="line">        System.out.println(jsonObject);</span><br><span class="line">        <span class="comment">// 随机取一个itemId</span></span><br><span class="line">        itemId = jsonObject.getString(<span class="string">&quot;itemId&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 更改资费信息，通过itemId修改资费信息</span></span><br><span class="line">    restUrl = baseUrl + <span class="string">&quot;/discnts/&quot;</span> + itemId;</span><br><span class="line">    String jsonStr = <span class="string">&quot;&#123;\&quot;startDate\&quot;:\&quot;2001-01-01 20:01:02\&quot;, \&quot;endDate\&quot;:\&quot;2018-05-08 20:01:02\&quot;&#125;&quot;</span>;</span><br><span class="line">    resty.json(restUrl, Resty.put(<span class="keyword">new</span> Content(<span class="string">&quot;application/json&quot;</span>, jsonStr.getBytes())));</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="GitHub"><a href="#GitHub" class="headerlink" title="GitHub"></a>GitHub</h2><p><a target="_blank" rel="noopener" href="https://github.com/beders/Resty">https://github.com/beders/Resty</a></p>
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>rsync 全名 Remote Sync，是类 unix 系统下的数据镜像备份工具。可以方便的实现本地，远程备份，rsync 提供了丰富的选项来控制其行为。rsync 优于其他工具的重要一点就是支持增量备份。</p>
+<h2 id="本地备份示列"><a href="#本地备份示列" class="headerlink" title="本地备份示列"></a>本地备份示列</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0 * * * * rsync -arv --delete &#x2F;home&#x2F;bluexiii&#x2F;Documents&#x2F;work &#x2F;media&#x2F;bluexiii&#x2F;HITACHI&#x2F;Documents</span><br><span class="line">0 * * * * rsync -arv --delete --exclude&#x3D;.git --exclude&#x3D;.svn --exclude&#x3D;node_modules --exclude&#x3D;target &#x2F;home&#x2F;bluexiii&#x2F;Documents&#x2F;src &#x2F;media&#x2F;bluexiii&#x2F;HITACHI&#x2F;Documents</span><br></pre></td></tr></table></figure>
+<h2 id="远程备份示列"><a href="#远程备份示列" class="headerlink" title="远程备份示列"></a>远程备份示列</h2><p>SSH公钥复制:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-copy-id root@56.32.4.68</span><br></pre></td></tr></table></figure>
+<p>crontab配置:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0 * * * * rsync -arv &#x2F;home&#x2F;minio&#x2F;data root@56.32.4.68:&#x2F;home&#x2F;minio&#x2F;data</span><br></pre></td></tr></table></figure>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/258ceb7b2223">https://www.jianshu.com/p/258ceb7b2223</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.digitalocean.com/community/tutorials/how-to-use-rsync-to-sync-local-and-remote-directories-on-a-vps">https://www.digitalocean.com/community/tutorials/how-to-use-rsync-to-sync-local-and-remote-directories-on-a-vps</a></li>
+<li><a target="_blank" rel="noopener" href="http://einverne.github.io/post/2017/07/rsync-introduction.html">http://einverne.github.io/post/2017/07/rsync-introduction.html</a></li>
+</ul>
 
       
     </div>
@@ -309,7 +273,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201907/20190731systemd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -323,7 +287,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/" class="post-title-link" itemprop="url">Python使用cx_Oracle的几个小坑</a>
+            <a href="/201907/20190731systemd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">systemd学习笔记</a>
         </h2>
 
         <div class="post-meta">
@@ -333,15 +297,8 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2017-04-27 17:07:29" itemprop="dateCreated datePublished" datetime="2017-04-27T17:07:29+08:00">2017-04-27</time>
+              <time title="Created: 2019-07-31 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
 
           
 
@@ -354,73 +311,527 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>cx_Oracle是Python环境下的一个（好像也是唯一的一个）用于操作Oracle的第三方模块。<br>最近在写某个对帐程序时，不得已要连接一台Oracle库，于是用到了cx_Oracle，总的来说还是比较顺利的，期间遇到几个有意思的小坑写出来分享一下。</p>
-<h2 id="RHEL-6-4下安装cx-Oracle"><a href="#RHEL-6-4下安装cx-Oracle" class="headerlink" title="RHEL 6.4下安装cx_Oracle"></a>RHEL 6.4下安装cx_Oracle</h2><p>RHEL6.4和cx_Oracle比较搭，安装时应该不会遇到什么挫折，使用RPM安装好instantclient后，直接用pip3安装cx_Oracle即可。</p>
-<p>需要注意地方：</p>
-<ol>
-<li>尽量使用RPM方式安装instantclient，安装更方便，而且比zip更好管理。  </li>
-<li>instantclient的版本选择的是11.2.0.4.0，没有选择12。对于Oracle/WebLogic这类闭源的东西，还是选择次最新版本的比较稳妥。  </li>
-</ol>
-<p>安装步骤：</p>
-<ol>
-<li><p>下载Linux版本的instantclient<br>这里是 <a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/cn/database/features/instant-client/index-097480.html">Oracle官网 instantclient下载页面</a> ，下载以下3个RPM包：<br>oracle-instantclient11.2-basic-11.2.0.4.0-1.x86_64.rpm<br>oracle-instantclient11.2-devel-11.2.0.4.0-1.x86_64.rpm<br>oracle-instantclient11.2-sqlplus-11.2.0.4.0-1.x86_64.rpm  </p>
-</li>
-<li><p>安装instantclient并设置环境变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum -y install libaio bc flex</span><br><span class="line">rpm -ivh oracle-instantclient11.2-basic-11.2.0.4.0-1.x86_64.rpm</span><br><span class="line">rpm -ivh oracle-instantclient11.2-devel-11.2.0.4.0-1.x86_64.rpm</span><br><span class="line">rpm -ivh oracle-instantclient11.2-sqlplus-11.2.0.4.0-1.x86_64.rpm</span><br></pre></td></tr></table></figure></li>
-<li><p>设置环境变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">echo &#39;export ORACLE_VERSION&#x3D;&quot;11.2&quot;&#39; &gt;&gt; $HOME&#x2F;.bashrc</span><br><span class="line">echo &#39;export ORACLE_HOME&#x3D;&quot;&#x2F;usr&#x2F;lib&#x2F;oracle&#x2F;$ORACLE_VERSION&#x2F;client64&#x2F;&quot;&#39; &gt;&gt; $HOME&#x2F;.bashrc</span><br><span class="line">echo &#39;export PATH&#x3D;$PATH:&quot;$ORACLE_HOME&#x2F;bin&quot;&#39; &gt;&gt; $HOME&#x2F;.bashrc</span><br><span class="line">echo &#39;export LD_LIBRARY_PATH&#x3D;$LD_LIBRARY_PATH:&quot;$ORACLE_HOME&#x2F;lib&quot;&#39; &gt;&gt; $HOME&#x2F;.bashrc</span><br><span class="line">source $HOME&#x2F;.bashrc</span><br></pre></td></tr></table></figure></li>
-<li><p>使用pip安装cx_Oracle</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
-<h2 id="macOS-12下安装cx-Oracle"><a href="#macOS-12下安装cx-Oracle" class="headerlink" title="macOS 12下安装cx_Oracle"></a>macOS 12下安装cx_Oracle</h2><p>macOS下，安装cx_Oracle后的编译过程有可能会报错，一般是因为instantclient安装有误造成的。</p>
-</li>
-</ol>
-<p>需要注意的地方：</p>
-<ol>
-<li>mac下的instantclient只有zip包一种安装方式，要注意手工建两个软链接。  </li>
-<li>pip安装前，注意导入LD_LIBRARY_PATH与DYLD_LIBRARY_PATH两个环境变量。  </li>
-</ol>
-<p>安装过程：</p>
-<ol>
-<li><p>下载Mac版本的instantclient<br>下载以下3个zip包，并<code>unzip</code>解压至同一目录：<br>instantclient-basic-macos.x64-11.2.0.4.0.zip<br>instantclient-sdk-macos.x64-11.2.0.4.0.zip<br>instantclient-sqlplus-macos.x64-11.2.0.4.0.zip</p>
-</li>
-<li><p>建立软链接</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;path&#x2F;to&#x2F;instant</span><br><span class="line">ln -s libclntsh.dylib.11.2 libclntsh.dylib</span><br><span class="line">ln -s libocci.dylib.11.2 libocci.dylib</span><br></pre></td></tr></table></figure></li>
-<li><p>设置环境变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export ORACLE_VERSION&#x3D;&quot;11.2&quot;</span><br><span class="line">export ORACLE_HOME&#x3D;&quot;&#x2F;path&#x2F;to&#x2F;instantclient_11_2&quot;</span><br><span class="line">export PATH&#x3D;$PATH:&quot;$ORACLE_HOME&quot;</span><br></pre></td></tr></table></figure></li>
-<li><p>使用pip安装cx_Oracle，注意提前导入DYLD_LIBRARY_PATH与LD_LIBRARY_PATH</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export DYLD_LIBRARY_PATH&#x3D;&quot;$ORACLE_HOME&quot;</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;&quot;$ORACLE_HOME&quot;</span><br><span class="line">pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
-<h2 id="中文乱码问题"><a href="#中文乱码问题" class="headerlink" title="中文乱码问题"></a>中文乱码问题</h2><p>Oracle中文乱码问题存在已久，使用cx_Oracle时也不例外，解决方法还是设置NLS_LANG环境变量。<br>有两种方式，一是在系统中设置永久环境变量，二是直接在代码中使用<code>os.environ</code>设置环境变量，这里推荐后者。  </p>
-</li>
-<li><p>方法一：在Shell中设置环境变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export NLS_LANG&#x3D;&quot;SIMPLIFIED CHINESE_CHINA.UTF8&quot;</span><br></pre></td></tr></table></figure></li>
-<li><p>方法二：直接在代码中加入：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import os</span><br><span class="line">os.environ[&#39;NLS_LANG&#39;] &#x3D; &#39;SIMPLIFIED CHINESE_CHINA.UTF8&#39;</span><br></pre></td></tr></table></figure>
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a></p>
+<h2 id="systemctl"><a href="#systemctl" class="headerlink" title="systemctl"></a>systemctl</h2><h3 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl reboot</span><br></pre></td></tr></table></figure>
+<h3 id="关闭"><a href="#关闭" class="headerlink" title="关闭"></a>关闭</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl poweroff</span><br></pre></td></tr></table></figure>
+<h3 id="CPU停止工作"><a href="#CPU停止工作" class="headerlink" title="CPU停止工作"></a>CPU停止工作</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl halt</span><br></pre></td></tr></table></figure>
+<h3 id="暂停系统"><a href="#暂停系统" class="headerlink" title="暂停系统"></a>暂停系统</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl suspend</span><br></pre></td></tr></table></figure>
+<h3 id="休眠"><a href="#休眠" class="headerlink" title="休眠"></a>休眠</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hibernate</span><br></pre></td></tr></table></figure>
+<h3 id="交互式休眠"><a href="#交互式休眠" class="headerlink" title="交互式休眠"></a>交互式休眠</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl hybrid-sleep</span><br></pre></td></tr></table></figure>
+<p>###单用户状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl rescue</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="systemd-analyze"><a href="#systemd-analyze" class="headerlink" title="systemd-analyze"></a>systemd-analyze</h2><h3 id="启动耗时"><a href="#启动耗时" class="headerlink" title="启动耗时"></a>启动耗时</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze                                                                                       </span><br></pre></td></tr></table></figure>
+<h3 id="每个服务的启动耗时"><a href="#每个服务的启动耗时" class="headerlink" title="每个服务的启动耗时"></a>每个服务的启动耗时</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze blame</span><br></pre></td></tr></table></figure>
+<h3 id="瀑布状的启动过程流"><a href="#瀑布状的启动过程流" class="headerlink" title="瀑布状的启动过程流"></a>瀑布状的启动过程流</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze critical-chain</span><br></pre></td></tr></table></figure>
+<h3 id="显示指定服务的启动流"><a href="#显示指定服务的启动流" class="headerlink" title="显示指定服务的启动流"></a>显示指定服务的启动流</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemd-analyze critical-chain atd.service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="hostnamect"><a href="#hostnamect" class="headerlink" title="hostnamect"></a>hostnamect</h2><h3 id="显示当前主机的信息"><a href="#显示当前主机的信息" class="headerlink" title="显示当前主机的信息"></a>显示当前主机的信息</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostnamectl</span><br></pre></td></tr></table></figure>
+<h3 id="设置主机名"><a href="#设置主机名" class="headerlink" title="设置主机名"></a>设置主机名</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostnamectl set-hostname xxxx</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="localectl"><a href="#localectl" class="headerlink" title="localectl"></a>localectl</h2><h3 id="查看本地化设置"><a href="#查看本地化设置" class="headerlink" title="查看本地化设置"></a>查看本地化设置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">localectl</span><br></pre></td></tr></table></figure>
+<h3 id="设置本地化参数"><a href="#设置本地化参数" class="headerlink" title="设置本地化参数"></a>设置本地化参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">localectl set-locale LANG&#x3D;en_GB.utf8</span><br><span class="line">localectl set-keymap en_GB</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="timedatectl"><a href="#timedatectl" class="headerlink" title="timedatectl"></a>timedatectl</h2><h3 id="查看当前时区设置"><a href="#查看当前时区设置" class="headerlink" title="查看当前时区设置"></a>查看当前时区设置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">timedatectl</span><br></pre></td></tr></table></figure>
+<h3 id="显示所有可用的时区"><a href="#显示所有可用的时区" class="headerlink" title="显示所有可用的时区"></a>显示所有可用的时区</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">timedatectl list-timezones                                                                                   </span><br></pre></td></tr></table></figure>
+<h3 id="设置当前时区"><a href="#设置当前时区" class="headerlink" title="设置当前时区"></a>设置当前时区</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">timedatectl set-timezone America&#x2F;New_York</span><br><span class="line">timedatectl set-time 2018-10-25 </span><br><span class="line">timedatectl set-time 11:32:00</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="loginctl"><a href="#loginctl" class="headerlink" title="loginctl"></a>loginctl</h2><h3 id="列出当前session"><a href="#列出当前session" class="headerlink" title="列出当前session"></a>列出当前session</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loginctl list-sessions</span><br></pre></td></tr></table></figure>
+<h3 id="列出当前登录用户"><a href="#列出当前登录用户" class="headerlink" title="列出当前登录用户"></a>列出当前登录用户</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loginctl list-users</span><br></pre></td></tr></table></figure>
+<h3 id="列出显示指定用户的信息"><a href="#列出显示指定用户的信息" class="headerlink" title="列出显示指定用户的信息"></a>列出显示指定用户的信息</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">loginctl show-user root</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="查询状态"><a href="#查询状态" class="headerlink" title="查询状态"></a>查询状态</h2><h3 id="列出正在运行的-Unit"><a href="#列出正在运行的-Unit" class="headerlink" title="列出正在运行的 Unit"></a>列出正在运行的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units</span><br></pre></td></tr></table></figure>
+<h3 id="列出所有Unit，包括没有找到配置文件的或者启动失败的"><a href="#列出所有Unit，包括没有找到配置文件的或者启动失败的" class="headerlink" title="列出所有Unit，包括没有找到配置文件的或者启动失败的"></a>列出所有Unit，包括没有找到配置文件的或者启动失败的</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --all</span><br></pre></td></tr></table></figure>
+<h3 id="列出所有没有运行的-Unit"><a href="#列出所有没有运行的-Unit" class="headerlink" title="列出所有没有运行的 Unit"></a>列出所有没有运行的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --all --state&#x3D;inactive</span><br></pre></td></tr></table></figure>
+<h3 id="列出所有加载失败的-Unit"><a href="#列出所有加载失败的-Unit" class="headerlink" title="列出所有加载失败的 Unit"></a>列出所有加载失败的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --failed</span><br></pre></td></tr></table></figure>
+<h3 id="列出所有正在运行的、类型为-service-的-Unit"><a href="#列出所有正在运行的、类型为-service-的-Unit" class="headerlink" title="列出所有正在运行的、类型为 service 的 Unit"></a>列出所有正在运行的、类型为 service 的 Unit</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-units --type&#x3D;service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="查询状态-1"><a href="#查询状态-1" class="headerlink" title="查询状态"></a>查询状态</h2><h3 id="显示系统状态"><a href="#显示系统状态" class="headerlink" title="显示系统状态"></a>显示系统状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status</span><br></pre></td></tr></table></figure>
+<h3 id="显示单个-Unit-的状态"><a href="#显示单个-Unit-的状态" class="headerlink" title="显示单个 Unit 的状态"></a>显示单个 Unit 的状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status bluetooth.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示远程主机的某个-Unit-的状态"><a href="#显示远程主机的某个-Unit-的状态" class="headerlink" title="显示远程主机的某个 Unit 的状态"></a>显示远程主机的某个 Unit 的状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl -H root@rhel7.example.com status httpd.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-是否正在运行"><a href="#显示某个-Unit-是否正在运行" class="headerlink" title="显示某个 Unit 是否正在运行"></a>显示某个 Unit 是否正在运行</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl is-active application.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-是否处于启动失败状态"><a href="#显示某个-Unit-是否处于启动失败状态" class="headerlink" title="显示某个 Unit 是否处于启动失败状态"></a>显示某个 Unit 是否处于启动失败状态</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl is-failed application.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-服务是否建立了启动链接"><a href="#显示某个-Unit-服务是否建立了启动链接" class="headerlink" title="显示某个 Unit 服务是否建立了启动链接"></a>显示某个 Unit 服务是否建立了启动链接</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl is-enabled application.service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="服务管理"><a href="#服务管理" class="headerlink" title="服务管理"></a>服务管理</h2><h3 id="立即启动一个服务"><a href="#立即启动一个服务" class="headerlink" title="立即启动一个服务"></a>立即启动一个服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="立即停止一个服务"><a href="#立即停止一个服务" class="headerlink" title="立即停止一个服务"></a>立即停止一个服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="重启一个服务"><a href="#重启一个服务" class="headerlink" title="重启一个服务"></a>重启一个服务</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="杀死一个服务的所有子进程"><a href="#杀死一个服务的所有子进程" class="headerlink" title="杀死一个服务的所有子进程"></a>杀死一个服务的所有子进程</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl kill apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="重新加载一个服务的配置文件"><a href="#重新加载一个服务的配置文件" class="headerlink" title="重新加载一个服务的配置文件"></a>重新加载一个服务的配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl reload apache.service</span><br></pre></td></tr></table></figure>
+<h3 id="重载所有修改过的配置文件"><a href="#重载所有修改过的配置文件" class="headerlink" title="重载所有修改过的配置文件"></a>重载所有修改过的配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-的所有底层参数"><a href="#显示某个-Unit-的所有底层参数" class="headerlink" title="显示某个 Unit 的所有底层参数"></a>显示某个 Unit 的所有底层参数</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl show httpd.service</span><br></pre></td></tr></table></figure>
+<h3 id="显示某个-Unit-的指定属性的值"><a href="#显示某个-Unit-的指定属性的值" class="headerlink" title="显示某个 Unit 的指定属性的值"></a>显示某个 Unit 的指定属性的值</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl show -p CPUShares httpd.service</span><br></pre></td></tr></table></figure>
+<h3 id="设置某个-Unit-的指定属性"><a href="#设置某个-Unit-的指定属性" class="headerlink" title="设置某个 Unit 的指定属性"></a>设置某个 Unit 的指定属性</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl set-property httpd.service CPUShares&#x3D;500</span><br></pre></td></tr></table></figure>
+<h3 id="列出一个-Unit-的所有依赖"><a href="#列出一个-Unit-的所有依赖" class="headerlink" title="列出一个 Unit 的所有依赖"></a>列出一个 Unit 的所有依赖</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-dependencies --all nginx.service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="配置文件的状态"><a href="#配置文件的状态" class="headerlink" title="配置文件的状态"></a>配置文件的状态</h2><h3 id="列出所有配置文件"><a href="#列出所有配置文件" class="headerlink" title="列出所有配置文件"></a>列出所有配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-unit-files</span><br></pre></td></tr></table></figure>
+<h3 id="列出指定类型的配置文件"><a href="#列出指定类型的配置文件" class="headerlink" title="列出指定类型的配置文件"></a>列出指定类型的配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-unit-files --type&#x3D;service</span><br></pre></td></tr></table></figure>
+<h3 id="查看配置文件"><a href="#查看配置文件" class="headerlink" title="查看配置文件"></a>查看配置文件</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl cat atd.service</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="日志管理"><a href="#日志管理" class="headerlink" title="日志管理"></a>日志管理</h2><h3 id="查看所有日志（默认情况下-，只保存本次启动的日志）"><a href="#查看所有日志（默认情况下-，只保存本次启动的日志）" class="headerlink" title="查看所有日志（默认情况下 ，只保存本次启动的日志）"></a>查看所有日志（默认情况下 ，只保存本次启动的日志）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl</span><br></pre></td></tr></table></figure>
+<h3 id="查看内核日志（不显示应用日志）"><a href="#查看内核日志（不显示应用日志）" class="headerlink" title="查看内核日志（不显示应用日志）"></a>查看内核日志（不显示应用日志）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -k</span><br></pre></td></tr></table></figure>
+<h3 id="查看系统本次启动的日志"><a href="#查看系统本次启动的日志" class="headerlink" title="查看系统本次启动的日志"></a>查看系统本次启动的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">journalctl -b</span><br><span class="line">journalctl -b -0</span><br></pre></td></tr></table></figure>
+<h3 id="查看上一次启动的日志（需更改设置）"><a href="#查看上一次启动的日志（需更改设置）" class="headerlink" title="查看上一次启动的日志（需更改设置）"></a>查看上一次启动的日志（需更改设置）</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl -b -1</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定时间的日志"><a href="#查看指定时间的日志" class="headerlink" title="查看指定时间的日志"></a>查看指定时间的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">journalctl --since&#x3D;&quot;2012-10-30 18:17:16&quot;</span><br><span class="line">journalctl --since &quot;20 min ago&quot;</span><br><span class="line">journalctl --since yesterday</span><br><span class="line">journalctl --since &quot;2015-01-10&quot; --until &quot;2015-01-11 03:00&quot;</span><br><span class="line">journalctl --since 09:00 --until &quot;1 hour ago&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="显示尾部的最新10行日志"><a href="#显示尾部的最新10行日志" class="headerlink" title="显示尾部的最新10行日志"></a>显示尾部的最新10行日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -n</span><br></pre></td></tr></table></figure>
+<h3 id="显示尾部指定行数的日志"><a href="#显示尾部指定行数的日志" class="headerlink" title="显示尾部指定行数的日志"></a>显示尾部指定行数的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -n 20</span><br></pre></td></tr></table></figure>
+<h3 id="实时滚动显示最新日志"><a href="#实时滚动显示最新日志" class="headerlink" title="实时滚动显示最新日志"></a>实时滚动显示最新日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -f</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定服务的日志"><a href="#查看指定服务的日志" class="headerlink" title="查看指定服务的日志"></a>查看指定服务的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl &#x2F;usr&#x2F;lib&#x2F;systemd&#x2F;systemd</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定进程的日志"><a href="#查看指定进程的日志" class="headerlink" title="查看指定进程的日志"></a>查看指定进程的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl _PID&#x3D;1</span><br></pre></td></tr></table></figure>
+<h3 id="查看某个路径的脚本的日志"><a href="#查看某个路径的脚本的日志" class="headerlink" title="查看某个路径的脚本的日志"></a>查看某个路径的脚本的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl &#x2F;usr&#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定用户的日志"><a href="#查看指定用户的日志" class="headerlink" title="查看指定用户的日志"></a>查看指定用户的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl _UID&#x3D;33 --since today</span><br></pre></td></tr></table></figure>
+<h3 id="查看某个-Unit-的日志"><a href="#查看某个-Unit-的日志" class="headerlink" title="查看某个 Unit 的日志"></a>查看某个 Unit 的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u nginx.service</span><br><span class="line">journalctl -u nginx.service --since today</span><br></pre></td></tr></table></figure>
+<h3 id="实时滚动显示某个-Unit-的最新日志"><a href="#实时滚动显示某个-Unit-的最新日志" class="headerlink" title="实时滚动显示某个 Unit 的最新日志"></a>实时滚动显示某个 Unit 的最新日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u nginx.service -f</span><br></pre></td></tr></table></figure>
+<h3 id="合并显示多个-Unit-的日志"><a href="#合并显示多个-Unit-的日志" class="headerlink" title="合并显示多个 Unit 的日志"></a>合并显示多个 Unit 的日志</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u nginx.service -u php-fpm.service --since today</span><br></pre></td></tr></table></figure>
+<h3 id="查看指定优先级（及其以上级别）的日志，共有8级"><a href="#查看指定优先级（及其以上级别）的日志，共有8级" class="headerlink" title="查看指定优先级（及其以上级别）的日志，共有8级"></a>查看指定优先级（及其以上级别）的日志，共有8级</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0: emerg 1: alert 2: crit 3: err 4: warning 5: notice 6: info 7: debug</span><br><span class="line">journalctl -p err -b</span><br></pre></td></tr></table></figure>
+<h3 id="日志默认分页输出，–no-pager-改为正常的标准输出"><a href="#日志默认分页输出，–no-pager-改为正常的标准输出" class="headerlink" title="日志默认分页输出，–no-pager 改为正常的标准输出"></a>日志默认分页输出，–no-pager 改为正常的标准输出</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl --no-pager</span><br></pre></td></tr></table></figure>
+<h3 id="以-JSON-格式（单行）输出"><a href="#以-JSON-格式（单行）输出" class="headerlink" title="以 JSON 格式（单行）输出"></a>以 JSON 格式（单行）输出</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -b -u nginx.service -o json</span><br></pre></td></tr></table></figure>
+<h3 id="以-JSON-格式（多行）输出，可读性更好"><a href="#以-JSON-格式（多行）输出，可读性更好" class="headerlink" title="以 JSON 格式（多行）输出，可读性更好"></a>以 JSON 格式（多行）输出，可读性更好</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -b -u nginx.service -o json-pretty</span><br></pre></td></tr></table></figure>
+<h3 id="显示日志占据的硬盘空间"><a href="#显示日志占据的硬盘空间" class="headerlink" title="显示日志占据的硬盘空间"></a>显示日志占据的硬盘空间</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl --disk-usage</span><br></pre></td></tr></table></figure>
+<h3 id="指定日志文件占据的最大空间"><a href="#指定日志文件占据的最大空间" class="headerlink" title="指定日志文件占据的最大空间"></a>指定日志文件占据的最大空间</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl --vacuum-size&#x3D;1G</span><br></pre></td></tr></table></figure>
+<h3 id="指定日志文件保存多久"><a href="#指定日志文件保存多久" class="headerlink" title="指定日志文件保存多久"></a>指定日志文件保存多久</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo journalctl --vacuum-time&#x3D;1years</span><br></pre></td></tr></table></figure>
+      
+    </div>
 
-</li>
-</ol>
-<h3 id="PyCharm下不识别cx-Oracle问题"><a href="#PyCharm下不识别cx-Oracle问题" class="headerlink" title="PyCharm下不识别cx_Oracle问题"></a>PyCharm下不识别cx_Oracle问题</h3><p>安装安成后，在python的console中已经可以<code>import cx_Oracle</code>了，但在PyCharm中却提示找不到cx_Oracle。这是一个比较大的坑，可以详细讲一下处理过程。  </p>
-<p>首先初步定位到原因，是由于PyCharm中没有定义LD_LIBRARY_PATH与DYLD_LIBRARY_PATH两个环境变量造成的。<br>PyCharm会自动读取系统中的环境变量设置并导入，但唯独这两个没有导进来。不深究原因，先尝试手工在PyCharm中配置这两个环境变量，总共有两处可以配置：</p>
-<p>第一处：<br><code>CMD+,</code>打开Preference，找到 Build,Execution,Deployment -&gt; Console -&gt; Python Console -&gt;Enviroment Variables<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/r61vs.jpg"><br>此处的配置会修复PyCharm中的Console。</p>
-<p>第二处：<br>右上角 Run -&gt; Edit Configurations，添加两条环境变量<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/09u0q.jpg"><br>此处的配置会修复PyCharm中<code>Ctrl+Shift+R</code>运行代码时的报错。</p>
-<p>在以上两处手工添加环境变量：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DYLD_LIBRARY_PATH&#x3D;&#x2F;path&#x2F;to&#x2F;instantclient</span><br><span class="line">LD_LIBRARY_PATH&#x2F;path&#x2F;to&#x2F;instantclient</span><br></pre></td></tr></table></figure>
-<p>两处的环境变量配置完成后，虽然console中可以正常使用cx_Oracle了，代码也可以正常运行了，但编辑界面中的inspection还是有问题的，提示有Error，并且不能使用自动完成功能。</p>
-<p>于是回到之前的问题，为什么明明已经定义了，但PyCharm却没有找到LD_LIBRARY_PATH与DYLD_LIBRARY_PATH？<br>同时偶然发现，在执行<code>env</code>命令查看已定义的环境变量时，也是找不到LD_LIBRARY_PATH与DYLD_LIBRARY_PATH的。<br>这貌似已经不是PyCharm自身的问题了，需要从macOS系统来着手了。  </p>
-<p>于是在stackoverflow上找到了这么一段话：  </p>
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201907/20190731visio%E6%9B%BF%E4%BB%A3%E5%93%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201907/20190731visio%E6%9B%BF%E4%BB%A3%E5%93%81/" class="post-title-link" itemprop="url">Visio替代品</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-07-31 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-31T00:00:00+08:00">2019-07-31</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <ul>
+<li>mermaid + markdown</li>
+<li>ProcessOn</li>
+<li>yed</li>
+<li>亿图图示 Edraw Max</li>
+<li><a target="_blank" rel="noopener" href="http://www.draw.io/">www.draw.io</a></li>
+<li>dia</li>
+<li>chrome 离线应用 Gliffy Diagrams</li>
+<li>Tikz</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201907/20190716Kong%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201907/20190716Kong%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Kong部署笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-07-16 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-16T00:00:00+08:00">2019-07-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Postgre安装"><a href="#Postgre安装" class="headerlink" title="Postgre安装"></a>Postgre安装</h2><h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><p><a target="_blank" rel="noopener" href="https://www.postgresql.org/">https://www.postgresql.org/</a></p>
+<h3 id="rpm方式安装"><a href="#rpm方式安装" class="headerlink" title="rpm方式安装"></a>rpm方式安装</h3><p><a target="_blank" rel="noopener" href="https://yum.postgresql.org/rpmchart.php">https://yum.postgresql.org/rpmchart.php</a><br>postgresql11-11.4-1PGDG.rhel7.x86_64.rpm<br>postgresql11-contrib-11.4-1PGDG.rhel7.x86_64.rpm<br>postgresql11-libs-11.4-1PGDG.rhel7.x86_64.rpm<br>postgresql11-server-11.4-1PGDG.rhel7.x86_64.rpm</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpm -ivh postgresql11*</span><br></pre></td></tr></table></figure>
+<h3 id="初始化DB"><a href="#初始化DB" class="headerlink" title="初始化DB"></a>初始化DB</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;usr&#x2F;pgsql-11&#x2F;bin&#x2F;postgresql-11-setup initdb</span><br><span class="line">or</span><br><span class="line">postgresql-setup initdb</span><br></pre></td></tr></table></figure>
+<h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable postgresql-11</span><br><span class="line">systemctl start postgresql-11</span><br></pre></td></tr></table></figure>
+<h3 id="修改配置"><a href="#修改配置" class="headerlink" title="修改配置"></a>修改配置</h3><p>cd /var/lib/pgsql/11/data</p>
+<p>vi postgresql.conf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">listen_addresses &#x3D; &#39;*&#39;</span><br></pre></td></tr></table></figure>
+<p>vi pg_hba.conf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">host    all all 0.0.0.0&#x2F;0   md5</span><br></pre></td></tr></table></figure>
+<h3 id="添加名为kong的用户"><a href="#添加名为kong的用户" class="headerlink" title="添加名为kong的用户"></a>添加名为kong的用户</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">useradd kong;</span><br><span class="line">su - postgres</span><br><span class="line">psql </span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE USER kong; CREATE DATABASE kong OWNER kong;</span><br><span class="line">CREATE USER kong WITH PASSWORD &#39;123456&#39;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">psql -U kong -d kong -h 127.0.0.1 -p 5432 </span><br></pre></td></tr></table></figure>
+<h2 id="Kong安装"><a href="#Kong安装" class="headerlink" title="Kong安装"></a>Kong安装</h2><h3 id="Kong官网"><a href="#Kong官网" class="headerlink" title="Kong官网"></a>Kong官网</h3><p><a target="_blank" rel="noopener" href="https://konghq.com/">https://konghq.com/</a></p>
+<h3 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h3><p><a target="_blank" rel="noopener" href="https://docs.konghq.com/install/centos/?_ga=2.146470708.1859714253.1563239338-1792454818.1563239338">https://docs.konghq.com/install/centos/?_ga=2.146470708.1859714253.1563239338-1792454818.1563239338</a></p>
+<h3 id="RPM方式安装"><a href="#RPM方式安装" class="headerlink" title="RPM方式安装"></a>RPM方式安装</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpm -ivh kong-1.2.1.el7.noarch.rpm</span><br></pre></td></tr></table></figure>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp &#x2F;etc&#x2F;kong&#x2F;kong.conf.defaul &#x2F;etc&#x2F;kong&#x2F;kong.conf</span><br><span class="line">vi &#x2F;etc&#x2F;kong&#x2F;kong.conf</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">database &#x3D; postgres              # Determines which of PostgreSQL or Cassandra</span><br><span class="line">pg_host &#x3D; 127.0.0.1             # The PostgreSQL host to connect to.</span><br><span class="line">pg_port &#x3D; 5432                  # The port to connect to.</span><br><span class="line">pg_user &#x3D; kong                  # The username to authenticate if required.</span><br><span class="line">pg_password &#x3D; 123456            # The password to authenticate if required.</span><br><span class="line">pg_database &#x3D; kong              # The database name to connect to.</span><br><span class="line">pg_ssl &#x3D; off                    # Toggles client-server TLS connections</span><br><span class="line">pg_ssl_verify &#x3D; off             # Toggles server certificate verification if</span><br></pre></td></tr></table></figure>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kong migrations bootstrap -c &#x2F;etc&#x2F;kong&#x2F;kong.conf</span><br><span class="line">kong start &#x2F;etc&#x2F;kong&#x2F;kong.conf</span><br></pre></td></tr></table></figure>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>curl -i <a target="_blank" rel="noopener" href="http://localhost:8001/">http://localhost:8001/</a></p>
+<h2 id="GUI"><a href="#GUI" class="headerlink" title="GUI"></a>GUI</h2><h3 id="Kong-Admin-GUI"><a href="#Kong-Admin-GUI" class="headerlink" title="Kong Admin GUI"></a>Kong Admin GUI</h3><p><a target="_blank" rel="noopener" href="https://docs.konghq.com/enterprise/0.31-x/admin-gui/">https://docs.konghq.com/enterprise/0.31-x/admin-gui/</a></p>
+<h3 id="Konga"><a href="#Konga" class="headerlink" title="Konga"></a>Konga</h3><p><a target="_blank" rel="noopener" href="https://github.com/pantsel/konga">https://github.com/pantsel/konga</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201907/20190709Neo4j%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201907/20190709Neo4j%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Neo4j学习笔记</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-07-09 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-09T00:00:00+08:00">2019-07-09</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p><a target="_blank" rel="noopener" href="https://neo4j.com/download-center/">https://neo4j.com/download-center/</a></p>
+<h2 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h2><p><a target="_blank" rel="noopener" href="https://neo4j.com/docs/">https://neo4j.com/docs/</a></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yueshutong/p/11071932.html">https://www.cnblogs.com/yueshutong/p/11071932.html</a></li>
+</ul>
+<h2 id="GUI"><a href="#GUI" class="headerlink" title="GUI"></a>GUI</h2><p><a target="_blank" rel="noopener" href="http://localhost:7474/browser/">http://localhost:7474/browser/</a></p>
+<p>bolt://127.0.0.1:7687<br>初始密码: neo4j/neo4j</p>
+<h2 id="APOC"><a href="#APOC" class="headerlink" title="APOC"></a>APOC</h2><h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><p><a target="_blank" rel="noopener" href="https://github.com/neo4j-contrib/neo4j-apoc-procedures">https://github.com/neo4j-contrib/neo4j-apoc-procedures</a><br><a target="_blank" rel="noopener" href="https://neo4j-contrib.github.io/neo4j-apoc-procedures/">https://neo4j-contrib.github.io/neo4j-apoc-procedures/</a></p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>$NEO4J_HOME/conf/neo4j.conf<br>dbms.security.procedures.unrestricted=apoc.*</p>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CALL dbms.functions() YIELD name</span><br><span class="line">WHERE name STARTS WITH &#39;apoc.&#39;</span><br><span class="line">RETURN count(name)</span><br><span class="line">UNION</span><br><span class="line">CALL dbms.procedures() YIELD name</span><br><span class="line">WHERE name STARTS WITH &#39;apoc.&#39;</span><br><span class="line">RETURN count(name)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">call apoc.help(&#39;meta&#39;);</span><br><span class="line">call apoc.meta.graph();</span><br><span class="line">call apoc.generate.ba(1000, 2, &#39;Person&#39;, &#39;FRIEND_OF&#39;);</span><br></pre></td></tr></table></figure>
+<h2 id="Spring-Data-Neo4j"><a href="#Spring-Data-Neo4j" class="headerlink" title="Spring Data Neo4j"></a>Spring Data Neo4j</h2><p><a target="_blank" rel="noopener" href="https://docs.spring.io/spring-data/neo4j/docs/5.1.9.RELEASE/reference/html/">https://docs.spring.io/spring-data/neo4j/docs/5.1.9.RELEASE/reference/html/</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201903/20190312net-tools%E5%AF%B9%E6%AF%94iproute2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201903/20190312net-tools%E5%AF%B9%E6%AF%94iproute2/" class="post-title-link" itemprop="url">net-tools对比iproute2</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-03-12 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-12T00:00:00+08:00">2019-03-12</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>iproute2是linux下管理控制TCP/IP网络和流量控制的新一代工具包，旨在替代老派的工具链net-tools，即大家比较熟悉的ifconfig，arp，route，netstat等命令。</p>
+<p>net-tools是通过procfs(/proc)和ioctl系统调用去访问和改变内核网络配置，而iproute2则通过netlink套接字接口与内核通讯。</p>
+<h2 id="对照表"><a href="#对照表" class="headerlink" title="对照表"></a>对照表</h2><table>
+<thead>
+<tr>
+<th>net-tools</th>
+<th>iproute2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>arp -na</td>
+<td>ip neigh</td>
+</tr>
+<tr>
+<td>ifconfig</td>
+<td>ip link</td>
+</tr>
+<tr>
+<td>ifconfig -a</td>
+<td>ip addr show</td>
+</tr>
+<tr>
+<td>ifconfig -s</td>
+<td>ip -s link</td>
+</tr>
+<tr>
+<td>ifconfig eth0 up</td>
+<td>ip link set eth0 up</td>
+</tr>
+<tr>
+<td>ipmaddr</td>
+<td>ip maddr</td>
+</tr>
+<tr>
+<td>iptunnel</td>
+<td>ip tunnel</td>
+</tr>
+<tr>
+<td>netstat</td>
+<td>ss</td>
+</tr>
+<tr>
+<td>netstat -i</td>
+<td>ip -s link</td>
+</tr>
+<tr>
+<td>netstat -g</td>
+<td>ip maddr</td>
+</tr>
+<tr>
+<td>netstat -l</td>
+<td>ss -l</td>
+</tr>
+<tr>
+<td>netstat -r</td>
+<td>ip route</td>
+</tr>
+<tr>
+<td>route add</td>
+<td>ip route add</td>
+</tr>
+<tr>
+<td>route del</td>
+<td>ip route del</td>
+</tr>
+<tr>
+<td>route -n</td>
+<td>ip route show</td>
+</tr>
+</tbody></table>
+<h2 id="ss常用操作"><a href="#ss常用操作" class="headerlink" title="ss常用操作"></a>ss常用操作</h2><p><code>-s</code>查看当前服务器的网络连接统计</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -s</span><br></pre></td></tr></table></figure>
+<p><code>-l</code>查看所有监听的网络端口，<code>-p</code>并列出具体的程序名称</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -lp</span><br></pre></td></tr></table></figure>
+<p><code>-a</code>查看这台服务器上所有的socket连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -a</span><br></pre></td></tr></table></figure>
+<p>替代<code>netstat -ntlp</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -nltp|column  -t</span><br></pre></td></tr></table></figure>
+<p>替代<code>lsof -i</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -nltp|grep 18010</span><br></pre></td></tr></table></figure>
+<h2 id="ip常用操作"><a href="#ip常用操作" class="headerlink" title="ip常用操作"></a>ip常用操作</h2><p>检查网卡的诸如 IP 地址</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip addr show</span><br><span class="line">ip a</span><br></pre></td></tr></table></figure>
+<p>启用/禁用网卡</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip link set eth0 up</span><br><span class="line">ip link set eth0 down</span><br></pre></td></tr></table></figure>
+<p>配置IP地址</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip addr add 10.211.55.13&#x2F;24 brd + dev eth0</span><br><span class="line">ip addr del 10.211.55.13&#x2F;24 dev eth0</span><br></pre></td></tr></table></figure>
+<p>检查路由</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip route show</span><br></pre></td></tr></table></figure>
+<p>检查ARP记录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip neigh</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/" class="post-title-link" itemprop="url">CentOS7安装KVM</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-03-08 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-08T00:00:00+08:00">2019-03-08</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md">https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md</a></li>
+<li><a target="_blank" rel="noopener" href="https://c.isme.pub/2017/06/17/kvm-install/">https://c.isme.pub/2017/06/17/kvm-install/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.tuxfixer.com/install-and-configure-kvm-qemu-on-centos-7-rhel-7-bridge-vhost-network-interface/">https://www.tuxfixer.com/install-and-configure-kvm-qemu-on-centos-7-rhel-7-bridge-vhost-network-interface/</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.91bg.top/archives/51/">http://www.91bg.top/archives/51/</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.51cto.com/11305268/1774531">https://blog.51cto.com/11305268/1774531</a></li>
+</ul>
+<h1 id="关闭selinux"><a href="#关闭selinux" class="headerlink" title="关闭selinux"></a>关闭selinux</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setenforce 0</span><br><span class="line">sed -i &#39;s&#x2F;&#x3D;enforcing&#x2F;&#x3D;disabled&#x2F;g&#39; &#x2F;etc&#x2F;selinux&#x2F;config</span><br></pre></td></tr></table></figure>
+<h1 id="停用防火墙"><a href="#停用防火墙" class="headerlink" title="停用防火墙"></a>停用防火墙</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl disable firewalld.service</span><br><span class="line">systemctl stop firewalld.service</span><br></pre></td></tr></table></figure>
+<h2 id="安装KVM"><a href="#安装KVM" class="headerlink" title="安装KVM"></a>安装KVM</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install qemu-kvm libvirt virt-install bridge-utils </span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>El Capitan added system integrity protection (SIP), and one side effect of that is that exporting DYLD_LIBRARY_PATH doesn’t work. That could affect running SQL*Plus from a shell script, for example. There are workarounds for the 11g instant client. The installation notes at the bottom of the download page have changed since I last did this, and it now says to hard link the library files to the user’s ~/lib directory to avoid that issue. Fortunately it looks like you don’t need to worry about that with the 12c client - they’ve fixed the way it’s built.</p>
+<p>安装后需要重启系统</p>
 </blockquote>
-<p>看来根本原因是OSX 10.11之后加入的这个SIP引发的了。  </p>
-<p>首先想到的最简单的方法，将所有的<code>.dylib</code>和<code>.h</code>都拷贝到系统默认的目录就可以了。<br>但很杯具，<code>/usr/lib</code>和<code>/user/include</code>这两个目录也被SIP保护了。因为不想强制关闭SIP，继续再想别的办法。<br>接着发现<code>/usr/local/lib</code>和<code>/user/local/include</code>目录还是可以操作的，于是拷到这两个目录：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;path&#x2F;to&#x2F;instantclient</span><br><span class="line">cp *.dylib &#x2F;usr&#x2F;local&#x2F;lib</span><br><span class="line">cp .&#x2F;sdk&#x2F;include&#x2F;*.h &#x2F;usr&#x2F;local&#x2F;include</span><br></pre></td></tr></table></figure>
-<p>再将cx_Oracle卸载后重新编译安装：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 uninstall cx_Oracle</span><br><span class="line">sudo pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
-<p>重启PyCharm后，问题解决。</p>
-<h2 id="cx-Oracle的简单使用"><a href="#cx-Oracle的简单使用" class="headerlink" title="cx_Oracle的简单使用"></a>cx_Oracle的简单使用</h2><p>cx_Oracle的使用上没有什么问题，一切按套路来写就可以了。贴一个简单的示例：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">import cx_Oracle</span><br><span class="line">conn &#x3D; cx_Oracle.connect(&#39;username&#39;, &#39;password&#39;,&#39;host:port&#x2F;sid&#39;)</span><br><span class="line">cursor &#x3D; conn.cursor()</span><br><span class="line">cursor.execute(&#39;select column from table&#39;)</span><br><span class="line">result &#x3D; cursor.fetchall()</span><br><span class="line">for row in result:</span><br><span class="line">    print(row)</span><br><span class="line">cursor.close()</span><br><span class="line">conn.close()</span><br></pre></td></tr></table></figure>
-<p>更加详细的内容请参考官方文档：<br><a target="_blank" rel="noopener" href="https://cx-oracle.readthedocs.io/en/latest/">https://cx-oracle.readthedocs.io/en/latest/</a><br><a target="_blank" rel="noopener" href="https://oracle.github.io/python-cx_Oracle/">https://oracle.github.io/python-cx_Oracle/</a>  </p>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://gist.github.com/thom-nic/6011715">https://gist.github.com/thom-nic/6011715</a><br><a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/37711482/how-to-install-oracle-instant-client-on-a-mac">http://stackoverflow.com/questions/37711482/how-to-install-oracle-instant-client-on-a-mac</a>  </p>
+<h2 id="开启libvirtd服务"><a href="#开启libvirtd服务" class="headerlink" title="开启libvirtd服务"></a>开启libvirtd服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl start libvirtd</span><br><span class="line">systemctl enable libvirtd</span><br></pre></td></tr></table></figure>
+<h2 id="创建虚拟机"><a href="#创建虚拟机" class="headerlink" title="创建虚拟机"></a>创建虚拟机</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">virt-install \</span><br><span class="line">--virt-type&#x3D;kvm \</span><br><span class="line">--name&#x3D;centos01 \</span><br><span class="line">--vcpus&#x3D;2 \</span><br><span class="line">--memory&#x3D;2048 \</span><br><span class="line">--location&#x3D;&#x2F;tmp&#x2F;CentOS-7-x86_64-Minimal-1511.iso \</span><br><span class="line">--disk path&#x3D;&#x2F;home&#x2F;vms&#x2F;centos01.qcow2,size&#x3D;40,format&#x3D;qcow2 \</span><br><span class="line">--network bridge&#x3D;br0 \</span><br><span class="line">--graphics none \</span><br><span class="line">--extra-args&#x3D;&#39;console&#x3D;ttyS0&#39; \</span><br><span class="line">--force</span><br></pre></td></tr></table></figure>
 
+<h1 id="虚拟机管理"><a href="#虚拟机管理" class="headerlink" title="虚拟机管理"></a>虚拟机管理</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">virsh list              # 查看在运行的虚拟机</span><br><span class="line">virsh list --all         # 查看所有虚拟机</span><br><span class="line">virsh console centos72</span><br><span class="line">virsh start centos72     # 虚拟机开启（启动）：</span><br><span class="line">virsh reboot centos72    # 虚拟机重新启动</span><br><span class="line">virsh shutdown centos72  # 虚拟机关机</span><br><span class="line">virsh destroy centos72   # 强制关机（强制断电）</span><br><span class="line">virsh suspend centos72   # 暂停（挂起）KVM 虚拟机</span><br><span class="line">virsh resume centos72    # 恢复被挂起的 KVM 虚拟机</span><br><span class="line">virsh undefine centos72  # 该方法只删除配置文件，磁盘文件未删除</span><br><span class="line">virsh autostart centos72 # 随物理机启动而启动（开机启动）</span><br><span class="line">virsh autostart --disable centos72 # 取消标记为自动开始（取消开机启动）</span><br></pre></td></tr></table></figure>
+<h2 id="相关"><a href="#相关" class="headerlink" title="相关"></a>相关</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">libvirt-client   # libvirt的客户端,最重要的功能之一就是在宿主机关机时可以通知虚拟机也关机  </span><br><span class="line">gpxe-roms-qemu   # 虚拟机 iPXE 的启动固件,支持虚拟机从网络启动</span><br><span class="line">libvirt-python   # libvirt 为 python 提供的 API</span><br><span class="line">python-virtinst  # 一套 Python 的虚拟机安装工具</span><br><span class="line">qemu-kvm         # KVM 在用户空间运行的程序</span><br><span class="line">libvirt          # 用于管理虚拟机,它提供了一套虚拟机操作 API</span><br><span class="line">virt-manager     # 基于 libvirt 的图像化虚拟机管理软件 </span><br><span class="line">virt-viewer      # 显示虚拟机的控制台 Console</span><br><span class="line">virt-top         # 类似于 top 命令,查看虚拟机的资源使用情况</span><br><span class="line">virt-what        # 在虚拟机内部执行,查看虚拟机运行的虚拟化平台</span><br><span class="line">qemu-img         # 用于操作虚拟机硬盘镜像的创建、查看和格式转化</span><br><span class="line">qemu-kvm: 主要包含KVM内核模块和基于KVM重构后的QEMU模拟器. KVM模块作为整个虚拟化环境的核心工作在系统空间, 负责CPU和内存的调度. QEMU作为模拟器工作在用户空间, 负责虚拟机I&#x2F;O模拟. </span><br><span class="line">依赖包 quemu-img:  主要用来QEMU磁盘镜像的管理, 如新建一块磁盘镜像给虚拟机. </span><br><span class="line">libvirt: 提供Hypervisor和虚拟机管理的API. </span><br><span class="line">libvirt-client: KVM客户端命令行管理工具virsh, 负责虚拟机的启动、停止和管理等.</span><br><span class="line">libvirt-daemon: libvirtd守护进, 作为客户端管理工具跟Hypervisor和虚拟机之间的桥梁.</span><br><span class="line">libvirt-daemon-driver-xxx: 从名字来看属于libvirtd服务的驱动文件, 作为libvirtd服务跟Hypervisor不同对象(如qemu模拟器、网络、存储等)间的接口.</span><br><span class="line">bridge-utils: 网桥管理工具包, 负责桥接网络的创建、配置和管理等工作.</span><br><span class="line">virt-install: 创建和克隆虚拟机的命令行工具包.</span><br><span class="line">virt-manager: 图形界面的KVM管理工具.</span><br></pre></td></tr></table></figure>
+<h2 id="图形界面"><a href="#图形界面" class="headerlink" title="图形界面"></a>图形界面</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum install virt-manager</span><br><span class="line">virt-manager</span><br></pre></td></tr></table></figure>
+<h2 id="配置桥接模式"><a href="#配置桥接模式" class="headerlink" title="配置桥接模式"></a>配置桥接模式</h2><p>停用NetworkManager</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop NetworkManager</span><br><span class="line">systemctl disable NetworkManager</span><br></pre></td></tr></table></figure>
+<p>cd /etc/sysconfig/network-scripts<br>vi ifcfg-br0 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DEVICE&#x3D;br0</span><br><span class="line">TYPE&#x3D;Bridge</span><br><span class="line">BOOTRPOTO&#x3D;static</span><br><span class="line">IPADDR&#x3D;10.211.55.11</span><br><span class="line">NETMASK&#x3D;255.255.255.0</span><br><span class="line">GATEWAY&#x3D;10.211.55.1</span><br><span class="line">DNS1&#x3D;10.211.55.1</span><br><span class="line">ONBOOT&#x3D;yes</span><br></pre></td></tr></table></figure>
+<p>vi ifcfg-eth0 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">TYPE&#x3D;Ethernet</span><br><span class="line">PROXY_METHOD&#x3D;none</span><br><span class="line">BROWSER_ONLY&#x3D;no</span><br><span class="line">BOOTPROTO&#x3D;none</span><br><span class="line">#IPADDR&#x3D;10.211.55.11</span><br><span class="line">#PREFIX&#x3D;24</span><br><span class="line">#GATEWAY&#x3D;10.211.55.1</span><br><span class="line">#DNS1&#x3D;10.211.55.1</span><br><span class="line">DEFROUTE&#x3D;yes</span><br><span class="line">IPV4_FAILURE_FATAL&#x3D;no</span><br><span class="line">IPV6INIT&#x3D;no</span><br><span class="line">NAME&#x3D;eth0</span><br><span class="line">UUID&#x3D;9beea3d9-92ac-4f7f-b5eb-c8341f308a7d</span><br><span class="line">ONBOOT&#x3D;yes</span><br><span class="line">DEVICE&#x3D;eth0</span><br><span class="line">BRIDGE&#x3D;br0</span><br></pre></td></tr></table></figure>
       
     </div>
 
@@ -439,7 +850,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201704/flask-adminlte-handler/">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85VirtualBox/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -453,7 +864,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201704/flask-adminlte-handler/" class="post-title-link" itemprop="url">flask-adminlte-handler</a>
+            <a href="/201903/20190308CentOS7%E5%AE%89%E8%A3%85VirtualBox/" class="post-title-link" itemprop="url">CentOS7安装VirtualBox</a>
         </h2>
 
         <div class="post-meta">
@@ -463,15 +874,8 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2017-04-15 10:50:48" itemprop="dateCreated datePublished" datetime="2017-04-15T10:50:48+08:00">2017-04-15</time>
+              <time title="Created: 2019-03-08 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-08T00:00:00+08:00">2019-03-08</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
 
           
 
@@ -484,68 +888,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>继续接着上次的话题，上周整理出来的flask-rest脚手架，用于快速构建Restful API。虽然后端的代码量很少，但前端会变得很重，所以总体开发速度并不算太快，不太适合小型项目。<br>于是又整理了一套flask-adminlte脚手架，目标是用较传统的方式，减少整体的代码量，加快开发速度，以应对一些比较极端的需求。大体估算，开发时间可以做到SpringBoot全家桶的30%左右。  </p>
-<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><p><a target="_blank" rel="noopener" href="http://git.si-tech.com.cn/guolei/flask-adminlte-handler">http://git.si-tech.com.cn/guolei/flask-adminlte-handler</a><br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/flask-adminlte-handler">https://github.com/xiiiblue/flask-rest-sample</a>  </p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>flask-adminlte-handler是一个Python环境下的WEB后台管理系统脚手架，目标是用极少量的代码，快速构建小型WEB应用。请勿在大中型项目中进行尝试。  </p>
-<ol>
-<li>使用较传统的重后端+轻前端的方式，降低总体代码量</li>
-<li>Web框架使用Flask，默认Jinja模版</li>
-<li>ORM框架使用Peewee</li>
-<li>前端套用基于BootStrap的AdminLTE模板</li>
-</ol>
-<h2 id="系统截图"><a href="#系统截图" class="headerlink" title="系统截图"></a>系统截图</h2><ul>
-<li><p>登录页<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/0ot1s.jpg"></p>
-</li>
-<li><p>主页<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/644d6.jpg"></p>
-</li>
-<li><p>编辑界面<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/fojv1.jpg">  </p>
-</li>
-<li><p>查询界面<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/vvelb.jpg"></p>
-</li>
-</ul>
-<h2 id="第三方依赖"><a href="#第三方依赖" class="headerlink" title="第三方依赖"></a>第三方依赖</h2><ul>
-<li>peewee</li>
-<li>pymysql</li>
-<li>flask</li>
-<li>flask-script</li>
-<li>flask-wtf</li>
-<li>flask-login</li>
-</ul>
-<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><h3 id="venv虚拟环境安装配置"><a href="#venv虚拟环境安装配置" class="headerlink" title="venv虚拟环境安装配置"></a>venv虚拟环境安装配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 install virtualenv</span><br><span class="line">virtualenv venv</span><br><span class="line">. venv&#x2F;bin&#x2F;activate</span><br></pre></td></tr></table></figure>
-<h3 id="第三方依赖安装"><a href="#第三方依赖安装" class="headerlink" title="第三方依赖安装"></a>第三方依赖安装</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip3 install -r requirements.txt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h3 id="系统参数配置"><a href="#系统参数配置" class="headerlink" title="系统参数配置"></a>系统参数配置</h3><ol>
-<li><p>编辑<code>config.py</code>， 修改SECRET_KEY及MySQL数据库相关参数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SECRET_KEY &#x3D; os.environ.get(&#39;SECRET_KEY&#39;) or &#39;your-secret&#39;</span><br><span class="line">DB_HOST &#x3D; &#39;127.0.0.1&#39;</span><br><span class="line">DB_USER &#x3D; &#39;foobar&#39;</span><br><span class="line">DB_PASSWD &#x3D; &#39;foobar&#39;</span><br><span class="line">DB_DATABASE &#x3D; &#39;foobar&#39;</span><br></pre></td></tr></table></figure></li>
-<li><p>编辑log-app.conf，修改日志路径</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">args&#x3D;(&#39;&#x2F;path&#x2F;to&#x2F;log&#x2F;flask-rest-sample.log&#39;,&#39;a&#39;,&#39;utf8&#39;)</span><br></pre></td></tr></table></figure>
-<h3 id="数据库初始化"><a href="#数据库初始化" class="headerlink" title="数据库初始化"></a>数据库初始化</h3></li>
-<li><p>自动建表<br>直接运行<code>python3 models.py</code></p>
-</li>
-<li><p>插入管理员用户（默认admin/admin)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO &#96;user&#96; (&#96;id&#96;, &#96;username&#96;, &#96;password&#96;, &#96;fullname&#96;, &#96;email&#96;, &#96;phone&#96;, &#96;status&#96;)</span><br><span class="line">VALUES</span><br><span class="line">	(1, &#39;admin&#39;, &#39;pbkdf2:sha1:1000$Km1vdx3W$9aa07d3b79ab88aae53e45d26d0d4d4e097a6cd3&#39;, &#39;管理员&#39;, &#39;admin@admin.com&#39;, &#39;18612341234&#39;, 1);</span><br></pre></td></tr></table></figure>
-<h3 id="启动应用"><a href="#启动应用" class="headerlink" title="启动应用"></a>启动应用</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nohup .&#x2F;manage.py runserver 2&gt;&amp;1 &amp;</span><br><span class="line">或</span><br><span class="line">.&#x2F;run_app_dev.py (仅限测试)</span><br></pre></td></tr></table></figure>
-
-</li>
-</ol>
-<h2 id="项目目录结构"><a href="#项目目录结构" class="headerlink" title="项目目录结构"></a>项目目录结构</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/963uh.jpg">  </p>
-<ul>
-<li>/app/auth  用户认证相关代码</li>
-<li>/app/main  主要功能点相关代码</li>
-<li>/app/static  JS、CSS等静态文件</li>
-<li>/app/template  页面模版</li>
-<li>/app/models.py  Peewee模型</li>
-<li>/app/utils.py  工具模块</li>
-<li>/conf  系统参数及日志配置</li>
-</ul>
-<h2 id="相关学习文档"><a href="#相关学习文档" class="headerlink" title="相关学习文档"></a>相关学习文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://flask.pocoo.org/">http://flask.pocoo.org</a></li>
-<li><a target="_blank" rel="noopener" href="https://flask-login.readthedocs.io/">https://flask-login.readthedocs.io</a></li>
-<li><a target="_blank" rel="noopener" href="https://flask-script.readthedocs.io/">https://flask-script.readthedocs.io</a></li>
-<li><a target="_blank" rel="noopener" href="https://flask-wtf.readthedocs.io/">https://flask-wtf.readthedocs.io</a></li>
-<li><a target="_blank" rel="noopener" href="http://docs.peewee-orm.com/">http://docs.peewee-orm.com</a></li>
-<li><a target="_blank" rel="noopener" href="https://almsaeedstudio.com/preview">https://almsaeedstudio.com/preview</a></li>
-</ul>
-
+          <h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p><a target="_blank" rel="noopener" href="https://www.virtualbox.org/wiki/Downloads">https://www.virtualbox.org/wiki/Downloads</a></p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum install SDL-devel gcc kernel-devel</span><br><span class="line">yum install .&#x2F;VirtualBox-6.0-6.0.4_128413_el7-1.x86_64.rpm</span><br><span class="line">vboxconfig</span><br></pre></td></tr></table></figure>
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p>开启X11转发</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh -Y root@10.211.55.11</span><br><span class="line">virtualbox</span><br></pre></td></tr></table></figure>
       
     </div>
 
@@ -564,7 +910,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201704/flask-rest-sample/">
+    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201903/20190307CentOS7%E9%85%8D%E7%BD%AEVNC/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -578,7 +924,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/201704/flask-rest-sample/" class="post-title-link" itemprop="url">使用Flask快速构建REST应用</a>
+            <a href="/201903/20190307CentOS7%E9%85%8D%E7%BD%AEVNC/" class="post-title-link" itemprop="url">CentOS7配置TigerVNC</a>
         </h2>
 
         <div class="post-meta">
@@ -588,15 +934,8 @@
               </span>
               <span class="post-meta-item-text">Posted on</span>
 
-              <time title="Created: 2017-04-08 16:55:12" itemprop="dateCreated datePublished" datetime="2017-04-08T16:55:12+08:00">2017-04-08</time>
+              <time title="Created: 2019-03-07 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-07T00:00:00+08:00">2019-03-07</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:45:51" itemprop="dateModified" datetime="2018-11-06T15:45:51+08:00">2018-11-06</time>
-              </span>
 
           
 
@@ -609,487 +948,18 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>最近在某个小型项目上进行了一些尝试，目标是用极快的速度构建一套简洁且优雅的小型WEB系统。当然这次尝试可以说是失败的，稍后会提到。  </p>
-<p>架构上主要是前后端分离，后端使用Python实现RESTFul API，前端直接套用AdminLTE模版。  </p>
-<p>得益于Python动态语言的特性，后端可以做到非常少量的代码实现增删改查等基本功能，大约是可以使用100多行代码写了25个REST服务吧，非常惊人。虽然比较简陋，但比起之前使用Spring Boot全家桶来开发REST，要快得太多。  </p>
-<p>但比起后端，前端的代码量，初版写出来之后，是后端的几十倍，使用gulp构建，include等插件后，做到了一定简化，接下来还要做SPA化，引入vue.js、webpack等等，最终会变成 <strong>为了目的不择手段，为了手段而忘记目的</strong> 。一个很重要的前提是，要做一个 <strong>小型WEB系统</strong> ，整体成本要小。所以前后端分离虽然好处多多，但前端太重了，并不适合小型系统。  </p>
-<p>最终还是使用了Flask+Jinja，传统的重后端、轻前端的方式来实现，将总体代码量控制到了极少。<br>但这次的REST API部分，不失为一次有益的尝试，单独拿出来做成脚手架，提供给有需要的人吧。  </p>
-<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><p><a target="_blank" rel="noopener" href="http://git.si-tech.com.cn/guolei/flask-rest-sample">http://git.si-tech.com.cn/guolei/flask-rest-sample</a><br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/flask-rest-sample">https://github.com/xiiiblue/flask-rest-sample</a>  </p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>flask-rest-sample 是一个使用Python编写的REST API，可以对多个资源提供增删改查服务，用于快速构建REST应用。  </p>
-<ol>
-<li>Web框架使用Flask</li>
-<li>ORM框架使用peewee</li>
-<li>安全方面使用了flask-jwt插件进行JWT(Json Web Token)认证</li>
-<li>由于flask-rest/flask-restplus侵略性较强，本次没有使用。</li>
-<li>可以考虑自行使用flasgger添加SwaggerUI文档。</li>
-</ol>
-<h2 id="第三方依赖"><a href="#第三方依赖" class="headerlink" title="第三方依赖"></a>第三方依赖</h2><ul>
-<li>peewee</li>
-<li>pymysql</li>
-<li>Flask</li>
-<li>Flask-JWT</li>
-<li>flask-script</li>
-</ul>
-<h2 id="主要代码示例"><a href="#主要代码示例" class="headerlink" title="主要代码示例"></a>主要代码示例</h2><ol>
-<li><p>建模时尽量避免使用外键等约束条件，保证模型结构上一致，可以做到共用一个公共服务。</p>
-</li>
-<li><p>可使用<code>@rest.route</code>添加多个资源</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"># 基本API</span><br><span class="line">@rest.route(&#39;&#x2F;api&#x2F;reports&#39;, methods&#x3D;[&#39;GET&#39;, &#39;POST&#39;])</span><br><span class="line">@rest.route(&#39;&#x2F;api&#x2F;reports&#x2F;&lt;id&gt;&#39;, methods&#x3D;[&#39;GET&#39;, &#39;PUT&#39;, &#39;DELETE&#39;])</span><br><span class="line">@rest.route(&#39;&#x2F;api&#x2F;res2&#39;, methods&#x3D;[&#39;GET&#39;, &#39;POST&#39;])</span><br><span class="line">@rest.route(&#39;&#x2F;api&#x2F;res2&#x2F;&lt;id&gt;&#39;, methods&#x3D;[&#39;GET&#39;, &#39;PUT&#39;, &#39;DELETE&#39;])  #只要模型结构一致，可以添加多个资源</span><br><span class="line">@jwt_required()</span><br><span class="line">def common_rest_api(id&#x3D;None):</span><br><span class="line">    model_name &#x3D; request.path.split(&#39;&#x2F;&#39;)[2]  </span><br><span class="line">    pee_wee_model &#x3D; utils.get_model_by_name(model_name)  #从URL中确定模型</span><br><span class="line">    if not pee_wee_model:</span><br><span class="line">        return utils.jsonresp(status&#x3D;400, errinfo&#x3D;&#39;model_name不正确&#39;)</span><br><span class="line"></span><br><span class="line">    if id:</span><br><span class="line">        # 查询</span><br><span class="line">        if request.method &#x3D;&#x3D; &#39;GET&#39;:</span><br><span class="line">            try:</span><br><span class="line">                model &#x3D; pee_wee_model.get(pee_wee_model.id &#x3D;&#x3D; id)</span><br><span class="line">            except:</span><br><span class="line">                return utils.jsonresp(status&#x3D;404, errinfo&#x3D;&#39;查询不到资料&#39;)</span><br><span class="line">            return utils.jsonresp(jsonobj&#x3D;utils.obj_to_dict(model))</span><br><span class="line">        # 修改</span><br><span class="line">        elif request.method &#x3D;&#x3D; &#39;PUT&#39;:</span><br><span class="line">            json_dict &#x3D; request.get_json(silent&#x3D;True, force&#x3D;True)</span><br><span class="line">            if not json_dict: return utils.jsonresp(status&#x3D;400, errinfo&#x3D;&#39;参数格式不正确&#39;)</span><br><span class="line">            try:</span><br><span class="line">                model &#x3D; pee_wee_model.get(pee_wee_model.id &#x3D;&#x3D; id)</span><br><span class="line">            except:</span><br><span class="line">                return utils.jsonresp(status&#x3D;404, errinfo&#x3D;&#39;查询不到资料&#39;)</span><br><span class="line">            utils.dict_to_obj(dict&#x3D;json_dict, obj&#x3D;model, exclude&#x3D;(&#39;id&#39;,))  # 去掉ID字段</span><br><span class="line">            model.save()</span><br><span class="line">            return utils.jsonresp(status&#x3D;201)</span><br><span class="line">        # 删除</span><br><span class="line">        elif request.method &#x3D;&#x3D; &#39;DELETE&#39;:</span><br><span class="line">            try:</span><br><span class="line">                pee_wee_model.get(pee_wee_model.id &#x3D;&#x3D; id).delete_instance()</span><br><span class="line">            except:</span><br><span class="line">                return utils.jsonresp(status&#x3D;404, errinfo&#x3D;&#39;查询不到资料&#39;)</span><br><span class="line">            return utils.jsonresp(status&#x3D;204)</span><br><span class="line">        else:</span><br><span class="line">            return utils.jsonresp(status&#x3D;405, errinfo&#x3D;&#39;不支持的HTTP方法&#39;)</span><br><span class="line">    else:</span><br><span class="line">        # 全量查询（支持分页、排序、搜索）</span><br><span class="line">        if request.method &#x3D;&#x3D; &#39;GET&#39;:</span><br><span class="line">            # 处理查询参数</span><br><span class="line">            logger.debug(request.args)</span><br><span class="line">            try:</span><br><span class="line">                # 当前页码</span><br><span class="line">                page &#x3D; request.args.get(&#39;page&#39;, &#39;&#39;)</span><br><span class="line">                if page: page &#x3D; int(page) + 1</span><br><span class="line">                # 每页展示数量</span><br><span class="line">                length &#x3D; request.args.get(&#39;length&#39;, &#39;&#39;)</span><br><span class="line">                if length:</span><br><span class="line">                    length &#x3D; int(length)</span><br><span class="line">                else:</span><br><span class="line">                    length &#x3D; cfg.ITEMS_PER_PAGE</span><br><span class="line">                # 排序</span><br><span class="line">                sort &#x3D; request.args.get(&#39;sort&#39;, &#39;&#39;)</span><br><span class="line">                if sort:</span><br><span class="line">                    sort_column &#x3D; sort.split(&#39;,&#39;)[0]</span><br><span class="line">                    sort_direction &#x3D; sort.split(&#39;,&#39;)[1]</span><br><span class="line">            except:</span><br><span class="line">                return utils.jsonresp(status&#x3D;400, errinfo&#x3D;&#39;参数格式不正确&#39;)</span><br><span class="line"></span><br><span class="line">            # 查询</span><br><span class="line">            query &#x3D; pee_wee_model.select()</span><br><span class="line">            total_count &#x3D; query.count()</span><br><span class="line"></span><br><span class="line">            # 排序</span><br><span class="line">            if sort:</span><br><span class="line">                if sort_column in pee_wee_model._meta.fields:</span><br><span class="line">                    field &#x3D; getattr(pee_wee_model, sort_column)</span><br><span class="line">                    if sort_direction !&#x3D; &#39;asc&#39;:</span><br><span class="line">                        field &#x3D; field.desc()</span><br><span class="line">                    query &#x3D; query.order_by(field)</span><br><span class="line">            # 分页</span><br><span class="line">            if page:</span><br><span class="line">                query &#x3D; query.paginate(page, length)</span><br><span class="line"></span><br><span class="line">            dict &#x3D; &#123;&#39;content&#39;: utils.query_to_list(query), &#39;totalElements&#39;: total_count&#125;</span><br><span class="line">            return utils.jsonresp(jsonobj&#x3D;dict)</span><br><span class="line">        # 新增</span><br><span class="line">        elif request.method &#x3D;&#x3D; &#39;POST&#39;:</span><br><span class="line">            json_dict &#x3D; request.get_json(silent&#x3D;True, force&#x3D;True)</span><br><span class="line">            if not json_dict: return utils.jsonresp(status&#x3D;400, errinfo&#x3D;&#39;参数格式不正确&#39;)</span><br><span class="line">            user &#x3D; utils.dict_to_obj(dict&#x3D;json_dict, obj&#x3D;pee_wee_model(), exclude&#x3D;[&#39;id&#39;])  # 去掉ID字段</span><br><span class="line">            user.save()</span><br><span class="line">            return utils.jsonresp(status&#x3D;201)</span><br><span class="line">        else:</span><br><span class="line">            return utils.jsonresp(status&#x3D;405, errinfo&#x3D;&#39;不支持的HTTP方法&#39;)</span><br></pre></td></tr></table></figure>
-<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><h3 id="venv虚拟环境安装配置"><a href="#venv虚拟环境安装配置" class="headerlink" title="venv虚拟环境安装配置"></a>venv虚拟环境安装配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 install virtualenv</span><br><span class="line">virtualenv venv</span><br><span class="line">. venv&#x2F;bin&#x2F;activate</span><br></pre></td></tr></table></figure>
-<h3 id="第三方依赖安装"><a href="#第三方依赖安装" class="headerlink" title="第三方依赖安装"></a>第三方依赖安装</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip3 install -r requirements.txt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h3 id="系统参数配置"><a href="#系统参数配置" class="headerlink" title="系统参数配置"></a>系统参数配置</h3></li>
-<li><p>编辑<code>config.py</code>， 修改SECRET_KEY及MySQL数据库相关参数</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SECRET_KEY &#x3D; os.environ.get(&#39;SECRET_KEY&#39;) or &#39;your-secret&#39;</span><br><span class="line">DB_HOST &#x3D; &#39;127.0.0.1&#39;</span><br><span class="line">DB_USER &#x3D; &#39;foobar&#39;</span><br><span class="line">DB_PASSWD &#x3D; &#39;foobar&#39;</span><br><span class="line">DB_DATABASE &#x3D; &#39;foobar&#39;</span><br></pre></td></tr></table></figure></li>
-<li><p>编辑log-app.conf，修改日志路径</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">args&#x3D;(&#39;&#x2F;path&#x2F;to&#x2F;log&#x2F;flask-rest-sample.log&#39;,&#39;a&#39;,&#39;utf8&#39;)</span><br></pre></td></tr></table></figure>
-<h3 id="数据库初始化"><a href="#数据库初始化" class="headerlink" title="数据库初始化"></a>数据库初始化</h3></li>
-<li><p>自动建表<br>直接运行<code>python3 models.py</code></p>
-</li>
-<li><p>插入管理员用户（默认admin/admin)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO &#96;user&#96; (&#96;id&#96;, &#96;username&#96;, &#96;password&#96;, &#96;fullname&#96;, &#96;email&#96;, &#96;phone&#96;, &#96;status&#96;)</span><br><span class="line">VALUES</span><br><span class="line">	(1, &#39;admin&#39;, &#39;pbkdf2:sha1:1000$Km1vdx3W$9aa07d3b79ab88aae53e45d26d0d4d4e097a6cd3&#39;, &#39;管理员&#39;, &#39;admin@admin.com&#39;, &#39;18612341234&#39;, 1);</span><br></pre></td></tr></table></figure>
-<h3 id="启动应用"><a href="#启动应用" class="headerlink" title="启动应用"></a>启动应用</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nohup .&#x2F;manage.py runserver 2&gt;&amp;1 &amp;</span><br><span class="line">或</span><br><span class="line">.&#x2F;run_app_dev.py (仅限测试)</span><br></pre></td></tr></table></figure>
+          <h2 id="安装X11和Gnome"><a href="#安装X11和Gnome" class="headerlink" title="安装X11和Gnome"></a>安装X11和Gnome</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum groupinstall &quot;X Window System&quot;</span><br><span class="line">yum groupinstall &quot;GNOME Desktop&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="切换启动模式"><a href="#切换启动模式" class="headerlink" title="切换启动模式"></a>切换启动模式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl set-default multi-user.target  &#x2F;&#x2F;设置成命令模式</span><br><span class="line">systemctl set-default graphical.target  &#x2F;&#x2F;设置成图形模式</span><br></pre></td></tr></table></figure>
+<h2 id="远程访问并启动X"><a href="#远程访问并启动X" class="headerlink" title="远程访问并启动X"></a>远程访问并启动X</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ssh -Y root@10.211.55.11</span><br><span class="line">startx</span><br><span class="line">或</span><br><span class="line">systemctl start gdm</span><br></pre></td></tr></table></figure>
+<h2 id="TigerVNC安装"><a href="#TigerVNC安装" class="headerlink" title="TigerVNC安装"></a>TigerVNC安装</h2><p>yum install tigervnc tigervnc-server</p>
+<h2 id="设置vnc密码"><a href="#设置vnc密码" class="headerlink" title="设置vnc密码"></a>设置vnc密码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vncpasswd</span><br></pre></td></tr></table></figure>
+<h2 id="TigerVNC配置"><a href="#TigerVNC配置" class="headerlink" title="TigerVNC配置"></a>TigerVNC配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cp &#x2F;lib&#x2F;systemd&#x2F;system&#x2F;vncserver@.service  &#x2F;etc&#x2F;systemd&#x2F;system&#x2F;vncserver@:1.service</span><br><span class="line"></span><br><span class="line">vi &#x2F;etc&#x2F;systemd&#x2F;system&#x2F;vncserver@\:1.service</span><br><span class="line">将&lt;USER&gt;替换</span><br></pre></td></tr></table></figure>
 
-</li>
-</ol>
-<h2 id="REST接口说明"><a href="#REST接口说明" class="headerlink" title="REST接口说明"></a>REST接口说明</h2><p>以reports资源为例：</p>
-<ul>
-<li>GET  /api/reports/<id>  查询<br>200 成功</li>
-</ul>
-<ul>
-<li><p>PUT  /api/reports/<id>  修改<br>201 成功</p>
-</li>
-<li><p>DELETE  /api/reports/<id>  删除<br>204 成功</p>
-</li>
-<li><p>POST  /api/reports  新增<br>200 成功</p>
-</li>
-<li><p>GET  /api/reports  全量查询<br>200 成功</p>
+<h2 id="TigerVNC启动"><a href="#TigerVNC启动" class="headerlink" title="TigerVNC启动"></a>TigerVNC启动</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl start vncserver@:1</span><br><span class="line">systemctl status vncserver@:1</span><br><span class="line">systemctl enable vncserver@:1</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>支持分页（URL参数：page、length）及排序(URL参数：sort)<br>参数示例：<code>?page=1&amp;length=5&amp;sort=serial_number,desc</code>  </p>
+<p>VNC以590+x作为访问端口，第1个server是5901端口</p>
 </blockquote>
-</li>
-</ul>
-<h2 id="JWT认证简单说明"><a href="#JWT认证简单说明" class="headerlink" title="JWT认证简单说明"></a>JWT认证简单说明</h2><ol>
-<li>向/api/auth发起用户认证请求  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">POST http:&#x2F;&#x2F;127.0.0.1:5000&#x2F;api&#x2F;auth</span><br><span class="line">Content-Type: application&#x2F;json</span><br><span class="line">&#123;</span><br><span class="line">    &quot;username&quot;: &quot;admin&quot;,</span><br><span class="line">    &quot;password&quot;: &quot;admin&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li>获取响应，取得access_token<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;access_token&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0OTE2MzUyNTQsIm5iZiI6MTQ5MTYzNTI1NCwiaWRlbnRpdHkiOjEsImV4cCI6MTQ5MTYzNTU1NH0.wq-uer9LbRP5hEYGT4WfD5O4jf7k7du2Q1K6musKzvU&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li>在接下来的HTTP请求头中，加入<code>Authorization</code>，值为<code>JWT+空格+access_token</code><br>以获取当前用户信息为例<br>请求：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET http:&#x2F;&#x2F;127.0.0.1:5000&#x2F;api&#x2F;identity</span><br><span class="line">Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE0OTE2MzUyNTQsIm5iZiI6MTQ5MTYzNTI1NCwiaWRlbnRpdHkiOjEsImV4cCI6MTQ5MTYzNTU1NH0.wq-uer9LbRP5hEYGT4WfD5O4jf7k7du2Q1K6musKzvU</span><br></pre></td></tr></table></figure>
-响应：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;email&quot;: &quot;admin@admin.com&quot;,</span><br><span class="line">  &quot;fullname&quot;: &quot;管理员&quot;,</span><br><span class="line">  &quot;username&quot;: &quot;admin&quot;,</span><br><span class="line">  &quot;phone&quot;: &quot;18612341234&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Gradle%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%A8%A1%E5%9D%97Java%E9%A1%B9%E7%9B%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201704/%E4%BD%BF%E7%94%A8Gradle%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%A8%A1%E5%9D%97Java%E9%A1%B9%E7%9B%AE/" class="post-title-link" itemprop="url">使用Gradle构建Java项目</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-04-08 10:24:06" itemprop="dateCreated datePublished" datetime="2017-04-08T10:24:06+08:00">2017-04-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:45:41" itemprop="dateModified" datetime="2018-11-06T15:45:41+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Gradle是一种类似Maven的项目构建工具，它没有使用繁琐的XML，而是使用Groovy语言进行配置。<br>作为后起之秀，Gradle继承了Maven的一些思想，并且 <strong>配置简洁</strong> ，有更强的 <strong>灵活性</strong> 。  </p>
-<p>Android Studio从一定程度上也加快了Gradle的流行，目前有非常多的开源项目已经迁移到了Gradle。<br>但现阶段Gradle还不能完全替代Maven，从目前GitHub上的趋势看来，二者可能要并存一段时间了。  </p>
-<p>从去年开始在一些中小型项目上尝试引入Gradle，仅做简单的项目构建，没有太过深入研究，整体使用下来的体验还是很愉快的。<br>本文主要是作一些科普，抛砖引玉，并贴出两个可以直接拿来使用的示例，帮助大家快速上手。  </p>
-<h2 id="与Maven简单对比"><a href="#与Maven简单对比" class="headerlink" title="与Maven简单对比"></a>与Maven简单对比</h2><ol>
-<li><p>简洁的配置。现在有很多人都对XML深恶痛绝，在Maven中，添加一个依赖需要编写以下5行配置：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;com.zaxxer&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;HikariCP&lt;&#x2F;artifactId&gt;</span><br><span class="line">    &lt;version&gt;2.5.0&lt;&#x2F;version&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
-<p>而在Gradle中，只需要一行：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile &#39;com.zaxxer:HikariCP:2.5.0&#39;</span><br></pre></td></tr></table></figure>
-<p>所以Gradle配置文件的整体长度大约是Maven的1/4到1/5左右，并且更加易读。</p>
-</li>
-<li><p>灵活性。例如要执行一条shell命令，只需要3行。当然客观来说，灵活往往是复杂的同义词：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">task dropDB(type: Exec) &#123;</span><br><span class="line"> commandLine ‘curl’,’-s’,’s’,’-x’,’DELETE’,&quot;http:&#x2F;&#x2F;$&#123;db.server&#125;:&#123;db.port&#125;&#x2F;db_name&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>约定优于配置。Gradle的Java Plugin，定义了与Maven完全一致的项目布局：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">src&#x2F;main&#x2F;java</span><br><span class="line">src&#x2F;main&#x2F;resources</span><br><span class="line">src&#x2F;test&#x2F;java</span><br><span class="line">src&#x2F;test&#x2F;resources</span><br></pre></td></tr></table></figure>
-<p>更多的比较，可以参考 <a target="_blank" rel="noopener" href="https://gradle.org/maven-vs-gradle">https://gradle.org/maven-vs-gradle</a>  </p>
-</li>
-</ol>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><ul>
-<li>macOS下安装:  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install gradle</span><br></pre></td></tr></table></figure></li>
-<li>Ubuntu下安装:  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install gradle</span><br></pre></td></tr></table></figure></li>
-<li>Windows下安装:  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Step1: 在[https:&#x2F;&#x2F;gradle.org&#x2F;releases](https:&#x2F;&#x2F;gradle.org&#x2F;releases) 下载binary-only的zip包  </span><br><span class="line">Step2: 解压至某一目录，如C:&#x2F;bin&#x2F;gradle  </span><br><span class="line">Step3: 在系统属性-高级-环境变量中，新增GRADLE_HOME环境变量来指向安装路径，并在PATH环境变量的最后追加上GRADLE_HOME&#x2F;bin  </span><br></pre></td></tr></table></figure>
-<h2 id="学习资源"><a href="#学习资源" class="headerlink" title="学习资源"></a>学习资源</h2>关于Gradle的学习，不再赘述，有大量的资源可供查阅  </li>
-<li><a target="_blank" rel="noopener" href="https://gradle.org/">Gradle 官网</a>  </li>
-<li><a target="_blank" rel="noopener" href="https://docs.gradle.org/current/userguide/userguide.html">Gradle User Guide</a>  </li>
-<li><a target="_blank" rel="noopener" href="https://dongchuan.gitbooks.io/gradle-user-guide-/tutorials/">Gradle User Guide 中文版</a></li>
-</ul>
-<h2 id="单模块项目构建示例"><a href="#单模块项目构建示例" class="headerlink" title="单模块项目构建示例"></a>单模块项目构建示例</h2><p>下面是一个单模块Spring Boot项目的示例，适合快速搭建小型项目  </p>
-<p><strong>/build.gradle</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        flatDir &#123;</span><br><span class="line">            dirs &#39;libs&#39;</span><br><span class="line">        &#125;</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven &#123; url &quot;http:&#x2F;&#x2F;xxx.xxx.xxx.xxx:8081&#x2F;nexus&#x2F;content&#x2F;groups&#x2F;public&quot; &#125;</span><br><span class="line">        &#x2F;&#x2F;  &#x2F;&#x2F; mavenCentral()  &#x2F;&#x2F;jcenter()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath(&quot;org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE&quot;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">apply plugin: &#39;java&#39;</span><br><span class="line">apply plugin: &quot;spring-boot&quot;</span><br><span class="line"></span><br><span class="line">jar &#123;</span><br><span class="line">    baseName &#x3D; &#39;project&#39;</span><br><span class="line">    version &#x3D; &#39;1.0-SNAPSHOT&#39;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sourceCompatibility &#x3D; 1.7</span><br><span class="line">targetCompatibility &#x3D; 1.7</span><br><span class="line"></span><br><span class="line">repositories &#123;</span><br><span class="line">    mavenCentral()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile &#39;org.springframework.boot:spring-boot-starter&#39;</span><br><span class="line">    compile &#39;org.apache.commons:commons-email:1.4&#39;</span><br><span class="line">    compile files(&#39;libs&#x2F;jxl-2.6.12.jar&#39;)</span><br><span class="line">    runtime &#39;mysql:mysql-connector-java:5.1.36&#39;</span><br><span class="line">    testCompile &#39;org.springframework.boot:spring-boot-starter-test&#39;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">test &#123;</span><br><span class="line">    exclude &#39;com&#x2F;foo&#x2F;**&#39;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">task listJars(description: &#39;Display all compile jars.&#39;) &lt;&lt; &#123;</span><br><span class="line">    configurations.compile.each &#123; File file -&gt; println file.name &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="多模块项目构建示例"><a href="#多模块项目构建示例" class="headerlink" title="多模块项目构建示例"></a>多模块项目构建示例</h2><p>下面是一个基于Spring Boot的多模块项目示例，可以裁剪后直接拿来做为脚手架使用，适合中型项目  </p>
-<p><strong>/settings.gradle</strong>  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">include &#39;common&#39;</span><br><span class="line">include &#39;repository&#39;</span><br><span class="line">include &#39;restapi&#39;</span><br></pre></td></tr></table></figure>
-<p><strong>/build.gradle</strong>  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven &#123; url &quot;http:&#x2F;&#x2F;xxx.xxx.xxx.xxx:8081&#x2F;nexus&#x2F;content&#x2F;groups&#x2F;public&quot; &#125;</span><br><span class="line">        &#x2F;&#x2F;mavenCentral()</span><br><span class="line">        &#x2F;&#x2F;jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath(&quot;org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE&quot;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">allprojects &#123;</span><br><span class="line">    apply plugin: &#39;idea&#39;</span><br><span class="line">    apply plugin: &#39;eclipse&#39;</span><br><span class="line"></span><br><span class="line">    group &#x3D; &#39;com.foo.bar&#39;</span><br><span class="line">    version &#x3D; &#39;1.0-SNAPSHOT&#39;</span><br><span class="line">    &#x2F;&#x2F;archivesBaseName &#x3D; &#39;project&#39;</span><br><span class="line"></span><br><span class="line">    repositories &#123;</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven &#123; url &quot;http:&#x2F;&#x2F;xxx.xxx.xxx.xxx:8081&#x2F;nexus&#x2F;content&#x2F;groups&#x2F;public&quot; &#125;</span><br><span class="line">        &#x2F;&#x2F;mavenCentral()</span><br><span class="line">        &#x2F;&#x2F;jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">subprojects &#123;</span><br><span class="line">    apply plugin: &#39;java&#39;</span><br><span class="line">    apply plugin: &quot;spring-boot&quot;</span><br><span class="line"></span><br><span class="line">    sourceCompatibility &#x3D; 1.8</span><br><span class="line">    targetCompatibility &#x3D; 1.8</span><br><span class="line"></span><br><span class="line">    dependencies &#123;</span><br><span class="line">        compile &#39;org.springframework.boot:spring-boot-starter&#39;</span><br><span class="line">        compile &#39;org.springframework.boot:spring-boot-configuration-processor&#39;</span><br><span class="line">        compile &#39;org.springframework.boot:spring-boot-devtools&#39;</span><br><span class="line">        testCompile &#39;org.springframework.boot:spring-boot-starter-test&#39;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    test &#123;</span><br><span class="line">        exclude &#39;com&#x2F;foo&#x2F;bar&#x2F;**&#39;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    task listJars(description: &#39;Display all compile jars.&#39;) &lt;&lt; &#123;</span><br><span class="line">        configurations.compile.each &#123; File file -&gt; println file.name &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">task wrapper(type: Wrapper) &#123;</span><br><span class="line">    gradleVersion &#x3D; &#39;3.1&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>/common/build.gradle</strong>  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">bootRepackage.enabled &#x3D; false</span><br><span class="line">jar.baseName &#39;project-common&#39;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile project(&#39;:repository&#39;)</span><br><span class="line">    compile &#39;org.springframework.boot:spring-boot-starter-web&#39;</span><br><span class="line">    compile &#39;commons-lang:commons-lang:2.6&#39;</span><br><span class="line">    compile &#39;org.apache.httpcomponents:httpclient:4.5.2&#39;</span><br><span class="line">    compile &#39;org.modelmapper:modelmapper:0.7.5&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>/repository/build.gradle</strong>  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">bootRepackage.enabled &#x3D; false</span><br><span class="line">jar.baseName &#39;project-repository&#39;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    &#x2F;&#x2F;spring boot</span><br><span class="line">    compile (&#39;org.springframework.boot:spring-boot-starter-data-jpa&#39;)</span><br><span class="line">    compile &#39;org.springframework.boot:spring-boot-starter-jdbc&#39;</span><br><span class="line">    &#x2F;&#x2F;jackson</span><br><span class="line">    compile &#39;com.fasterxml.jackson.core:jackson-annotations:2.8.1&#39;</span><br><span class="line">    &#x2F;&#x2F;hibernate validator</span><br><span class="line">    compile &#39;javax.validation:validation-api:1.1.0.Final&#39;</span><br><span class="line">    compile &#39;org.hibernate:hibernate-validator:5.2.4.Final&#39;</span><br><span class="line">    compile &#39;org.hibernate:hibernate-validator-cdi:5.2.4.Final&#39;</span><br><span class="line">    compile &#39;javax.el:javax.el-api:2.2.4&#39;</span><br><span class="line">    compile &#39;org.glassfish.web:javax.el:2.2.4&#39;</span><br><span class="line">    &#x2F;&#x2F;swagger</span><br><span class="line">    compile &#39;io.springfox:springfox-swagger2:2.6.0&#39;</span><br><span class="line">    compile &#39;io.springfox:springfox-swagger-ui:2.6.0&#39;</span><br><span class="line">    &#x2F;&#x2F;jdbc driver</span><br><span class="line">    runtime &#39;mysql:mysql-connector-java:5.1.36&#39;</span><br><span class="line">    runtime &#39;com.h2database:h2:1.4.192&#39;</span><br><span class="line">    &#x2F;&#x2F;test</span><br><span class="line">    testCompile &#39;org.springframework.security:spring-security-core:4.1.1.RELEASE&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>/restapi/build.gradle</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">jar.baseName &#39;project-rest-api&#39;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile project(&#39;:repository&#39;)</span><br><span class="line">    compile project(&#39;:common&#39;)</span><br><span class="line">    &#x2F;&#x2F;spring boot</span><br><span class="line">    compile &#39;org.springframework.boot:spring-boot-starter-thymeleaf&#39;</span><br><span class="line">    compile &#39;org.springframework.boot:spring-boot-starter-cache&#39;</span><br><span class="line">    compile &#39;org.springframework.boot:spring-boot-starter-security&#39;</span><br><span class="line">    compile &#39;org.springframework.boot:spring-boot-starter-actuator&#39;</span><br><span class="line">    &#x2F;&#x2F;oauth2</span><br><span class="line">    compile &#39;org.springframework.security.oauth:spring-security-oauth2:2.0.11.RELEASE&#39;</span><br><span class="line">    &#x2F;&#x2F;cache</span><br><span class="line">    compile &#39;net.sf.ehcache:ehcache:2.10.2.2.21&#39;</span><br><span class="line">    &#x2F;&#x2F;pool</span><br><span class="line">    compile &#39;com.alibaba:druid:1.0.23&#39;</span><br><span class="line">    compile &#39;com.zaxxer:HikariCP:2.5.0&#39;</span><br><span class="line">    &#x2F;&#x2F;swagger-staticdocs</span><br><span class="line">    testCompile &#39;io.springfox:springfox-staticdocs:2.6.0&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201704/soapui%E5%9C%A8mac%E4%B8%8B%E5%90%AF%E5%8A%A8%E5%8D%A1%E6%AD%BB%E9%97%AE%E9%A2%98%E5%A4%84%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201704/soapui%E5%9C%A8mac%E4%B8%8B%E5%90%AF%E5%8A%A8%E5%8D%A1%E6%AD%BB%E9%97%AE%E9%A2%98%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">SoapUI在macOS下启动卡死问题处理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-04-08 08:47:13" itemprop="dateCreated datePublished" datetime="2017-04-08T08:47:13+08:00">2017-04-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:45:43" itemprop="dateModified" datetime="2018-11-06T15:45:43+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h2><p>macOS版SoapUI启动后，窗口卡死，只能Cmd-Option-Esc强制退出。</p>
-<blockquote>
-<p>系统版本: macOS Sierra 10.12.4<br>SoapUI版本: 5.3.0/5.2.1</p>
-</blockquote>
-<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><ol>
-<li><p>修改vmoptions.txt</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi &#x2F;Applications&#x2F;SoapUI-5.3.0.app&#x2F;Contents&#x2F;vmoptions.txt</span><br></pre></td></tr></table></figure>
-<p>最后下新增一行<code>-Dsoapui.browser.disabled=true</code></p>
-</li>
-<li><p>修改soapui.sh</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi &#x2F;Applications&#x2F;SoapUI-5.3.0.app&#x2F;Contents&#x2F;java&#x2F;app&#x2F;bin&#x2F;soapui.sh</span><br></pre></td></tr></table></figure>
-<p>将<code>JAVA_OPTS=&quot;$JAVA_OPTS -Dsoapui.browser.disabled=true&quot;</code>一行的注释去掉。  </p>
-</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/" class="post-title-link" itemprop="url">使用Java编写简单Socket客户端和服务端</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-04-08 08:46:29" itemprop="dateCreated datePublished" datetime="2017-04-08T08:46:29+08:00">2017-04-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:45:39" itemprop="dateModified" datetime="2018-11-06T15:45:39+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>某同事要用Socket连接外围系统，帮忙写了个简单的Demo。<br>包含一个客户端和一个服务端的，仅是示例，比较简陋，服务端也没有用多线程。<br>直接贴代码了。  </p>
-<h2 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line">import java.io.*;</span><br><span class="line">import java.net.*;</span><br><span class="line"></span><br><span class="line">&#x2F;**</span><br><span class="line"> * Socket服务端示例</span><br><span class="line"> *&#x2F;</span><br><span class="line">public class SocketServer &#123;</span><br><span class="line">    ServerSocket serverSocket;</span><br><span class="line">    Socket connection &#x3D; null;</span><br><span class="line">    ObjectOutputStream out;</span><br><span class="line">    ObjectInputStream in;</span><br><span class="line">    String message;</span><br><span class="line"></span><br><span class="line">    void runServer() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            &#x2F;&#x2F; 创建服务端监听</span><br><span class="line">            serverSocket &#x3D; new ServerSocket(31313, 10);</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 等待客户端连接</span><br><span class="line">            System.out.println(&quot;等待客户端连接...&quot;);</span><br><span class="line">            connection &#x3D; serverSocket.accept();</span><br><span class="line">            System.out.println(&quot;收到客户端连接： &quot; + connection.getInetAddress().getHostName());</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 获取输入输出流</span><br><span class="line">            out &#x3D; new ObjectOutputStream(connection.getOutputStream());</span><br><span class="line">            out.flush();</span><br><span class="line">            in &#x3D; new ObjectInputStream(connection.getInputStream());</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 连接成功后，首先向客户端发成功消息</span><br><span class="line">            sendMsg(&quot;连接成功&quot;);</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 发送接收消息</span><br><span class="line">            do &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    message &#x3D; (String) in.readObject();</span><br><span class="line">                    System.out.println(&quot;client&gt;&quot; + message);</span><br><span class="line"></span><br><span class="line">                    &#x2F;&#x2F; 发送退出消息</span><br><span class="line">                    if (message.equals(&quot;bye&quot;)) &#123;</span><br><span class="line">                        sendMsg(&quot;bye&quot;);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; catch (ClassNotFoundException ex) &#123;</span><br><span class="line">                    ex.printStackTrace();</span><br><span class="line">                    System.err.println(&quot;数据格式无效&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; while (!message.equals(&quot;bye&quot;));  &#x2F;&#x2F;当对方消息为bye时退出循环</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            &#x2F;&#x2F; 关闭Socket连接</span><br><span class="line">            try &#123;</span><br><span class="line">                in.close();</span><br><span class="line">                out.close();</span><br><span class="line">                serverSocket.close();</span><br><span class="line">            &#125; catch (IOException ioException) &#123;</span><br><span class="line">                ioException.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void sendMsg(String msg) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            out.writeObject(msg);</span><br><span class="line">            out.flush();</span><br><span class="line">            System.out.println(&quot;server&gt;&quot; + msg);</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String args[]) &#123;</span><br><span class="line">        SocketServer server &#x3D; new SocketServer();</span><br><span class="line">        while (true) &#123;</span><br><span class="line">            server.runServer();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">import java.io.*;</span><br><span class="line">import java.net.*;</span><br><span class="line"></span><br><span class="line">&#x2F;**</span><br><span class="line"> * Socket客户端示例</span><br><span class="line"> *&#x2F;</span><br><span class="line">public class SocketClient &#123;</span><br><span class="line">    Socket clientSocket;</span><br><span class="line">    ObjectOutputStream out;</span><br><span class="line">    ObjectInputStream in;</span><br><span class="line">    String message;</span><br><span class="line"></span><br><span class="line">    void runClient() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            &#x2F;&#x2F; 连接到服务端</span><br><span class="line">            clientSocket &#x3D; new Socket(&quot;localhost&quot;, 31313);</span><br><span class="line">            System.out.println(&quot;已连接到服务端&quot;);</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 获取输入输出流</span><br><span class="line">            out &#x3D; new ObjectOutputStream(clientSocket.getOutputStream());</span><br><span class="line">            out.flush();</span><br><span class="line">            in &#x3D; new ObjectInputStream(clientSocket.getInputStream());</span><br><span class="line"></span><br><span class="line">            &#x2F;&#x2F; 发送接收消息</span><br><span class="line">            do &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    &#x2F;&#x2F; 接收消息</span><br><span class="line">                    message &#x3D; (String) in.readObject();</span><br><span class="line">                    System.out.println(&quot;server&gt;&quot; + message);</span><br><span class="line"></span><br><span class="line">                    &#x2F;&#x2F; 发送消息</span><br><span class="line">                    sendMsg(&quot;hello&quot;);</span><br><span class="line">                    sendMsg(&quot;hello again&quot;);</span><br><span class="line"></span><br><span class="line">                    &#x2F;&#x2F; 发送退出消息</span><br><span class="line">                    message &#x3D; &quot;bye&quot;;</span><br><span class="line">                    sendMsg(message);</span><br><span class="line">                &#125; catch (ClassNotFoundException ex) &#123;</span><br><span class="line">                    ex.printStackTrace();</span><br><span class="line">                    System.err.println(&quot;数据格式无效&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; while (!message.equals(&quot;bye&quot;)); &#x2F;&#x2F;当对方消息为bye时退出循环</span><br><span class="line">        &#125; catch (UnknownHostException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">            System.err.println(&quot;无法连接到服务端&quot;);</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            &#x2F;&#x2F; 关闭Socket连接</span><br><span class="line">            try &#123;</span><br><span class="line">                in.close();</span><br><span class="line">                out.close();</span><br><span class="line">                clientSocket.close();</span><br><span class="line">            &#125; catch (IOException ex) &#123;</span><br><span class="line">                ex.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void sendMsg(String msg) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            out.writeObject(msg);</span><br><span class="line">            out.flush();</span><br><span class="line">            System.out.println(&quot;client&gt;&quot; + msg);</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String args[]) &#123;</span><br><span class="line">        SocketClient client &#x3D; new SocketClient();</span><br><span class="line">        client.runClient();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201704/Ubuntu%E4%B8%8Bboot%E5%88%86%E5%8C%BA%E7%A9%BA%E9%97%B4%E5%B7%B2%E6%BB%A1%E9%97%AE%E9%A2%98%E5%A4%84%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201704/Ubuntu%E4%B8%8Bboot%E5%88%86%E5%8C%BA%E7%A9%BA%E9%97%B4%E5%B7%B2%E6%BB%A1%E9%97%AE%E9%A2%98%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">Ubuntu下boot分区空间已满问题处理</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-04-08 08:38:12" itemprop="dateCreated datePublished" datetime="2017-04-08T08:38:12+08:00">2017-04-08</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2018-11-06 15:45:42" itemprop="dateModified" datetime="2018-11-06T15:45:42+08:00">2018-11-06</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>最初安装Ubuntu时，/boot分区只给了200M空间（使用CentOS延续下来的习惯），结果每次生级内核时都会报错/boot空间不足。<br>下次全新安装Ubuntu，一定记得分出2G空间来给/boot。  </p>
-<h2 id="临时解决方法"><a href="#临时解决方法" class="headerlink" title="临时解决方法"></a>临时解决方法</h2><ol>
-<li><code>uname -a</code> 查看目前在用的内核版本  </li>
-<li><code>dpkg --get-selections|grep linux-image</code> 显示所有的内核版本  </li>
-<li><code>sudo apt remove linux-image-XXXX-generic</code> 卸载旧内核，注意只保留最新的 <strong>两个</strong> 版本   </li>
-<li><code>sudo apt autoremove</code> 清理无用的依赖  </li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201612/%E4%BD%BF%E7%94%A8MarkDown%E5%81%9A%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/201612/%E4%BD%BF%E7%94%A8MarkDown%E5%81%9A%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E7%AE%A1%E7%90%86/" class="post-title-link" itemprop="url">使用MarkDown做个人知识管理的一些心得</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2017-04-07 12:18:20" itemprop="dateCreated datePublished" datetime="2017-04-07T12:18:20+08:00">2017-04-07</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-01-26 09:44:33" itemprop="dateModified" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="什么是个人知识管理"><a href="#什么是个人知识管理" class="headerlink" title="什么是个人知识管理"></a>什么是个人知识管理</h2><p>个人知识管理，又名PKM（Personal Knowledge Management）, 是一种个人收集，验证，存储，搜索，提取，分享知识的过程。 –WIKI<br>PKM其实是一个很大的命题，包含了很多方面的内容。但我们每个人都在或多或少的使用它，都有自已的一些工具、心得。<br>以下仅讨论一下具体的笔记、摘录等文档的 <strong>编写</strong> 与 <strong>保存</strong>。  </p>
-<h2 id="什么是MarkDown"><a href="#什么是MarkDown" class="headerlink" title="什么是MarkDown"></a>什么是MarkDown</h2><p>Markdown是一种轻量级标记语言，它允许人们“使用易读易写的纯文本格式编写文档，然后转换成有效的XHTML(或者HTML)文档”。这种语言吸收了很多在电子邮件中已有的纯文本标记的特性。<br>MarkDown第一眼看上去这个样子的：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/czwie.jpg"><br>左侧是”源码”，右侧是渲染好的”结果”</p>
-<h2 id="MarkDown的优势"><a href="#MarkDown的优势" class="headerlink" title="MarkDown的优势"></a>MarkDown的优势</h2><p>MarkDown有很多先天的优势，决定了它非常适合用来编写文档、记录笔记、撰写文章：  </p>
-<ul>
-<li>首先，MarkDown是 <strong>纯文本</strong> ，这意味着我们可以使用任何自已喜欢的文本编辑器来进行写作，例如vi/emacs/SublimeText/Atom/VsCode/记事本/EditPlus/UltraEdit等等。  </li>
-<li>然后，MarkDown在纯文本的基础上，加入某些极其简单标记，例如用#表示一级标题，##表示二级标题等。相比起HTML，要简单的多，不会对文章内容造成过多的入侵。  </li>
-<li>虽然没有官方机构，但MarkDown目前已经是事实上的标准，而且已经非常流行，在GitHub等网站中有很好的应用。  </li>
-<li>市面上目前有许多优秀的MarkDown编辑器（或插件），可以提供更优雅、更舒适的写作体验。   </li>
-<li>MarkDown很容易导出为HTML或PDF格式，而且大多数工具都可以提供自定义的样式。  </li>
-</ul>
-<h2 id="MarkDown语法速成"><a href="#MarkDown语法速成" class="headerlink" title="MarkDown语法速成"></a>MarkDown语法速成</h2><p>MarkDown语法非常简单，下面列出一些基本的标记：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">标题:  </span><br><span class="line"># 一级标题</span><br><span class="line">## 二级标题</span><br><span class="line">### 三级标题</span><br><span class="line">#### 四级标题</span><br><span class="line">##### 五级标题</span><br><span class="line">###### 六级标题</span><br><span class="line"></span><br><span class="line">文字样式：  </span><br><span class="line">**用两个星号标记起来，表示加粗**</span><br><span class="line">*一个星号，表示斜体*</span><br><span class="line">~~这样子表示删除线~~</span><br><span class="line"></span><br><span class="line">插入链接：  </span><br><span class="line">[链接名称](http:&#x2F;&#x2F;url.com&#x2F;)</span><br><span class="line"></span><br><span class="line">邮箱链接:  </span><br><span class="line">&lt;myname@example.com&gt;</span><br><span class="line"></span><br><span class="line">插入图片：  </span><br><span class="line">![图片的信息，可为空](这里是图片的url，可以是本地路径，也可以是远程URL)</span><br><span class="line"></span><br><span class="line">无序列表:  </span><br><span class="line">-   Red</span><br><span class="line">-   Green</span><br><span class="line">-   Blue</span><br><span class="line"></span><br><span class="line">有序列表：  </span><br><span class="line">1.  Bird</span><br><span class="line">2.  McHale</span><br><span class="line">3.  Parish</span><br><span class="line"></span><br><span class="line">内容引用：  </span><br><span class="line">&gt; 你</span><br><span class="line">&gt; 一会看我</span><br><span class="line">&gt; 一会看云</span><br><span class="line">&gt;  我觉得</span><br><span class="line">&gt;  你看我时很远</span><br><span class="line">&gt;  你看云时很近</span><br><span class="line"></span><br><span class="line">分割线：  </span><br><span class="line">&#96;-&#96;加上空格组成，三个以上</span><br><span class="line">- - - - - -</span><br><span class="line"></span><br><span class="line">代码高亮：  </span><br><span class="line">使用3个连续的&#96;，将代码内容包起来</span><br><span class="line">&#96; &#96; &#96;</span><br><span class="line">s &#x3D; &#39;hello world&#39;</span><br><span class="line">&#96; &#96; &#96;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h2 id="选择适合自已的编辑器"><a href="#选择适合自已的编辑器" class="headerlink" title="选择适合自已的编辑器"></a>选择适合自已的编辑器</h2><p>MarkDown不需要专门工具就可以编写，任何纯文本编辑器都可以胜任。但选择一款适合自已的工具可以提供代码高亮，实时预览，自定义主题，PDF导出等高级功能，极大的提升我们的写作体验。<br>以下列出一些比较热门的工具：  </p>
-<p><strong>全平台：</strong><br><a target="_blank" rel="noopener" href="https://atom.io/">Atom</a>  不用过多介绍了，GitHub出品，被称为是新时代的文本编辑器，Emacs的精神继承者。通过非富的插件，很好的支持MarkDown，并提供了无限的可能性。<br><a target="_blank" rel="noopener" href="https://www.sublimetext.com/3">Sublime Text 3</a>  更不用介绍了，同样是利用插件支持。<br><a target="_blank" rel="noopener" href="http://markeditor.com/app/markeditor">MarkEditor</a>  商业软件，使用Electron写的跨平台应用。功能强大，缺点是启动速度较慢。  </p>
-<p><strong>Mac平台：</strong><br><a target="_blank" rel="noopener" href="http://zh.mweb.im/">Mweb</a>  商业软件，作者是国人。<br><a target="_blank" rel="noopener" href="http://25.io/mou/">Mou</a>  商业软件，Mac下老牌的编辑器了。<br><a target="_blank" rel="noopener" href="http://macdown.uranusjr.com/">MacDown</a>    功能与Mou基本相同，免费使用。<br><a target="_blank" rel="noopener" href="http://www.typora.io/">Typora</a>  所见即所得的编辑器，输入MarkDown标记后会立刻渲染出结果。  </p>
-<p><strong>Win平台：</strong><br><a target="_blank" rel="noopener" href="http://markdownpad.com/">MarkdownPad</a>  Win下的工具比较少，这是个不错的。  </p>
-<p>目前笔者常用的是Atom，跨平台，可以很好在工作在macOS和Ubuntu上。另外因为是通用型的编辑器，且插件非富，不仅限于写MarkDown，其它工作也可以胜任。<br>上面提到的工具各有特色，可以都试用一下再选一款适合自已的。  </p>
-<h2 id="使用七牛云保存图片"><a href="#使用七牛云保存图片" class="headerlink" title="使用七牛云保存图片"></a>使用七牛云保存图片</h2><p>因为MarkDown是纯文本格式，所以决定了它不可能像Microsoft Word那样内嵌图片。<br>虽然在平时使用MarkDown做个人知识记录的过程中，是极少使用图片的。但如果要撰写给别人看的博客、教程一类的文档，有一些图片总是好的。<br>MarkDown可以使用本地图片，也可以使用URL远程图片。  </p>
-<p>不推荐使用本地图片，虽然图片保存在本地比扔在图床上更”安全”，丢失的风险更小，但本地散乱图片会增加我们文件夹的容量，增加文档管理的难度。而且包含本地图片的文章要发布到博客上时，通常需要一张张手工上传图片，费时费力。<br>所以选择一个靠谱的图床，将图片上传后，以URL的方式嵌入MarkDown是最佳选择。鉴于国内的网络环境，以及前一段时间各大云存储厂商的所做所为，国内靠谱的图床确实不多，这里只推荐 <a target="_blank" rel="noopener" href="http://www.qiniu.com/">七牛云</a>。<br>七牛云的CEO是许式伟，曾是金山WPS2005的首席架构师，大神级的人物，所以七牛云的技术方面我们不用过多担心。重度用户可以适当付费支持一下，让七牛云良性的发展下去。<br>七牛云不仅仅是图片存储这么简单，具体的特性不一一介绍了，注册后可以慢慢在官网上看文档。  </p>
-<h2 id="使用iPic快速上传图片"><a href="#使用iPic快速上传图片" class="headerlink" title="使用iPic快速上传图片"></a>使用iPic快速上传图片</h2><p>解决了图床的问题，再来看一下如何使用工具快速将图片上传，并获取生成的URL。<br>因为每插入一张图片，都要找开网站，点击上传按钮，找到存在本地磁盘上的图片，点击确定，成功后然后再把URL复制下来，实在是很繁琐。<br>这里推荐一个Mac下的小工具 <a target="_blank" rel="noopener" href="https://toolinbox.net/iPic/">iPic</a> ，下面是一个演示动画：<br><a target="_blank" rel="noopener" href="https://ww2.sinaimg.cn/large/006tNc79gw1fah02zweq2g30j60as7wh.gif">https://ww2.sinaimg.cn/large/006tNc79gw1fah02zweq2g30j60as7wh.gif</a><br>除了拖拽，还有更快捷的操作方式，只要选中本地图片或者复制网页中的图片，然后按下Command+U快捷键就可自动上传并获取URL。</p>
-<h2 id="使用坚果云保存文档并同步"><a href="#使用坚果云保存文档并同步" class="headerlink" title="使用坚果云保存文档并同步"></a>使用坚果云保存文档并同步</h2><p>MarkDown文档写好了，保存在本地。一切看上去都很美好，但接下来，我们又有了更多的需求：  </p>
-<ol>
-<li>重要的文档，特别是我们辛辛苦苦多年积累下来的知识，只保存在本地是不安全的。不要把鸡蛋放在同一个篮子里，要把它备份到云端。  </li>
-<li>要实现多设备间的同步，这样在手机上、iPad上、家里的电脑上可以随时查阅、修改。  </li>
-</ol>
-<p><a target="_blank" rel="noopener" href="https://www.jianguoyun.com/">坚果云</a> 是国内一款非常类似于DropBox的云存储应用，它提供了 <strong>全平台</strong> 的非常 <strong>快速</strong> 且 <strong>稳定</strong> 的 <strong>增量同步</strong> 功能。<br>坚果云可以说是国内硕果仅存的一家了，它的增量同步在国内做的是最好的，与百度云等不同，它专注于”同步”，而不是电影等大文件的存储。<br>坚果云的客户端做的也是非常用心，Linux下可以全功能完美使用。手机和iPad上的APP做的也不错。希望坚果云好好存活下去。<br>坚果云的使用非常简单，这里有一个视频教程：<br><a target="_blank" rel="noopener" href="http://help.jianguoyun.com/?p=1964">视频教程链接</a>  </p>
-<h2 id="为什么不直接使用云笔记"><a href="#为什么不直接使用云笔记" class="headerlink" title="为什么不直接使用云笔记"></a>为什么不直接使用云笔记</h2><p>目前市面上有非常多的跨平台的云笔记工具可以做到上面的事情，而且可能做的更好。 例如为知笔记、有道云笔记、EverNote、EssentialPIM等，另外还有一些后起之秀。<br>为什么还要使用 MarkDown + 坚果云 这样看上去略显繁琐的组合？  </p>
-<ul>
-<li>我需要用纯文的方式来管理知识<br>MarkDown相对来说比较”单纯”，而且又有表达”样式”的能力。举个例子，就像我们写代码，当然是要保存”源码”，而不是编译好的”二进制文件”。<br>我们对纯文本有绝对的控制能力，纯文本方便检索，更重要的是方便日后的加工，可以导出PDF、HTML，可以分享发布到博客和专栏。    </li>
-<li>我需要一个能随时替换掉的云服务<br>云服务并不可靠，目前大部分国外的服务已经被封锁，国内的因为没有良好的盈利模式，也纷纷关闭，所以不要重度依赖云。既然MarkDown文档首先保存在本地，掌握在自已手中，这也就意味着我可以使用任何云同步服务，不仅仅是坚果云，还可以是OneDrive、DropBox、iCloud，甚至是自已在VPS上搭建的私有Git。</li>
-<li>我为什么抛弃了云笔记软件<br>之前使用过的工具中，为知笔记是我最喜爱的（个人认为比EverNote做的要更好）。但它也是有一些缺点的，例如虽然支持MarkDown编写，但本质上还是会保存成HTML富文本。另外它的Mac版做的不如Win版优秀，Linux版也不友好。<br>另外，使用第三方的工具，所有数据保存在云端，在本地没有原始档的备份，会让人有一种深深的”不安感”。再加上很多工具不提供”导出”功能，这意味着我们一旦使用某个工具，就要一直用下去，谁也无法保证5年后这个厂家还能不能存活下来，继续为我们提供服务。  </li>
-<li>个人知识管理，不是简单的将文档编写并保存<br>接下来，我们会对它进行搜索，加工，导出，分享，而这正是MarkDown的优势所在。  </li>
-</ul>
-<p>基于以上几点，我最终选择了使用 MarkDown + 坚果云 这样的组合进行个人知识管理，并准备长期使用下去。  </p>
+<h2 id="macOS访问VNC"><a href="#macOS访问VNC" class="headerlink" title="macOS访问VNC"></a>macOS访问VNC</h2><p>原生支持VNC访问，Finder中cmd+k，弹出窗口中输入<br>vnc://10.211.55.11:5901</p>
 
       
     </div>
@@ -1108,7 +978,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/19/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><span class="page-number current">20</span><a class="page-number" href="/page/21/">21</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/21/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/page/19/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><span class="page-number current">20</span><a class="page-number" href="/page/21/">21</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" href="/page/21/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1174,7 +1044,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">231</span>
+          <span class="site-state-item-count">273</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1212,7 +1082,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2023</span>
+  <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
