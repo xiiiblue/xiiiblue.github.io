@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">273</span>
+          <span class="site-state-item-count">275</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,158 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201901/20181128LDAP%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201901/20181128LDAP%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">LDAP配置笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-28 00:00:00" itemprop="dateCreated datePublished" datetime="2018-11-28T00:00:00+08:00">2018-11-28</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://myanbin.github.io/post/openldap-in-centos-7.html">https://myanbin.github.io/post/openldap-in-centos-7.html</a></p>
+<h2 id="安装openldap"><a href="#安装openldap" class="headerlink" title="安装openldap"></a>安装openldap</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">yum install -y openldap-servers openldap-clients</span><br><span class="line">cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG</span><br><span class="line">chown ldap. /var/lib/ldap/DB_CONFIG</span><br><span class="line">systemctl enable slapd</span><br><span class="line">systemctl start slapd</span><br></pre></td></tr></table></figure>
+
+<h2 id="生成密码"><a href="#生成密码" class="headerlink" title="生成密码"></a>生成密码</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">slappasswd</span><br><span class="line"></span><br><span class="line">vim chrootpw.ldif</span><br><span class="line">dn: olcDatabase=&#123;0&#125;config,cn=config</span><br><span class="line">changetype: modify</span><br><span class="line">add: olcRootPW</span><br><span class="line">olcRootPW: &#123;SSHA&#125;KS/bFZ8KTmO56khHjJvM97l7zivH1MwG</span><br><span class="line"></span><br><span class="line">ldapadd -Y EXTERNAL -H ldapi:/// -f chrootpw.ldif</span><br></pre></td></tr></table></figure>
+
+<h2 id="导入基本的Schema"><a href="#导入基本的Schema" class="headerlink" title="导入基本的Schema"></a>导入基本的Schema</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif</span><br><span class="line">ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif</span><br><span class="line">ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置LDAP顶级域"><a href="#配置LDAP顶级域" class="headerlink" title="配置LDAP顶级域"></a>配置LDAP顶级域</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">vim chdomain.ldif</span><br><span class="line">dn: olcDatabase=&#123;1&#125;monitor,cn=config</span><br><span class="line">changetype: modify</span><br><span class="line">replace: olcAccess</span><br><span class="line">olcAccess: &#123;0&#125;to * by dn.base=&quot;gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth&quot;</span><br><span class="line">  read by dn.base=&quot;cn=Manager,dc=yourcompany,dc=cn&quot; read by * none</span><br><span class="line"></span><br><span class="line">dn: olcDatabase=&#123;2&#125;hdb,cn=config</span><br><span class="line">changetype: modify</span><br><span class="line">replace: olcSuffix</span><br><span class="line">olcSuffix: dc=yourcompany,dc=cn</span><br><span class="line"></span><br><span class="line">dn: olcDatabase=&#123;2&#125;hdb,cn=config</span><br><span class="line">changetype: modify</span><br><span class="line">replace: olcRootDN</span><br><span class="line">olcRootDN: cn=Manager,dc=yourcompany,dc=cn</span><br><span class="line"></span><br><span class="line">dn: olcDatabase=&#123;2&#125;hdb,cn=config</span><br><span class="line">changetype: modify</span><br><span class="line">add: olcRootPW</span><br><span class="line">olcRootPW: &#123;SSHA&#125;EMaQFVOLPja2sx4F4VWW4ANE27PwDlPD</span><br><span class="line"></span><br><span class="line">dn: olcDatabase=&#123;2&#125;hdb,cn=config</span><br><span class="line">changetype: modify</span><br><span class="line">add: olcAccess</span><br><span class="line">olcAccess: &#123;0&#125;to attrs=userPassword,shadowLastChange by</span><br><span class="line">  dn=&quot;cn=Manager,dc=yourcompany,dc=cn&quot; write by anonymous auth by self write by * none</span><br><span class="line">olcAccess: &#123;1&#125;to dn.base=&quot;&quot; by * read</span><br><span class="line">olcAccess: &#123;2&#125;to * by dn=&quot;cn=Manager,dc=yourcompany,dc=cn&quot; write by * read</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ldapmodify -Y EXTERNAL -H ldapi:/// -f chdomain.ldif</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建组织与角色"><a href="#创建组织与角色" class="headerlink" title="创建组织与角色"></a>创建组织与角色</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">vim basedomain.ldif</span><br><span class="line">dn: dc=yourcompany,dc=cn</span><br><span class="line">objectClass: top</span><br><span class="line">objectClass: dcObject</span><br><span class="line">objectclass: organization</span><br><span class="line">o: yourcompany Group</span><br><span class="line">dc: yourcompany</span><br><span class="line"></span><br><span class="line">dn: cn=Manager,dc=yourcompany,dc=cn</span><br><span class="line">objectClass: organizationalRole</span><br><span class="line">cn: Manager</span><br><span class="line"></span><br><span class="line">dn: ou=People,dc=yourcompany,dc=cn</span><br><span class="line">objectClass: organizationalUnit</span><br><span class="line">ou: People</span><br><span class="line"></span><br><span class="line">dn: ou=Group,dc=yourcompany,dc=cn</span><br><span class="line">objectClass: organizationalUnit</span><br><span class="line">ou: Group</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ldapadd -x -D cn=Manager,dc=yourcompany,dc=cn -W -f basedomain.ldif</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装phpLDAPadmin"><a href="#安装phpLDAPadmin" class="headerlink" title="安装phpLDAPadmin"></a>安装phpLDAPadmin</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum -y install epel-release</span><br><span class="line">yum --enablerepo=epel -y install phpldapadmin</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/phpldapadmin/config.php</span><br><span class="line">$servers-&gt;setValue(&#x27;login&#x27;,&#x27;attr&#x27;,&#x27;dn&#x27;);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/httpd/conf.d/phpldapadmin.conf</span><br><span class="line">Allow All</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201611/%E7%AE%80%E6%98%93init.d%E8%84%9A%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201611/%E7%AE%80%E6%98%93init.d%E8%84%9A%E6%9C%AC/" class="post-title-link" itemprop="url">简易init.d脚本</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:59:10" itemprop="dateCreated datePublished" datetime="2018-11-06T15:59:10+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line">### BEGIN INIT INFO</span><br><span class="line"># Provides:          redsocks</span><br><span class="line"># Required-Start:    $network</span><br><span class="line"># Required-Stop:     $network</span><br><span class="line"># Default-Start:     2 3 4 5</span><br><span class="line"># Default-Stop:      0 1 6</span><br><span class="line"># Short-Description: Start redsocks daemon.</span><br><span class="line">### END INIT INFO</span><br><span class="line"></span><br><span class="line">SERVICE_NAME=redsocks</span><br><span class="line">SERVICE_PATH=/usr/local/bin/redsocks</span><br><span class="line">SERVICE_PARAM=&quot;-c /etc/redsocks.conf&quot;</span><br><span class="line">SERVICE_HOME=/home/pi</span><br><span class="line">SERVICE_USER=pi</span><br><span class="line">SERVICE_PID_FILE=/var/run/$&#123;SERVICE_NAME&#125;.pid</span><br><span class="line"></span><br><span class="line">start() &#123;</span><br><span class="line">    start-stop-daemon --start \</span><br><span class="line">    --chdir  &quot;$&#123;SERVICE_HOME&#125;&quot; \</span><br><span class="line">    --chuid &quot;$&#123;SERVICE_USER&#125;&quot; \</span><br><span class="line">    --user &quot;$&#123;SERVICE_USER&#125;&quot; \</span><br><span class="line">    -b -m -p &quot;$&#123;SERVICE_PID_FILE&#125;&quot; \</span><br><span class="line">    --exec $&#123;SERVICE_PATH&#125; -- $&#123;SERVICE_PARAM&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">stop() &#123;</span><br><span class="line">    start-stop-daemon --stop \</span><br><span class="line">    --chdir &quot;$&#123;SERVICE_HOME&#125;&quot; \</span><br><span class="line">    --chuid &quot;$&#123;SERVICE_USER&#125;&quot; \</span><br><span class="line">    --user &quot;$&#123;SERVICE_USER&#125;&quot; \</span><br><span class="line">    -p &quot;$&#123;SERVICE_PID_FILE&#125;&quot;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">case &quot;$1&quot; in</span><br><span class="line">    start)</span><br><span class="line">       start</span><br><span class="line">       ;;</span><br><span class="line">    stop)</span><br><span class="line">       stop</span><br><span class="line">       ;;</span><br><span class="line">    restart)</span><br><span class="line">       stop</span><br><span class="line">       start</span><br><span class="line">       ;;</span><br><span class="line">    status)</span><br><span class="line">       # code to check status of app comes here</span><br><span class="line">       # example: status program_name</span><br><span class="line">       ;;</span><br><span class="line">    *)</span><br><span class="line">       echo &quot;Usage: $0 &#123;start|stop|status|restart&#125;&quot;</span><br><span class="line">esac</span><br><span class="line"></span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -677,7 +829,7 @@
 <h2 id="shadowsocks安装"><a href="#shadowsocks安装" class="headerlink" title="shadowsocks安装"></a>shadowsocks安装</h2><p>apt-get install python-pip<br>pip install shadowsocks</p>
 <h2 id="shadowsocks启动"><a href="#shadowsocks启动" class="headerlink" title="shadowsocks启动"></a>shadowsocks启动</h2><p>vi shadow.json<br>{<br>“server”:”IP”,<br>“server_port”:Port,<br>“local_port”:1080,<br>“password”:”password”,<br>“timeout”:600,<br>“method”:”rc4-md5”<br>}<br>vi startss.sh<br>sslocal -c shadow.json</p>
 <h2 id="proxychains强制应用走代理"><a href="#proxychains强制应用走代理" class="headerlink" title="proxychains强制应用走代理"></a>proxychains强制应用走代理</h2><p>安装：<br>sudo apt-get install proxychains<br>配置：<br>sudo vi &#x2F;etc&#x2F;proxychains.conf<br>socks5  IP  PORT<br>使用：<br>proxychains &lt;程序名&gt;</p>
-<h2 id="ssh隧道"><a href="#ssh隧道" class="headerlink" title="ssh隧道"></a>ssh隧道</h2><p>ssh -N -v <a href="mailto:&#x73;&#x76;&#110;&#64;&#120;&#120;&#120;&#x2e;&#x78;&#x78;&#120;&#46;&#x78;&#120;&#x78;&#46;&#x78;&#x78;&#x78;">svn@xxx.xxx.xxx.xxx</a> -pxxx -D 127.0.0.1:1080</p>
+<h2 id="ssh隧道"><a href="#ssh隧道" class="headerlink" title="ssh隧道"></a>ssh隧道</h2><p>ssh -N -v <a href="mailto:&#115;&#118;&#x6e;&#64;&#120;&#x78;&#x78;&#x2e;&#x78;&#x78;&#120;&#x2e;&#120;&#120;&#120;&#46;&#120;&#120;&#120;">svn@xxx.xxx.xxx.xxx</a> -pxxx -D 127.0.0.1:1080</p>
 <h2 id="手工下载必备工具"><a href="#手工下载必备工具" class="headerlink" title="手工下载必备工具"></a>手工下载必备工具</h2><p>atom-amd64.deb<br>google-chrome-stable_current_amd64.deb<br>nautilus_nutstore_amd64.deb<br>sublime-text_build-3126_amd64.deb<br>virtualbox-5.1_5.1.8-111374<del>Ubuntu</del>xenial_amd64.deb<br>wine-qqintl.zip</p>
 <h2 id="APT安装其它工具"><a href="#APT安装其它工具" class="headerlink" title="APT安装其它工具"></a>APT安装其它工具</h2><p>sudo apt install unity-tweak-tool<br>sudo apt install aria2<br>sudo apt install vlc<br>sudo apt install tmux<br>sudo apt install sshpass<br>sudo apt install aria2c<br>sudo apt install rsync<br>sudo apt install nodejs<br>sudo apt install maven<br>sudo apt install gradle<br>sudo apt install build-essential<br>sudo apt install unrar</p>
 <h2 id="gradle下载安装"><a href="#gradle下载安装" class="headerlink" title="gradle下载安装"></a>gradle下载安装</h2><p><a target="_blank" rel="noopener" href="https://gradle.org/gradle-download/">https://gradle.org/gradle-download/</a><br>export GRADLE_HOME&#x3D;&#x2F;opt&#x2F;gradle<br>export PATH&#x3D;$GRADLE_HOME&#x2F;bin:$PATH</p>
@@ -687,7 +839,7 @@
 <h2 id="Flatabulous主题"><a href="#Flatabulous主题" class="headerlink" title="Flatabulous主题"></a>Flatabulous主题</h2><p><a target="_blank" rel="noopener" href="https://github.com/anmoljagetia/Flatabulous">https://github.com/anmoljagetia/Flatabulous</a></p>
 <h2 id="WPS"><a href="#WPS" class="headerlink" title="WPS"></a>WPS</h2><p><a target="_blank" rel="noopener" href="http://linux.wps.cn/">http://linux.wps.cn/</a></p>
 <h2 id="zsh"><a href="#zsh" class="headerlink" title="zsh"></a>zsh</h2><p>sudo apt-get install zsh git wget<br>wget –no-check-certificate <a target="_blank" rel="noopener" href="https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh">https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh</a> -O - | sh</p>
-<h2 id="使用ssh-config进行连接"><a href="#使用ssh-config进行连接" class="headerlink" title="使用ssh_config进行连接"></a>使用ssh_config进行连接</h2><p>vi ~&#x2F;.ssh&#x2F;config<br>Host <a href="mailto:&#114;&#x6f;&#111;&#x74;&#x40;&#x31;&#x30;&#x34;&#x2e;&#x32;&#x32;&#52;&#46;&#x31;&#x36;&#50;&#46;&#x32;&#x33;&#56;">root@104.224.162.238</a><br>  HostName 104.224.162.238<br>  User root<br>  Port p28259<br>ssh-keygen -t rsa<br>ssh-copy-id -i <a href="mailto:&#114;&#x6f;&#x6f;&#116;&#64;&#49;&#x30;&#52;&#x2e;&#x32;&#50;&#x34;&#46;&#49;&#x36;&#x32;&#x2e;&#x32;&#x33;&#56;">root@104.224.162.238</a> -p28259</p>
+<h2 id="使用ssh-config进行连接"><a href="#使用ssh-config进行连接" class="headerlink" title="使用ssh_config进行连接"></a>使用ssh_config进行连接</h2><p>vi ~&#x2F;.ssh&#x2F;config<br>Host <a href="mailto:&#x72;&#111;&#x6f;&#x74;&#64;&#x31;&#48;&#x34;&#x2e;&#x32;&#x32;&#52;&#x2e;&#49;&#54;&#x32;&#46;&#50;&#x33;&#x38;">root@104.224.162.238</a><br>  HostName 104.224.162.238<br>  User root<br>  Port p28259<br>ssh-keygen -t rsa<br>ssh-copy-id -i <a href="mailto:&#x72;&#111;&#x6f;&#x74;&#64;&#49;&#x30;&#x34;&#46;&#50;&#x32;&#x34;&#x2e;&#49;&#54;&#x32;&#x2e;&#50;&#51;&#x38;">root@104.224.162.238</a> -p28259</p>
 <h2 id="雅黑字体"><a href="#雅黑字体" class="headerlink" title="雅黑字体"></a>雅黑字体</h2><p>sudo mkdir -p &#x2F;usr&#x2F;share&#x2F;fonts&#x2F;msyh<br>sudo mkfontscale &amp;&amp; sudo mkfontdir &amp;&amp; sudo fc-cache -fv<br>再运行unity-tweak-tool指定字体</p>
 
       
@@ -937,160 +1089,6 @@
 <p>ALTER DATABASE DATAFILE ‘&#x2F;oradata&#x2F;ngcrm&#x2F;TBS_CRM_DUSR3.dbf’<br>RESIZE 12288M;  –调表空间<br>ALTER DATABASE TEMPFILE ‘&#x2F;oradata&#x2F;ngcrm&#x2F;temp1.dbf’<br>RESIZE 12288M;  –调临时表空间</p>
 <p>移动表空间：<br>alter tablespace TBS_ACT_DEF offline;<br>alter tablespace TBS_ACT_DEF rename datafile ‘&#x2F;oradata&#x2F;ngbil&#x2F;crm&#x2F;TBS_ACT_DEF_2.dbf’ to ‘&#x2F;oradata&#x2F;ngcrm&#x2F;TBS_ACT_DEF_2.dbf’;<br>alter tablespace TBS_ACT_DEF online;<br>select * from dba_tablespaces where tablespace_name&#x3D;’TBS_ACT_DEF’;<br>select * from dba_data_files where tablespace_name&#x3D;’TBS_CRM_DUSR1’;</p>
 <h2 id="查锁"><a href="#查锁" class="headerlink" title="查锁"></a>查锁</h2><p>select * from v$locked_object<br>select * from dba_objects where object_id&#x3D;286655<br>select * from v$session where sid&#x3D;822;<br>alter system kill session ‘822,94’;</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201611/Nginx%E9%85%8D%E7%BD%AESSL/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201611/Nginx%E9%85%8D%E7%BD%AESSL/" class="post-title-link" itemprop="url">Nginx配置SSL</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:51:18" itemprop="dateCreated datePublished" datetime="2018-11-06T15:51:18+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="编译安装"><a href="#编译安装" class="headerlink" title="编译安装"></a>编译安装</h2><p>下载全部源码<br>.&#x2F;configure –prefix&#x3D;&#x2F;path&#x2F;to&#x2F;nginx <br>  –with-zlib&#x3D;..&#x2F;zlib-1.2.8 <br>  –with-pcre&#x3D;..&#x2F;pcre-8.39 <br>  –with-openssl&#x3D;..&#x2F;openssl-1.1.0b <br>  –with-http_ssl_module</p>
-<h2 id="生成证书"><a href="#生成证书" class="headerlink" title="生成证书"></a>生成证书</h2><p>cd &#x2F;usr&#x2F;local&#x2F;nginx&#x2F;conf<br>openssl genrsa -des3 -out server.key 1024<br>openssl req -new -key server.key -out server.csr<br>openssl rsa -in server.key -out server_nopwd.key<br>openssl x509 -req -days 365 -in server.csr -signkey server_nopwd.key -out server.crt</p>
-<h2 id="配置nginx-conf"><a href="#配置nginx-conf" class="headerlink" title="配置nginx.conf"></a>配置nginx.conf</h2><p>server {<br>    listen 443;<br>    ssl on;<br>    ssl_certificate  &#x2F;usr&#x2F;local&#x2F;nginx&#x2F;conf&#x2F;server.crt;<br>    ssl_certificate_key  &#x2F;usr&#x2F;local&#x2F;nginx&#x2F;conf&#x2F;server_nopwd.key;<br>}</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201611/Jenkins%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201611/Jenkins%E6%9C%8D%E5%8A%A1%E6%90%AD%E5%BB%BA/" class="post-title-link" itemprop="url">Jenkins服务搭建</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:51:02" itemprop="dateCreated datePublished" datetime="2018-11-06T15:51:02+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="新建用户"><a href="#新建用户" class="headerlink" title="新建用户"></a>新建用户</h2><p>useradd -d&#x2F;home&#x2F;jenkins jenkins<br>passwd jenkins</p>
-<h2 id="内网环境中安装polipo将socks5代理转HTTP"><a href="#内网环境中安装polipo将socks5代理转HTTP" class="headerlink" title="内网环境中安装polipo将socks5代理转HTTP"></a>内网环境中安装polipo将socks5代理转HTTP</h2><p>安装：<br><a target="_blank" rel="noopener" href="https://www.irif.fr/~jch/software/polipo/">https://www.irif.fr/~jch/software/polipo/</a><br>rpm -i polipo-1.1.1-1.el6.x86_64.rpm<br>配置：<br>vi &#x2F;etc&#x2F;polipo&#x2F;config<br>socksParentProxy &#x3D; “IP:PORT”<br>socksProxyType &#x3D; socks5<br>proxyPort &#x3D; LOCALPORT<br>启动：<br>service polipo start</p>
-<p>##开防火墙<br>lokkit -p 9090:tcp</p>
-<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p>java -jar jenkins.war –httpPort&#x3D;9090</p>
-<h2 id="WEB控制台"><a href="#WEB控制台" class="headerlink" title="WEB控制台"></a>WEB控制台</h2><p><a target="_blank" rel="noopener" href="http://134.32.51.31:9090/">http://134.32.51.31:9090</a></p>
-<h2 id="自动发布"><a href="#自动发布" class="headerlink" title="自动发布"></a>自动发布</h2><h3 id="SSH认证"><a href="#SSH认证" class="headerlink" title="SSH认证"></a>SSH认证</h3><p>ssh-keygen -t rsa<br>ssh-copy-id -i <a href="mailto:&#117;&#x73;&#101;&#x72;&#x40;&#x78;&#120;&#120;&#x2e;&#120;&#x78;&#120;&#46;&#120;&#120;&#120;&#x2e;&#120;&#x78;&#120;">user@xxx.xxx.xxx.xxx</a></p>
-<h3 id="Jenkins主机发布脚本"><a href="#Jenkins主机发布脚本" class="headerlink" title="Jenkins主机发布脚本"></a>Jenkins主机发布脚本</h3><p>vi deploy-woegotv-admin-api.sh</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;stop process...&#x27;</span><br><span class="line">ssh user@xxx.xxx.xxx.xxx &#x27;~/deploy/stopadmin.sh&#x27;</span><br><span class="line">sleep 3</span><br><span class="line">echo &#x27;delete files...&#x27;</span><br><span class="line">ssh user@xxx.xxx.xxx.xxx &#x27;rm -f ~/deploy/woegotv-admin-api-1.0-SNAPSHOT.jar&#x27;</span><br><span class="line">sleep 3</span><br><span class="line">echo &#x27;copy files...&#x27;</span><br><span class="line">scp /home/jenkins/.jenkins/workspace/woegotv/admin-api/build/libs/woegotv-admin-api-1.0-SNAPSHOT.jar user@xxx.xxx.xxx.xxx:~/deploy/</span><br><span class="line">echo &#x27;start process...&#x27;</span><br><span class="line">ssh user@xxx.xxx.xxx.xxx &#x27;~/deploy/startadmin.sh&#x27;</span><br><span class="line">echo &#x27;done&#x27;</span><br></pre></td></tr></table></figure>
-
-<h3 id="应用主机启停脚本"><a href="#应用主机启停脚本" class="headerlink" title="应用主机启停脚本"></a>应用主机启停脚本</h3><p>vi startadmin.sh</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/usr/jdk1.8.0_74</span><br><span class="line">export PATH=$JAVA_HOME/bin:$PATH:$HOME/bin</span><br><span class="line">nohup java -jar ~/deploy/woegotv-admin-api-1.0-SNAPSHOT.jar --spring.profiles.active=tst,druid,security &gt;~/deploy/logs/woegotv.out 2&gt;&amp;1 &amp;</span><br></pre></td></tr></table></figure>
-<p>vi stopadmin.sh</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -fu`id -u`|grep woegotv-admin-api-1.0-SNAPSHOT.jar|grep -v grep|awk &#x27;&#123;print $2&#125;&#x27;|xargs kill -9</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置GitLab的WebHook"><a href="#配置GitLab的WebHook" class="headerlink" title="配置GitLab的WebHook"></a>配置GitLab的WebHook</h2><p>URL填写为Jenkins中GitLab插件生成的的<a target="_blank" rel="noopener" href="http://xxx.xxx.xxx.xxx:9090/project/projectname">http://xxx.xxx.xxx.xxx:9090/project/projectname</a></p>
 
       
     </div>

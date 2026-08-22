@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="下载地址 NVIDIA驱动 CUDAToolkit归档 cuDNN下载 cuDNN归档  先核对版本驱动、CUDA和GCC的对应关系会变化，直接查当前版本的ReleaseNotes比保存一张静态大表可靠：  CUDAToolkitReleaseNotes CUDACompatibility  先看机器上的现状： 123nvidia-smicommand -v nvcc &amp;&amp; nvc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ubuntu下搭建CUDA与容器GPU工具链">
+<meta property="og:url" content="https://www.bluexiii.com/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="下载地址 NVIDIA驱动 CUDAToolkit归档 cuDNN下载 cuDNN归档  先核对版本驱动、CUDA和GCC的对应关系会变化，直接查当前版本的ReleaseNotes比保存一张静态大表可靠：  CUDAToolkitReleaseNotes CUDACompatibility  先看机器上的现状： 123nvidia-smicommand -v nvcc &amp;&amp; nvc">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-09-18T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-22T11:07:08.000Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.bluexiii.com/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/","path":"202409/Ubuntu下搭建CUDA与容器GPU工具链/","title":"Ubuntu下搭建CUDA与容器GPU工具链"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Ubuntu下搭建CUDA与容器GPU工具链 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BlueXIII's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E5%9C%B0%E5%9D%80"><span class="nav-number">1.</span> <span class="nav-text">下载地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E6%A0%B8%E5%AF%B9%E7%89%88%E6%9C%AC"><span class="nav-number">2.</span> <span class="nav-text">先核对版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Runfile%E5%AE%89%E8%A3%85CUDA"><span class="nav-number">3.</span> <span class="nav-text">使用Runfile安装CUDA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cuDNN"><span class="nav-number">4.</span> <span class="nav-text">cuDNN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E4%B8%AD%E4%BD%BF%E7%94%A8GPU"><span class="nav-number">5.</span> <span class="nav-text">Docker中使用GPU</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">275</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Ubuntu下搭建CUDA与容器GPU工具链 | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Ubuntu下搭建CUDA与容器GPU工具链
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-09-19 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-19T00:00:00+08:00">2024-09-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 19:07:08" itemprop="dateModified" datetime="2026-08-22T19:07:08+08:00">2026-08-22</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+<h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.nvidia.com/Download/index.aspx?lang=en-us">NVIDIA驱动</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-toolkit-archive">CUDAToolkit归档</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/cudnn-downloads">cuDNN下载</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN归档</a></li>
+</ul>
+<h2 id="先核对版本"><a href="#先核对版本" class="headerlink" title="先核对版本"></a>先核对版本</h2><p>驱动、CUDA和GCC的对应关系会变化，直接查当前版本的ReleaseNotes比保存一张静态大表可靠：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/">CUDAToolkitReleaseNotes</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deploy/cuda-compatibility/">CUDACompatibility</a></li>
+</ul>
+<p>先看机器上的现状：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi</span><br><span class="line"><span class="built_in">command</span> -v nvcc &amp;&amp; nvcc --version</span><br><span class="line"><span class="built_in">ls</span> -ld /usr/local/cuda* 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p><code>nvidia-smi</code>顶部的<code>CUDAVersion</code>是驱动支持的最高CUDA版本，不代表已经安装了同版本的Toolkit。Toolkit版本以<code>nvcc --version</code>和安装目录为准。</p>
+<h2 id="使用Runfile安装CUDA"><a href="#使用Runfile安装CUDA" class="headerlink" title="使用Runfile安装CUDA"></a>使用Runfile安装CUDA</h2><p>Runfile适合离线安装或固定版本。能使用APT的机器还是优先用软件包，后续卸载和内核升级都省事一些。</p>
+<p>先安装编译工具和当前内核头文件：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y build-essential linux-headers-<span class="string">&quot;<span class="subst">$(uname -r)</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>下载完成后核对校验值，再运行安装器：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sha256sum</span> cuda_&lt;version&gt;_linux.run</span><br><span class="line"><span class="built_in">sudo</span> sh cuda_&lt;version&gt;_linux.run</span><br></pre></td></tr></table></figure>
+
+<p>如果驱动已经通过APT或单独的Runfile装好，在交互界面中取消<code>Driver</code>，只安装<code>CUDAToolkit</code>。不要让两种安装方式同时管理驱动。</p>
+<p>安装完成后按实际目录配置环境变量：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=/usr/local/cuda-X.Y/bin:<span class="variable">$PATH</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=/usr/local/cuda-X.Y/lib64:<span class="variable">$&#123;LD_LIBRARY_PATH:-&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>确认<code>nvcc --version</code>正常后，再写入Shell配置文件。</p>
+<p>以前为了切换GCC，我直接改过<code>/usr/bin/gcc</code>软链接。这会影响系统中其他编译任务，现在更合适的做法是并行安装所需版本，并在构建时单独指定：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CC=/usr/bin/gcc-X CXX=/usr/bin/g++-X cmake -S . -B build</span><br></pre></td></tr></table></figure>
+
+<p>Runfile安装的Toolkit可以使用自带卸载器删除：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> /usr/local/cuda-X.Y/bin/cuda-uninstaller</span><br></pre></td></tr></table></figure>
+
+<h2 id="cuDNN"><a href="#cuDNN" class="headerlink" title="cuDNN"></a>cuDNN</h2><p>cuDNN还要单独核对CUDA版本和系统支持范围：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/cudnn/installation/latest/linux.html">cuDNN安装指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/cudnn/backend/latest/reference/support-matrix.html">cuDNNSupportMatrix</a></li>
+</ul>
+<p>当前系统如果已经配置NVIDIA软件源，可以直接安装与CUDA主版本对应的软件包。例如cuDNN9配合CUDA12：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y cudnn9-cuda-12</span><br></pre></td></tr></table></figure>
+
+<h2 id="Docker中使用GPU"><a href="#Docker中使用GPU" class="headerlink" title="Docker中使用GPU"></a>Docker中使用GPU</h2><p>旧的<code>nvidia-container-runtime</code>仓库已经归档，现在使用<code>nvidia-container-toolkit</code>。这里有一个容易混淆的地方：容器使用宿主机的GPU驱动，CUDA用户态库通常放在镜像里，所以镜像版本仍然受宿主机驱动限制。</p>
+<p>Ubuntu下配置APT仓库：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y --no-install-recommends \</span><br><span class="line">  ca-certificates curl gnupg2</span><br><span class="line"></span><br><span class="line">curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \</span><br><span class="line">  | <span class="built_in">sudo</span> gpg --dearmor \</span><br><span class="line">    -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg</span><br><span class="line"></span><br><span class="line">curl -sL https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \</span><br><span class="line">  | sed <span class="string">&#x27;s#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g&#x27;</span> \</span><br><span class="line">  | <span class="built_in">sudo</span> <span class="built_in">tee</span> /etc/apt/sources.list.d/nvidia-container-toolkit.list</span><br></pre></td></tr></table></figure>
+
+<p>安装并写入Docker运行时配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y nvidia-container-toolkit</span><br><span class="line"><span class="built_in">sudo</span> nvidia-ctk runtime configure --runtime=docker</span><br><span class="line"><span class="built_in">sudo</span> systemctl restart docker</span><br></pre></td></tr></table></figure>
+
+<p><code>nvidia-ctk</code>会修改<code>/etc/docker/daemon.json</code>，已有自定义配置时先备份这个文件。</p>
+<p>从<a target="_blank" rel="noopener" href="https://hub.docker.com/r/nvidia/cuda/tags">NVIDIACUDA镜像标签</a>中选一个宿主机驱动支持的版本进行验证：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> --gpus all \</span><br><span class="line">  nvidia/cuda:&lt;toolkit-tag&gt;-base-ubuntu22.04 \</span><br><span class="line">  nvidia-smi</span><br></pre></td></tr></table></figure>
+
+<p>宿主机的<code>nvidia-smi</code>正常、容器中却找不到GPU时，检查Docker运行时和Toolkit版本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker info | sed -n <span class="string">&#x27;/Runtimes/,+3p&#x27;</span></span><br><span class="line">nvidia-ctk --version</span><br><span class="line">journalctl -u docker -n 100 --no-pager</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-installation-guide-linux/">NVIDIACUDAInstallationGuideforLinux</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html">NVIDIAContainerToolkit安装指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/NVIDIA/nvidia-container-toolkit">NVIDIAContainerToolkit源码</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/" rel="prev" title="Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用">
+                  <i class="fa fa-angle-left"></i> Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

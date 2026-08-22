@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">273</span>
+          <span class="site-state-item-count">275</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,283 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/" class="post-title-link" itemprop="url">Ubuntu下搭建CUDA与容器GPU工具链</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-09-19 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-19T00:00:00+08:00">2024-09-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 19:07:08" itemprop="dateModified" datetime="2026-08-22T19:07:08+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.nvidia.com/Download/index.aspx?lang=en-us">NVIDIA驱动</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-toolkit-archive">CUDAToolkit归档</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/cudnn-downloads">cuDNN下载</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN归档</a></li>
+</ul>
+<h2 id="先核对版本"><a href="#先核对版本" class="headerlink" title="先核对版本"></a>先核对版本</h2><p>驱动、CUDA和GCC的对应关系会变化，直接查当前版本的ReleaseNotes比保存一张静态大表可靠：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/">CUDAToolkitReleaseNotes</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deploy/cuda-compatibility/">CUDACompatibility</a></li>
+</ul>
+<p>先看机器上的现状：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi</span><br><span class="line"><span class="built_in">command</span> -v nvcc &amp;&amp; nvcc --version</span><br><span class="line"><span class="built_in">ls</span> -ld /usr/local/cuda* 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p><code>nvidia-smi</code>顶部的<code>CUDAVersion</code>是驱动支持的最高CUDA版本，不代表已经安装了同版本的Toolkit。Toolkit版本以<code>nvcc --version</code>和安装目录为准。</p>
+<h2 id="使用Runfile安装CUDA"><a href="#使用Runfile安装CUDA" class="headerlink" title="使用Runfile安装CUDA"></a>使用Runfile安装CUDA</h2><p>Runfile适合离线安装或固定版本。能使用APT的机器还是优先用软件包，后续卸载和内核升级都省事一些。</p>
+<p>先安装编译工具和当前内核头文件：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y build-essential linux-headers-<span class="string">&quot;<span class="subst">$(uname -r)</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>下载完成后核对校验值，再运行安装器：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sha256sum</span> cuda_&lt;version&gt;_linux.run</span><br><span class="line"><span class="built_in">sudo</span> sh cuda_&lt;version&gt;_linux.run</span><br></pre></td></tr></table></figure>
+
+<p>如果驱动已经通过APT或单独的Runfile装好，在交互界面中取消<code>Driver</code>，只安装<code>CUDAToolkit</code>。不要让两种安装方式同时管理驱动。</p>
+<p>安装完成后按实际目录配置环境变量：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=/usr/local/cuda-X.Y/bin:<span class="variable">$PATH</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=/usr/local/cuda-X.Y/lib64:<span class="variable">$&#123;LD_LIBRARY_PATH:-&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>确认<code>nvcc --version</code>正常后，再写入Shell配置文件。</p>
+<p>以前为了切换GCC，我直接改过<code>/usr/bin/gcc</code>软链接。这会影响系统中其他编译任务，现在更合适的做法是并行安装所需版本，并在构建时单独指定：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CC=/usr/bin/gcc-X CXX=/usr/bin/g++-X cmake -S . -B build</span><br></pre></td></tr></table></figure>
+
+<p>Runfile安装的Toolkit可以使用自带卸载器删除：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> /usr/local/cuda-X.Y/bin/cuda-uninstaller</span><br></pre></td></tr></table></figure>
+
+<h2 id="cuDNN"><a href="#cuDNN" class="headerlink" title="cuDNN"></a>cuDNN</h2><p>cuDNN还要单独核对CUDA版本和系统支持范围：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/cudnn/installation/latest/linux.html">cuDNN安装指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/cudnn/backend/latest/reference/support-matrix.html">cuDNNSupportMatrix</a></li>
+</ul>
+<p>当前系统如果已经配置NVIDIA软件源，可以直接安装与CUDA主版本对应的软件包。例如cuDNN9配合CUDA12：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y cudnn9-cuda-12</span><br></pre></td></tr></table></figure>
+
+<h2 id="Docker中使用GPU"><a href="#Docker中使用GPU" class="headerlink" title="Docker中使用GPU"></a>Docker中使用GPU</h2><p>旧的<code>nvidia-container-runtime</code>仓库已经归档，现在使用<code>nvidia-container-toolkit</code>。这里有一个容易混淆的地方：容器使用宿主机的GPU驱动，CUDA用户态库通常放在镜像里，所以镜像版本仍然受宿主机驱动限制。</p>
+<p>Ubuntu下配置APT仓库：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y --no-install-recommends \</span><br><span class="line">  ca-certificates curl gnupg2</span><br><span class="line"></span><br><span class="line">curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \</span><br><span class="line">  | <span class="built_in">sudo</span> gpg --dearmor \</span><br><span class="line">    -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg</span><br><span class="line"></span><br><span class="line">curl -sL https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \</span><br><span class="line">  | sed <span class="string">&#x27;s#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g&#x27;</span> \</span><br><span class="line">  | <span class="built_in">sudo</span> <span class="built_in">tee</span> /etc/apt/sources.list.d/nvidia-container-toolkit.list</span><br></pre></td></tr></table></figure>
+
+<p>安装并写入Docker运行时配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y nvidia-container-toolkit</span><br><span class="line"><span class="built_in">sudo</span> nvidia-ctk runtime configure --runtime=docker</span><br><span class="line"><span class="built_in">sudo</span> systemctl restart docker</span><br></pre></td></tr></table></figure>
+
+<p><code>nvidia-ctk</code>会修改<code>/etc/docker/daemon.json</code>，已有自定义配置时先备份这个文件。</p>
+<p>从<a target="_blank" rel="noopener" href="https://hub.docker.com/r/nvidia/cuda/tags">NVIDIACUDA镜像标签</a>中选一个宿主机驱动支持的版本进行验证：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> --gpus all \</span><br><span class="line">  nvidia/cuda:&lt;toolkit-tag&gt;-base-ubuntu22.04 \</span><br><span class="line">  nvidia-smi</span><br></pre></td></tr></table></figure>
+
+<p>宿主机的<code>nvidia-smi</code>正常、容器中却找不到GPU时，检查Docker运行时和Toolkit版本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker info | sed -n <span class="string">&#x27;/Runtimes/,+3p&#x27;</span></span><br><span class="line">nvidia-ctk --version</span><br><span class="line">journalctl -u docker -n 100 --no-pager</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-installation-guide-linux/">NVIDIACUDAInstallationGuideforLinux</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html">NVIDIAContainerToolkit安装指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/NVIDIA/nvidia-container-toolkit">NVIDIAContainerToolkit源码</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/" class="post-title-link" itemprop="url">Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-08-17 00:00:00" itemprop="dateCreated datePublished" datetime="2024-08-17T00:00:00+08:00">2024-08-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 19:07:08" itemprop="dateModified" datetime="2026-08-22T19:07:08+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系统</td>
+<td>Ubuntu22.04</td>
+</tr>
+<tr>
+<td>显卡</td>
+<td>GeForceRTX2080Ti</td>
+</tr>
+<tr>
+<td>驱动</td>
+<td>535.86.05</td>
+</tr>
+<tr>
+<td>CUDA</td>
+<td>11.8.89</td>
+</tr>
+</tbody></table>
+<h2 id="使用NVIDIASettings调整风扇"><a href="#使用NVIDIASettings调整风扇" class="headerlink" title="使用NVIDIASettings调整风扇"></a>使用NVIDIASettings调整风扇</h2><p>先生成Xorg配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nvidia-xconfig \</span><br><span class="line">  --allow-empty-initial-configuration \</span><br><span class="line">  --cool-bits=4</span><br></pre></td></tr></table></figure>
+
+<p>也可以手工增加<code>/etc/X11/xorg.conf.d/20-nvidia.conf</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Section &quot;Device&quot;</span><br><span class="line">    Identifier &quot;Device0&quot;</span><br><span class="line">    Driver &quot;nvidia&quot;</span><br><span class="line">    Option &quot;Coolbits&quot; &quot;4&quot;</span><br><span class="line">EndSection</span><br></pre></td></tr></table></figure>
+
+<p>重启后，在Xorg桌面中打开：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-settings</span><br></pre></td></tr></table></figure>
+
+<p>风扇控制位是<code>4</code>。原笔记使用的是<code>28</code>，虽然也能打开风扇控制，但同时启用了频率偏移和超压，没有必要。这个配置属于NVIDIA驱动的高级功能，改完先观察温度和稳定性：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 nvidia-smi</span><br></pre></td></tr></table></figure>
+
+<p>我当时还遇到过<code>nvidia settings failed to set fan speed</code>。通过放宽<code>Xwrapper.config</code>权限可以绕过去，但这个处理范围过大，不建议照抄。先检查当前会话是否为Xorg、<code>DISPLAY</code>是否正确，以及独立显卡是否属于当前XScreen：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$XDG_SESSION_TYPE</span>&quot;</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$DISPLAY</span>&quot;</span></span><br><span class="line">nvidia-settings -q gpus</span><br></pre></td></tr></table></figure>
+
+<p>较新的驱动不一定继续提供相同的Coolbits能力，具体以当前驱动的README和<code>nvidia-settings</code>实际显示为准。</p>
+<h2 id="使用核显输出桌面"><a href="#使用核显输出桌面" class="headerlink" title="使用核显输出桌面"></a>使用核显输出桌面</h2><p>这台机器还有核显。让核显负责桌面输出后，独立显卡只保留计算任务，<code>nvidia-smi</code>中桌面进程占用的显存可以降到几MB。</p>
+<p>我的操作顺序如下：</p>
+<ol>
+<li>在BIOS中将核显设为首选显示设备。</li>
+<li>把显示器接到主板视频接口。</li>
+<li>将Ubuntu切换到核显模式并重启。</li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prime-select query</span><br><span class="line"><span class="built_in">sudo</span> prime-select intel</span><br><span class="line"><span class="built_in">sudo</span> reboot</span><br></pre></td></tr></table></figure>
+
+<p>重启后检查桌面渲染设备和独立显卡占用：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glxinfo -B | sed -n <span class="string">&#x27;1,12p&#x27;</span></span><br><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure>
+
+<p>我还试过在<code>NVIDIASettings</code>中将Profile改为<code>On-Demand</code>。这台机器重启后本地没有正常显示，不过SSH仍能登录，独立显卡显存也确实只占了几MB。台式机的BIOS、视频接口和PRIME组合差异比较大，这一步不能直接当作通用配置。</p>
+<p>如果修改Xorg配置后进不了桌面，可以从TTY或SSH禁用新增文件：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">mv</span> /etc/X11/xorg.conf.d/20-nvidia.conf \</span><br><span class="line">  /etc/X11/xorg.conf.d/20-nvidia.conf.disabled</span><br><span class="line"><span class="built_in">sudo</span> reboot</span><br></pre></td></tr></table></figure>
+
+<h2 id="其他工具"><a href="#其他工具" class="headerlink" title="其他工具"></a>其他工具</h2><p><a target="_blank" rel="noopener" href="https://github.com/andyljones/coolgpus">coolgpus</a>可以直接设置转速或温度曲线。使用前仍要保证驱动已经开放风扇控制：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pip install coolgpus</span><br><span class="line"></span><br><span class="line">coolgpus --speed 99 99</span><br><span class="line">coolgpus --temp 20 55 80 --speed 5 30 99</span><br></pre></td></tr></table></figure>
+
+<p>使用<a target="_blank" rel="noopener" href="https://github.com/wilicc/gpu-burn">gpu-burn</a>测试时，可以限制时间、显存占用和显卡编号：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 运行1小时</span></span><br><span class="line">./gpu_burn -d 3600</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用50%显存</span></span><br><span class="line">./gpu_burn -m 50%</span><br><span class="line"></span><br><span class="line"><span class="comment"># 只测试GPU2</span></span><br><span class="line">./gpu_burn -i 2</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://download.nvidia.com/XFree86/Linux-x86_64/535.86.05/README/xconfigoptions.html">535.86.05驱动的X配置选项</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/latest/">NVIDIALinux驱动安装指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/canonical/nvidia-prime">Ubuntu的nvidia-prime项目</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1022,209 +1299,6 @@
 <li><a target="_blank" rel="noopener" href="https://thingsboard.io/docs/getting-started-guides/helloworld/">https://thingsboard.io/docs/getting-started-guides/helloworld/</a></li>
 </ul>
 <h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p ~/.mytb-data &amp;&amp; <span class="built_in">sudo</span> <span class="built_in">chown</span> -R 799:799 ~/.mytb-data</span><br><span class="line"><span class="built_in">mkdir</span> -p ~/.mytb-logs &amp;&amp; <span class="built_in">sudo</span> <span class="built_in">chown</span> -R 799:799 ~/.mytb-logs</span><br><span class="line"></span><br><span class="line">docker run -itd -p 8080:9090 -p 7070:7070 -p 1883:1883 -p 5683-5688:5683-5688/udp -v ~/.mytb-data:/data \</span><br><span class="line">-v ~/.mytb-logs:/var/log/thingsboard --name mytb --restart always thingsboard/tb-postgres</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202309/JetLinks%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202309/JetLinks%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">JetLinks学习笔记</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-09-14 15:57:19" itemprop="dateCreated datePublished" datetime="2023-09-14T15:57:19+08:00">2023-09-14</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://www.jetlinks.cn/#/">https://www.jetlinks.cn/#/</a>  官网</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/fu73f6thmd0whwot">https://hanta.yuque.com/px7kg1/yfac2l/fu73f6thmd0whwot</a>  企业版更新记录</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/fkfxgxlr240dvndk">https://hanta.yuque.com/px7kg1/yfac2l/fkfxgxlr240dvndk</a>  社区版更新记录</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/vqace84z3efqnakd">https://hanta.yuque.com/px7kg1/yfac2l/vqace84z3efqnakd</a>  功能对比</li>
-</ul>
-<h3 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-community">https://github.com/jetlinks/jetlinks-community</a>  后端代码</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-ui-vue">https://github.com/jetlinks/jetlinks-ui-vue</a>  前端代码</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-official-protocol">https://github.com/jetlinks/jetlinks-official-protocol</a>  官方接入协议</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/device-simulator">https://github.com/jetlinks/device-simulator</a>  官方设备模拟器</li>
-</ul>
-<h3 id="使用手册"><a href="#使用手册" class="headerlink" title="使用手册"></a>使用手册</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l">https://hanta.yuque.com/px7kg1/yfac2l</a>  使用手册</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/tvlxz93cht8zyl94">https://hanta.yuque.com/px7kg1/yfac2l/tvlxz93cht8zyl94</a>  架构图</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/svxnz51wtqo0f2rv">https://hanta.yuque.com/px7kg1/yfac2l/svxnz51wtqo0f2rv</a>  MQTT直连接入</li>
-<li><a target="_blank" rel="noopener" href="https://demo.jetlinks.cn/api/mqtt-auth-generator.html">https://demo.jetlinks.cn/api/mqtt-auth-generator.html</a>  官方协议MQTT用户名密码生成工具</li>
-</ul>
-<h3 id="企业版功能"><a href="#企业版功能" class="headerlink" title="企业版功能"></a>企业版功能</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/sqr1maoef7bnw016">https://hanta.yuque.com/px7kg1/yfac2l/sqr1maoef7bnw016</a>  OneNet接入</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/en2f0iu1r8af66uu">https://hanta.yuque.com/px7kg1/yfac2l/en2f0iu1r8af66uu</a>  规则引擎</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/nwd0gpo80g52qgdm">https://hanta.yuque.com/px7kg1/yfac2l/nwd0gpo80g52qgdm</a>  开放API</li>
-<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/colony-deploy.html">http://doc.jetlinks.cn/dev-guide/colony-deploy.html</a>  集群部署</li>
-</ul>
-<h3 id="后端开发"><a href="#后端开发" class="headerlink" title="后端开发"></a>后端开发</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr">https://hanta.yuque.com/px7kg1/nn1gdr</a>  开发手册</li>
-<li><a target="_blank" rel="noopener" href="https://vertx.io/docs/vertx-mqtt/java/">https://vertx.io/docs/vertx-mqtt/java/</a> vertx-mqtt</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/dev/dcwrzvngbg46ls8v">https://hanta.yuque.com/px7kg1/dev/dcwrzvngbg46ls8v</a>  响应式编程</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/gfqb3xmxg8fsvyxf">https://hanta.yuque.com/px7kg1/nn1gdr/gfqb3xmxg8fsvyxf</a>  系统模块说明</li>
-</ul>
-<h3 id="前端开发"><a href="#前端开发" class="headerlink" title="前端开发"></a>前端开发</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-ui-vue">https://github.com/jetlinks/jetlinks-ui-vue</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-ui-components">https://github.com/jetlinks/jetlinks-ui-components</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.antdv.com/components/overview-cn">https://www.antdv.com/components/overview-cn</a></li>
-<li><a target="_blank" rel="noopener" href="https://cn.vuejs.org/">https://cn.vuejs.org/</a></li>
-<li><a target="_blank" rel="noopener" href="https://cn.vitejs.dev/">https://cn.vitejs.dev/</a></li>
-</ul>
-<h3 id="协议开发"><a href="#协议开发" class="headerlink" title="协议开发"></a>协议开发</h3><ul>
-<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/jetlinks-protocol-support.html">http://doc.jetlinks.cn/dev-guide/jetlinks-protocol-support.html</a>  官方协议说明</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/hg5r4psvn9fdsv1c">https://hanta.yuque.com/px7kg1/nn1gdr/hg5r4psvn9fdsv1c</a>  协议包开发</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/atpog2hc57l9fihz">https://hanta.yuque.com/px7kg1/nn1gdr/atpog2hc57l9fihz</a>  官方协议TCP报文</li>
-<li><a target="_blank" rel="noopener" href="https://doc.v1.jetlinks.cn/best-practices/start.html">https://doc.v1.jetlinks.cn/best-practices/start.html</a> 最佳实践</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/zx6g20pzmsce2qh9">https://hanta.yuque.com/px7kg1/nn1gdr/zx6g20pzmsce2qh9</a> 协议包内使用缓存</li>
-</ul>
-<hr>
-<h2 id="物模型"><a href="#物模型" class="headerlink" title="物模型"></a>物模型</h2><ul>
-<li>属性	用于描述设备运行时的状态，分为可读写和只读属性，比如温度传感器所读取的环境温度或者是插座的开关状态</li>
-<li>方法	设备可被用户调用并执行的方法，包含输入参数和返回参数，前者用于方法执行时的参数，后者用于上报方法执行后的结果。方法分为异步和同步执行两种类型</li>
-<li>事件	用于定义设备运行过程中所产生的消息，包括“信息”、“告警”和“错误”三种类型</li>
-</ul>
-<hr>
-<h2 id="前端工程启动"><a href="#前端工程启动" class="headerlink" title="前端工程启动"></a>前端工程启动</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yarn install --update-checksums</span><br><span class="line">yarn dev</span><br></pre></td></tr></table></figure>
-
-
-<hr>
-<h2 id="创建协议工程"><a href="#创建协议工程" class="headerlink" title="创建协议工程"></a>创建协议工程</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">mvn dependency:get \</span><br><span class="line">-DremoteRepositories=https://nexus.hsweb.me/content/groups/public \</span><br><span class="line">-DgroupId=org.jetlinks.protocol \</span><br><span class="line">-DartifactId=protocol-archetype \</span><br><span class="line">-Dversion=1.0.0-SNAPSHOT \</span><br><span class="line">&amp;&amp; \</span><br><span class="line">mvn archetype:generate \</span><br><span class="line">-DarchetypeGroupId=org.jetlinks.protocol \</span><br><span class="line">-DarchetypeArtifactId=protocol-archetype \</span><br><span class="line">-DarchetypeVersion=1.0.0-SNAPSHOT \</span><br><span class="line">-DoutputDirectory=./ \</span><br><span class="line">-DgroupId=com.telchina \</span><br><span class="line">-DartifactId=jetlinks-tc-protocol \</span><br><span class="line">-Dversion=1.0 \</span><br><span class="line">-DarchetypeCatalog=<span class="built_in">local</span> \</span><br><span class="line">-DinteractiveMode=<span class="literal">false</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202309/Erlang%E5%88%9D%E6%8E%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202309/Erlang%E5%88%9D%E6%8E%A2/" class="post-title-link" itemprop="url">erlang初探</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-09-12 15:29:08" itemprop="dateCreated datePublished" datetime="2023-09-12T15:29:08+08:00">2023-09-12</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.erlang.org/">https://www.erlang.org/</a></li>
-</ul>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.w3cschool.cn/erlang/">https://www.w3cschool.cn/erlang/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.yiibai.com/erlang/">https://www.yiibai.com/erlang/</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/B_uggggg/article/details/109343412">https://blog.csdn.net/B_uggggg/article/details/109343412</a></li>
-</ul>
-<h2 id="开发环境"><a href="#开发环境" class="headerlink" title="开发环境"></a>开发环境</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/erlang/rebar3">https://github.com/erlang/rebar3</a></li>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1711146">https://cloud.tencent.com/developer/article/1711146</a></li>
-</ul>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装erlang版本25</span></span><br><span class="line">brew install erlang@25</span><br><span class="line"><span class="comment"># rebar3下载</span></span><br><span class="line">wget https://s3.amazonaws.com/rebar3/rebar3 &amp;&amp; <span class="built_in">chmod</span> +x rebar3</span><br><span class="line"><span class="comment"># 新建一个简单app项目</span></span><br><span class="line">$ rebar3 new app &lt;projName&gt;</span><br><span class="line"><span class="comment"># 新建一个多app项目</span></span><br><span class="line">$ rebar3 new release &lt;projName&gt;</span><br><span class="line"><span class="comment"># 新建一个简单app项目</span></span><br><span class="line">$ rebar3 new lib &lt;projName&gt;</span><br><span class="line"><span class="comment"># 新建一个rebar插件</span></span><br><span class="line">$ rebar3 new plugin &lt;projName&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
       
     </div>
 

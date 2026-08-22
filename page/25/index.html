@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">273</span>
+          <span class="site-state-item-count">275</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,203 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201706/tmon/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201706/tmon/" class="post-title-link" itemprop="url">tmon-一个简陋的应用健康度检测系统</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:44:10" itemprop="dateCreated datePublished" datetime="2018-11-06T15:44:10+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>tmon - 一个简陋的应用健康度检测系统，基于Python3。<br>请注意，这是一个重复的轮子，源于某项目的紧急救火过程中，需要快速搭建一套监控系统实时监控几套后台服务的需求。<br>相较于使用现成的开源系统，花时间进行技术选型、部署、修改源码等操作，重写一套系统花费的时间更少，定制性更高。<br>本系统不再继续完善，仅供学习目的使用，类以的，有更多更为成熟的开源应用，请自行搜索比较。  </p>
+<h2 id="功能特性"><a href="#功能特性" class="headerlink" title="功能特性"></a>功能特性</h2><ul>
+<li>参数可配置化，可同时配置检测多个后台服务  </li>
+<li>多线程并行检测  </li>
+<li>支持邮件、短信两种通知方式  </li>
+<li>防止重复通知机制、每日频繁通知融熔断机制</li>
+</ul>
+<h2 id="检测方式及流程"><a href="#检测方式及流程" class="headerlink" title="检测方式及流程"></a>检测方式及流程</h2><p>可配置检测多个服务，针对某一个单独的服务，分别启两个线程，一个用于服务调用测试（收集样本），另一个用于健康度检测（裁决）  </p>
+<p>服务调用测试线程：</p>
+<ol>
+<li>每隔一定时间（默认5秒）向特定的URL发起一次GET或POST请求。</li>
+<li>如果请求的返回结果不是HTTP 2XX，或直接请求失败，则向一个FIFO的测试结果样本池（默认20个）中新增一条失败记录，反之增加一条成功记录。</li>
+</ol>
+<p>健康度检测线程：</p>
+<ol>
+<li>每隔一定时间（默认20秒），统计样本池中失败的次数，如果大于阈值（默认2个），则发起告警通知，并休眠一定时间。反之，认为系统运行正常，不做任何操作，仅休眠一定时间。</li>
+<li>告警通知分为短信和邮件两类，参数配置实现。</li>
+<li>首先判断今日的通知次数是否大于阈值（10次），如果是，则进行熔化断操作，不予发送。避免每天发送过量的SPAM通知。</li>
+<li>然后判断re_notify_tag（每次检测时，如果成功，则re_notify_tag会置为True，反之为False），如果为真才会发送通知。re_notify_tag用于避免系统宕机后，重复发送通知。</li>
+</ol>
+<h2 id="安装及运行"><a href="#安装及运行" class="headerlink" title="安装及运行"></a>安装及运行</h2><h3 id="venv虚拟环境安装配置"><a href="#venv虚拟环境安装配置" class="headerlink" title="venv虚拟环境安装配置"></a>venv虚拟环境安装配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 install virtualenv</span><br><span class="line">virtualenv venv</span><br><span class="line">. venv/bin/activate</span><br></pre></td></tr></table></figure>
+
+<h3 id="第三方依赖安装"><a href="#第三方依赖安装" class="headerlink" title="第三方依赖安装"></a>第三方依赖安装</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip3 install -r requirements.txt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="守护进程启动"><a href="#守护进程启动" class="headerlink" title="守护进程启动"></a>守护进程启动</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup ./tmon.py 2&gt;&amp;1 &amp;</span><br></pre></td></tr></table></figure>
+
+<h2 id="GitLab源码"><a href="#GitLab源码" class="headerlink" title="GitLab源码"></a>GitLab源码</h2><p>更多源码请移步GitLab:<br><a target="_blank" rel="noopener" href="http://git.si-tech.com.cn/guolei/tmon">http://git.si-tech.com.cn/guolei/tmon</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201706/%E9%81%97%E7%95%99%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8Resty%E7%AE%80%E5%8C%96REST%E8%B0%83%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201706/%E9%81%97%E7%95%99%E9%A1%B9%E7%9B%AE%E4%B8%AD%E4%BD%BF%E7%94%A8Resty%E7%AE%80%E5%8C%96REST%E8%B0%83%E7%94%A8/" class="post-title-link" itemprop="url">在遗留工程中使用Resty简化REST调用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:44:09" itemprop="dateCreated datePublished" datetime="2018-11-06T15:44:09+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Spring3.0以下的遗留工程，由于无法使用RestTemplate，所以调用REST接口时会比较繁琐。<br>通过使用第三方REST户端框架Resty，可以大幅简化调用过程。<br>Resty的优势是使用简单，不需要引入过多的依赖。但相比于resttemplate&#x2F;jersey&#x2F;resteasy等，Resty还是过于小众，而且已有2年时间没有维护，异常处理也不是很完善。所以只建议在老旧项目中使用。<br>本文演示了Resty各种用法，包括代理设置、Header设置等。  </p>
+<h2 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h2><p>对于较老的项目，直接下载并添加resty-0.3.2.jar</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://repo1.maven.org/maven2/us/monoid/web/resty/0.3.2/resty-0.3.2.jar</span><br></pre></td></tr></table></figure>
+
+<p>如果项目使用了maven或gradle，直接添加依赖即可</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>us.monoid.web<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>resty<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.3.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile &#x27;us.monoid.web:resty:0.3.2&#x27;</span><br></pre></td></tr></table></figure>
+
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>初始化</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">baseUrl</span> <span class="operator">=</span> <span class="string">&quot;http://127.0.0.1:8080/foobar&quot;</span>;</span><br><span class="line"><span class="type">Resty</span> <span class="variable">resty</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Resty</span>();</span><br></pre></td></tr></table></figure>
+
+<p>设置代理</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">resty.setProxy(<span class="string">&quot;127.0.0.1&quot;</span>, <span class="number">8888</span>);</span><br></pre></td></tr></table></figure>
+
+<p>设置token</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">resty.setOptions(<span class="keyword">new</span> <span class="title class_">Resty</span>.Option() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">void</span> <span class="title function_">apply</span><span class="params">(URLConnection aConnection)</span> &#123;</span><br><span class="line">        aConnection.setRequestProperty(<span class="string">&quot;Authorization&quot;</span>, <span class="string">&quot;Bearer foobarboobarfoobar&quot;</span>);</span><br><span class="line">        <span class="built_in">super</span>.apply(aConnection);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>GET 查询</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">restUrl</span> <span class="operator">=</span> baseUrl + <span class="string">&quot;/users/4038488549360733&quot;</span>;</span><br><span class="line"><span class="type">JSONObject</span> <span class="variable">jsonObject</span> <span class="operator">=</span> resty.json(restUrl).object();</span><br><span class="line"><span class="type">String</span> <span class="variable">serialNumber</span> <span class="operator">=</span> jsonObject.getString(<span class="string">&quot;serialNumber&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>PUT 修改</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">restUrl</span> <span class="operator">=</span> baseUrl + <span class="string">&quot;/users/4038488549360733&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">jsonStr</span> <span class="operator">=</span> <span class="string">&quot;&#123;\&quot;brandCode\&quot;:\&quot;3G02\&quot;&#125;&quot;</span>;</span><br><span class="line">resty.json(restUrl, Resty.put(<span class="keyword">new</span> <span class="title class_">Content</span>(<span class="string">&quot;application/json&quot;</span>, jsonStr.getBytes())));</span><br></pre></td></tr></table></figure>
+
+<p>POST 新增</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">restUrl</span> <span class="operator">=</span> baseUrl + <span class="string">&quot;/users&quot;</span>;</span><br><span class="line"><span class="type">String</span> <span class="variable">jsonStr</span> <span class="operator">=</span> <span class="string">&quot;&#123;\&quot;brandCode\&quot;:\&quot;3G03\&quot;&#125;&quot;</span>;</span><br><span class="line">resty.json(restUrl, <span class="keyword">new</span> <span class="title class_">Content</span>(<span class="string">&quot;application/json&quot;</span>, jsonStr.getBytes()));</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>DELETE 删除</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">restUrl</span> <span class="operator">=</span> baseUrl + <span class="string">&quot;/users/4038488549360733&quot;</span>;</span><br><span class="line">resty.json(restUrl, Resty.delete());</span><br></pre></td></tr></table></figure>
+
+<p>综合示例</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">serialNumber</span> <span class="operator">=</span> <span class="string">&quot;12345678&quot;</span>;</span><br><span class="line">String restUrl;</span><br><span class="line">JSONObject jsonObject;</span><br><span class="line">JSONArray jsonArray;</span><br><span class="line"><span class="type">String</span> <span class="variable">itemId</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 查询用户信息，通过serialNumber取到userId</span></span><br><span class="line">    restUrl = baseUrl + <span class="string">&quot;/users?serialNumber=&quot;</span> + serialNumber;</span><br><span class="line">    jsonObject = resty.json(restUrl).object();</span><br><span class="line">    System.out.println(jsonObject);</span><br><span class="line">    <span class="type">String</span> <span class="variable">userId</span> <span class="operator">=</span> jsonObject.getString(<span class="string">&quot;userId&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 查询资费信息，通过userId取到所有资费</span></span><br><span class="line">    restUrl = baseUrl + <span class="string">&quot;/discnts?userId=&quot;</span> + userId;</span><br><span class="line">    jsonArray = resty.json(restUrl).array();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; jsonArray.length(); i++) &#123;</span><br><span class="line">        jsonObject = jsonArray.getJSONObject(i);</span><br><span class="line">        System.out.println(jsonObject);</span><br><span class="line">        <span class="comment">// 随机取一个itemId</span></span><br><span class="line">        itemId = jsonObject.getString(<span class="string">&quot;itemId&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 更改资费信息，通过itemId修改资费信息</span></span><br><span class="line">    restUrl = baseUrl + <span class="string">&quot;/discnts/&quot;</span> + itemId;</span><br><span class="line">    <span class="type">String</span> <span class="variable">jsonStr</span> <span class="operator">=</span> <span class="string">&quot;&#123;\&quot;startDate\&quot;:\&quot;2001-01-01 20:01:02\&quot;, \&quot;endDate\&quot;:\&quot;2018-05-08 20:01:02\&quot;&#125;&quot;</span>;</span><br><span class="line">    resty.json(restUrl, Resty.put(<span class="keyword">new</span> <span class="title class_">Content</span>(<span class="string">&quot;application/json&quot;</span>, jsonStr.getBytes())));</span><br><span class="line">&#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    e.printStackTrace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="GitHub"><a href="#GitHub" class="headerlink" title="GitHub"></a>GitHub</h2><p><a target="_blank" rel="noopener" href="https://github.com/beders/Resty">https://github.com/beders/Resty</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1045,165 +1242,6 @@
 <li><a target="_blank" rel="noopener" href="http://localhost:9411/zipkin/">Zipkin-调用链跟踪</a></li>
 </ul>
 <h2 id="其它说明"><a href="#其它说明" class="headerlink" title="其它说明"></a>其它说明</h2><h3 id="刷新配置"><a href="#刷新配置" class="headerlink" title="刷新配置"></a>刷新配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST http://localhost:8080/refresh</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201711/12factor/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201711/12factor/" class="post-title-link" itemprop="url">The Twelve-Factor App</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:32:46" itemprop="dateCreated datePublished" datetime="2018-11-06T15:32:46+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="地址"><a href="#地址" class="headerlink" title="地址"></a>地址</h2><p><a target="_blank" rel="noopener" href="https://12factor.net/zh_cn">https://12factor.net/zh_cn</a></p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>12-Factor 为构建如下的 SaaS 应用提供了方法论：<br>使用标准化流程自动配置，从而使新的开发者花费最少的学习成本加入这个项目。<br>和操作系统之间尽可能的划清界限，在各个系统中提供最大的可移植性。<br>适合部署在现代的云计算平台，从而在服务器和系统管理方面节省资源。<br>将开发环境和生产环境的差异降至最低，并使用持续交付实施敏捷开发。<br>可以在工具、架构和开发流程不发生明显变化的前提下实现扩展。</p>
-<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><p>I. 基准代码<br>一份基准代码，多份部署<br>II. 依赖<br>显式声明依赖关系<br>III. 配置<br>在环境中存储配置<br>IV. 后端服务<br>把后端服务当作附加资源<br>V. 构建，发布，运行<br>严格分离构建和运行<br>VI. 进程<br>以一个或多个无状态进程运行应用<br>VII. 端口绑定<br>通过端口绑定提供服务<br>VIII. 并发<br>通过进程模型进行扩展<br>IX. 易处理<br>快速启动和优雅终止可最大化健壮性<br>X. 开发环境与线上环境等价<br>尽可能的保持开发，预发布，线上环境相同<br>XI. 日志<br>把日志当作事件流<br>XII. 管理进程<br>后台管理任务当作一次性进程运行</p>
-<p>12-factor应用本身从不考虑存储自己的输出流。 不应该试图去写或者管理日志文件。相反，每一个运行的进程都会直接的标准输出（stdout）事件流。开发环境中，开发人员可以通过这些数据流，实时在终端看到应用的活动。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Ubuntu%E8%BF%9E%E6%8E%A5Android%E6%89%8B%E6%9C%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201803/Ubuntu%E8%BF%9E%E6%8E%A5Android%E6%89%8B%E6%9C%BA/" class="post-title-link" itemprop="url">Ubuntu连接Android手机</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:31:35" itemprop="dateCreated datePublished" datetime="2018-11-06T15:31:35+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="解决Ubuntu无法识别Android手机的问题"><a href="#解决Ubuntu无法识别Android手机的问题" class="headerlink" title="解决Ubuntu无法识别Android手机的问题"></a>解决Ubuntu无法识别Android手机的问题</h2><ol>
-<li>安装mtp相关的包：</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libmtp-common mtp-tools libmtp-dev libmtp-runtime libmtp9</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>查看手机的USB信息<br>执行：</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsusb</span><br></pre></td></tr></table></figure>
-<p>记录下新增的一条USB设备的信息，以坚果Pro1为例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bus 002 Device 011: ID 29a9:7020  </span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>编辑69-libmtp.rules</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /lib/udev/rules.d/69-libmtp.rules</span><br></pre></td></tr></table></figure>
-<p>新增一行：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ATTR&#123;idVendor&#125;==&quot;29a9&quot;, ATTR&#123;idProduct&#125;==&quot;7020&quot;, SYMLINK+=&quot;libmtp-%k&quot;, ENV&#123;ID_MTP_DEVICE&#125;=&quot;1&quot;, ENV&#123;ID_MEDIA_PLAYER&#125;=&quot;1&quot;</span><br></pre></td></tr></table></figure>
-<p>注意替换掉其中的idVendor和idProduct</p>
 
       
     </div>

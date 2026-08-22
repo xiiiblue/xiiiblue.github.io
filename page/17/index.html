@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">273</span>
+          <span class="site-state-item-count">275</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,147 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-2-Yum%E6%BA%90%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-2-Yum%E6%BA%90%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">K8S离线部署笔记-2-Yum源配置</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-05 14:04:45" itemprop="dateCreated datePublished" datetime="2021-01-05T14:04:45+08:00">2021-01-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="服务端配置"><a href="#服务端配置" class="headerlink" title="服务端配置"></a>服务端配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境，准备httpd安装包</span></span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yumdownloader --assumeyes --destdir=/root/pkg/httpd --resolve httpd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，安装httpd</span></span><br><span class="line">yum install -y --cacheonly --disablerepo=* /root/pkg/httpd/*.rpm</span><br><span class="line">systemctl start httpd</span><br><span class="line">systemctl <span class="built_in">enable</span> httpd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置httpd端口</span></span><br><span class="line">vi /etc/httpd/conf/httpd.conf</span><br><span class="line">Listen 8001</span><br><span class="line">systemctl stop httpd &amp; systemctl start httpd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 挂载镜像</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /var/www/html/centos77</span><br><span class="line">mount -o loop /root/iso/CentOS-7-x86_64-DVD-1908.iso /var/www/html/centos77/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试</span></span><br><span class="line">http://10.10.51.77:8001/centos77</span><br></pre></td></tr></table></figure>
+
+<h2 id="客户端配置"><a href="#客户端配置" class="headerlink" title="客户端配置"></a>客户端配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /etc/yum.repos.d/</span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> bak</span><br><span class="line"><span class="built_in">mv</span> CentOS* bak</span><br><span class="line"></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">EOF &gt; rhel77.repo</span></span><br><span class="line"><span class="string">[rhel77]</span></span><br><span class="line"><span class="string">name=rhel77 repo</span></span><br><span class="line"><span class="string">baseurl=http://10.10.51.77:8001/centos77</span></span><br><span class="line"><span class="string">enable=1</span></span><br><span class="line"><span class="string">gpgcheck=0</span></span><br><span class="line"><span class="string">priority=1</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line">yum clean all</span><br><span class="line">yum makecache</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-1-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-1-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">K8S离线部署笔记-1-操作系统配置</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-05 14:04:30" itemprop="dateCreated datePublished" datetime="2021-01-05T14:04:30+08:00">2021-01-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="通用配置"><a href="#通用配置" class="headerlink" title="通用配置"></a>通用配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 配置网络</span></span><br><span class="line">nmtui</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置hostname</span></span><br><span class="line">hostnamectl set-hostname uat-native.yourcompany.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭防火墙</span></span><br><span class="line">systemctl stop firewalld.service</span><br><span class="line">systemctl <span class="built_in">disable</span> firewalld.service</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭SELINUX</span></span><br><span class="line">getenforce</span><br><span class="line">setenforce 0</span><br><span class="line">sed -i <span class="string">&#x27;s/^SELINUX=enforcing$/SELINUX=permissive/&#x27;</span> /etc/selinux/config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭Swap</span></span><br><span class="line">swapoff -a</span><br><span class="line">vi /etc/fstab </span><br><span class="line">注释掉swap行</span><br></pre></td></tr></table></figure>
+
+<h2 id="K8S特殊配置"><a href="#K8S特殊配置" class="headerlink" title="K8S特殊配置"></a>K8S特殊配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># iptables不处理bridge数据</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">EOF &gt;  /etc/sysctl.d/k8s.conf</span></span><br><span class="line"><span class="string">net.bridge.bridge-nf-call-ip6tables = 1</span></span><br><span class="line"><span class="string">net.bridge.bridge-nf-call-iptables = 1</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">sysctl --system</span><br><span class="line"></span><br><span class="line"><span class="comment"># 打开kubectl自动完成</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;source &lt;(kubectl completion bash)&quot;</span> &gt;&gt; ~/.bashrc</span><br><span class="line">yum -y install bash-completion</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -929,265 +1070,6 @@
 <li>除非类型&#x2F;函数需要在多个组件中共享，否则不要导出(export)</li>
 <li>在文件中，类型定义应该放在最前面</li>
 <li>使用 undefined，不要使用 null</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-ModelMapper%E5%AF%B9%E5%83%8F%E6%98%A0%E5%B0%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-ModelMapper%E5%AF%B9%E5%83%8F%E6%98%A0%E5%B0%84/" class="post-title-link" itemprop="url">研发规约-ModelMapper对像映射</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:02:50" itemprop="dateCreated datePublished" datetime="2021-01-05T14:02:50+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>项目中经常需要将Model和DTO互转，产生很多<code>getXXX/setXXX</code>的模板化代码。使用ModelMapper可以简化转换步骤。</p>
-<h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="http://modelmapper.org/">http://modelmapper.org/</a></p>
-<h2 id="添加依赖"><a href="#添加依赖" class="headerlink" title="添加依赖"></a>添加依赖</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.modelmapper<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>modelmapper<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="对象示例"><a href="#对象示例" class="headerlink" title="对象示例"></a>对象示例</h2><p>源对象：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Assume getters and setters on each class</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Order</span> &#123;</span><br><span class="line">  Customer customer;</span><br><span class="line">  Address billingAddress;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Customer</span> &#123;</span><br><span class="line">  Name name;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Name</span> &#123;</span><br><span class="line">  String firstName;</span><br><span class="line">  String lastName;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Address</span> &#123;</span><br><span class="line">  String street;</span><br><span class="line">  String city;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>目标对象：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Assume getters and setters</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">OrderDTO</span> &#123;</span><br><span class="line">  String customerFirstName;</span><br><span class="line">  String customerLastName;</span><br><span class="line">  String billingStreet;</span><br><span class="line">  String billingCity;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="自动转换"><a href="#自动转换" class="headerlink" title="自动转换"></a>自动转换</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ModelMapper</span> <span class="variable">modelMapper</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ModelMapper</span>();</span><br><span class="line"><span class="type">OrderDTO</span> <span class="variable">orderDTO</span> <span class="operator">=</span> modelMapper.map(order, OrderDTO.class);</span><br></pre></td></tr></table></figure>
-
-<h2 id="自定义转换"><a href="#自定义转换" class="headerlink" title="自定义转换"></a>自定义转换</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">modelMapper.typeMap(Order.class, OrderDTO.class).addMappings(mapper -&gt; &#123;</span><br><span class="line">  mapper.map(src -&gt; src.getBillingAddress().getStreet(),</span><br><span class="line">      Destination::setBillingStreet);</span><br><span class="line">  mapper.map(src -&gt; src.getBillingAddress().getCity(),</span><br><span class="line">      Destination::setBillingCity);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-
-<h2 id="转换配置"><a href="#转换配置" class="headerlink" title="转换配置"></a>转换配置</h2><p>ModelMapper有Standard、Loose、Strict 3种模式： </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);</span><br></pre></td></tr></table></figure>
-
-<p>参考文档：<br><a target="_blank" rel="noopener" href="http://modelmapper.org/user-manual/configuration/#matching-strategies">http://modelmapper.org/user-manual/configuration/#matching-strategies</a></p>
-<h2 id="转换校验"><a href="#转换校验" class="headerlink" title="转换校验"></a>转换校验</h2><p>assert手工校验：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">assertEquals(order.getCustomer().getName().getFirstName(), orderDTO.getCustomerFirstName());</span><br></pre></td></tr></table></figure>
-
-<p>ModelMapper自动校验：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">modelMapper.createTypeMap(Order.class, OrderDTO.class);</span><br><span class="line">modelMapper.addMappings(<span class="keyword">new</span> <span class="title class_">OrderMap</span>());</span><br><span class="line">modelMapper.validate();</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Angular%E7%BC%96%E7%A0%81%E9%A3%8E%E6%A0%BC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202005/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Angular%E7%BC%96%E7%A0%81%E9%A3%8E%E6%A0%BC/" class="post-title-link" itemprop="url">研发规约-Angular编码风格</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:02:40" itemprop="dateCreated datePublished" datetime="2021-01-05T14:02:40+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://angular.cn/guide/styleguide">https://angular.cn/guide/styleguide</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/29784072">https://zhuanlan.zhihu.com/p/29784072</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/codelyzer">https://www.npmjs.com/package/codelyzer</a></li>
-</ul>
-<h2 id="单一职责"><a href="#单一职责" class="headerlink" title="单一职责"></a>单一职责</h2><ul>
-<li>一个文件定义一样东西，比如一个组件、一个服务、一个管道、一个指令</li>
-<li>每个文件最多不要超过400行</li>
-<li>定义功能单一的函数</li>
-<li>一个函数最多不要超过75行</li>
-</ul>
-<h2 id="命名规范"><a href="#命名规范" class="headerlink" title="命名规范"></a>命名规范</h2><ul>
-<li>文件名采用<code>feature.type.**</code>，feature表示特性，type表示类型<ul>
-<li>模块用 <code>.module.ts</code></li>
-<li>路由模块用 <code>-routing.module.ts</code></li>
-<li>组件用 <code>.component.ts|html|css</code></li>
-<li>服务用 <code>.service.ts</code></li>
-<li>管道用 <code>.pipe.ts</code></li>
-<li>指令用 <code>.directive.ts</code></li>
-<li>类型用 <code>.model.ts</code></li>
-<li>数据用 <code>.data.ts</code></li>
-</ul>
-</li>
-<li>用”-“来分割单词，比如<code>hero-list.component.ts</code></li>
-<li>单元测试文件名保持和测试对象一致，并以<code>.spec.ts</code>结尾</li>
-<li>端到端测试文件名保持和测试对象一致，并以<code>.e2e-spec.ts</code>结尾</li>
-<li>类名用大写驼峰规则，并且保持跟文件名的一致<ul>
-<li>模块：比如<code>app.module.ts</code>定义的类名为<code>AppModule</code></li>
-<li>路由模块：比如<code>app-routing.module.ts</code>定义的类名为<code>AppRoutingModule</code></li>
-<li>组件：比如<code>hero-list.component.ts</code>定义的类名为<code>HeroListComponent</code></li>
-<li>服务：比如<code>logger.service.ts</code>定义的类名为<code>LoggerService</code></li>
-<li>管道：比如<code>address.pipe.ts</code>定义的类名为<code>AddressPipe</code></li>
-<li>指令：比如<code>highlight.directive.ts</code>定义的类名为<code>HighlightDirective</code></li>
-<li>类型：按模块来划分，一个<code>.model.ts</code>定义多个类型</li>
-<li>数据：比如<code>address-book.data.ts</code>定义的变量名为<code>addressBook</code></li>
-</ul>
-</li>
-<li>脚本启动入口的文件名规定为main.ts，里面不包括任何业务逻辑，但要记得处理失败的情况</li>
-<li>指令选择器的命名采用小写驼峰规则，比如<code>clickOutSide</code></li>
-<li>组件选择器的命名采用分隔符“-”连接小写字母的形式，比如<code>hero-list</code></li>
-</ul>
-<h2 id="代码规范"><a href="#代码规范" class="headerlink" title="代码规范"></a>代码规范</h2><ul>
-<li>类命名采用大写驼峰规则</li>
-<li>常量定义用<code>const</code>，并且全部大写，如果有多个单词，用“_”连接，比如<code>HERO_URL</code></li>
-<li>支持ES6的环境下，禁止使用<code>var</code>定义变量</li>
-<li>变量命名尽量控制在3个单词以内，有常见缩写形式的单词可采用缩写形式</li>
-<li>接口类型用大写驼峰规则，不建议以I为前缀，考虑用类代替接口</li>
-<li>属性和方法名用小写驼峰，私有属性和方法不建议以“_”为前缀</li>
-<li>建议用空一行的方式来区分第三方库的导入和项目本身文件的导入</li>
-</ul>
-<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><ul>
-<li>好的项目结构的准则就是快速定位，快速识别，尽可能保持扁平，不要写冗余／重复代码</li>
-<li>把所有项目代码放入src文件夹，为每个特性创建文件夹</li>
-<li>第三方库放在src外的一个文件夹</li>
-<li>每个组件、服务、管道、指令都独成一个文件</li>
-<li>当组件有多个附属文件时（htm，css，ts，spec.ts），建议创建一个独立的文件夹</li>
-</ul>
-<h2 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h2><ul>
-<li>在<code>src/app</code>下创建根模块，建议命名为<code>app.module.ts</code></li>
-<li>为每个特性创建一个模块，并且保持文件夹命名和模块命名一致</li>
-<li>共享模块建议用<code>SharedModule</code>命名，放在<code>app/shared/shared.module.ts</code>中</li>
-<li>在共享模块中定义复用的组件、指令和管道，避免在共享模块中定义服务</li>
-<li>在共享模块中导入所有必需的模块，比如<code>CommonModule</code>和<code>FormsModule</code>，导出所有复用的模块、组件、指令、管道</li>
-<li>考虑将只用一次的类放在核心特性模块中，并且仅在根模块中导入，建议写<code>guard.ts</code>来保证</li>
-<li>核心特性模块建议用<code>CoreModule</code>命名，放在<code>app/core/core.module.ts</code>中</li>
-<li>将单例服务放在核心特性模块中，比如<code>ExceptionService</code>和<code>LoggerService</code></li>
-<li>在核心特性模块中导入所有必需的模块，比如<code>CommonModule</code>和<code>FormsModule</code>，导出所有定义的组件，服务等</li>
-<li>将全局仅用一次的组件放在核心特性模块，然后只在<code>AppModule</code>中导入，比如<code>NavComponent</code>和<code>SpinnerComponent</code></li>
-<li>独立的特性模块可以做成懒加载模块，避免在任何地方导入懒加载模块，不然模块就会直接加载</li>
-</ul>
-<h2 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h2><ul>
-<li>当模板&#x2F;样式超过3行时，写成单独文件</li>
-<li>删除无样式定义的样式文件</li>
-<li>模板&#x2F;样式的定义与组件命名保持一致</li>
-<li>导入时使用相对路径</li>
-<li>用装饰器<code>@Input</code>和<code>@Output</code>来修改输入输出数据，而不是使用元数据中的<code>inputs</code>和<code>outputs</code>属性</li>
-<li>不推荐重命名输入输出数据</li>
-<li>按照变量，构造器，生命周期函数，一般方法的顺序定义；一般方法按页面的功能模块放一起，被调用的方法写在后面；变量和方法均先公有后私有排列；</li>
-<li>组件中只写跟视图相关的逻辑，把其他的业务逻辑放在服务中</li>
-<li>将可复用的业务逻辑放在服务中</li>
-<li>不推荐事件命名加上on前缀</li>
-<li>将展示逻辑放在组件的类中，而不是在模板中</li>
-</ul>
-<h2 id="指令"><a href="#指令" class="headerlink" title="指令"></a>指令</h2><ul>
-<li>当有跟模板无关的展示逻辑时，使用属性指令，比如<code>[highlight]</code>指令</li>
-<li>推荐使用<code>@HostListener</code>和<code>@HostBinding</code>，而不是元数据的<code>host</code>属性</li>
-</ul>
-<h2 id="服务"><a href="#服务" class="headerlink" title="服务"></a>服务</h2><ul>
-<li>保持单例服务的使用规则，服务用来在特性模块或者应用中共享数据和方法</li>
-<li>跟函数一样，一个服务只有一个目的</li>
-<li>把服务注入在最高层的组件／模块中，使得该单例服务能在子组件、子模块中共享</li>
-<li>使用<code>@Injectable</code>装饰服务类，而不是<code>@Inject</code>装饰参数</li>
-<li>跟数据相关的操作，比如<code>xhr</code>请求，本地储存等抽象成服务</li>
-</ul>
-<h2 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h2><ul>
-<li>需要生命周期钩子时，实现相关的接口，可有效防止错误</li>
-</ul>
-<h2 id="辅助工具"><a href="#辅助工具" class="headerlink" title="辅助工具"></a>辅助工具</h2><ul>
-<li>用codelyzer来保持代码遵守该指南，当然你可以根据自己情况调整</li>
-<li>使用IDE的代码片段工具来快速生成具有一致性的代码片段，比如给VS Code安装snippets</li>
 </ul>
 
       

@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">273</span>
+          <span class="site-state-item-count">275</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,189 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202306/ArgoCD%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202306/ArgoCD%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">ArgoCD部署</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-07-01 09:17:24" itemprop="dateCreated datePublished" datetime="2023-07-01T09:17:24+08:00">2023-07-01</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://argo-cd.readthedocs.io/en/stable/getting_started/">https://argo-cd.readthedocs.io/en/stable/getting_started/</a></p>
+<h2 id="镜像清单"><a href="#镜像清单" class="headerlink" title="镜像清单"></a>镜像清单</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">quay.io/argoproj/argocd:v2.7.6</span><br><span class="line">ghcr.io/dexidp/dex:v2.36.0</span><br><span class="line">redis:7.0.11-alpine</span><br></pre></td></tr></table></figure>
+
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">wget https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml</span><br><span class="line">kubectl create namespace argocd</span><br><span class="line">kubectl apply -n argocd -f install.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装cli</span></span><br><span class="line">brew install argocd</span><br><span class="line"></span><br><span class="line"><span class="comment"># cli方式获取实始密码</span></span><br><span class="line">argocd admin initial-password -n argocd</span><br><span class="line">admin/yourpass</span><br><span class="line"></span><br><span class="line"><span class="comment"># kubectl方式获取初始密码(可选)</span></span><br><span class="line">kubectl get secret -n argocd argocd-initial-admin-secret -o yaml</span><br><span class="line"><span class="built_in">echo</span> yourpassbase64== | <span class="built_in">base64</span> -d</span><br><span class="line"></span><br><span class="line"><span class="comment"># WEB方式登录</span></span><br><span class="line">https://10.193.36.51:30010</span><br><span class="line"></span><br><span class="line">http://10.193.36.252:30010</span><br></pre></td></tr></table></figure>
+
+<h2 id="禁用https跳转"><a href="#禁用https跳转" class="headerlink" title="禁用https跳转"></a>禁用https跳转</h2><p>修改configmap的方式实测无效，转而通过修改<code>devops-argocd-server</code>的pod启动参数实现</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">command:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">argocd-server</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&#x27;--staticassets&#x27;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">/shared/app</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&#x27;--insecure&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="启用webhook"><a href="#启用webhook" class="headerlink" title="启用webhook"></a>启用webhook</h2><p>地址:  <a target="_blank" rel="noopener" href="http://10.193.36.41:30010/api/webhook">http://10.193.36.41:30010/api/webhook</a><br>设置密码: </p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kubectl edit secret argocd-secret -n argocd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 明文填写</span></span><br><span class="line">stringData:</span><br><span class="line">  webhook.gogs.secret: dubhe123</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置开发、测试环境"><a href="#配置开发、测试环境" class="headerlink" title="配置开发、测试环境"></a>配置开发、测试环境</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># CLI方式登录</span></span><br><span class="line">argocd login 10.193.36.41:30010  <span class="comment"># admin/yourpass</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Git仓库监权</span></span><br><span class="line">argocd repo add http://10.193.36.33:3000/dubhe/dubhe-charts --username dubhe --password yourpass</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建开发应用，自动同步</span></span><br><span class="line">argocd app create dubhe-app-dev \</span><br><span class="line">--sync-policy automated \</span><br><span class="line">--repo http://10.193.36.33:3000/dubhe/dubhe-charts \</span><br><span class="line">--revision develop \</span><br><span class="line">--path dubhe-app \</span><br><span class="line">--dest-namespace dubhe-dev \</span><br><span class="line">--dest-server https://kubernetes.default.svc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建测试应用，手动同步</span></span><br><span class="line">argocd app create dubhe-app-test \</span><br><span class="line">--sync-policy none \</span><br><span class="line">--repo http://10.193.36.33:3000/dubhe/dubhe-charts \</span><br><span class="line">--revision <span class="built_in">test</span> \</span><br><span class="line">--path dubhe-app \</span><br><span class="line">--dest-namespace dubhe-test \</span><br><span class="line">--dest-server https://kubernetes.default.svc</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置仿真环境"><a href="#配置仿真环境" class="headerlink" title="配置仿真环境"></a>配置仿真环境</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># CLI方式登录</span></span><br><span class="line">argocd login 10.193.36.51:30010  <span class="comment"># admin/yourpass</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Git仓库监权</span></span><br><span class="line">argocd repo add http://10.193.36.50:3000/dubhe/dubhe-charts --username dubhe --password yourpass</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建仿真应用，手动同步</span></span><br><span class="line">argocd app create dubhe-app \</span><br><span class="line">--sync-policy none \</span><br><span class="line">--repo http://10.193.36.50:3000/dubhe/dubhe-charts \</span><br><span class="line">--revision master \</span><br><span class="line">--path dubhe-app \</span><br><span class="line">--dest-namespace dubhe \</span><br><span class="line">--dest-server https://kubernetes.default.svc</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202306/chartmuseum%E9%A2%84%E7%A0%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202306/chartmuseum%E9%A2%84%E7%A0%94/" class="post-title-link" itemprop="url">chartmuseum预研</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-06-29 16:47:45" itemprop="dateCreated datePublished" datetime="2023-06-29T16:47:45+08:00">2023-06-29</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="整体说明"><a href="#整体说明" class="headerlink" title="整体说明"></a>整体说明</h2><ul>
+<li>harbor早期通过整合第三方的chartmuseum，实现了对helm-chart仓库的支持</li>
+<li>chartmuseum归属于helm公司，有独立官网和github仓库</li>
+<li>harbor有多种安装方式，例如: 二进制脚本安装、DockerCompose安装、Helm方式在K8S安装(通过一个名为harbor-helm项目)</li>
+<li>harbor的二进制脚本安装，在3个月前已经移除对chartmuseum的支持</li>
+<li>harbor的Helm安装方式(harbor-helm)，最新仓库中已经没有了chartmuseum的选项，从提交历史上看1.11.0是最后一个包含museum的版本</li>
+<li>官方在2023年4月24日的一个Issue中，解释了抛弃chartmusem的原因，以及整个提案的过程</li>
+<li>2022年8月，V2.6.0发版说明中提到了已经准备移除Chartmuseum，提到了V2.8.0(2023年4月)将会彻底完成移除</li>
+<li>harbor未来会通过OCI规范，直接支持chart仓库</li>
+</ul>
+<hr>
+<h2 id="chartmuseum官网"><a href="#chartmuseum官网" class="headerlink" title="chartmuseum官网"></a>chartmuseum官网</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://chartmuseum.com/#Instructions">https://chartmuseum.com/#Instructions</a>  chartmuseum有独立官网</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/helm/chartmuseum">https://github.com/helm/chartmuseum</a>   仓库还是归属于helm</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/chartmuseum">https://github.com/chartmuseum</a>   但也有自已的独立github用户</li>
+</ul>
+<h2 id="harbor中关于chartmuseum的一些线索"><a href="#harbor中关于chartmuseum的一些线索" class="headerlink" title="harbor中关于chartmuseum的一些线索"></a>harbor中关于chartmuseum的一些线索</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/blame/d84b1d07d200f1c64708d420cf9903c207e18b81/make/install.sh#L12">https://github.com/goharbor/harbor/blame/d84b1d07d200f1c64708d420cf9903c207e18b81/make/install.sh#L12</a>    harbor常规方式安装脚本，在3个月前已经移除对chartmuseum的支持</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor-helm/blob/1.11.0/values.yaml">https://github.com/goharbor/harbor-helm/blob/1.11.0/values.yaml</a>   harbor-helm的最新仓库中已经没有chartmuseum的选项，从提交历史上看1.11.0是最后一个包含museum的版本</li>
+<li><a target="_blank" rel="noopener" href="https://goharbor.io/docs/2.5.0/working-with-projects/working-with-images/managing-helm-charts/#manage-helm-charts-with-the-chartmuseum-in-harbor-interface">https://goharbor.io/docs/2.5.0/working-with-projects/working-with-images/managing-helm-charts/#manage-helm-charts-with-the-chartmuseum-in-harbor-interface</a>  直到2.5.0文档中有依然有chartmuseum的介绍(最新2.8.0)</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/issues/18573">https://github.com/goharbor/harbor/issues/18573</a>  官方在2023年4月24日的一个Issue中，解释了抛弃chartmusem的原因，以及整个提案的过程</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/releases/tag/v2.6.0">https://github.com/goharbor/harbor/releases/tag/v2.6.0</a>  最早追溯到2022年8月29日，V2.6.0发版说明中提到了已经准备移除Chartmuseum，V2.8.0将会完成移除</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/discussions/15057">https://github.com/goharbor/harbor/discussions/15057</a>  提案</li>
+</ul>
+<h2 id="harbor版本发布时间梳理"><a href="#harbor版本发布时间梳理" class="headerlink" title="harbor版本发布时间梳理"></a>harbor版本发布时间梳理</h2><ul>
+<li>v2.8.0  2023&#x2F;04</li>
+<li>v2.7.0	2022&#x2F;12</li>
+<li>v2.6.0  2022&#x2F;08</li>
+</ul>
+<hr>
+<h2 id="chartmuseum-docker方式试用"><a href="#chartmuseum-docker方式试用" class="headerlink" title="chartmuseum docker方式试用"></a>chartmuseum docker方式试用</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> -it \</span><br><span class="line">  -p 8080:8080 \</span><br><span class="line">  -e DEBUG=1 \</span><br><span class="line">  -e STORAGE=<span class="built_in">local</span> \</span><br><span class="line">  -e STORAGE_LOCAL_ROOTDIR=/charts \</span><br><span class="line">  -v $(<span class="built_in">pwd</span>)/charts:/charts \</span><br><span class="line">  ghcr.io/helm/chartmuseum:v0.14.0</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>只提供API，没有UI，类似docker-registry</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -493,7 +676,7 @@
     
     <div class="post-body" itemprop="articleBody">
           <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://github.com/juewuy/ShellClash/blob/master/README_CN.md">https://github.com/juewuy/ShellClash/blob/master/README_CN.md</a></p>
-<h2 id="跳板机"><a href="#跳板机" class="headerlink" title="跳板机"></a>跳板机</h2><p>ssh <a href="mailto:&#x72;&#x6f;&#111;&#x74;&#x40;&#49;&#x30;&#46;&#49;&#57;&#x33;&#46;&#51;&#x36;&#x2e;&#51;&#x33;">root@10.193.36.33</a></p>
+<h2 id="跳板机"><a href="#跳板机" class="headerlink" title="跳板机"></a>跳板机</h2><p>ssh <a href="mailto:&#114;&#111;&#111;&#x74;&#x40;&#49;&#x30;&#x2e;&#49;&#x39;&#51;&#x2e;&#51;&#54;&#46;&#x33;&#51;">root@10.193.36.33</a></p>
 <h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 临时开启反向SSH隧道</span></span><br><span class="line">ssh -R 7890:127.0.0.1:7890 root@10.193.36.33</span><br><span class="line"><span class="built_in">export</span> https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=http://127.0.0.1:7890</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线安装ShellClash</span></span><br><span class="line"><span class="built_in">export</span> url=<span class="string">&#x27;https://fastly.jsdelivr.net/gh/juewuy/ShellClash@master&#x27;</span> &amp;&amp; wget -q --no-check-certificate -O /tmp/install.sh <span class="variable">$url</span>/install.sh  &amp;&amp; bash /tmp/install.sh &amp;&amp; <span class="built_in">source</span> /etc/profile &amp;&gt; /dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入机场订阅</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># UI面板</span></span><br><span class="line">http://10.193.36.33:9999/ui</span><br></pre></td></tr></table></figure>
 
 <h2 id="常规代理"><a href="#常规代理" class="headerlink" title="常规代理"></a>常规代理</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> https_proxy=http://10.193.36.33:7890 http_proxy=http://10.193.36.33:7890 all_proxy=http://10.193.36.33:7890</span><br></pre></td></tr></table></figure>
@@ -840,175 +1023,6 @@
 
 
 <h2 id="开启ntp"><a href="#开启ntp" class="headerlink" title="开启ntp"></a>开启ntp</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum install ntp ntpdate -y</span><br><span class="line">systemctl start ntpd.service</span><br><span class="line">systemctl <span class="built_in">enable</span> ntpd.service</span><br><span class="line">ntpstat</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202306/K8S%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202306/K8S%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">K8S常用配置</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-06-01 10:43:22" itemprop="dateCreated datePublished" datetime="2023-06-01T10:43:22+08:00">2023-06-01</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="亲和性"><a href="#亲和性" class="headerlink" title="亲和性"></a>亲和性</h2><p><a target="_blank" rel="noopener" href="https://tachingchen.com/tw/blog/kubernetes-assigning-pod-to-nodes/">https://tachingchen.com/tw/blog/kubernetes-assigning-pod-to-nodes/</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl get nodes --show-labels</span><br><span class="line">kubectl label nodes worker-s001 dubhe/role=middleware</span><br></pre></td></tr></table></figure>
-<p>deploy.yaml:  </p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">affinity:</span></span><br><span class="line">        <span class="attr">nodeAffinity:</span></span><br><span class="line">          <span class="attr">preferredDuringSchedulingIgnoredDuringExecution:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">weight:</span> <span class="number">1</span></span><br><span class="line">              <span class="attr">preference:</span></span><br><span class="line">                <span class="attr">matchExpressions:</span></span><br><span class="line">                  <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">dubhe/role</span></span><br><span class="line">                    <span class="attr">operator:</span> <span class="string">In</span></span><br><span class="line">                    <span class="attr">values:</span></span><br><span class="line">                      <span class="bullet">-</span> <span class="string">middleware</span></span><br></pre></td></tr></table></figure>
-
-
-<h2 id="coredns自定义解析"><a href="#coredns自定义解析" class="headerlink" title="coredns自定义解析"></a>coredns自定义解析</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编辑configmap</span></span><br><span class="line">kubectl -n kube-system edit configmap coredns</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加自定义解析</span></span><br><span class="line">        hosts /etc/coredns/NodeHosts &#123;</span><br><span class="line">          10.193.36.252 harbor.dubhe</span><br><span class="line">          10.193.36.33  gogs.dubhe</span><br><span class="line">          ttl 60</span><br><span class="line">          reload 15s</span><br><span class="line">          fallthrough</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重启coredns的deployment</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202304/kubectl%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202304/kubectl%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">kubectl常用操作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-06-01 10:42:12" itemprop="dateCreated datePublished" datetime="2023-06-01T10:42:12+08:00">2023-06-01</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.ethanshen.cn/kubernetes/kubectl_common.html">https://docs.ethanshen.cn/kubernetes/kubectl_common.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/reference/kubectl/cheatsheet/">https://kubernetes.io/zh-cn/docs/reference/kubectl/cheatsheet/</a></li>
-<li><a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/reference/kubectl/docker-cli-to-kubectl/">https://kubernetes.io/zh-cn/docs/reference/kubectl/docker-cli-to-kubectl/</a></li>
-</ul>
-<h2 id="配置自动补全"><a href="#配置自动补全" class="headerlink" title="配置自动补全"></a>配置自动补全</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># bash</span></span><br><span class="line"><span class="built_in">source</span> &lt;(kubectl completion bash) <span class="comment"># 在 bash 中设置当前 shell 的自动补全，要先安装 bash-completion 包。</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;source &lt;(kubectl completion bash)&quot;</span> &gt;&gt; ~/.bashrc <span class="comment"># 在你的 bash shell 中永久地添加自动补全</span></span><br><span class="line"><span class="comment"># zsh</span></span><br><span class="line"><span class="built_in">source</span> &lt;(kubectl completion zsh)  <span class="comment"># 在 zsh 中设置当前 shell 的自动补全</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;[[ $commands[kubectl] ]] &amp;&amp; source &lt;(kubectl completion zsh)&#x27;</span> &gt;&gt; ~/.zshrc <span class="comment"># 在你的 zsh shell 中永久地添加自动补全</span></span><br><span class="line"><span class="comment"># alias</span></span><br><span class="line"><span class="built_in">alias</span> k=kubectl</span><br><span class="line">complete -o default -F __start_kubectl k</span><br></pre></td></tr></table></figure>
-
-<h2 id="docker转kubectl操作"><a href="#docker转kubectl操作" class="headerlink" title="docker转kubectl操作"></a>docker转kubectl操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 测试容器</span></span><br><span class="line">kubectl run test-postfix --restart=<span class="string">&#x27;Never&#x27;</span> --image postfix:1.1 --<span class="built_in">command</span> -- <span class="built_in">sleep</span> infinity</span><br><span class="line">kubectl <span class="built_in">exec</span> -it test-postfix -- bash</span><br><span class="line">kubectl delete pod test-postfix --force</span><br><span class="line"></span><br><span class="line"><span class="comment"># run</span></span><br><span class="line">docker run -d --restart=always -e DOMAIN=cluster --name nginx-app -p 80:80 nginx</span><br><span class="line">kubectl run --image=nginx nginx-app --port=80 --<span class="built_in">env</span>=<span class="string">&quot;DOMAIN=cluster&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># exec</span></span><br><span class="line">docker <span class="built_in">exec</span> nginx-app <span class="built_in">cat</span> /etc/hostname</span><br><span class="line">kubectl <span class="built_in">exec</span> nginx-app -- <span class="built_in">cat</span> /etc/hostname</span><br><span class="line"></span><br><span class="line"><span class="comment"># exec shell</span></span><br><span class="line">docker <span class="built_in">exec</span> -it nginx-app /bin/sh</span><br><span class="line">kubectl <span class="built_in">exec</span> -it nginx-app -- /bin/sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># log</span></span><br><span class="line">docker logs -f --<span class="built_in">tail</span> 100 nginx-app</span><br><span class="line">kubectl logs -f --<span class="built_in">tail</span> 100 nginx-app</span><br><span class="line"></span><br><span class="line"><span class="comment"># delete</span></span><br><span class="line">docker stop nginx-app &amp;&amp; docker <span class="built_in">rm</span> -f nginx-app</span><br><span class="line">kubectl delete pod nginx-app --force</span><br><span class="line"></span><br><span class="line"><span class="comment"># 复杂run</span></span><br><span class="line">docker run -itd --name redis \</span><br><span class="line">-p 6379:6379 \</span><br><span class="line">-v /tmp/data:/data \</span><br><span class="line">--<span class="built_in">env</span> foo=bar \</span><br><span class="line">redis:5.0.14-alpine --requirepass <span class="string">&quot;123456&quot;</span></span><br><span class="line"></span><br><span class="line">kubectl run test-redis \</span><br><span class="line">--image=redis:5.0.14-alpine \</span><br><span class="line">--restart=Never \</span><br><span class="line">--port=6379 \</span><br><span class="line">--<span class="built_in">env</span>=<span class="string">&quot;foo=bar&quot;</span> \</span><br><span class="line">-- --requirepass <span class="string">&quot;123456&quot;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 命令行</span></span><br><span class="line">kubectl run myterminal --image=busybox:1.28 --restart=Never -- bash</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成pod</span></span><br><span class="line">kubectl run test-pod --image=nginx --restart=Never <span class="comment"># Always/OnFailure/Never</span></span><br><span class="line"><span class="comment"># 创建Job</span></span><br><span class="line">kubectl create job test-job --image=busybox:1.28 -- <span class="built_in">echo</span> <span class="string">&quot;Hello World&quot;</span> </span><br><span class="line"><span class="comment"># 创建Cronjob</span></span><br><span class="line">kubectl create cronjob test-cron --image=busybox:1.28 --schedule=<span class="string">&quot;*/1 * * * *&quot;</span> -- <span class="built_in">echo</span> <span class="string">&quot;Hello World&quot;</span>   </span><br><span class="line"><span class="comment"># 生成deploy</span></span><br><span class="line">kubectl create deployment test-dp --image=nginx --replicas=2</span><br><span class="line"><span class="comment"># 生成svc</span></span><br><span class="line">kubectl expose deployment test-dp --<span class="built_in">type</span>=ClusterIP --port=80 --target-port=8000 --name=test-svc</span><br><span class="line">kubectl delete svc test-svc</span><br><span class="line"><span class="comment"># 生成名称空间</span></span><br><span class="line">kubectl create ns test-ns</span><br><span class="line"><span class="comment"># 生成configmap</span></span><br><span class="line">kubectl create configmap test-cm --from-literal=key1=value1 --from-literal=key2=value2</span><br></pre></td></tr></table></figure>
-
-<h2 id="查看"><a href="#查看" class="headerlink" title="查看"></a>查看</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看所有namespace的pod</span></span><br><span class="line">kubectl get pods -A  <span class="comment"># 或--all-namespaces</span></span><br><span class="line">kubectl get pods test-pod -o wide  <span class="comment"># 展示更多列</span></span><br><span class="line"><span class="comment"># 获取所有deployment</span></span><br><span class="line">kubectl get deployment</span><br><span class="line"><span class="comment"># 查看deployment和servers</span></span><br><span class="line">kubectl get deployment,services</span><br><span class="line"><span class="comment"># 查看pod详情</span></span><br><span class="line">kubectl describe pods test-pod --namespace=default</span><br><span class="line"><span class="comment"># 查看pod日志</span></span><br><span class="line">kubectl logs -f --<span class="built_in">tail</span> 100 test-pod</span><br><span class="line"><span class="comment"># 查看pod环境变量</span></span><br><span class="line">kubectl <span class="built_in">exec</span> test-pod -- <span class="built_in">printenv</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 集群核心组件运行情况</span></span><br><span class="line">kubectl cluster-info</span><br><span class="line"><span class="comment"># 命名空间</span></span><br><span class="line">kubectl get namespaces</span><br><span class="line"><span class="comment"># 版本</span></span><br><span class="line">kubectl version</span><br><span class="line"><span class="comment"># api</span></span><br><span class="line">kubectl api-versions</span><br><span class="line"><span class="comment"># 查看事件</span></span><br><span class="line">kubectl get events</span><br><span class="line"><span class="comment"># 获取全部节点</span></span><br><span class="line">kubectl get nodes</span><br></pre></td></tr></table></figure>
-
-<h2 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建资源</span></span><br><span class="line">kubectl create -f ./nginx.yaml</span><br><span class="line"><span class="comment"># 创建当前目录下的所有yaml资源</span></span><br><span class="line">kubectl create -f ./</span><br><span class="line"><span class="comment"># 使用多个文件创建资源</span></span><br><span class="line">kubectl create -f ./nginx1.yaml -f ./mysql2.yaml</span><br><span class="line"><span class="comment"># 使用目录下的所有文件夹的yaml来创建资源</span></span><br><span class="line">kubectl create -f ./dir</span><br><span class="line"><span class="comment"># 使用 url 来创建资源</span></span><br><span class="line">kubectl create -f https://xxxx/xxx</span><br><span class="line"><span class="comment"># 获取api文档</span></span><br><span class="line">kubectl explain pods</span><br><span class="line">kubectl explain service</span><br></pre></td></tr></table></figure>
-
-<h2 id="伸缩"><a href="#伸缩" class="headerlink" title="伸缩"></a>伸缩</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 自动伸缩</span></span><br><span class="line">kubectl autoscale deployment test-dp --min=2 --max=5</span><br><span class="line"><span class="comment"># 修改副本数</span></span><br><span class="line">kubectl scale --replicas=3 deployment/test-dp</span><br><span class="line"><span class="comment"># 变更多个控制器的数量</span></span><br><span class="line">kubectl scale --replicas=5 rc/foo rc/bar rc/baz</span><br></pre></td></tr></table></figure>
-
-<h2 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 根据yaml删除</span></span><br><span class="line">kubectl delete -f ./pod.yaml</span><br><span class="line"><span class="comment"># 根据名称删除，强制删除</span></span><br><span class="line">kubectl delete pods test-pod --force</span><br></pre></td></tr></table></figure>
-
-<h2 id="交互"><a href="#交互" class="headerlink" title="交互"></a>交互</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 交互式 shell 的方式运行 pod</span></span><br><span class="line">kubectl run -it busybox --image=busybox -- sh</span><br><span class="line">kubectl run -it busybox --image=busybox:1.28 --namespace=dubhe-uat -- sh</span><br><span class="line">kubectl <span class="built_in">exec</span> -it busybox --namespace=dubhe-uat -- sh</span><br><span class="line"><span class="comment"># 在已存在的pod单容器中执行命令</span></span><br><span class="line">kubectl <span class="built_in">exec</span> nginx-pod -- <span class="built_in">ls</span> /</span><br><span class="line"><span class="comment"># 在已存在的pod中的容器执行命令</span></span><br><span class="line">kubectl <span class="built_in">exec</span> nginx-pod -c my-container -- <span class="built_in">ls</span> /</span><br><span class="line"><span class="comment">## 端口转发，本地监听5000</span></span><br><span class="line">kubectl port-forward test-pod 5000:80  </span><br></pre></td></tr></table></figure>
-
-<h2 id="复制文件"><a href="#复制文件" class="headerlink" title="复制文件"></a>复制文件</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="built_in">cp</span> /tmp/foo_dir my-pod:/tmp/bar_dir            <span class="comment"># 将 /tmp/foo_dir 本地目录复制到远程当前命名空间中 Pod 中的 /tmp/bar_dir</span></span><br><span class="line">kubectl <span class="built_in">cp</span> /tmp/foo my-pod:/tmp/bar -c my-container    <span class="comment"># 将 /tmp/foo 本地文件复制到远程 Pod 中特定容器的 /tmp/bar 下</span></span><br><span class="line">kubectl <span class="built_in">cp</span> /tmp/foo my-namespace/my-pod:/tmp/bar       <span class="comment"># 将 /tmp/foo 本地文件复制到远程 “my-namespace” 命名空间内指定 Pod 中的 /tmp/bar</span></span><br><span class="line">kubectl <span class="built_in">cp</span> my-namespace/my-pod:/tmp/foo /tmp/bar       <span class="comment"># 将 /tmp/foo 从远程 Pod 复制到本地 /tmp/bar</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="调度配置"><a href="#调度配置" class="headerlink" title="调度配置"></a>调度配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 标记my-node不可调度</span></span><br><span class="line">kubectl cordon k8s-node</span><br><span class="line"><span class="comment"># 驱逐my-node上的pod以待维护</span></span><br><span class="line">kubectl drain k8s-node</span><br><span class="line"><span class="comment"># 标记my-node可调度</span></span><br><span class="line">kubectl uncordon k8s-node</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="DEBUG"><a href="#DEBUG" class="headerlink" title="DEBUG"></a>DEBUG</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kubectl run -it debug-pod --image=bluexiii/ubuntu:22.04 --image-pull-policy=<span class="string">&#x27;Always&#x27;</span> -n dubhe-dev  -- bash</span><br><span class="line">kubectl run -it chart-update --image=bluexiii/chart-update:latest --image-pull-policy=<span class="string">&#x27;Always&#x27;</span> -n dubhe-dev  -- bash</span><br><span class="line"></span><br><span class="line">kubectl <span class="built_in">exec</span> -it chart-update --namespace=dubhe-dev -- bash</span><br><span class="line">kubectl delete pod chart-update --namespace=dubhe-dev --force</span><br></pre></td></tr></table></figure>
       
     </div>
 
