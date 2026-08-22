@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">282</span>
+          <span class="site-state-item-count">291</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,506 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202606/macOS%E4%B8%8Asyspolicyd%E9%AB%98%E5%8D%A0%E7%94%A8%E6%97%B6%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E4%B8%8ECodex%E6%9C%89%E5%85%B3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202606/macOS%E4%B8%8Asyspolicyd%E9%AB%98%E5%8D%A0%E7%94%A8%E6%97%B6%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E4%B8%8ECodex%E6%9C%89%E5%85%B3/" class="post-title-link" itemprop="url">macOS上syspolicyd高占用时如何判断是否与Codex有关</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-06-22 00:00:00" itemprop="dateCreated datePublished" datetime="2026-06-22T00:00:00+08:00">2026-06-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 21:46:00" itemprop="dateModified" datetime="2026-08-22T21:46:00+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>在macOS上使用Codex桌面端时，如果机器突然变卡，活动监视器里又恰好是<code>syspolicyd</code>或<code>trustd</code>占满CPU，很容易把两件事直接联系起来。不过，<code>syspolicyd</code>本来就是系统安全策略的一部分，应用启动、签名验证以及应用写入的可执行文件都可能触发它。进程同时出现，只能说明值得继续查，还不能证明Codex就是根因。</p>
+<p>我更愿意先做一轮只读检查，确认高占用是否随桌面应用启动和退出而变化，再决定是更新应用、暂时改用CLI，还是继续检查其他刚刚安装或生成的程序。</p>
+<h2 id="先确认是谁在消耗资源"><a href="#先确认是谁在消耗资源" class="headerlink" title="先确认是谁在消耗资源"></a>先确认是谁在消耗资源</h2><p>活动监视器已经足够看出CPU趋势。需要把进程信息留存下来时，可以执行：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps -axo pid,ppid,%cpu,%mem,etime,<span class="built_in">command</span> \</span><br><span class="line">  | grep -E <span class="string">&#x27;[s]yspolicyd|[t]rustd|[C]hatGPT|[C]odex&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>当前的Codex桌面体验位于ChatGPT桌面应用中，旧版本或旧安装中也可能仍然看到<code>Codex.app</code>，因此排查时不要只盯着一个应用名。</p>
+<p>如果<code>syspolicyd</code>持续高占用，再看它打开了多少文件，以及最近打开的对象里有没有反复出现同一路径：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">policy_pid=<span class="string">&quot;<span class="subst">$(pgrep -x syspolicyd | head -n 1)</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ -n <span class="string">&quot;<span class="variable">$policy_pid</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">  <span class="built_in">sudo</span> lsof -nP -p <span class="string">&quot;<span class="variable">$policy_pid</span>&quot;</span> | <span class="built_in">wc</span> -l</span><br><span class="line">  <span class="built_in">sudo</span> lsof -nP -p <span class="string">&quot;<span class="variable">$policy_pid</span>&quot;</span> | <span class="built_in">tail</span> -n 50</span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+
+<p>这里的文件数只能用来判断进程是否异常忙碌，不能拿一个固定阈值直接下结论。真正有价值的是路径是否反复指向ChatGPT、Codex或它刚刚下载、解压、编译出来的可执行文件。</p>
+<p>系统统一日志也能补上时间线：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/log show --last 10m --style compact \</span><br><span class="line">  --predicate <span class="string">&#x27;process == &quot;syspolicyd&quot; OR process == &quot;trustd&quot;&#x27;</span> \</span><br><span class="line">  | <span class="built_in">tail</span> -n 100</span><br></pre></td></tr></table></figure>
+
+<p>日志可能隐去部分路径，也可能夹杂其他应用的安全检查。重点看高占用开始前后是否重复出现同一签名、同一目录或同一类校验失败，不要因为看到<code>syspolicyd</code>字样就认定已经找到了原因。</p>
+<h2 id="用退出前后的变化判断关联"><a href="#用退出前后的变化判断关联" class="headerlink" title="用退出前后的变化判断关联"></a>用退出前后的变化判断关联</h2><p>如果卡顿仍在发生，先保存正在进行的工作，再从菜单正常退出ChatGPT桌面应用。旧版独立Codex应用同样应当正常退出，而不是用模糊的<code>pkill -f</code>一次结束所有名称相近的进程。</p>
+<p>退出后重新执行前面的<code>ps</code>和<code>lsof</code>检查，观察一两分钟：</p>
+<ul>
+<li>应用退出后，<code>syspolicyd</code>占用很快下降，且多次发生时都能重复看到相同变化，说明两者关联较强。</li>
+<li>应用已经退出，高占用却没有变化，日志和打开文件也指向别的路径，应当继续检查最近安装、更新或生成的程序。</li>
+<li>只有一次时间上的重合，没有路径或重复现象支撑，最多只能记为怀疑对象。</li>
+</ul>
+<p>这一步仍然不能回答是桌面应用自身、应用调用的工具，还是项目里刚生成的二进制文件触发了检查，但至少可以避免一开始就修改系统安全配置。</p>
+<h2 id="恢复时先动应用，不动系统安全服务"><a href="#恢复时先动应用，不动系统安全服务" class="headerlink" title="恢复时先动应用，不动系统安全服务"></a>恢复时先动应用，不动系统安全服务</h2><p>如果退出桌面应用后系统恢复正常，先不要急着重新打开。可以从官方渠道更新或重新安装ChatGPT桌面应用，重启macOS后再观察。系统服务已经长时间无响应时，重启也比强制结束<code>syspolicyd</code>、<code>trustd</code>更稳妥。</p>
+<p>桌面端暂时不能使用时，可以改用Codex CLI继续工作：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">codex --version</span><br><span class="line">codex</span><br></pre></td></tr></table></figure>
+
+<p>CLI是独立入口，但并不意味着它一定绕过所有系统检查。如果任务会下载工具、运行浏览器或生成新的可执行文件，仍然可能触发Gatekeeper。它在这里只是缩小变量的临时替代方案，不是对问题原因的证明。</p>
+<p>不建议为了消除高占用去关闭Gatekeeper或SIP，也不要删除<code>/var/db/SystemPolicy</code>下的数据库。它们会扩大安全风险，还会破坏现场信息；即使负载暂时下降，也无法说明原来的触发对象是什么。清理Codex会话或本地缓存同样不是直接修复，除非日志和打开文件已经明确指向其中的具体损坏文件。</p>
+<h2 id="更新后检查应用本身"><a href="#更新后检查应用本身" class="headerlink" title="更新后检查应用本身"></a>更新后检查应用本身</h2><p>系统恢复后，可以先记录macOS、CPU架构和应用版本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sw_vers</span><br><span class="line"><span class="built_in">uname</span> -m</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> app <span class="keyword">in</span> /Applications/ChatGPT.app /Applications/Codex.app; <span class="keyword">do</span></span><br><span class="line">  [ -d <span class="string">&quot;<span class="variable">$app</span>&quot;</span> ] || <span class="built_in">continue</span></span><br><span class="line">  <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$app</span>&quot;</span></span><br><span class="line">  defaults <span class="built_in">read</span> <span class="string">&quot;<span class="variable">$app</span>/Contents/Info&quot;</span> CFBundleShortVersionString</span><br><span class="line">  defaults <span class="built_in">read</span> <span class="string">&quot;<span class="variable">$app</span>/Contents/Info&quot;</span> CFBundleVersion</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<p>再让系统评估一次应用是否能正常执行：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">spctl --assess --<span class="built_in">type</span> execute --verbose=4 /Applications/ChatGPT.app</span><br></pre></td></tr></table></figure>
+
+<p>这条命令本身会发起安全评估，应当在系统已经稳定时运行。如果实际安装的是旧版<code>Codex.app</code>，把路径换成对应应用即可。评估失败时，优先从官方渠道重新下载；不要用移除隔离属性、临时签名或全局关闭安全检查来掩盖失败。</p>
+<p>如果问题仍能重复出现，提交反馈时附上macOS版本、芯片架构、应用版本、出现与恢复时间，以及脱敏后的进程快照和日志片段。项目路径、用户名、对话内容和凭据不需要跟着日志一起公开。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://support.apple.com/guide/security/gatekeeper-and-runtime-protection-sec5599b66df/web">Apple：Gatekeeper and runtime protection in macOS</a></li>
+<li><a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/app">ChatGPT桌面应用</a></li>
+<li><a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/reference/troubleshooting">ChatGPT桌面应用故障排查</a></li>
+<li><a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/codex/cli">Codex CLI</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202605/%E6%88%91%E7%9A%84Obsidian%E7%9F%A5%E8%AF%86%E5%BA%93%E6%98%AF%E6%80%8E%E6%A0%B7%E7%BB%84%E7%BB%87%E7%9A%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202605/%E6%88%91%E7%9A%84Obsidian%E7%9F%A5%E8%AF%86%E5%BA%93%E6%98%AF%E6%80%8E%E6%A0%B7%E7%BB%84%E7%BB%87%E7%9A%84/" class="post-title-link" itemprop="url">我的Obsidian知识库是怎样组织的</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-05-30 00:00:00" itemprop="dateCreated datePublished" datetime="2026-05-30T00:00:00+08:00">2026-05-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 22:10:00" itemprop="dateModified" datetime="2026-08-22T22:10:00+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>很多年前我用Markdown加同步盘管理个人文档，当时最看重的是纯文本、可以随时更换编辑器，也不会被某个云笔记服务锁住。后来编辑器换成Obsidian，同步方式和目录也调整了几轮，但这个出发点一直没变。</p>
+<p>现在这套知识库仍然只是一组本地Markdown文件。Obsidian负责编辑、搜索、双链和Base视图，同步工具负责多设备传输，Git负责留下可回退的版本。三者各做一件事，比把所有希望都压在某个插件上稳定得多。</p>
+<h2 id="目录按内容处境划分"><a href="#目录按内容处境划分" class="headerlink" title="目录按内容处境划分"></a>目录按内容处境划分</h2><p>目前根目录保持为七个入口：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">00.Inbox/       临时收集和待整理内容</span><br><span class="line">10.Notes/       长期保留的主题笔记</span><br><span class="line">20.Projects/    项目、任务和阶段资料</span><br><span class="line">30.Areas/       需要持续维护的领域</span><br><span class="line">40.Resources/   摘录、提示词和可复用材料</span><br><span class="line">50.Archive/     已结束或低频查阅的资料</span><br><span class="line">99.Assets/      PDF和通用附件</span><br></pre></td></tr></table></figure>
+
+<p>编号只是为了让顺序稳定，真正有用的是每个目录回答的问题不同。</p>
+<p>项目中的会议记录、环境差异和处理过程会留在<code>20.Projects</code>，因为离开项目上下文后很容易被误解。经过复盘、能够跨项目复用的内容，才整理到<code>10.Notes</code>。已经结束的资料移入<code>50.Archive</code>，但默认不大规模重写，保留当时的背景比追求整齐更重要。</p>
+<p><code>00.Inbox</code>也不是永久仓库。临时内容先放进去没有问题，但有价值的部分最终要么进入长期笔记，要么回到项目，要么明确删除。否则它只会变成另一个名字更好听的下载目录。</p>
+<h2 id="索引页比无限细分目录更好用"><a href="#索引页比无限细分目录更好用" class="headerlink" title="索引页比无限细分目录更好用"></a>索引页比无限细分目录更好用</h2><p>技术笔记按大主题保留一层目录，每个主题增加一个很短的索引页。例如一个索引通常只有这些内容：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">type: note</span><br><span class="line">status: stable</span><br><span class="line">topic: 网络</span><br><span class="line">tags:</span><br><span class="line"><span class="section">  - moc</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line"><span class="section"># 网络索引</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 常用入口</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> [[路由与转发]]</span><br><span class="line"><span class="bullet">-</span> [[防火墙]]</span><br><span class="line"><span class="bullet">-</span> [[隧道工具]]</span><br></pre></td></tr></table></figure>
+
+<p>索引页承担人工导航，能写清楚一组笔记为什么放在一起；Obsidian的Base则负责按属性动态筛选。两者不是替代关系：Base适合看“所有进行中的项目”，索引更适合进入某个主题时看到经过选择的入口。</p>
+<p>这也避免了一个老问题：为了表达所有关系，不断增加目录层级。一篇笔记可能同时与网络、容器和安全有关，文件只能放在一个位置，但索引和双链可以从多个主题指向它。</p>
+<h2 id="front-matter只保留会用到的字段"><a href="#front-matter只保留会用到的字段" class="headerlink" title="front-matter只保留会用到的字段"></a>front-matter只保留会用到的字段</h2><p>Obsidian的Properties最终仍然存成文件顶部的YAML。我的常用字段是：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">type:</span> <span class="string">note</span></span><br><span class="line"><span class="attr">status:</span> <span class="string">stable</span></span><br><span class="line"><span class="attr">created:</span> <span class="number">2026-05-30</span></span><br><span class="line"><span class="attr">updated:</span> <span class="number">2026-08-22</span></span><br><span class="line"><span class="attr">topic:</span> <span class="string">知识管理</span></span><br><span class="line"><span class="attr">tags:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">obsidian</span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
+
+<p>不同目录只增加确实需要的字段：项目资料使用<code>project</code>，领域资料使用<code>area</code>，长期笔记和资源使用<code>topic</code>。<code>status</code>也只保留少量固定值，例如<code>draft</code>、<code>active</code>、<code>stable</code>、<code>reference</code>和<code>archived</code>。</p>
+<p>我没有给所有历史文件一次性补满属性。属性只有在搜索、Base过滤或维护规则中真正使用时才有价值；为了“看起来结构化”增加十几个长期为空的字段，只会让写笔记变慢。</p>
+<h2 id="链接先解决导航，不追求一张完美的图"><a href="#链接先解决导航，不追求一张完美的图" class="headerlink" title="链接先解决导航，不追求一张完美的图"></a>链接先解决导航，不追求一张完美的图</h2><p>重要主题会建立索引，相关笔记之间再补少量带说明的链接。相比在每篇文章末尾堆一串标题，我更愿意说明关系：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">## 相关笔记</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> [[WireGuard配置]]：这条隧道承载的内层协议。</span><br><span class="line"><span class="bullet">-</span> [[RouterOS防火墙]]：公网入口和转发规则。</span><br></pre></td></tr></table></figure>
+
+<p>反向链接和关系图可以帮助发现遗漏，但不会自动产生知识结构。两个文件互相链接，只说明它们有关；链接旁边为什么相关，才是以后重新找到它时最有用的信息。</p>
+<p>移动或重命名文件时，我让Obsidian自动更新内部链接。批量调整目录仍然会单独提交一次Git，这样外部Markdown链接、脚本引用或同步冲突出问题时还能看清改了什么。</p>
+<h2 id="附件没有只用一种规则"><a href="#附件没有只用一种规则" class="headerlink" title="附件没有只用一种规则"></a>附件没有只用一种规则</h2><p>通用建议通常是把所有附件集中到一个目录，我后来发现这不适合所有情况。现在图片优先放在笔记同目录的<code>assets/</code>子目录，移动整组笔记时正文和截图可以一起带走：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">某篇笔记.md</span><br><span class="line">assets/</span><br><span class="line">  某篇笔记-截图.png</span><br></pre></td></tr></table></figure>
+
+<p>PDF放进<code>99.Assets/pdfs/</code>，其他跨主题使用的文件放进<code>99.Assets/files/</code>。旧笔记中的历史附件不批量迁移，因为一次移动几百个文件带来的断链风险，通常大于目录变整齐的收益。</p>
+<p>Obsidian支持把新附件放到当前文件旁的子目录，可以在“设置→文件与链接→新附件的默认位置”中配置。无论采用哪种规则，最好在大量粘贴截图之前确定下来。</p>
+<h2 id="同步不是版本历史"><a href="#同步不是版本历史" class="headerlink" title="同步不是版本历史"></a>同步不是版本历史</h2><p>这套知识库日常通过同步工具在设备之间传输，Git只做版本保险。同步可以让几台设备看到同一份最新文件，也会很快传播误删和错误覆盖；Git则用来查看差异、恢复文件和确认一次整理到底改了哪些内容。</p>
+<p>我的日常顺序是先等同步完成，再开始编辑；一组相关整理完成后提交一次Git。多台设备同时修改同一文件时，先处理同步冲突，不在冲突未解决时继续批量提交。</p>
+<p><code>.obsidian</code>也不需要全收或全丢。插件列表、主题、快捷键等可复现配置可以纳入版本管理，<code>workspace.json</code>和移动端工作区这类界面状态则忽略。大附件是否进入Git要单独考虑，不能因为Markdown文件很小，就假设整个知识库永远适合普通Git仓库。</p>
+<h2 id="给自动化工具留一份维护约定"><a href="#给自动化工具留一份维护约定" class="headerlink" title="给自动化工具留一份维护约定"></a>给自动化工具留一份维护约定</h2><p>知识库开始由脚本或AI辅助整理以后，我在根目录增加了<code>AGENTS.md</code>。它不负责介绍知识内容，只约束维护动作：</p>
+<ul>
+<li>不随意删除、移动或合并原始笔记。</li>
+<li>大规模调整前先说明范围，小步修改并保留Git差异。</li>
+<li>敏感笔记只整理结构，不主动摘要到更公开的位置。</li>
+<li>重复内容先建立索引和关联，再决定是否合并。</li>
+<li>不强行为所有文件补标签和front-matter。</li>
+</ul>
+<p>这份约定比一段临时提示词更可靠。工具换了以后，新工具仍然可以先读同一个文件，了解哪些内容允许修改、哪些操作必须停下来确认。</p>
+<h2 id="我没有采用的做法"><a href="#我没有采用的做法" class="headerlink" title="我没有采用的做法"></a>我没有采用的做法</h2><p>我没有把Daily Note作为所有内容的最终归宿，也没有安装大量插件来替代目录和文件名。当前真正离不开的仍然是文件浏览、全局搜索、快速切换、Properties、反向链接和Bases等基础能力。</p>
+<p>模板也保持很少。新文件只带日期、类型和状态，正文结构按内容决定。部署记录、故障排查、项目过程和资料摘录本来就不应该长成同一个样子。</p>
+<p>知识库规模变大以后，稳定来自几个很普通的习惯：文件仍然可以脱离Obsidian阅读，目录变化可回退，索引有人维护，敏感内容不会因为自动整理跑到错误的位置。其他功能都可以等确实遇到问题时再增加。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://obsidian.md/help/properties">Obsidian Properties</a></li>
+<li><a target="_blank" rel="noopener" href="https://obsidian.md/help/bases">Obsidian Bases</a></li>
+<li><a target="_blank" rel="noopener" href="https://obsidian.md/help/attachments">Obsidian附件管理</a></li>
+<li><a target="_blank" rel="noopener" href="https://help.obsidian.md/Obsidian%20Sync/Security%20and%20privacy">Obsidian Sync安全与隐私</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202605/HermesAgent%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81Profile%E4%B8%8E%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202605/HermesAgent%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81Profile%E4%B8%8E%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/" class="post-title-link" itemprop="url">Hermes Agent的安装、Profile与日常运维</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-05-21 00:00:00" itemprop="dateCreated datePublished" datetime="2026-05-21T00:00:00+08:00">2026-05-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 22:10:00" itemprop="dateModified" datetime="2026-08-22T22:10:00+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>Hermes Agent既可以在终端里交互，也可以通过Dashboard和消息网关长期运行。我最初把安装、WebUI、机器人接入和多Agent配置混在一起，真正维护起来以后，最值得固定的是官方CLI和Profile：前者负责安装与诊断，后者把模型、密钥、记忆和会话分开。</p>
+<p>这套配置基于Linux主机。第三方WebUI和直接修改Python依赖包的临时补丁没有纳入日常方案，官方Dashboard已经能够管理多个Profile，升级时也更容易保持一致。</p>
+<h2 id="安装与首次配置"><a href="#安装与首次配置" class="headerlink" title="安装与首次配置"></a>安装与首次配置</h2><p>官方提供了一键安装脚本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash</span><br></pre></td></tr></table></figure>
+
+<p>安装完成后运行设置向导，再分别确认模型和工具：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hermes setup</span><br><span class="line">hermes model</span><br><span class="line">hermes tools</span><br><span class="line">hermes doctor</span><br></pre></td></tr></table></figure>
+
+<p><code>hermes setup</code>负责完整初始化，<code>hermes model</code>适合后来单独切换提供商或模型，<code>hermes doctor</code>用于检查配置和运行环境。APIKey、机器人Token和自定义服务地址都属于凭据，不应直接写进Shell历史、博客或Profile说明文件。</p>
+<p>日常使用主要是这些命令：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hermes                  <span class="comment"># 进入交互界面</span></span><br><span class="line">hermes --tui            <span class="comment"># 使用TUI</span></span><br><span class="line">hermes chat -q <span class="string">&quot;Hello&quot;</span> <span class="comment"># 单次提问</span></span><br><span class="line">hermes update           <span class="comment"># 更新Hermes</span></span><br><span class="line">hermes doctor           <span class="comment"># 更新后重新诊断</span></span><br></pre></td></tr></table></figure>
+
+<p>交互会话里常用<code>/model</code>切换模型、<code>/tools</code>查看工具、<code>/status</code>查看当前Profile和上下文、<code>/sessions</code>恢复历史会话。配置变更后最好开启新会话，避免旧会话继续带着修改前的状态。</p>
+<h2 id="用Profile隔离不同用途"><a href="#用Profile隔离不同用途" class="headerlink" title="用Profile隔离不同用途"></a>用Profile隔离不同用途</h2><p>Profile不是一个提示词别名，而是一套独立的Hermes主目录。每个Profile都有自己的<code>config.yaml</code>、<code>.env</code>、<code>SOUL.md</code>、技能、记忆、会话和网关状态。</p>
+<p>创建一个研究Profile：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hermes profile create research</span><br><span class="line">research setup</span><br><span class="line">research doctor</span><br></pre></td></tr></table></figure>
+
+<p>创建时会同时生成<code>research</code>命令别名，它等价于显式指定Profile：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">research chat</span><br><span class="line">hermes -p research chat</span><br></pre></td></tr></table></figure>
+
+<p>需要临时把它设为默认入口时使用：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hermes profile use research</span><br><span class="line">hermes profile use default</span><br></pre></td></tr></table></figure>
+
+<p>我会把知识库整理、技术简报、代码辅助和深度研究拆成不同Profile。拆分的理由不是角色名称听起来更专业，而是避免记忆、技能和密钥互相污染。两个Agent进程也不要同时使用同一个Profile目录，它们会共同写入状态和记忆。</p>
+<p>Profile同样不等于文件系统沙箱。<code>SOUL.md</code>里写“只访问某个目录”只是行为说明，不能限制进程权限。需要固定命令起始位置时，应明确设置<code>terminal.cwd</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">research config <span class="built_in">set</span> terminal.cwd /srv/hermes/workspace</span><br></pre></td></tr></table></figure>
+
+<p>真正需要隔离时，还要使用独立系统用户、容器或受限执行环境，不能把Profile当作权限边界。</p>
+<h2 id="克隆Profile时小心凭据"><a href="#克隆Profile时小心凭据" class="headerlink" title="克隆Profile时小心凭据"></a>克隆Profile时小心凭据</h2><p><code>--clone</code>可以复制现有Profile的配置、<code>.env</code>、<code>SOUL.md</code>和技能：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes profile create writer --clone-from default</span><br></pre></td></tr></table></figure>
+
+<p>这很方便，也意味着原Profile里的APIKey和机器人Token会一起复制。克隆后应立即检查新Profile的环境文件，删除不需要的凭据；如果两个Profile分别运行消息网关，还要给它们配置不同的机器人Token。</p>
+<p>当前Hermes会对多个Profile复用同一消息平台Token进行锁定，避免两个Long Polling进程争抢消息。即便如此，也不能把Token共享当成正常配置。每个对外身份对应一个Profile，问题会少很多。</p>
+<p>Profile可以导出为本地归档：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes profile <span class="built_in">export</span> research -o research-backup.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p>归档里可能包含<code>.env</code>、会话和记忆，应按密钥备份对待，不要发送到公共网盘或提交到代码仓库。</p>
+<h2 id="Dashboard保持本机监听"><a href="#Dashboard保持本机监听" class="headerlink" title="Dashboard保持本机监听"></a>Dashboard保持本机监听</h2><p>启动官方Dashboard：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes dashboard</span><br></pre></td></tr></table></figure>
+
+<p>默认地址是<code>http://127.0.0.1:9119</code>，可以在侧边栏切换并管理不同Profile，不需要为每个Profile再启动一套第三方WebUI。远程使用时，我更倾向于保留回环监听，通过SSH转发：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -L 9119:127.0.0.1:9119 user@192.0.2.10</span><br></pre></td></tr></table></figure>
+
+<p>然后在本机浏览器打开<code>http://127.0.0.1:9119</code>。</p>
+<p>旧配置中常见的<code>--host 0.0.0.0 --insecure</code>已经不适合作为无认证远程入口。Hermes在2026年6月强化了Dashboard认证：非回环地址会强制启用认证门，<code>--insecure</code>只为兼容旧命令而保留，不再关闭认证。即便配置了用户名和密码，也应优先放在HTTPS、VPN或SSH隧道之后。</p>
+<h2 id="消息网关按Profile管理"><a href="#消息网关按Profile管理" class="headerlink" title="消息网关按Profile管理"></a>消息网关按Profile管理</h2><p>每个Profile的网关是独立进程，可以单独安装、启动和排查：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">research gateway install</span><br><span class="line">research gateway start</span><br><span class="line">research gateway status</span><br><span class="line">research gateway restart</span><br><span class="line"></span><br><span class="line">hermes gateway list</span><br></pre></td></tr></table></figure>
+
+<p>消息平台的允许名单、群组策略和Token保存在Profile自己的配置和<code>.env</code>中。接入完成后至少检查两件事：未授权的私聊或群组不能触发Agent；日志和诊断输出不能回显完整Token。</p>
+<p>停用某个平台时，不仅要停止网关，还要撤销配对并删除对应凭据：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hermes pairing list</span><br><span class="line">hermes pairing revoke &lt;platform&gt; &lt;pairing-id&gt;</span><br><span class="line">research gateway restart</span><br></pre></td></tr></table></figure>
+
+<p>平台侧仍然有效的Token也应在平台控制台撤销或轮换，只删除本机文件并不能让泄露的Token失效。</p>
+<h2 id="更新、诊断与临时补丁"><a href="#更新、诊断与临时补丁" class="headerlink" title="更新、诊断与临时补丁"></a>更新、诊断与临时补丁</h2><p>更新顺序保持简单：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hermes update</span><br><span class="line">hermes doctor</span><br><span class="line">hermes profile list</span><br><span class="line">hermes gateway list</span><br></pre></td></tr></table></figure>
+
+<p>然后分别打开常用Profile的新会话，确认模型、工具和工作目录。网关正在运行时，还要检查它是否仍由对应Profile启动。</p>
+<p>我曾记录过直接修改Hermes虚拟环境中OpenAI SDK解析代码的办法，用来绕过流式响应末尾<code>output: null</code>的问题。这种补丁会在升级后丢失，也可能掩盖上游已经修复或改变的数据结构，因此不再作为常规操作。遇到类似问题，优先更新Hermes和依赖、保留错误日志并核对官方Issue；确实必须临时修改时，也应保存补丁文件和版本信息，而不是只改<code>site-packages</code>。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/reference/cli-commands">Hermes Agent CLI命令</a></li>
+<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/user-guide/profiles/">Hermes Agent Profiles</a></li>
+<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/user-guide/features/web-dashboard">Hermes Agent Web Dashboard</a></li>
+<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/user-guide/multi-profile-gateways">Hermes Agent多Profile网关</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202604/ComfyUI%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E4%B8%8E%E6%A8%A1%E5%9E%8B%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202604/ComfyUI%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E4%B8%8E%E6%A8%A1%E5%9E%8B%E7%AE%A1%E7%90%86/" class="post-title-link" itemprop="url">ComfyUI的安装、远程访问与模型管理</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-04-23 00:00:00" itemprop="dateCreated datePublished" datetime="2026-04-23T00:00:00+08:00">2026-04-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 22:10:00" itemprop="dateModified" datetime="2026-08-22T22:10:00+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>我把ComfyUI装在一台带GPU的Linux主机上，浏览器从另一台电脑访问。安装本身不复杂，容易留下问题的是远程监听：直接让ComfyUI暴露在局域网甚至公网，模型、工作流和生成结果都会跟着暴露。</p>
+<p>最后的结构是ComfyUI只监听本机回环地址，Nginx再提供一个带认证的入口；跨网络访问时继续套SSH隧道或VPN，不直接开放ComfyUI端口。</p>
+<h2 id="用comfy-cli安装"><a href="#用comfy-cli安装" class="headerlink" title="用comfy-cli安装"></a>用comfy-cli安装</h2><p>官方的<code>comfy-cli</code>可以管理安装、启动、更新、模型和自定义节点。单独创建Python环境，避免和其他推理项目互相污染：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">conda create -n comfy-env python=3.11 -y</span><br><span class="line">conda activate comfy-env</span><br><span class="line"></span><br><span class="line">python -m pip install --upgrade comfy-cli</span><br><span class="line">comfy --install-completion</span><br><span class="line">comfy install</span><br></pre></td></tr></table></figure>
+
+<p>ComfyUI还需要与显卡匹配的CUDA、ROCm或其他运行时。<code>comfy install</code>成功并不代表GPU环境一定正确，首次启动后仍要看终端里识别到的设备和PyTorch后端。</p>
+<p>先让服务只监听回环地址：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">conda activate comfy-env</span><br><span class="line">comfy launch -- --listen 127.0.0.1 --port 8189</span><br></pre></td></tr></table></figure>
+
+<p>这里传给ComfyUI本身的参数放在<code>--</code>之后。使用回环地址监听以后，即使Nginx配置出错，8189端口也不会直接出现在其他主机上。</p>
+<h2 id="用Nginx增加访问入口"><a href="#用Nginx增加访问入口" class="headerlink" title="用Nginx增加访问入口"></a>用Nginx增加访问入口</h2><p>Basic Auth适合给内网或SSH隧道再加一道门槛，但它本身不加密密码。下面仍然只让Nginx监听回环地址：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt update</span><br><span class="line"><span class="built_in">sudo</span> apt install -y nginx apache2-utils</span><br><span class="line"><span class="built_in">sudo</span> htpasswd -c /etc/nginx/.comfyui_htpasswd comfyuser</span><br></pre></td></tr></table></figure>
+
+<p>创建<code>/etc/nginx/sites-available/comfyui</code>：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">listen</span> <span class="number">127.0.0.1:8188</span>;</span><br><span class="line">    <span class="attribute">server_name</span> localhost;</span><br><span class="line"></span><br><span class="line">    <span class="attribute">client_max_body_size</span> <span class="number">200M</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attribute">auth_basic</span> <span class="string">&quot;ComfyUI&quot;</span>;</span><br><span class="line">    <span class="attribute">auth_basic_user_file</span> /etc/nginx/.comfyui_htpasswd;</span><br><span class="line"></span><br><span class="line">    <span class="section">location</span> / &#123;</span><br><span class="line">        <span class="attribute">proxy_pass</span> http://127.0.0.1:8189;</span><br><span class="line">        <span class="attribute">proxy_http_version</span> <span class="number">1</span>.<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="attribute">proxy_set_header</span> Upgrade <span class="variable">$http_upgrade</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> Connection <span class="string">&quot;upgrade&quot;</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> Host <span class="variable">$host</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> X-Real-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line"></span><br><span class="line">        <span class="attribute">proxy_read_timeout</span> <span class="number">3600</span>;</span><br><span class="line">        <span class="attribute">proxy_send_timeout</span> <span class="number">3600</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ComfyUI的队列和进度更新会使用WebSocket，因此<code>Upgrade</code>和<code>Connection</code>这两项不能省略。启用站点前先检查配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">ln</span> -s /etc/nginx/sites-available/comfyui \</span><br><span class="line">  /etc/nginx/sites-enabled/comfyui</span><br><span class="line"><span class="built_in">sudo</span> nginx -t</span><br><span class="line"><span class="built_in">sudo</span> systemctl reload nginx</span><br></pre></td></tr></table></figure>
+
+<p>从自己的电脑建立SSH隧道：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -L 8188:127.0.0.1:8188 user@192.0.2.10</span><br></pre></td></tr></table></figure>
+
+<p>浏览器随后访问<code>http://127.0.0.1:8188</code>。如果改成局域网监听，应同时用主机防火墙限制来源；需要公网访问则应配置HTTPS或放在可信VPN之后，不能只依赖明文Basic Auth。</p>
+<h2 id="模型放在哪里"><a href="#模型放在哪里" class="headerlink" title="模型放在哪里"></a>模型放在哪里</h2><p>ComfyUI会按模型用途读取不同目录，下载前要先看工作流中节点需要的类型。完整Checkpoint通常放在<code>models/checkpoints</code>，VAE、LoRA、文本编码器和扩散模型分别有自己的目录，不能只看扩展名全部堆到一起。</p>
+<p><code>comfy-cli</code>可以直接按URL下载到相对目录：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">comfy model download \</span><br><span class="line">  --url <span class="string">&#x27;https://example.com/model.safetensors&#x27;</span> \</span><br><span class="line">  --relative-path models/checkpoints</span><br></pre></td></tr></table></figure>
+
+<p>从Hugging Face只取仓库里的单个文件时，<code>hf</code>命令更方便：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">python -m pip install --upgrade <span class="string">&#x27;huggingface_hub[cli]&#x27;</span> hf_xet</span><br><span class="line"></span><br><span class="line">hf download Comfy-Org/Qwen-Image_ComfyUI \</span><br><span class="line">  split_files/vae/qwen_image_vae.safetensors \</span><br><span class="line">  --local-dir ./hf-models</span><br></pre></td></tr></table></figure>
+
+<p>先下载到临时目录，再移动到对应模型目录，可以避免中途失败留下一个看起来正常、实际不完整的文件。模型来源只使用作者仓库、Hugging Face等可追溯页面，不使用带提取码的二次打包资源。</p>
+<p>如果多个ComfyUI实例需要共享模型，不必复制几份。官方支持在ComfyUI根目录创建<code>extra_model_paths.yaml</code>，从外部目录增加搜索路径：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">shared_models:</span></span><br><span class="line">  <span class="attr">base_path:</span> <span class="string">/srv/ai-models</span></span><br><span class="line">  <span class="attr">checkpoints:</span> <span class="string">checkpoints</span></span><br><span class="line">  <span class="attr">vae:</span> <span class="string">vae</span></span><br><span class="line">  <span class="attr">loras:</span> <span class="string">loras</span></span><br><span class="line">  <span class="attr">diffusion_models:</span> <span class="string">diffusion_models</span></span><br><span class="line">  <span class="attr">text_encoders:</span> <span class="string">text_encoders</span></span><br></pre></td></tr></table></figure>
+
+<p>路径调整后要重启ComfyUI。某个模型在节点下拉框里消失时，先检查它是否放对目录，以及YAML缩进和实际文件权限，不要立刻重新下载。</p>
+<h2 id="查看safetensors元数据"><a href="#查看safetensors元数据" class="headerlink" title="查看safetensors元数据"></a>查看safetensors元数据</h2><p>模型文件名经常被改过，只凭名称很难判断来源和用途。safetensors文件如果带有元数据，可以在CPU上读取，不需要把权重加载进显存：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> safetensors <span class="keyword">import</span> safe_open</span><br><span class="line"></span><br><span class="line">model_path = <span class="string">&quot;./model.safetensors&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> safe_open(model_path, framework=<span class="string">&quot;pt&quot;</span>, device=<span class="string">&quot;cpu&quot;</span>) <span class="keyword">as</span> model:</span><br><span class="line">    <span class="built_in">print</span>(model.metadata())</span><br><span class="line">    keys = <span class="built_in">list</span>(model.keys())</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;tensor count:&quot;</span>, <span class="built_in">len</span>(keys))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;first keys:&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> keys[:<span class="number">20</span>]:</span><br><span class="line">        <span class="built_in">print</span>(key)</span><br></pre></td></tr></table></figure>
+
+<p>元数据可能为空，也不能单独证明文件安全或模型来源可靠；它只是在模型无法识别时多提供一条线索。</p>
+<h2 id="更新前留一份可回退状态"><a href="#更新前留一份可回退状态" class="headerlink" title="更新前留一份可回退状态"></a>更新前留一份可回退状态</h2><p>ComfyUI和自定义节点更新频繁，工作流失效往往不是主程序单独造成的。<code>comfy-cli</code>支持快照和更新，操作前先看当前命令帮助，记录核心版本、自定义节点和Python环境，再逐项升级。不要在同一次变更里同时更新ComfyUI、PyTorch、显卡驱动和全部节点，否则出问题后很难确认是哪一层发生变化。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.comfy.org/comfy-cli/getting-started">ComfyUI CLI入门</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.comfy.org/installation/manual_install">ComfyUI手工安装</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.comfy.org/troubleshooting/model-issues">ComfyUI模型问题排查</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -260,8 +760,8 @@
 <thead>
 <tr>
 <th>模型</th>
-<th align="right"><a href="mailto:&#x6d;&#65;&#x50;&#64;&#x30;&#46;&#53;">mAP@0.5</a></th>
-<th align="right"><a href="mailto:&#109;&#65;&#80;&#x40;&#48;&#46;&#53;">mAP@0.5</a>:0.95</th>
+<th align="right"><a href="mailto:&#x6d;&#x41;&#x50;&#64;&#48;&#46;&#x35;">mAP@0.5</a></th>
+<th align="right"><a href="mailto:&#109;&#x41;&#x50;&#64;&#x30;&#x2e;&#53;">mAP@0.5</a>:0.95</th>
 <th align="right">Precision</th>
 <th align="right">Recall</th>
 <th align="right">F1</th>
@@ -320,7 +820,7 @@
 <td align="right">86.6</td>
 </tr>
 </tbody></table>
-<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的<a href="mailto:&#109;&#65;&#80;&#x40;&#48;&#46;&#53;">mAP@0.5</a>为0.9242，比F16低0.0198；F1只低0.0028。</p>
+<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的<a href="mailto:&#x6d;&#65;&#x50;&#x40;&#48;&#46;&#53;">mAP@0.5</a>为0.9242，比F16低0.0198；F1只低0.0028。</p>
 <p>方案A和方案B对应两次混精度调整，但当时没有把具体qtable差异记录下来，无法从结果反推出是哪几层带来了改善。自动pattern与方案B得到相同精度，说明在这个模型上没有必要仅为了“手工调过”而保留更复杂的配置。</p>
 <p>现有结果足以支持继续使用F16，并把INT8作为有条件的优化选项。真正上线INT8之前，还需要在目标板卡上用真实图片复查预处理、后处理和检测结果；这部分当时没有完成，不能把转换成功直接当成部署验证通过。</p>
 
@@ -475,8 +975,8 @@
 <thead>
 <tr>
 <th>模型</th>
-<th align="right"><a href="mailto:&#x6d;&#65;&#x50;&#x40;&#48;&#x2e;&#x35;">mAP@0.5</a></th>
-<th align="right"><a href="mailto:&#109;&#65;&#80;&#64;&#x30;&#x2e;&#x35;">mAP@0.5</a>:0.95</th>
+<th align="right"><a href="mailto:&#x6d;&#x41;&#x50;&#x40;&#x30;&#46;&#53;">mAP@0.5</a></th>
+<th align="right"><a href="mailto:&#x6d;&#65;&#x50;&#64;&#48;&#46;&#53;">mAP@0.5</a>:0.95</th>
 <th align="right">Precision</th>
 <th align="right">Recall</th>
 <th align="right">F1</th>
@@ -556,7 +1056,7 @@
 </tr>
 </tbody></table>
 <p>FP32和FP16的精度几乎没有变化，TensorRTEngine的耗时更低。其中FP16Engine相对PyTorch基线降低了41.2%的推理耗时，mAP和F1仍在同一水平，是这组模型里更稳妥的部署选择。</p>
-<p>INT8Engine虽然最快，但代价很明显。它的<a href="mailto:&#x6d;&#65;&#x50;&#64;&#x30;&#46;&#x35;">mAP@0.5</a>比PyTorch基线低0.1590，Recall低0.1611；Precision升至0.9782，并不能说明模型整体更准，而是漏检增加后留下的预测更保守。对检测任务来说，这种变化不能只靠更高的FPS抵消。</p>
+<p>INT8Engine虽然最快，但代价很明显。它的<a href="mailto:&#109;&#65;&#x50;&#64;&#x30;&#x2e;&#53;">mAP@0.5</a>比PyTorch基线低0.1590，Recall低0.1611；Precision升至0.9782，并不能说明模型整体更准，而是漏检增加后留下的预测更保守。对检测任务来说，这种变化不能只靠更高的FPS抵消。</p>
 <h2 id="ONNX-INT8结果不能直接采用"><a href="#ONNX-INT8结果不能直接采用" class="headerlink" title="ONNX INT8结果不能直接采用"></a>ONNX INT8结果不能直接采用</h2><p>ONNX INT8在单图测试中的平均耗时是13.33ms，在完整数据集测试中却变成91.4ms，同时精度也远低于其他格式。两次测试不是同一测量路径，差异已经大到不能当作普通波动处理。</p>
 <p>重新导出后数据仍然异常，但当时没有继续定位到具体原因。因此这项结果只能标记为异常，不能据此得出“ONNX INT8天然更慢”或“ONNXRuntime不适合INT8”的结论。继续排查时至少需要固定以下条件：</p>
 <ul>
@@ -699,7 +1199,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202511/%E7%94%A8OctoPrint%E5%92%8CRestreamer%E8%BF%9C%E7%A8%8B%E6%9F%A5%E7%9C%8B3D%E6%89%93%E5%8D%B0%E6%9C%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -717,7 +1217,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">从PyTorch到ONNX和TensorRT的YOLO部署</a>
+          <a href="/202511/%E7%94%A8OctoPrint%E5%92%8CRestreamer%E8%BF%9C%E7%A8%8B%E6%9F%A5%E7%9C%8B3D%E6%89%93%E5%8D%B0%E6%9C%BA/" class="post-title-link" itemprop="url">用OctoPrint和Restreamer远程查看3D打印机</a>
         </h2>
 
         <div class="post-meta-container">
@@ -728,14 +1228,14 @@
       </span>
       <span class="post-meta-item-text">Posted on</span>
 
-      <time title="Created: 2025-06-30 00:00:00" itemprop="dateCreated datePublished" datetime="2025-06-30T00:00:00+08:00">2025-06-30</time>
+      <time title="Created: 2025-11-17 00:00:00" itemprop="dateCreated datePublished" datetime="2025-11-17T00:00:00+08:00">2025-11-17</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:15:22" itemprop="dateModified" datetime="2026-08-22T20:15:22+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 21:12:04" itemprop="dateModified" datetime="2026-08-22T21:12:04+08:00">2026-08-22</time>
     </span>
 
   
@@ -748,68 +1248,50 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>在NVIDIAGPU上部署YOLO时，我最后选择了TensorRTEngine加Ultralytics推理。做这个选择之前，需要先弄清<code>.pt</code>、<code>.onnx</code>和<code>.engine</code>分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。</p>
+          <p>OctoPrint已经可以远程控制3D打印机，但手头的网络摄像头只提供RTSP。浏览器不能直接播放RTSP，OctoPrint的Classic Webcam兼容层需要MJPEG流和一张可以单独请求的快照，于是我在两者之间增加了Restreamer。</p>
+<p>数据链路很简单：摄像头通过RTSP把视频交给Restreamer，Restreamer再向OctoPrint提供浏览器能够访问的流和快照。打印机串口仍然由OctoPrint直接管理，视频转码服务不接触打印控制。</p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.ultralytics.com/modes/export/">Ultralytics模型导出</a></li>
-<li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/install/">ONNXRuntime安装</a></li>
-<li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html">CUDAExecutionProvider</a></li>
-<li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html">TensorRTExecutionProvider</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/tensorrt/latest/installing-tensorrt/installing.html">TensorRT安装指南</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/support-matrix.html">TensorRT支持矩阵</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/OctoPrint/octoprint-docker">OctoPrint Docker镜像</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.octoprint.org/en/main/api/settings.html">OctoPrint Webcam配置</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.datarhei.com/restreamer/getting-started/quick-start">Restreamer快速开始</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.datarhei.com/restreamer/knowledge-base/manual/edit-livestream/general/video-settings/network-source">Restreamer网络视频源</a></li>
 </ul>
-<h2 id="三种模型文件"><a href="#三种模型文件" class="headerlink" title="三种模型文件"></a>三种模型文件</h2><p><code>.pt</code>是PyTorch检查点，也是训练阶段最方便保留的格式。使用Ultralytics加载时，模型结构、权重和任务相关信息都由原来的Python环境处理，适合继续训练、验证和直接推理。</p>
-<p><code>.onnx</code>保存的是标准化计算图，不依赖原来的PyTorch执行过程。它可以交给ONNXRuntime的CPU、CUDA或TensorRTExecutionProvider，也方便接入其他支持ONNX的推理引擎。</p>
-<p>这里的<code>.engine</code>专指TensorRT序列化引擎，也叫plan。它已经针对TensorRT版本、平台和GPU进行编译，启动时不再重新解析完整的ONNX图，但兼容范围比ONNX窄。默认生成的engine不能随意换到另一种GPU、操作系统或TensorRT版本上运行，部署环境变化后通常需要重新构建。</p>
-<p>选择TensorRTEngine加Ultralytics推理，主要是为了保持调用代码一致。这个选择不代表engine在所有环境都更快；脱离目标硬件、输入尺寸、批量大小和精度谈固定的性能百分比没有意义，延迟和吞吐量还是要在实际部署环境中比较。</p>
-<h2 id="导出ONNX"><a href="#导出ONNX" class="headerlink" title="导出ONNX"></a>导出ONNX</h2><p>先在训练环境安装Ultralytics和ONNX依赖：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m pip install --upgrade ultralytics onnx</span><br></pre></td></tr></table></figure>
+<h2 id="OctoPrint容器"><a href="#OctoPrint容器" class="headerlink" title="OctoPrint容器"></a>OctoPrint容器</h2><p>OctoPrint官方镜像需要持久化<code>/octoprint</code>，并把打印机串口映射进容器。下面以常见的<code>/dev/ttyACM0</code>为例，实际设备名可以先通过<code>ls -l /dev/serial/by-id/</code>确认：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">octoprint:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">octoprint/octoprint:latest</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">octoprint</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;8081:80&quot;</span></span><br><span class="line">    <span class="attr">devices:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">/dev/ttyACM0:/dev/ttyACM0</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">octoprint-data:/octoprint</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">octoprint-data:</span></span><br></pre></td></tr></table></figure>
 
-<p>使用Python导出：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ultralytics <span class="keyword">import</span> YOLO</span><br><span class="line"></span><br><span class="line">model = YOLO(<span class="string">&quot;best.pt&quot;</span>)</span><br><span class="line">model.export(</span><br><span class="line">    <span class="built_in">format</span>=<span class="string">&quot;onnx&quot;</span>,</span><br><span class="line">    imgsz=<span class="number">640</span>,</span><br><span class="line">    dynamic=<span class="literal">False</span>,</span><br><span class="line">    simplify=<span class="literal">True</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker compose up -d</span><br><span class="line">docker compose logs -f octoprint</span><br></pre></td></tr></table></figure>
 
-<p>输入尺寸固定时保持<code>dynamic=False</code>，部署配置更简单；确实需要接受多种尺寸时再启用动态形状。<code>opset</code>不指定时由Ultralytics选择当前支持的版本，只有目标运行时有明确限制时才固定。</p>
-<p>导出后先检查模型格式：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnx</span><br><span class="line"></span><br><span class="line">model = onnx.load(<span class="string">&quot;best.onnx&quot;</span>)</span><br><span class="line">onnx.checker.check_model(model)</span><br></pre></td></tr></table></figure>
+<p>如果摄像头是USB设备，OctoPrint官方镜像可以映射<code>/dev/video0</code>并启用内置MJPG-Streamer。这里使用的是独立网络摄像头，不需要把视频设备交给OctoPrint容器。</p>
+<h2 id="只为RTSP输入启动Restreamer"><a href="#只为RTSP输入启动Restreamer" class="headerlink" title="只为RTSP输入启动Restreamer"></a>只为RTSP输入启动Restreamer</h2><p>Restreamer官方示例默认开放HTTP、HTTPS、RTMP、RTMPS和SRT端口。这个场景只从局域网摄像头拉取RTSP，再给OctoPrint提供HTTP地址，因此先开放管理和播放使用的8080端口即可：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">restreamer:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">datarhei/restreamer:latest</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">restreamer</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;192.0.2.10:8080:8080&quot;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./config:/core/config</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./data:/core/data</span></span><br></pre></td></tr></table></figure>
 
-<h2 id="使用ONNXRuntime"><a href="#使用ONNXRuntime" class="headerlink" title="使用ONNXRuntime"></a>使用ONNXRuntime</h2><p>CPU和GPU包二选一安装，不要同时留在同一个环境中：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># CPU</span></span><br><span class="line">python -m pip install onnxruntime</span><br><span class="line"></span><br><span class="line"><span class="comment"># NVIDIAGPU</span></span><br><span class="line">python -m pip install onnxruntime-gpu</span><br></pre></td></tr></table></figure>
+<p><code>192.0.2.10</code>是文档示例地址，部署时改成Restreamer主机实际使用的局域网地址。这样不会把8080监听到所有网卡；如果OctoPrint和Restreamer在同一台机器上，也可以只绑定<code>127.0.0.1</code>。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p config data</span><br><span class="line">docker compose up -d</span><br><span class="line">docker compose logs -f restreamer</span><br></pre></td></tr></table></figure>
 
-<p>PyPI上的<code>onnxruntime-gpu</code>默认对应CUDA12.x。实际安装前还要根据ONNXRuntime的CUDAExecutionProvider兼容表核对CUDA和cuDNN主版本，不能只看<code>nvidia-smi</code>显示的CUDA上限。</p>
-<p>确认当前环境真正加载了哪些ExecutionProvider：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnxruntime <span class="keyword">as</span> ort</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(ort.__version__)</span><br><span class="line"><span class="built_in">print</span>(ort.get_available_providers())</span><br></pre></td></tr></table></figure>
+<p>容器运行后打开<code>http://&lt;Restreamer主机&gt;:8080/ui</code>，设置独立的管理密码，再通过向导添加网络视频源。RTSP地址和摄像头凭据直接填入Restreamer，不写进Compose文件或OctoPrint配置。</p>
+<p>网络RTSP输入不需要访问宿主机摄像头设备，因此也不需要<code>--privileged</code>。我最初在LXC中遇到过AppArmor与runc权限错误，但把LXC改成<code>unconfined</code>、屏蔽AppArmor状态或给容器放开seccomp都会扩大权限，不适合作为通用解决办法。无法在受限LXC中正常运行时，换成具备标准Docker能力的虚拟机或主机更省事。</p>
+<h2 id="找到MJPEG流和快照"><a href="#找到MJPEG流和快照" class="headerlink" title="找到MJPEG流和快照"></a>找到MJPEG流和快照</h2><p>Restreamer界面可以复制HLS与Snapshot地址。Snapshot可以直接交给OctoPrint；HLS地址通常以<code>.m3u8</code>结尾，不能直接填进Classic Webcam的Stream URL，因为OctoPrint兼容层要求MJPEG。</p>
+<p>我使用的Restreamer版本还提供了这个MJPEG地址：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.0.2.10:8080/stream.mjpg?type=mjpeg</span><br></pre></td></tr></table></figure>
 
-<p>创建CUDA推理会话时把CPU放在后面作为回退：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnxruntime <span class="keyword">as</span> ort</span><br><span class="line"></span><br><span class="line">session = ort.InferenceSession(</span><br><span class="line">    <span class="string">&quot;best.onnx&quot;</span>,</span><br><span class="line">    providers=[<span class="string">&quot;CUDAExecutionProvider&quot;</span>, <span class="string">&quot;CPUExecutionProvider&quot;</span>],</span><br><span class="line">)</span><br><span class="line"><span class="built_in">print</span>(session.get_providers())</span><br></pre></td></tr></table></figure>
+<p>这个路径没有出现在当前Restreamer文档中，升级后不能默认它仍然存在。填写OctoPrint之前，先检查响应类型：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -sS --max-time 5 \</span><br><span class="line">  -D - -o /dev/null \</span><br><span class="line">  <span class="string">&#x27;http://192.0.2.10:8080/stream.mjpg?type=mjpeg&#x27;</span></span><br></pre></td></tr></table></figure>
 
-<p><code>get_available_providers()</code>只能说明当前安装包包含哪些Provider，<code>session.get_providers()</code>用来确认这个Session接受了哪些Provider。两者都不能单独证明每个节点实际分配到了GPU，还要留意启动日志中是否有CUDA或cuDNN动态库加载失败。</p>
-<h3 id="TensorRTExecutionProvider"><a href="#TensorRTExecutionProvider" class="headerlink" title="TensorRTExecutionProvider"></a>TensorRTExecutionProvider</h3><p>ONNXRuntime也可以把支持的子图交给TensorRT，不支持的节点继续交给CUDA。Provider顺序要把TensorRT放在CUDA前面：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnxruntime <span class="keyword">as</span> ort</span><br><span class="line"></span><br><span class="line">providers = [</span><br><span class="line">    (</span><br><span class="line">        <span class="string">&quot;TensorrtExecutionProvider&quot;</span>,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="string">&quot;device_id&quot;</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="string">&quot;trt_fp16_enable&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">            <span class="string">&quot;trt_engine_cache_enable&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">            <span class="string">&quot;trt_engine_cache_path&quot;</span>: <span class="string">&quot;./trt-cache&quot;</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">    ),</span><br><span class="line">    (<span class="string">&quot;CUDAExecutionProvider&quot;</span>, &#123;<span class="string">&quot;device_id&quot;</span>: <span class="number">0</span>&#125;),</span><br><span class="line">    <span class="string">&quot;CPUExecutionProvider&quot;</span>,</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">session = ort.InferenceSession(<span class="string">&quot;best.onnx&quot;</span>, providers=providers)</span><br><span class="line"><span class="built_in">print</span>(session.get_providers())</span><br></pre></td></tr></table></figure>
+<p>MJPEG响应的<code>Content-Type</code>应为<code>multipart/x-mixed-replace</code>一类的多段图片流。如果返回HTML、JSON、404或普通HLS内容，就不能把它当作OctoPrint视频源；此时应改用明确支持RTSP转MJPEG的服务，而不是把<code>.m3u8</code>硬填进去。</p>
+<p>Snapshot地址包含Restreamer生成的通道标识，直接从界面复制，避免把示例中的固定UUID当成自己的地址。可以先确认它返回图片：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -sS --max-time 5 \</span><br><span class="line">  -D - -o /dev/null \</span><br><span class="line">  <span class="string">&#x27;http://192.0.2.10:8080/memfs/&lt;通道标识&gt;.jpg&#x27;</span></span><br></pre></td></tr></table></figure>
 
-<p>第一次创建Session会编译TensorRT子图，冷启动可能很慢。启用engine缓存后，后续启动可以直接复用；模型、ONNXRuntime、TensorRT、构建参数或GPU发生变化时应清理旧缓存重新生成。</p>
-<h2 id="导出TensorRTEngine"><a href="#导出TensorRTEngine" class="headerlink" title="导出TensorRTEngine"></a>导出TensorRTEngine</h2><p>Ultralytics可以从<code>.pt</code>直接生成engine：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ultralytics <span class="keyword">import</span> YOLO</span><br><span class="line"></span><br><span class="line">model = YOLO(<span class="string">&quot;best.pt&quot;</span>)</span><br><span class="line">model.export(</span><br><span class="line">    <span class="built_in">format</span>=<span class="string">&quot;engine&quot;</span>,</span><br><span class="line">    imgsz=<span class="number">640</span>,</span><br><span class="line">    quantize=<span class="number">16</span>,</span><br><span class="line">    workspace=<span class="number">4</span>,</span><br><span class="line">    verbose=<span class="literal">True</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
-<p>当前Ultralytics文档使用<code>quantize=16</code>表示FP16。旧版本常见的<code>half=True</code>仍可能可用，但已经属于兼容参数。<code>workspace=4</code>表示最多使用4GiB工作空间；显存不紧张时也可以省略，让TensorRT自动决定。</p>
-<p>engine会针对构建时的GPU和TensorRT环境选择内核，最好直接在最终部署机器上导出。若需要跨机器分发，先根据TensorRT的版本兼容和硬件兼容选项确认边界，不能把普通engine当成ONNX一样复制使用。</p>
-<h2 id="安装TensorRT运行时"><a href="#安装TensorRT运行时" class="headerlink" title="安装TensorRT运行时"></a>安装TensorRT运行时</h2><p>TensorRT提供PyPI、Debian&#x2F;RPM、Tar包和容器等安装方式。Python项目只使用API时，PyPI最省事；需要<code>trtexec</code>、C++头文件或同时保留多个系统版本时，再选择系统包或Tar包。</p>
-<p>例如现有环境是CUDA12.x，可以明确安装对应的Python包：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m pip install --upgrade tensorrt-cu12</span><br></pre></td></tr></table></figure>
-
-<p>验证Python接口和CUDA初始化：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorrt <span class="keyword">as</span> trt</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(trt.__version__)</span><br><span class="line"><span class="keyword">assert</span> trt.Builder(trt.Logger())</span><br></pre></td></tr></table></figure>
-
-<p>PyPI安装不包含<code>trtexec</code>。如果使用Debian、RPM、Tar包或容器安装，再用下面的命令检查CLI：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trtexec --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
-
-<p>TensorRT、CUDA、驱动、Python和GPU的支持范围变化很快，安装时直接从支持矩阵选择一组匹配版本，不要把某一组TensorRT、CUDA和Python版本当作长期安装规则。</p>
-<p>自己编写CUDA扩展时，<code>CUDA_HOME</code>应指向Toolkit根目录，而不是它的<code>bin</code>目录：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> CUDA_HOME=/usr/local/cuda-X.Y</span><br></pre></td></tr></table></figure>
-
-<p>上面的Ultralytics、ONNXRuntime和TensorRTPython路径没有直接使用PyCUDA，不需要为了运行engine额外安装。只有自己的推理代码明确<code>import pycuda</code>时，再按该项目的依赖补上。</p>
-<h2 id="使用Ultralytics统一调用"><a href="#使用Ultralytics统一调用" class="headerlink" title="使用Ultralytics统一调用"></a>使用Ultralytics统一调用</h2><p>如果不想分别维护ONNXRuntime和TensorRT推理代码，可以继续用Ultralytics加载三种文件。模型路径变化，预测接口基本一致：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ultralytics <span class="keyword">import</span> YOLO</span><br><span class="line"></span><br><span class="line">pt_model = YOLO(<span class="string">&quot;best.pt&quot;</span>)</span><br><span class="line">onnx_model = YOLO(<span class="string">&quot;best.onnx&quot;</span>)</span><br><span class="line">engine_model = YOLO(<span class="string">&quot;best.engine&quot;</span>)</span><br><span class="line"></span><br><span class="line">pt_model.predict(source=<span class="string">&quot;image.jpg&quot;</span>, device=<span class="number">0</span>)</span><br><span class="line">onnx_model.predict(source=<span class="string">&quot;image.jpg&quot;</span>, device=<span class="number">0</span>)</span><br><span class="line">engine_model.predict(source=<span class="string">&quot;image.jpg&quot;</span>, device=<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-
-<p>这种方式部署简单，但运行环境仍要安装Ultralytics及其依赖。追求更小的运行环境或需要C++集成时，直接使用ONNXRuntime或TensorRT原生API更合适。</p>
+<p>这里的<code>&lt;通道标识&gt;</code>只是占位说明，执行前必须替换。响应的<code>Content-Type</code>应是<code>image/jpeg</code>或其他实际图片类型。</p>
+<h2 id="填入OctoPrint"><a href="#填入OctoPrint" class="headerlink" title="填入OctoPrint"></a>填入OctoPrint</h2><p>在OctoPrint的Webcam设置中填写：</p>
+<ul>
+<li>Stream URL：已经确认可用的MJPEG地址；</li>
+<li>Snapshot URL：Restreamer界面复制出的快照地址；</li>
+<li>Path to FFMPEG：容器镜像内使用<code>/usr/bin/ffmpeg</code>；</li>
+<li>Stream aspect ratio：按摄像头实际画面选择<code>16:9</code>或<code>4:3</code>。</li>
+</ul>
+<p>浏览器和OctoPrint服务端都要能访问这些地址。Stream URL由浏览器加载，而Snapshot通常由OctoPrint在生成延时摄影时请求；只在某一端能解析的主机名会造成“控制页有画面但快照失败”，或反过来。</p>
+<h2 id="不把摄像头跟着OctoPrint暴露到公网"><a href="#不把摄像头跟着OctoPrint暴露到公网" class="headerlink" title="不把摄像头跟着OctoPrint暴露到公网"></a>不把摄像头跟着OctoPrint暴露到公网</h2><p>OctoPrint的登录权限不会自动保护外部摄像头地址。官方文档明确说明，OctoPrint只是嵌入视频流，知道摄像头URL的人仍可能绕过OctoPrint直接观看。</p>
+<p>因此Restreamer和摄像头都只保留在可信网络中，通过VPN访问最简单。确实需要反向代理时，应单独为视频流增加认证和HTTPS，并确认浏览器不会因为OctoPrint页面是HTTPS、视频地址是HTTP而拦截混合内容。摄像头原始RTSP密码一旦出现在日志、截图或旧配置中，也应立即更换。</p>
 
       
     </div>
@@ -836,7 +1318,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202511/%E5%B0%86IP%E7%BD%91%E6%AE%B5%E6%89%B9%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BARouterOSAddressList/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -854,7 +1336,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" class="post-title-link" itemprop="url">uv常用操作：Python、脚本、工具与项目管理</a>
+          <a href="/202511/%E5%B0%86IP%E7%BD%91%E6%AE%B5%E6%89%B9%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BARouterOSAddressList/" class="post-title-link" itemprop="url">将IP网段批量转换为RouterOS Address List</a>
         </h2>
 
         <div class="post-meta-container">
@@ -865,14 +1347,14 @@
       </span>
       <span class="post-meta-item-text">Posted on</span>
 
-      <time title="Created: 2025-04-03 00:00:00" itemprop="dateCreated datePublished" datetime="2025-04-03T00:00:00+08:00">2025-04-03</time>
+      <time title="Created: 2025-11-05 00:00:00" itemprop="dateCreated datePublished" datetime="2025-11-05T00:00:00+08:00">2025-11-05</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 21:58:52" itemprop="dateModified" datetime="2026-08-22T21:58:52+08:00">2026-08-22</time>
     </span>
 
   
@@ -885,347 +1367,50 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>Python版本、虚拟环境、项目依赖和临时命令行工具原本分散在不同工具中，uv把它们收进了一套命令。日常开发基本可以围绕<code>uv python</code>、<code>uv run</code>、<code>uv tool</code>和项目命令完成，使用的uv版本为0.12.5。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/">uv文档</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/guides/install-python/">Python版本管理</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/concepts/projects/sync/">项目依赖与同步</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/guides/tools/">命令行工具</a></li>
-</ul>
-<h2 id="安装uv"><a href="#安装uv" class="headerlink" title="安装uv"></a>安装uv</h2><p>macOS和Linux可以使用官方安装脚本：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -LsSf https://astral.sh/uv/install.sh | sh</span><br><span class="line">uv --version</span><br></pre></td></tr></table></figure>
+          <p>RouterOS的Address List可以被Filter、Mangle和NAT规则重复引用，很适合保存地区、运营商或云厂商的网段。公开IP地址库通常只提供一行一个CIDR的文本文件，数量多时，手工改成RouterOS命令既费事，也很难及时发现坏数据。</p>
+<p>最简单的写法是用Python直接拼接命令，遇到导入错误就用<code>on-error={}</code>跳过。这样生成得快，问题也很明显：非法地址、IPv4和IPv6混用、重复网段都会被留到路由器处理，导入结束后甚至不知道漏了哪些条目。更稳妥的做法是在生成<code>.rsc</code>之前完成严格校验、去重和合并，RouterOS只负责执行已经检查过的命令。</p>
+<h2 id="输入文件只保留CIDR"><a href="#输入文件只保留CIDR" class="headerlink" title="输入文件只保留CIDR"></a>输入文件只保留CIDR</h2><p>输入文件使用一行一个网段的形式，空行和<code>#</code>之后的注释会被忽略。例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># documentation networks</span><br><span class="line">192.0.2.0/25</span><br><span class="line">192.0.2.128/25</span><br><span class="line">198.51.100.0/24</span><br><span class="line">198.51.100.0/24</span><br></pre></td></tr></table></figure>
 
-<p>通过Homebrew安装：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install uv</span><br></pre></td></tr></table></figure>
+<p>这里故意放了两个可以合并的相邻网段和一个重复项。生成时，Python标准库<code>ipaddress</code>会把它们压缩成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">192.0.2.0/24</span><br><span class="line">198.51.100.0/24</span><br></pre></td></tr></table></figure>
 
-<h2 id="管理Python版本"><a href="#管理Python版本" class="headerlink" title="管理Python版本"></a>管理Python版本</h2><p>uv可以安装多个Python版本，也能直接使用系统中已有的Python：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv python install 3.10 3.11 3.12</span><br><span class="line">uv python list</span><br></pre></td></tr></table></figure>
+<p>脚本使用严格模式解析CIDR。像<code>192.0.2.1/24</code>这样带有主机位的写法会直接报错，而不是悄悄改成<code>192.0.2.0/24</code>。对于要进入防火墙的外部数据，明确失败比自动猜测更容易发现上游变化。</p>
+<h2 id="生成RouterOS导入文件"><a href="#生成RouterOS导入文件" class="headerlink" title="生成RouterOS导入文件"></a>生成RouterOS导入文件</h2><p>下面的脚本只使用Python标准库，要求Python 3.10或更高版本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> annotations</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"><span class="keyword">import</span> ipaddress</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Network = ipaddress.IPv4Network | ipaddress.IPv6Network</span><br><span class="line">LIST_NAME_PATTERN = re.<span class="built_in">compile</span>(<span class="string">r&quot;^[A-Za-z0-9_.-]+$&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">read_networks</span>(<span class="params">path: Path, family: <span class="built_in">int</span></span>) -&gt; <span class="built_in">list</span>[Network]:</span><br><span class="line">    networks: <span class="built_in">list</span>[Network] = []</span><br><span class="line">    errors: <span class="built_in">list</span>[<span class="built_in">str</span>] = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> line_number, raw_line <span class="keyword">in</span> <span class="built_in">enumerate</span>(</span><br><span class="line">        path.read_text(encoding=<span class="string">&quot;utf-8&quot;</span>).splitlines(), start=<span class="number">1</span></span><br><span class="line">    ):</span><br><span class="line">        value = raw_line.split(<span class="string">&quot;#&quot;</span>, maxsplit=<span class="number">1</span>)[<span class="number">0</span>].strip()</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> value:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            network = ipaddress.ip_network(value, strict=<span class="literal">True</span>)</span><br><span class="line">        <span class="keyword">except</span> ValueError <span class="keyword">as</span> error:</span><br><span class="line">            errors.append(<span class="string">f&quot;第<span class="subst">&#123;line_number&#125;</span>行：<span class="subst">&#123;value&#125;</span>（<span class="subst">&#123;error&#125;</span>）&quot;</span>)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> network.version != family:</span><br><span class="line">            errors.append(</span><br><span class="line">                <span class="string">f&quot;第<span class="subst">&#123;line_number&#125;</span>行：<span class="subst">&#123;value&#125;</span>（期望IPv<span class="subst">&#123;family&#125;</span>）&quot;</span></span><br><span class="line">            )</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        networks.append(network)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> errors:</span><br><span class="line">        <span class="keyword">raise</span> SystemExit(<span class="string">&quot;输入文件存在错误：\n&quot;</span> + <span class="string">&quot;\n&quot;</span>.join(errors))</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> networks:</span><br><span class="line">        <span class="keyword">raise</span> SystemExit(<span class="string">&quot;输入文件中没有可用网段&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">list</span>(ipaddress.collapse_addresses(networks))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">render_routeros</span>(<span class="params"></span></span><br><span class="line"><span class="params">    networks: <span class="built_in">list</span>[Network], list_name: <span class="built_in">str</span>, family: <span class="built_in">int</span></span></span><br><span class="line"><span class="params"></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    menu = (</span><br><span class="line">        <span class="string">&quot;/ip firewall address-list&quot;</span></span><br><span class="line">        <span class="keyword">if</span> family == <span class="number">4</span></span><br><span class="line">        <span class="keyword">else</span> <span class="string">&quot;/ipv6 firewall address-list&quot;</span></span><br><span class="line">    )</span><br><span class="line">    marker = <span class="string">f&quot;managed:<span class="subst">&#123;list_name&#125;</span>&quot;</span></span><br><span class="line">    lines = [</span><br><span class="line">        <span class="string">f&#x27;/log info &quot;Loading <span class="subst">&#123;list_name&#125;</span> address list&quot;&#x27;</span>,</span><br><span class="line">        menu,</span><br><span class="line">        <span class="string">f&#x27;remove [find list=&quot;<span class="subst">&#123;list_name&#125;</span>&quot; comment=&quot;<span class="subst">&#123;marker&#125;</span>&quot;]&#x27;</span>,</span><br><span class="line">    ]</span><br><span class="line"></span><br><span class="line">    lines.extend(</span><br><span class="line">        <span class="string">f&#x27;add address=<span class="subst">&#123;network.with_prefixlen&#125;</span> &#x27;</span></span><br><span class="line">        <span class="string">f&#x27;list=&quot;<span class="subst">&#123;list_name&#125;</span>&quot; comment=&quot;<span class="subst">&#123;marker&#125;</span>&quot;&#x27;</span></span><br><span class="line">        <span class="keyword">for</span> network <span class="keyword">in</span> networks</span><br><span class="line">    )</span><br><span class="line">    lines.append(<span class="string">f&#x27;/log info &quot;Loaded <span class="subst">&#123;list_name&#125;</span> address list&quot;&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;\n&quot;</span>.join(lines) + <span class="string">&quot;\n&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>() -&gt; <span class="literal">None</span>:</span><br><span class="line">    parser = argparse.ArgumentParser(</span><br><span class="line">        description=<span class="string">&quot;Convert CIDR lines to a RouterOS address-list script&quot;</span></span><br><span class="line">    )</span><br><span class="line">    parser.add_argument(<span class="string">&quot;input&quot;</span>, <span class="built_in">type</span>=Path)</span><br><span class="line">    parser.add_argument(<span class="string">&quot;output&quot;</span>, <span class="built_in">type</span>=Path)</span><br><span class="line">    parser.add_argument(<span class="string">&quot;--list-name&quot;</span>, required=<span class="literal">True</span>)</span><br><span class="line">    parser.add_argument(</span><br><span class="line">        <span class="string">&quot;--family&quot;</span>, choices=(<span class="string">&quot;ipv4&quot;</span>, <span class="string">&quot;ipv6&quot;</span>), default=<span class="string">&quot;ipv4&quot;</span></span><br><span class="line">    )</span><br><span class="line">    args = parser.parse_args()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> LIST_NAME_PATTERN.fullmatch(args.list_name):</span><br><span class="line">        <span class="keyword">raise</span> SystemExit(</span><br><span class="line">            <span class="string">&quot;列表名只能包含英文字母、数字、点、下划线和连字符&quot;</span></span><br><span class="line">        )</span><br><span class="line">    <span class="keyword">if</span> args.output.exists():</span><br><span class="line">        <span class="keyword">raise</span> SystemExit(<span class="string">f&quot;输出文件已存在：<span class="subst">&#123;args.output&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    family = <span class="number">4</span> <span class="keyword">if</span> args.family == <span class="string">&quot;ipv4&quot;</span> <span class="keyword">else</span> <span class="number">6</span></span><br><span class="line">    networks = read_networks(args.<span class="built_in">input</span>, family)</span><br><span class="line">    content = render_routeros(networks, args.list_name, family)</span><br><span class="line">    args.output.write_text(content, encoding=<span class="string">&quot;utf-8&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;已生成<span class="subst">&#123;args.output&#125;</span>，共<span class="subst">&#123;<span class="built_in">len</span>(networks)&#125;</span>个网段&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
 
-<p>在项目中固定Python版本，会生成<code>.python-version</code>：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uv python pin 3.11</span><br></pre></td></tr></table></figure>
+<p>假设脚本保存为<code>cidr_to_routeros.py</code>，输入文件为<code>networks.txt</code>，生成IPv4列表：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">python3 cidr_to_routeros.py \</span><br><span class="line">  networks.txt \</span><br><span class="line">  region_ipv4-20251105.rsc \</span><br><span class="line">  --list-name region_ipv4</span><br></pre></td></tr></table></figure>
 
-<p>创建指定版本的虚拟环境：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv venv --python 3.12</span><br><span class="line"><span class="built_in">source</span> .venv/bin/activate</span><br></pre></td></tr></table></figure>
+<p>需要生成IPv6列表时显式指定地址族：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">python3 cidr_to_routeros.py \</span><br><span class="line">  networks-v6.txt \</span><br><span class="line">  region_ipv6-20251105.rsc \</span><br><span class="line">  --list-name region_ipv6 \</span><br><span class="line">  --family ipv6</span><br></pre></td></tr></table></figure>
 
-<p>只指定<code>3.12</code>比固定到某个补丁版本更省事，uv会选择满足条件的版本。</p>
-<h2 id="配置包索引"><a href="#配置包索引" class="headerlink" title="配置包索引"></a>配置包索引</h2><p>临时指定默认索引：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv add \</span><br><span class="line">  --default-index https://pypi.tuna.tsinghua.edu.cn/simple \</span><br><span class="line">  requests</span><br></pre></td></tr></table></figure>
+<p>列表名被限制在字母、数字、点、下划线和连字符内，是为了避免未经转义的名称破坏RouterOS脚本语法。输出文件已经存在时也会停止，避免一次重新生成覆盖掉仍需要对比的旧版本。</p>
+<h2 id="只替换脚本管理的条目"><a href="#只替换脚本管理的条目" class="headerlink" title="只替换脚本管理的条目"></a>只替换脚本管理的条目</h2><p>生成的<code>.rsc</code>大致如下：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/log <span class="built_in">info</span> <span class="string">&quot;Loading region_ipv4 address list&quot;</span></span><br><span class="line"><span class="built_in">/ip firewall address-list</span></span><br><span class="line"><span class="built_in"></span><span class="built_in">remove</span> [<span class="built_in">find</span> <span class="attribute">list</span>=<span class="string">&quot;region_ipv4&quot;</span> <span class="attribute">comment</span>=<span class="string">&quot;managed:region_ipv4&quot;</span>]</span><br><span class="line"><span class="built_in">add</span> <span class="attribute">address</span>=192.0.2.0/24 <span class="attribute">list</span>=<span class="string">&quot;region_ipv4&quot;</span> <span class="attribute">comment</span>=<span class="string">&quot;managed:region_ipv4&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">address</span>=198.51.100.0/24 <span class="attribute">list</span>=<span class="string">&quot;region_ipv4&quot;</span> <span class="attribute">comment</span>=<span class="string">&quot;managed:region_ipv4&quot;</span></span><br><span class="line">/log <span class="built_in">info</span> <span class="string">&quot;Loaded region_ipv4 address list&quot;</span></span><br></pre></td></tr></table></figure>
 
-<p>也可以使用环境变量：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> UV_DEFAULT_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple</span><br></pre></td></tr></table></figure>
+<p>脚本没有直接删除<code>region_ipv4</code>中的所有记录，只删除<code>comment=&quot;managed:region_ipv4&quot;</code>的条目。这样，同名列表中临时增加的手工记录和RouterOS动态生成的记录不会被顺手清掉。</p>
+<p>这仍然不是事务更新：旧的托管条目会先删除，新条目再逐行加入。地址列表被实时规则引用时，中间会有一个很短的空窗；如果导入在中途失败，还可能只留下部分新数据。对连续性要求高的规则，应该生成带日期的新列表名，完整导入并检查后，再把引用它的Filter或Mangle规则切换到新名称。</p>
+<h2 id="先Dry-Run再正式导入"><a href="#先Dry-Run再正式导入" class="headerlink" title="先Dry Run再正式导入"></a>先Dry Run再正式导入</h2><p>把<code>.rsc</code>上传到RouterOS的Files后，先备份当前列表。RouterOS 7.13及以后可以只导出指定Address List：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall address-list </span><span class="built_in">export</span> \</span><br><span class="line">    where <span class="attribute">list</span>=region_ipv4 <span class="attribute">file</span>=region_ipv4-before</span><br></pre></td></tr></table></figure>
 
-<p>项目的<code>pyproject.toml</code>使用<code>[[tool.uv.index]]</code>：</p>
-<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[[tool.uv.index]]</span></span><br><span class="line"><span class="attr">name</span> = <span class="string">&quot;mirror&quot;</span></span><br><span class="line"><span class="attr">url</span> = <span class="string">&quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;</span></span><br><span class="line"><span class="attr">default</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>正式执行前使用Verbose模式的Dry Run检查语法：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/import <span class="attribute">file-name</span>=region_ipv4-20251105.rsc <span class="attribute">verbose</span>=<span class="literal">yes</span> <span class="attribute">dry-run</span>=<span class="literal">yes</span></span><br></pre></td></tr></table></figure>
 
-<p>独立的<code>uv.toml</code>没有<code>tool.uv</code>前缀：</p>
-<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[[index]]</span></span><br><span class="line"><span class="attr">name</span> = <span class="string">&quot;mirror&quot;</span></span><br><span class="line"><span class="attr">url</span> = <span class="string">&quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;</span></span><br><span class="line"><span class="attr">default</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>Dry Run通过以后再导入：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/import <span class="attribute">file-name</span>=region_ipv4-20251105.rsc <span class="attribute">verbose</span>=<span class="literal">yes</span></span><br></pre></td></tr></table></figure>
 
-<p>用户级配置可以放在<code>~/.config/uv/uv.toml</code>。<code>uv tool</code>属于用户级操作，不读取项目中的索引配置，需要使用用户级配置、环境变量或命令行参数。</p>
-<h2 id="运行单文件脚本"><a href="#运行单文件脚本" class="headerlink" title="运行单文件脚本"></a>运行单文件脚本</h2><p>临时给脚本增加依赖，不会修改当前项目：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv run --with rich example.py</span><br><span class="line">uv run --with <span class="string">&#x27;rich&gt;12,&lt;13&#x27;</span> example.py</span><br><span class="line">uv run --python 3.10 example.py</span><br></pre></td></tr></table></figure>
+<p>最后确认条目数量，并抽查合并后的网段：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall address-list </span><span class="built_in">print</span> count-only where <span class="attribute">list</span>=region_ipv4</span><br><span class="line"><span class="built_in">/ip firewall address-list </span><span class="built_in">print</span> where <span class="attribute">list</span>=region_ipv4</span><br></pre></td></tr></table></figure>
 
-<p>需要长期保留依赖时，可以把PEP723元数据写进脚本：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv init --script example.py --python 3.12</span><br><span class="line">uv add --script example.py <span class="string">&#x27;requests&lt;3&#x27;</span> rich</span><br><span class="line">uv run example.py</span><br></pre></td></tr></table></figure>
-
-<p>脚本默认不会自动生成锁文件。需要固定依赖时单独锁定：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uv lock --script example.py</span><br></pre></td></tr></table></figure>
-
-<p>锁文件会写到脚本旁边，例如<code>example.py.lock</code>。</p>
-<h2 id="运行和安装命令行工具"><a href="#运行和安装命令行工具" class="headerlink" title="运行和安装命令行工具"></a>运行和安装命令行工具</h2><p>偶尔使用的工具直接通过<code>uvx</code>运行。它是<code>uv tool run</code>的简写，每个工具使用独立的临时环境：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uvx ruff check .</span><br><span class="line">uv tool run ruff check .</span><br><span class="line"></span><br><span class="line">uvx --from httpie http --version</span><br><span class="line">uvx ruff@0.3.0 check .</span><br><span class="line">uvx --with mkdocs-material mkdocs --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
-
-<p>经常使用的工具可以持久安装：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv tool install <span class="string">&#x27;ruff&gt;=0.4&#x27;</span></span><br><span class="line">uv tool update-shell</span><br><span class="line">ruff --version</span><br></pre></td></tr></table></figure>
-
-<p>版本范围要加引号，否则Shell可能把<code>&gt;</code>识别成输出重定向。</p>
-<p>查看、升级和删除工具：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uv tool list</span><br><span class="line">uv tool upgrade ruff</span><br><span class="line">uv tool upgrade --all</span><br><span class="line">uv tool uninstall ruff</span><br></pre></td></tr></table></figure>
-
-<p>工具需要特定Python版本时显式指定：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uvx --python 3.10 ruff</span><br><span class="line">uv tool install --python 3.10 ruff</span><br><span class="line">uv tool upgrade --python 3.10 ruff</span><br></pre></td></tr></table></figure>
-
-<h2 id="管理项目"><a href="#管理项目" class="headerlink" title="管理项目"></a>管理项目</h2><p>创建项目并添加依赖：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uv init hello-world</span><br><span class="line"><span class="built_in">cd</span> hello-world</span><br><span class="line"></span><br><span class="line">uv add requests</span><br><span class="line">uv add <span class="string">&#x27;requests==2.31.0&#x27;</span></span><br><span class="line">uv add git+https://github.com/psf/requests</span><br></pre></td></tr></table></figure>
-
-<p>从现有依赖文件迁移：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uv add -r requirements.txt -c constraints.txt</span><br></pre></td></tr></table></figure>
-
-<p>删除或升级单个依赖：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv remove requests</span><br><span class="line">uv lock --upgrade-package requests</span><br></pre></td></tr></table></figure>
-
-<p><code>uv.lock</code>记录完整的解析结果，<code>uv sync</code>将项目环境同步到锁文件：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv lock</span><br><span class="line">uv <span class="built_in">sync</span></span><br></pre></td></tr></table></figure>
-
-<p><code>uv run</code>会在运行前自动检查锁文件并同步环境，通常不需要手工激活<code>.venv</code>：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uv run python main.py</span><br><span class="line"></span><br><span class="line">uv add flask</span><br><span class="line">uv run flask run -p 3000</span><br></pre></td></tr></table></figure>
-
-<p>CI中不希望命令悄悄修改锁文件时，可以使用<code>--locked</code>：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv <span class="built_in">sync</span> --locked</span><br><span class="line">uv run --locked python main.py</span><br></pre></td></tr></table></figure>
-
-<h2 id="构建和发布"><a href="#构建和发布" class="headerlink" title="构建和发布"></a>构建和发布</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv build</span><br><span class="line">uv publish</span><br></pre></td></tr></table></figure>
-
-<p>构建产物位于<code>dist/</code>。发布前需要在目标包索引中配置认证；如果项目配置了多个索引，使用<code>uv publish --index &lt;name&gt;</code>明确指定发布目标。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Qdrant的Docker启动与RESTAPI常用操作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-09-24 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-24T00:00:00+08:00">2024-09-24</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>本地调试Qdrant时，用Docker启动服务，再直接通过RESTAPI操作Collection和Point就足够了。查询接口已经统一到QueryAPI，旧的Search接口不再继续使用。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/quick-start/">Qdrant本地启动</a></li>
-<li><a target="_blank" rel="noopener" href="https://api.qdrant.tech/">QdrantRESTAPI</a></li>
-<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/search/">QueryAPI</a></li>
-<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/security/">安全配置</a></li>
-</ul>
-<h2 id="Docker启动"><a href="#Docker启动" class="headerlink" title="Docker启动"></a>Docker启动</h2><p>示例使用<code>v1.19.0</code>：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> \</span><br><span class="line">  --name qdrant \</span><br><span class="line">  -p 127.0.0.1:6333:6333 \</span><br><span class="line">  -p 127.0.0.1:6334:6334 \</span><br><span class="line">  -v <span class="string">&quot;<span class="variable">$PWD</span>/qdrant_storage:/qdrant/storage&quot;</span> \</span><br><span class="line">  qdrant/qdrant:v1.19.0</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>RESTAPI：<code>http://localhost:6333</code></li>
-<li>WebUI：<code>http://localhost:6333/dashboard</code></li>
-<li>gRPC：<code>localhost:6334</code></li>
-</ul>
-<p>DockerCompose配置：</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">qdrant:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">qdrant/qdrant:v1.19.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">qdrant</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;127.0.0.1:6333:6333&quot;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;127.0.0.1:6334:6334&quot;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./qdrant_storage:/qdrant/storage</span></span><br></pre></td></tr></table></figure>
-
-<p>自建Qdrant默认没有认证和TLS，所以这里只绑定到<code>127.0.0.1</code>。需要从其他机器访问时，先配置APIKey、TLS或带鉴权的反向代理，不要直接把6333和6334端口暴露到公网。</p>
-<p>下面的RESTAPI示例都使用本机地址：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> QDRANT_URL=http://localhost:6333</span><br></pre></td></tr></table></figure>
-
-<h2 id="Collection"><a href="#Collection" class="headerlink" title="Collection"></a>Collection</h2><p>列出Collection：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>创建一个4维向量的Collection：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X PUT \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;vectors&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;size&quot;: 4,</span></span><br><span class="line"><span class="string">      &quot;distance&quot;: &quot;Cosine&quot;</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>查看Collection和检查是否存在：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection&quot;</span></span><br><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/exists&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>创建别名：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/aliases&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;actions&quot;: [</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;create_alias&quot;: &#123;</span></span><br><span class="line"><span class="string">          &quot;collection_name&quot;: &quot;test_collection&quot;,</span></span><br><span class="line"><span class="string">          &quot;alias_name&quot;: &quot;production_collection&quot;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      &#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="Point"><a href="#Point" class="headerlink" title="Point"></a>Point</h2><p>批量写入3个Point：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X PUT \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points?wait=true&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;points&quot;: [</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 1,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;red&quot;, &quot;city&quot;: &quot;Beijing&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.9, 0.1, 0.1, 0.2]</span></span><br><span class="line"><span class="string">      &#125;,</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 2,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;green&quot;, &quot;city&quot;: &quot;Shanghai&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.1, 0.9, 0.1, 0.2]</span></span><br><span class="line"><span class="string">      &#125;,</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 3,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;blue&quot;, &quot;city&quot;: &quot;Beijing&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.1, 0.1, 0.9, 0.2]</span></span><br><span class="line"><span class="string">      &#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="Scroll查询"><a href="#Scroll查询" class="headerlink" title="Scroll查询"></a>Scroll查询</h2><p>Scroll不计算向量相似度，适合按条件遍历Point：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/scroll&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 10,</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true,</span></span><br><span class="line"><span class="string">    &quot;with_vector&quot;: false</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>返回结果中的<code>next_page_offset</code>可以作为下一次请求的<code>offset</code>。</p>
-<h2 id="向量查询"><a href="#向量查询" class="headerlink" title="向量查询"></a>向量查询</h2><p><code>points/search</code>属于旧接口，向量查询改用QueryAPI：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/query&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;query&quot;: [0.2, 0.1, 0.9, 0.7],</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;params&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;hnsw_ef&quot;: 128,</span></span><br><span class="line"><span class="string">      &quot;exact&quot;: false</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 3,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>也可以使用已有Point的ID作为查询向量：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/query&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;query&quot;: 2,</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 3,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="统计"><a href="#统计" class="headerlink" title="统计"></a>统计</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/count&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;exact&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="删除Point"><a href="#删除Point" class="headerlink" title="删除Point"></a>删除Point</h2><p>按ID删除Point：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/delete?wait=true&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;&quot;points&quot;: [1, 3]&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/" class="post-title-link" itemprop="url">Ubuntu下搭建CUDA与容器GPU工具链</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-09-19 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-19T00:00:00+08:00">2024-09-19</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>我在Ubuntu22.04上既要使用CUDA进行本机开发，也要让Docker容器调用GPU。整套环境除了Toolkit，还涉及驱动、cuDNN和NVIDIAContainerToolkit，其中最容易出问题的是几组版本之间的兼容关系。</p>
-<h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.nvidia.com/Download/index.aspx?lang=en-us">NVIDIA驱动</a></li>
-<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-toolkit-archive">CUDAToolkit归档</a></li>
-<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/cudnn-downloads">cuDNN下载</a></li>
-<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN归档</a></li>
-</ul>
-<h2 id="先核对版本"><a href="#先核对版本" class="headerlink" title="先核对版本"></a>先核对版本</h2><p>驱动、CUDA和GCC的对应关系会变化，直接查当前版本的ReleaseNotes比保存一张静态大表可靠：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/">CUDAToolkitReleaseNotes</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deploy/cuda-compatibility/">CUDACompatibility</a></li>
-</ul>
-<p>先看机器上的现状：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi</span><br><span class="line"><span class="built_in">command</span> -v nvcc &amp;&amp; nvcc --version</span><br><span class="line"><span class="built_in">ls</span> -ld /usr/local/cuda* 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
-
-<p><code>nvidia-smi</code>顶部的<code>CUDAVersion</code>是驱动支持的最高CUDA版本，不代表已经安装了同版本的Toolkit。Toolkit版本以<code>nvcc --version</code>和安装目录为准。</p>
-<h2 id="使用Runfile安装CUDA"><a href="#使用Runfile安装CUDA" class="headerlink" title="使用Runfile安装CUDA"></a>使用Runfile安装CUDA</h2><p>Runfile适合离线安装或固定版本。能使用APT的机器还是优先用软件包，后续卸载和内核升级都省事一些。</p>
-<p>先安装编译工具和当前内核头文件：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y build-essential linux-headers-<span class="string">&quot;<span class="subst">$(uname -r)</span>&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>下载完成后核对校验值，再运行安装器：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sha256sum</span> cuda_&lt;version&gt;_linux.run</span><br><span class="line"><span class="built_in">sudo</span> sh cuda_&lt;version&gt;_linux.run</span><br></pre></td></tr></table></figure>
-
-<p>如果驱动已经通过APT或单独的Runfile装好，在交互界面中取消<code>Driver</code>，只安装<code>CUDAToolkit</code>。不要让两种安装方式同时管理驱动。</p>
-<p>安装完成后按实际目录配置环境变量：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=/usr/local/cuda-X.Y/bin:<span class="variable">$PATH</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=/usr/local/cuda-X.Y/lib64:<span class="variable">$&#123;LD_LIBRARY_PATH:-&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>确认<code>nvcc --version</code>正常后，再写入Shell配置文件。</p>
-<p>以前为了切换GCC，我直接改过<code>/usr/bin/gcc</code>软链接。这会影响系统中其他编译任务，现在更合适的做法是并行安装所需版本，并在构建时单独指定：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CC=/usr/bin/gcc-X CXX=/usr/bin/g++-X cmake -S . -B build</span><br></pre></td></tr></table></figure>
-
-<p>Runfile安装的Toolkit可以使用自带卸载器删除：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> /usr/local/cuda-X.Y/bin/cuda-uninstaller</span><br></pre></td></tr></table></figure>
-
-<h2 id="cuDNN"><a href="#cuDNN" class="headerlink" title="cuDNN"></a>cuDNN</h2><p>cuDNN还要单独核对CUDA版本和系统支持范围：</p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/cudnn/installation/latest/linux.html">cuDNN安装指南</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/cudnn/backend/latest/reference/support-matrix.html">cuDNNSupportMatrix</a></li>
-</ul>
-<p>当前系统如果已经配置NVIDIA软件源，可以直接安装与CUDA主版本对应的软件包。例如cuDNN9配合CUDA12：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y cudnn9-cuda-12</span><br></pre></td></tr></table></figure>
-
-<h2 id="Docker中使用GPU"><a href="#Docker中使用GPU" class="headerlink" title="Docker中使用GPU"></a>Docker中使用GPU</h2><p>旧的<code>nvidia-container-runtime</code>仓库已经归档，现在使用<code>nvidia-container-toolkit</code>。这里有一个容易混淆的地方：容器使用宿主机的GPU驱动，CUDA用户态库通常放在镜像里，所以镜像版本仍然受宿主机驱动限制。</p>
-<p>Ubuntu下配置APT仓库：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y --no-install-recommends \</span><br><span class="line">  ca-certificates curl gnupg2</span><br><span class="line"></span><br><span class="line">curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \</span><br><span class="line">  | <span class="built_in">sudo</span> gpg --dearmor \</span><br><span class="line">    -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg</span><br><span class="line"></span><br><span class="line">curl -sL https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \</span><br><span class="line">  | sed <span class="string">&#x27;s#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g&#x27;</span> \</span><br><span class="line">  | <span class="built_in">sudo</span> <span class="built_in">tee</span> /etc/apt/sources.list.d/nvidia-container-toolkit.list</span><br></pre></td></tr></table></figure>
-
-<p>安装并写入Docker运行时配置：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y nvidia-container-toolkit</span><br><span class="line"><span class="built_in">sudo</span> nvidia-ctk runtime configure --runtime=docker</span><br><span class="line"><span class="built_in">sudo</span> systemctl restart docker</span><br></pre></td></tr></table></figure>
-
-<p><code>nvidia-ctk</code>会修改<code>/etc/docker/daemon.json</code>，已有自定义配置时先备份这个文件。</p>
-<p>从<a target="_blank" rel="noopener" href="https://hub.docker.com/r/nvidia/cuda/tags">NVIDIACUDA镜像标签</a>中选一个宿主机驱动支持的版本进行验证：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> --gpus all \</span><br><span class="line">  nvidia/cuda:&lt;toolkit-tag&gt;-base-ubuntu22.04 \</span><br><span class="line">  nvidia-smi</span><br></pre></td></tr></table></figure>
-
-<p>宿主机的<code>nvidia-smi</code>正常、容器中却找不到GPU时，检查Docker运行时和Toolkit版本：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker info | sed -n <span class="string">&#x27;/Runtimes/,+3p&#x27;</span></span><br><span class="line">nvidia-ctk --version</span><br><span class="line">journalctl -u docker -n 100 --no-pager</span><br></pre></td></tr></table></figure>
-
+<p>Dry Run只能检查脚本执行和语法问题，不能证明外部IP分类准确，也不能判断某条防火墙规则是否应该使用这份列表。Address List本身不会改变流量，真正的放行、丢弃、标记或分流仍由引用它的Filter、Mangle、NAT和路由配置决定。</p>
+<h2 id="外部列表要保留来源和更新时间"><a href="#外部列表要保留来源和更新时间" class="headerlink" title="外部列表要保留来源和更新时间"></a>外部列表要保留来源和更新时间</h2><p><a target="_blank" rel="noopener" href="https://github.com/metowolf/iplist">metowolf&#x2F;iplist</a>提供国家、地区、运营商和云厂商等分类的CIDR文本，并持续更新。使用这类列表时，最好同时保留原始下载文件和生成日期，而不是只留下最终<code>.rsc</code>。当条目数量突然大幅变化时，先比较新旧输入，再决定是否导入。</p>
+<p>IP归属数据天然会变化，也可能存在分类误差。它适合做分流、统计或辅助匹配，不适合作为唯一的安全身份依据。尤其是白名单场景，不能因为某个地址出现在第三方地区列表里，就跳过认证和更精确的访问控制。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-installation-guide-linux/">NVIDIACUDAInstallationGuideforLinux</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html">NVIDIAContainerToolkit安装指南</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/NVIDIA/nvidia-container-toolkit">NVIDIAContainerToolkit源码</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.mikrotik.com/docs/firewall-and-quality-of-service/firewall/address-lists/">MikroTik：Address-lists</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.mikrotik.com/docs/getting-started/configuration-management/">MikroTik：Configuration Management</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.python.org/3/library/ipaddress.html">Python：ipaddress</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/metowolf/iplist">metowolf&#x2F;iplist</a></li>
 </ul>
 
       
@@ -1253,7 +1438,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Git%E5%AD%90%E6%A8%A1%E5%9D%97%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202510/PhanTun%E3%80%81udp2raw%E4%B8%8Ewstunnel%E7%9A%84UDP%E9%9A%A7%E9%81%93%E9%80%89%E6%8B%A9/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -1271,7 +1456,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/202409/Git%E5%AD%90%E6%A8%A1%E5%9D%97%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Git子模块常用操作</a>
+          <a href="/202510/PhanTun%E3%80%81udp2raw%E4%B8%8Ewstunnel%E7%9A%84UDP%E9%9A%A7%E9%81%93%E9%80%89%E6%8B%A9/" class="post-title-link" itemprop="url">PhanTun、udp2raw与wstunnel的UDP隧道选择</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1282,14 +1467,14 @@
       </span>
       <span class="post-meta-item-text">Posted on</span>
 
-      <time title="Created: 2024-09-18 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-18T00:00:00+08:00">2024-09-18</time>
+      <time title="Created: 2025-10-30 00:00:00" itemprop="dateCreated datePublished" datetime="2025-10-30T00:00:00+08:00">2025-10-30</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 22:10:00" itemprop="dateModified" datetime="2026-08-22T22:10:00+08:00">2026-08-22</time>
     </span>
 
   
@@ -1302,292 +1487,84 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>Git子模块本身的命令不多，真正容易漏掉的是主仓库只记录子模块的某个提交。子模块更新完成后，必须回到主仓库提交gitlink变化，否则其他人仍会取得旧版本。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-submodule">Git子模块文档</a></li>
-<li><a target="_blank" rel="noopener" href="https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E5%AD%90%E6%A8%A1%E5%9D%97">ProGit：子模块</a></li>
-</ul>
-<h2 id="克隆包含子模块的项目"><a href="#克隆包含子模块的项目" class="headerlink" title="克隆包含子模块的项目"></a>克隆包含子模块的项目</h2><p>克隆时可以顺便初始化所有子模块：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> \</span><br><span class="line">  --recurse-submodules \</span><br><span class="line">  https://example.com/project.git</span><br></pre></td></tr></table></figure>
-
-<p>普通克隆完成后，也可以再初始化：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git submodule update --init --recursive</span><br></pre></td></tr></table></figure>
-
-<p><code>--recursive</code>会继续处理子模块中的子模块。</p>
-<h2 id="添加子模块"><a href="#添加子模块" class="headerlink" title="添加子模块"></a>添加子模块</h2><p>添加时指定仓库地址、跟踪分支和本地目录：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">git submodule add \</span><br><span class="line">  -b main \</span><br><span class="line">  https://example.com/common.git \</span><br><span class="line">  app</span><br><span class="line"></span><br><span class="line">git submodule status</span><br><span class="line">git status</span><br><span class="line">git commit -m <span class="string">&#x27;添加common子模块&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>Git会新增<code>.gitmodules</code>，并在主仓库中记录子模块当前提交。主仓库记录的是一个确定的提交，不是子模块目录中的全部文件。</p>
-<p>已有子模块可以修改跟踪分支：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git submodule set-branch --branch main app</span><br><span class="line">git add .gitmodules</span><br><span class="line">git commit -m <span class="string">&#x27;调整子模块跟踪分支&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>这个分支配置只影响<code>git submodule update --remote</code>。普通的<code>git submodule update</code>仍以主仓库记录的提交为准。</p>
-<h2 id="更新子模块"><a href="#更新子模块" class="headerlink" title="更新子模块"></a>更新子模块</h2><p>拉取主仓库后，将子模块切换到主仓库记录的版本：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git pull</span><br><span class="line">git submodule update --init --recursive</span><br></pre></td></tr></table></figure>
-
-<p>如果需要取得子模块远程分支上的最新提交：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git submodule update --remote app</span><br><span class="line">git status</span><br><span class="line">git add app</span><br><span class="line">git commit -m <span class="string">&#x27;更新common子模块&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>最后两步不能省。子模块更新后，主仓库中的gitlink也发生了变化，需要提交才能让其他人取得同一个版本。</p>
-<p>直接进入子模块开发时也一样：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git -C app switch main</span><br><span class="line">git -C app pull</span><br><span class="line"></span><br><span class="line">git add app</span><br><span class="line">git commit -m <span class="string">&#x27;更新common子模块&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="修改仓库地址"><a href="#修改仓库地址" class="headerlink" title="修改仓库地址"></a>修改仓库地址</h2><p>子模块迁移到新地址后，需要同时更新<code>.gitmodules</code>和本地配置：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git submodule set-url \</span><br><span class="line">  app \</span><br><span class="line">  https://example.com/common.git</span><br><span class="line"></span><br><span class="line">git submodule <span class="built_in">sync</span> --recursive</span><br><span class="line">git add .gitmodules</span><br><span class="line">git commit -m <span class="string">&#x27;修改子模块地址&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="停用和删除"><a href="#停用和删除" class="headerlink" title="停用和删除"></a>停用和删除</h2><p>只想清掉本地工作目录，不修改主仓库历史：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git submodule deinit app</span><br></pre></td></tr></table></figure>
-
-<p>以后可以重新初始化：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git submodule update --init app</span><br></pre></td></tr></table></figure>
-
-<p>从主仓库中删除子模块：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">rm</span> app</span><br><span class="line">git commit -m <span class="string">&#x27;删除common子模块&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>不要直接删除子模块目录。<code>git rm</code>会同时处理主仓库中的gitlink和<code>.gitmodules</code>配置。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/" class="post-title-link" itemprop="url">Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-08-17 00:00:00" itemprop="dateCreated datePublished" datetime="2024-08-17T00:00:00+08:00">2024-08-17</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:15:22" itemprop="dateModified" datetime="2026-08-22T20:15:22+08:00">2026-08-22</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>这台Ubuntu桌面机同时承担GPU计算任务。我想单独调节风扇，并让核显负责桌面输出，尽量减少独立显卡上的常驻显存。下面的操作只对应这台机器当时的硬件和驱动版本。</p>
-<h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><table>
+          <p>有些网络对普通TCP连接没有限制，UDP却很不稳定，甚至完全不可用。WireGuard一类依赖UDP的服务遇到这种环境时，可以在外面再套一层传输。PhanTun、udp2raw和wstunnel都能做这件事，但它们模拟的层次不同，部署代价也不一样。</p>
+<p>我分别整理过这三种方案。真正选择时不必纠结谁“性能最好”，先看中间网络能够识别到哪一层：只有普通NAT和四层防火墙时，FakeTCP已经够用；必须经过HTTP代理或七层网关时，WebSocket才有意义。</p>
+<h2 id="三种方案的区别"><a href="#三种方案的区别" class="headerlink" title="三种方案的区别"></a>三种方案的区别</h2><table>
 <thead>
 <tr>
-<th>项目</th>
-<th>版本</th>
+<th>工具</th>
+<th>外层流量</th>
+<th>加密与认证</th>
+<th>额外要求</th>
+<th>更适合的情况</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>系统</td>
-<td>Ubuntu22.04</td>
+<td>PhanTun</td>
+<td>伪装成TCP的UDP流</td>
+<td>不负责业务加密</td>
+<td>TUN、IP转发、NAT规则</td>
+<td>追求简单和较低封装开销，链路只检查三、四层</td>
 </tr>
 <tr>
-<td>显卡</td>
-<td>GeForceRTX2080Ti</td>
+<td>udp2raw</td>
+<td>FakeTCP、UDP或ICMP</td>
+<td>自带对称加密与认证选项</td>
+<td>Raw Socket、配套防火墙规则</td>
+<td>需要多种伪装模式，或维护已有udp2raw部署</td>
 </tr>
 <tr>
-<td>驱动</td>
-<td>535.86.05</td>
-</tr>
-<tr>
-<td>CUDA</td>
-<td>11.8.89</td>
+<td>wstunnel</td>
+<td>WebSocket或HTTP&#x2F;2，可配TLS</td>
+<td>由TLS保护外层连接</td>
+<td>证书或反向代理</td>
+<td>需要穿过HTTP代理、七层网关，或复用HTTPS入口</td>
 </tr>
 </tbody></table>
-<h2 id="使用NVIDIASettings调整风扇"><a href="#使用NVIDIASettings调整风扇" class="headerlink" title="使用NVIDIASettings调整风扇"></a>使用NVIDIASettings调整风扇</h2><p>先生成Xorg配置：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nvidia-xconfig \</span><br><span class="line">  --allow-empty-initial-configuration \</span><br><span class="line">  --cool-bits=4</span><br></pre></td></tr></table></figure>
+<p>三者都不是VPN。它们只负责把一段UDP流量搬到另一端，内层仍然需要WireGuard或应用自身提供身份认证和数据保护。尤其PhanTun只是流量混淆层，不能因为外观看起来像TCP就把它当作加密隧道。</p>
+<h2 id="PhanTun：尽量少改变UDP特性"><a href="#PhanTun：尽量少改变UDP特性" class="headerlink" title="PhanTun：尽量少改变UDP特性"></a>PhanTun：尽量少改变UDP特性</h2><p>PhanTun把UDP数据包转换成能够通过常见防火墙和NAT的TCP外观，但不会引入真正TCP的重传和流量控制，因此仍保留UDP乱序到达等特性。当前官方发布版为<code>0.8.1</code>。</p>
+<p>它会在客户端和服务端创建TUN设备，需要先打开内核转发：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> sysctl -w net.ipv4.ip_forward=1</span><br></pre></td></tr></table></figure>
 
-<p>也可以手工增加<code>/etc/X11/xorg.conf.d/20-nvidia.conf</code>：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Section &quot;Device&quot;</span><br><span class="line">    Identifier &quot;Device0&quot;</span><br><span class="line">    Driver &quot;nvidia&quot;</span><br><span class="line">    Option &quot;Coolbits&quot; &quot;4&quot;</span><br><span class="line">EndSection</span><br></pre></td></tr></table></figure>
+<p>正式使用时应把配置写入<code>/etc/sysctl.d/</code>，而不是每次启动前临时执行。客户端还需要把TUN流量从物理网卡做源地址转换，服务端则要把监听的TCP端口转到PhanTun的TUN地址。规则应按官方README为当前接口和地址改写，不能直接照搬另一台机器的<code>eth0</code>和TUN网段。</p>
+<p>以本机UDP服务监听<code>127.0.0.1:51820</code>、PhanTun服务端对外监听TCP 4567为例，进程本身的参数很简单：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 服务端</span></span><br><span class="line">RUST_LOG=info phantun_server \</span><br><span class="line">  --<span class="built_in">local</span> 4567 \</span><br><span class="line">  --remote 127.0.0.1:51820</span><br><span class="line"></span><br><span class="line"><span class="comment"># 客户端</span></span><br><span class="line">RUST_LOG=info phantun_client \</span><br><span class="line">  --<span class="built_in">local</span> 127.0.0.1:51820 \</span><br><span class="line">  --remote tunnel.example.com:4567</span><br></pre></td></tr></table></figure>
 
-<p>重启后，在Xorg桌面中打开：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-settings</span><br></pre></td></tr></table></figure>
+<p>PhanTun需要管理TUN设备，但没有必要因此开放Root SSH或让网络进程长期以Root身份运行。官方给出的非Root方式是为二进制授予<code>cap_net_admin</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">setcap</span> cap_net_admin=+pe /usr/local/bin/phantun_server</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">setcap</span> cap_net_admin=+pe /usr/local/bin/phantun_client</span><br></pre></td></tr></table></figure>
 
-<p>只控制风扇时，Coolbits使用<code>4</code>即可。<code>28</code>虽然也能打开风扇控制，但同时启用了频率偏移和超压，没有必要。这个配置属于NVIDIA驱动的高级功能，改完先观察温度和稳定性：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 nvidia-smi</span><br></pre></td></tr></table></figure>
+<p>如果运行在PVE的非特权LXC里，还要让容器能够访问<code>/dev/net/tun</code>。这属于宿主机配置，容器编号和设备权限应以自己的环境为准，不能为了省事改成特权容器。</p>
+<p>PhanTun不做IP分片和重组，并设置DF位。套在WireGuard外面时要给新增的IP、TCP和WireGuard头部留出空间；官方以1500字节链路为例，IPv4建议从1428开始，IPv6从1408开始。实际链路如果还有PPPoE、VLAN或其他封装，需要继续下调并观察丢包。</p>
+<h2 id="udp2raw：功能多，但维护痕迹更重"><a href="#udp2raw：功能多，但维护痕迹更重" class="headerlink" title="udp2raw：功能多，但维护痕迹更重"></a>udp2raw：功能多，但维护痕迹更重</h2><p>udp2raw默认使用FakeTCP，也能切换为UDP或ICMP模式。它通过Raw Socket工作，并依赖一组防火墙规则阻止内核TCP栈干扰伪造连接。<code>-a</code>可以自动添加规则，<code>-g</code>则只打印所需规则，后者更适合先审阅再纳入自己的防火墙配置。</p>
+<p>下面是一组最小结构，密钥必须换成随机生成且只用于这一条隧道的值：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 服务端：外层监听4096，内层交给本机UDP 51820</span></span><br><span class="line">udp2raw_amd64 -s \</span><br><span class="line">  -l 0.0.0.0:4096 \</span><br><span class="line">  -r 127.0.0.1:51820 \</span><br><span class="line">  --raw-mode faketcp \</span><br><span class="line">  -k <span class="string">&#x27;&lt;REPLACE_WITH_RANDOM_SHARED_KEY&gt;&#x27;</span> \</span><br><span class="line">  -a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 客户端：本机UDP 51820转到远端4096</span></span><br><span class="line">udp2raw_amd64 -c \</span><br><span class="line">  -l 127.0.0.1:51820 \</span><br><span class="line">  -r 192.0.2.10:4096 \</span><br><span class="line">  --raw-mode faketcp \</span><br><span class="line">  -k <span class="string">&#x27;&lt;REPLACE_WITH_RANDOM_SHARED_KEY&gt;&#x27;</span> \</span><br><span class="line">  -a</span><br></pre></td></tr></table></figure>
 
-<p>我当时还遇到过<code>nvidia settings failed to set fan speed</code>。通过放宽<code>Xwrapper.config</code>权限可以绕过去，但这个处理范围过大，不建议照抄。先检查当前会话是否为Xorg、<code>DISPLAY</code>是否正确，以及独立显卡是否属于当前XScreen：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$XDG_SESSION_TYPE</span>&quot;</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$DISPLAY</span>&quot;</span></span><br><span class="line">nvidia-settings -q gpus</span><br></pre></td></tr></table></figure>
+<p>客户端和服务端的<code>--raw-mode</code>、密钥、加密模式与认证模式必须一致。命令行里的共享密钥可能被同机用户从进程列表看到，服务文件和日志也可能泄露它，因此至少要限制配置文件权限，并避免把真实值提交到Git。</p>
+<p>udp2raw仍然可用，但官方Release页面显示最新正式发布停留在2023年。新部署时我会优先评估维护更活跃的方案；已有稳定链路则没有必要只为了“换新”而迁移。</p>
+<h2 id="wstunnel：需要真正的WebSocket时再用"><a href="#wstunnel：需要真正的WebSocket时再用" class="headerlink" title="wstunnel：需要真正的WebSocket时再用"></a>wstunnel：需要真正的WebSocket时再用</h2><p>wstunnel把TCP或UDP流量放进WebSocket或HTTP&#x2F;2连接，适合中间网络要求标准HTTP握手、必须经过HTTP代理，或者已经有HTTPS入口的情况。它的协议层次更高，部署时要同时考虑TLS证书、域名解析和反向代理超时。</p>
+<p>服务端限制只允许转发到本机WireGuard端口，避免把它变成任意目标的开放代理：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wstunnel server \</span><br><span class="line">  --restrict-to 127.0.0.1:51820 \</span><br><span class="line">  wss://0.0.0.0:443</span><br></pre></td></tr></table></figure>
 
-<p>较新的驱动不一定继续提供相同的Coolbits能力，具体以当前驱动的README和<code>nvidia-settings</code>实际显示为准。</p>
-<h2 id="使用核显输出桌面"><a href="#使用核显输出桌面" class="headerlink" title="使用核显输出桌面"></a>使用核显输出桌面</h2><p>这台机器还有核显。让核显负责桌面输出后，独立显卡只保留计算任务，<code>nvidia-smi</code>中桌面进程占用的显存可以降到几MB。</p>
-<p>我的操作顺序如下：</p>
-<ol>
-<li>在BIOS中将核显设为首选显示设备。</li>
-<li>把显示器接到主板视频接口。</li>
-<li>将Ubuntu切换到核显模式并重启。</li>
-</ol>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prime-select query</span><br><span class="line"><span class="built_in">sudo</span> prime-select intel</span><br><span class="line"><span class="built_in">sudo</span> reboot</span><br></pre></td></tr></table></figure>
+<p>客户端在本机开一个UDP入口：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wstunnel client \</span><br><span class="line">  -L <span class="string">&#x27;udp://127.0.0.1:51820:127.0.0.1:51820?timeout_sec=0&#x27;</span> \</span><br><span class="line">  wss://tunnel.example.com:443</span><br></pre></td></tr></table></figure>
 
-<p>重启后检查桌面渲染设备和独立显卡占用：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glxinfo -B | sed -n <span class="string">&#x27;1,12p&#x27;</span></span><br><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure>
-
-<p>我还试过在<code>NVIDIASettings</code>中将Profile改为<code>On-Demand</code>。这台机器重启后本地没有正常显示，不过SSH仍能登录，独立显卡显存也确实只占了几MB。台式机的BIOS、视频接口和PRIME组合差异比较大，这一步不能直接当作通用配置。</p>
-<p>如果修改Xorg配置后进不了桌面，可以从TTY或SSH禁用新增文件：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">mv</span> /etc/X11/xorg.conf.d/20-nvidia.conf \</span><br><span class="line">  /etc/X11/xorg.conf.d/20-nvidia.conf.disabled</span><br><span class="line"><span class="built_in">sudo</span> reboot</span><br></pre></td></tr></table></figure>
-
-<h2 id="其他工具"><a href="#其他工具" class="headerlink" title="其他工具"></a>其他工具</h2><p><a target="_blank" rel="noopener" href="https://github.com/andyljones/coolgpus">coolgpus</a>可以直接设置转速或温度曲线。使用前仍要保证驱动已经开放风扇控制：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pip install coolgpus</span><br><span class="line"></span><br><span class="line">coolgpus --speed 99 99</span><br><span class="line">coolgpus --temp 20 55 80 --speed 5 30 99</span><br></pre></td></tr></table></figure>
-
-<p>使用<a target="_blank" rel="noopener" href="https://github.com/wilicc/gpu-burn">gpu-burn</a>测试时，可以限制时间、显存占用和显卡编号：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 运行1小时</span></span><br><span class="line">./gpu_burn -d 3600</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用50%显存</span></span><br><span class="line">./gpu_burn -m 50%</span><br><span class="line"></span><br><span class="line"><span class="comment"># 只测试GPU2</span></span><br><span class="line">./gpu_burn -i 2</span><br></pre></td></tr></table></figure>
-
+<p>WireGuard的<code>Endpoint</code>随后指向<code>127.0.0.1:51820</code>。如果WireGuard接管默认路由，还要为wstunnel服务端地址保留一条走物理网关的静态路由，否则会形成“wstunnel连接又被送回WireGuard”的循环。</p>
+<p><code>timeout_sec=0</code>用于关闭UDP映射默认的空闲超时，适合长期保持的WireGuard入口。吞吐异常时先检查MTU，不要一开始就把问题归咎于WebSocket。</p>
+<h2 id="动态公网地址的处理"><a href="#动态公网地址的处理" class="headerlink" title="动态公网地址的处理"></a>动态公网地址的处理</h2><p>三种客户端都可以把远端写成域名，但常驻进程通常只在启动时解析一次。服务端公网地址变化后，DNS记录即使已经更新，旧进程也可能继续连接原地址。</p>
+<p>我采用的处理方式是让systemd管理进程，再用一个很小的定时任务比较当前解析结果和上次记录；只有地址变化时才执行<code>systemctl restart</code>。脚本至少要满足这几个条件：</p>
+<ul>
+<li>使用<code>getent ahostsv4</code>或明确的A记录查询，失败时不覆盖旧状态。</li>
+<li>用<code>flock</code>防止定时任务重叠。</li>
+<li>状态写入<code>/run</code>或独立状态目录，不把解析结果混进配置文件。</li>
+<li>由systemd负责重启和日志，不用<code>pkill -f</code>模糊匹配整条命令。</li>
+</ul>
+<p>如果地址很少变化，手工重启服务反而比维护一百多行监控脚本更可靠。</p>
+<h2 id="我的选择"><a href="#我的选择" class="headerlink" title="我的选择"></a>我的选择</h2><p>普通家庭网络和四层防火墙之间传输WireGuard时，我会先试PhanTun；它的职责单一，额外开销和配置都比较容易看清。只有中间链路明确要求WebSocket、HTTP代理或HTTPS入口时才换wstunnel。udp2raw更适合维护既有部署，或者确实需要它提供的多种Raw模式。</p>
+<p>无论选择哪一种，都应该先用前台命令确认两端参数和MTU，再写成systemd服务。隧道能建立只说明外层连通，最终还要检查内层握手、路由、DNS和持续丢包情况。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://download.nvidia.com/XFree86/Linux-x86_64/535.86.05/README/xconfigoptions.html">535.86.05驱动的X配置选项</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/latest/">NVIDIALinux驱动安装指南</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/canonical/nvidia-prime">Ubuntu的nvidia-prime项目</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202406/%E8%AF%AD%E9%9F%B3%E5%8A%A9%E6%89%8B%E9%80%89%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202406/%E8%AF%AD%E9%9F%B3%E5%8A%A9%E6%89%8B%E9%80%89%E5%9E%8B/" class="post-title-link" itemprop="url">语音助手选型</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-05-29 09:19:09" itemprop="dateCreated datePublished" datetime="2024-05-29T09:19:09+08:00">2024-05-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="Whisper自动语音识别"><a href="#Whisper自动语音识别" class="headerlink" title="Whisper自动语音识别"></a>Whisper自动语音识别</h2><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://mdnice.com/writing/a40f4bcd3b3e40d8931512186982b711">https://mdnice.com/writing/a40f4bcd3b3e40d8931512186982b711</a></li>
-<li><a target="_blank" rel="noopener" href="https://transformers.run/">https://transformers.run/</a></li>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/docs/transformers/main_classes/pipelines">https://huggingface.co/docs/transformers/main_classes/pipelines</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/openai/whisper">https://github.com/openai/whisper</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/askrella/speech-rest-api">https://github.com/askrella/speech-rest-api</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/wuhanchu/whisper_service/blob/main/run.py">https://github.com/wuhanchu/whisper_service/blob/main/run.py</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/muaz-khan/RecordRTC/issues/630">https://github.com/muaz-khan/RecordRTC/issues/630</a></li>
-</ul>
-<h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://openai.com/index/whisper/">https://openai.com/index/whisper/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/openai/whisper">https://github.com/openai/whisper</a></li>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/openai/whisper-large-v3">https://huggingface.co/openai/whisper-large-v3</a></li>
-</ul>
-<h2 id="语义相似度比对"><a href="#语义相似度比对" class="headerlink" title="语义相似度比对"></a>语义相似度比对</h2><h3 id="参考-1"><a href="#参考-1" class="headerlink" title="参考"></a>参考</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/whxf/awesome-chinese-nlp/blob/master/doc/%E6%96%87%E6%9C%AC%E7%9B%B8%E4%BC%BC%E5%BA%A6.md">https://github.com/whxf/awesome-chinese-nlp/blob/master/doc/%E6%96%87%E6%9C%AC%E7%9B%B8%E4%BC%BC%E5%BA%A6.md</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/huaweicloud/ModelArts-Lab/blob/master/notebook/DL_nlp_text_similarity/text_similarity.ipynb">https://github.com/huaweicloud/ModelArts-Lab/blob/master/notebook/DL_nlp_text_similarity/text_similarity.ipynb</a></li>
-</ul>
-<h3 id="Sentence-Similarity"><a href="#Sentence-Similarity" class="headerlink" title="Sentence Similarity"></a>Sentence Similarity</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/models?pipeline_tag=sentence-similarity&language=zh&sort=trending">https://huggingface.co/models?pipeline_tag=sentence-similarity&amp;language=zh&amp;sort=trending</a></li>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/shibing624/text2vec-base-chinese">https://huggingface.co/shibing624/text2vec-base-chinese</a>   102M params</li>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/sentence-transformers/LaBSE">https://huggingface.co/sentence-transformers/LaBSE</a>   471M params</li>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/GanymedeNil/text2vec-large-chinese">https://huggingface.co/GanymedeNil/text2vec-large-chinese</a>  326M params</li>
-</ul>
-<h3 id="Feature-Extraction"><a href="#Feature-Extraction" class="headerlink" title="Feature Extraction"></a>Feature Extraction</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/models?pipeline_tag=feature-extraction&language=zh&sort=trending">https://huggingface.co/models?pipeline_tag=feature-extraction&amp;language=zh&amp;sort=trending</a></li>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/maidalun1020/bce-embedding-base_v1">https://huggingface.co/maidalun1020/bce-embedding-base_v1</a></li>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/intfloat/multilingual-e5-large">https://huggingface.co/intfloat/multilingual-e5-large</a></li>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/BAAI/bge-large-zh-v1.5">https://huggingface.co/BAAI/bge-large-zh-v1.5</a></li>
-</ul>
-<h3 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/dndx/phantun">PhanTun官方仓库</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/wangyu-/udp2raw">udp2raw官方仓库</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/erebe/wstunnel">wstunnel官方仓库</a></li>
 </ul>
 
       
@@ -1608,7 +1585,7 @@
 
 
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>

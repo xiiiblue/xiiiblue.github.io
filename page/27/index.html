@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">282</span>
+          <span class="site-state-item-count">291</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,897 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">阿里云DRDS分库分表</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:36:19" itemprop="dateCreated datePublished" datetime="2018-11-06T15:36:19+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>以下大部分内容非原创，整理自阿里云官方文档</p>
+</blockquote>
+<h2 id="单库单表"><a href="#单库单表" class="headerlink" title="单库单表"></a>单库单表</h2><p>建一张单库单表，不做任何拆分。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> single_tbl(</span><br><span class="line">  id <span class="type">int</span>,</span><br><span class="line">  name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line">  <span class="keyword">primary key</span>(id)</span><br><span class="line">);</span><br><span class="line"><span class="keyword">show</span> topology <span class="keyword">from</span> single_tbl;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> normal_table(</span><br><span class="line">id <span class="type">int</span>,</span><br><span class="line">name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line"><span class="keyword">primary key</span>(id)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br></pre></td></tr></table></figure>
+
+<h2 id="分库不分表"><a href="#分库不分表" class="headerlink" title="分库不分表"></a>分库不分表</h2><p>假设已经建好的分库数为 8，建一张表，只分库不分表，分库方式为根据 id 列哈希。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> multi_db_single_tbl(</span><br><span class="line">  id <span class="type">int</span>,</span><br><span class="line">  name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line">  <span class="keyword">primary key</span>(id)</span><br><span class="line">) dbpartition <span class="keyword">by</span> hash(id);</span><br><span class="line"></span><br><span class="line"><span class="keyword">show</span> topology <span class="keyword">from</span> multi_db_single_tbl;</span><br></pre></td></tr></table></figure>
+<h2 id="分库分表"><a href="#分库分表" class="headerlink" title="分库分表"></a>分库分表</h2><h3 id="使用哈希函数做拆分"><a href="#使用哈希函数做拆分" class="headerlink" title="使用哈希函数做拆分"></a>使用哈希函数做拆分</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> multi_db_multi_tbl(</span><br><span class="line">  id <span class="type">int</span> auto_increment,</span><br><span class="line">  bid <span class="type">int</span>,</span><br><span class="line">  name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line">  <span class="keyword">primary key</span>(id)</span><br><span class="line">) dbpartition <span class="keyword">by</span> hash(id) tbpartition <span class="keyword">by</span> hash(bid) tbpartitions <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">show</span> topology <span class="keyword">from</span> multi_db_multi_tbl;</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用双字段哈希函数做拆分"><a href="#使用双字段哈希函数做拆分" class="headerlink" title="使用双字段哈希函数做拆分"></a>使用双字段哈希函数做拆分</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create table</span> test_order_tb (  </span><br><span class="line">          id <span class="type">int</span>,</span><br><span class="line">          seller_id <span class="type">varchar</span>(<span class="number">30</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,  </span><br><span class="line">          buyer_id <span class="type">varchar</span>(<span class="number">30</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">          create_time datetime <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">          <span class="keyword">primary key</span>(id)</span><br><span class="line">  ) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8 dbpartition <span class="keyword">by</span> RANGE_HASH(seller_id,buyer_id, <span class="number">10</span>) tbpartition <span class="keyword">by</span> RANGE_HASH(seller_id,buyer_id, <span class="number">10</span>) tbpartitions <span class="number">3</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">show</span> topology <span class="keyword">from</span> multi_db_multi_tbl;</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用日期做拆分"><a href="#使用日期做拆分" class="headerlink" title="使用日期做拆分"></a>使用日期做拆分</h3><p>可以使用日期函数 MM&#x2F;DD&#x2F;WEEK&#x2F;MMDD 来作为分表的拆分算法</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> user_log(</span><br><span class="line">userId <span class="type">int</span>,</span><br><span class="line">name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line">operation <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line">actionDate <span class="type">DATE</span></span><br><span class="line">) dbpartition <span class="keyword">by</span> hash(userId) tbpartition <span class="keyword">by</span> WEEK(actionDate) tbpartitions <span class="number">7</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">show</span> topology <span class="keyword">from</span> user_log;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> user_log2(</span><br><span class="line">userId <span class="type">int</span>,</span><br><span class="line">name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line">operation <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line">actionDate <span class="type">DATE</span></span><br><span class="line">) dbpartition <span class="keyword">by</span> hash(userId) tbpartition <span class="keyword">by</span> MM(actionDate) tbpartitions <span class="number">12</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">show</span> topology <span class="keyword">from</span> user_log2;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="默认使用主键作为拆分字段"><a href="#默认使用主键作为拆分字段" class="headerlink" title="默认使用主键作为拆分字段"></a>默认使用主键作为拆分字段</h2><p>当拆分算法不指定任何拆分字段时，系统默认使用主键作为拆分字段。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> prmkey_tbl(</span><br><span class="line">id <span class="type">int</span>,</span><br><span class="line">name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line"><span class="keyword">primary key</span>(id)</span><br><span class="line">) dbpartition <span class="keyword">by</span> hash();</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> prmkey_multi_tbl(</span><br><span class="line">id <span class="type">int</span>,</span><br><span class="line">name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line"><span class="keyword">primary key</span>(id)</span><br><span class="line">) dbpartition <span class="keyword">by</span> hash() tbpartition <span class="keyword">by</span> hash() tbpartitions <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="广播表"><a href="#广播表" class="headerlink" title="广播表"></a>广播表</h2><p>子句BROADCAST用来指定创建广播表。广播表是指将这个表复制到每个分库上，在分库上通过同步机制实现数据一致，有秒级延迟。<br>这样做的好处是可以将 JOIN 操作下推到底层的 RDS（MySQL)，来避免跨库 JOIN。  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> brd_tbl(</span><br><span class="line">  id <span class="type">int</span>,</span><br><span class="line">  name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line">  <span class="keyword">primary key</span>(id)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8 BROADCAST;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>直接在客户端使用DDL建表好像并不成功，尽量使用WEB控制台建表</p>
+</blockquote>
+<h2 id="其它操作"><a href="#其它操作" class="headerlink" title="其它操作"></a>其它操作</h2><h3 id="查看物理表的拓扑结构"><a href="#查看物理表的拓扑结构" class="headerlink" title="查看物理表的拓扑结构"></a>查看物理表的拓扑结构</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> TOPOLOGY <span class="keyword">FROM</span> multi_db_multi_tbl;</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看逻辑表是否创建成功"><a href="#查看逻辑表是否创建成功" class="headerlink" title="查看逻辑表是否创建成功"></a>查看逻辑表是否创建成功</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CHECK</span> <span class="keyword">TABLE</span> multi_db_multi_tbl;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6/" class="post-title-link" itemprop="url">阿里云DRDS使用限制</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:36:05" itemprop="dateCreated datePublished" datetime="2018-11-06T15:36:05+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>以下大部分内容非原创，整理自阿里云官方文档</p>
+</blockquote>
+<h2 id="SQL大类限制"><a href="#SQL大类限制" class="headerlink" title="SQL大类限制"></a>SQL大类限制</h2><ul>
+<li>暂不支持用户自定义数据类型、自定义函数。</li>
+<li>暂不支持视图、存储过程、触发器、游标。</li>
+<li>暂不支持 BEGIN…END、LOOP…END LOOP、REPEAT…UNTIL…END REPEAT、WHILE…DO…END WHILE 等复合语句。</li>
+<li>暂不支类似 IF ，WHILE 等流程控制类语句。</li>
+</ul>
+<h2 id="DDL限制"><a href="#DDL限制" class="headerlink" title="DDL限制"></a>DDL限制</h2><ul>
+<li>CREATE TABLE tbl_name LIKE old_tbl_name 不支持拆分表。</li>
+<li>CREATE TABLE tbl_name SELECT statement 不支持拆分表。</li>
+</ul>
+<h2 id="数据库管理限制"><a href="#数据库管理限制" class="headerlink" title="数据库管理限制"></a>数据库管理限制</h2><ul>
+<li>SHOW WARNINGS Syntax 不支持 LIMIT&#x2F;COUNT 的组合。</li>
+<li>SHOW ERRORS Syntax 不支持 LIMIT&#x2F;COUNT 的组合。</li>
+</ul>
+<h2 id="DML限制"><a href="#DML限制" class="headerlink" title="DML限制"></a>DML限制</h2><ul>
+<li>暂不支持 SELECT INTO OUTFILE&#x2F;INTO DUMPFILE&#x2F;INTO var_name。</li>
+<li>暂不支持 INSERT DELAYED Syntax。</li>
+<li>暂不支持非 WHERE 条件的 Correlate Subquery。</li>
+<li>暂不支持 SQL 中带聚合条件的 Correlate Subquery。</li>
+<li>暂不支持 SQL 中对于变量的引用和操作，比如 SET @c&#x3D;1, @d&#x3D;@c+1; SELECT @c, @d。</li>
+</ul>
+<blockquote>
+<p>关于 Correlated Subquery 的解释：<br>Correlated Subquery is a sub-query that uses values from the outer query. In this case the inner query has to be executed for every row of outer query.<br>See example here <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Correlated_subquery">http://en.wikipedia.org/wiki/Correlated_subquery</a><br>Simple subquery doesn’t use values from the outer query and is being calculated only once:  </p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> id, first_name</span><br><span class="line"><span class="keyword">FROM</span> student_details</span><br><span class="line"><span class="keyword">WHERE</span> id <span class="keyword">IN</span> (<span class="keyword">SELECT</span> student_id</span><br><span class="line"><span class="keyword">FROM</span> student_subjects</span><br><span class="line"><span class="keyword">WHERE</span> subject<span class="operator">=</span> <span class="string">&#x27;Science&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>DDL限制、数据库管理限制，由于与应用关系不大，编码时无须特别关心。<br>SQL大类限制，如视图、存储过程、触发器、游标等，通常是不被提倡的坏味道，如果有的话，直接改方式实现即可。<br>DML限制，需要特别注意。如果使用ORM，应该不会有太大问题，但用jdbcTemplate写原生SQL的话（如实时报表类的功能点）有可能会踩坑。<br>另外默认不支持跨实例事务，私有云貌似也没有GTS选项，需要在代码层面进行优化。</p>
+<h2 id="DML错误示例"><a href="#DML错误示例" class="headerlink" title="DML错误示例"></a>DML错误示例</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> (<span class="keyword">select</span> id,name <span class="keyword">from</span> normal_tables) t</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>[b8040ac9f401000][192.168.2.47:3306][dev_sc_dmanage]ERR-CODE: [TDDL-4007][ERR_CANNOT_FETCH_TABLE_META] Table ‘normal_tables’ metadata cannot be fetched because Table ‘dev_sc_dmanage_ssiu_0000.normal_tables’ doesn’t exist. More: [<a target="_blank" rel="noopener" href="http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007%5D">http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007]</a></p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> a,<span class="operator">*</span>,b.<span class="operator">*</span> <span class="keyword">from</span> shard_table a</span><br><span class="line"><span class="keyword">left</span> <span class="keyword">join</span> (<span class="keyword">select</span> id,name <span class="keyword">from</span> normal_table) b <span class="keyword">on</span> b.id<span class="operator">=</span>a.id;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>[b80405010801000][192.168.2.47:3306][dev_sc_dmanage]column: a is not existed in either null or select clause</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> a,<span class="operator">*</span>,b.<span class="operator">*</span> <span class="keyword">from</span> normal_tables a</span><br><span class="line"><span class="keyword">left</span> <span class="keyword">join</span> (<span class="keyword">select</span> id,name <span class="keyword">from</span> shard_table) b <span class="keyword">on</span> b.id<span class="operator">=</span>a.id;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>[b8040692c001000][192.168.2.47:3306][dev_sc_dmanage]ERR-CODE: [TDDL-4007][ERR_CANNOT_FETCH_TABLE_META] Table ‘normal_tables’ metadata cannot be fetched because Table ‘dev_sc_dmanage_ssiu_0000.normal_tables’ doesn’t exist. More: [<a target="_blank" rel="noopener" href="http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007%5D">http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007]</a></p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert into</span> group_seq_tbl (name) <span class="keyword">values</span> (<span class="string">&#x27;hello&#x27;</span>);</span><br><span class="line"><span class="keyword">insert into</span> group_seq_tbl (name) <span class="keyword">values</span> (<span class="string">&#x27;hello&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>[b807dfe12c01000-24][192.168.2.47:3306][dev_sc_dmanage]ERR-CODE: [TDDL-4603][ERR_ACCROSS_DB_TRANSACTION] Transaction accross db is not supported in current transaction policy, transaction node is: DEV_SC_DMANAGE_1501040729564NYQSDEV_SC_DMANAGE_SSIU_0003_RDS, but this sql execute on: DEV_SC_DMANAGE_1501040729564NYQSDEV_SC_DMANAGE_SSIU_0006_RDS. More: [<a target="_blank" rel="noopener" href="http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4603%5D">http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4603]</a></p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%20Sequence/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%20Sequence/" class="post-title-link" itemprop="url">阿里云DRDS Sequence</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:35:55" itemprop="dateCreated datePublished" datetime="2018-11-06T15:35:55+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>以下大部分内容非原创，整理自阿里云官方文档</p>
+</blockquote>
+<h2 id="DRDS-Sequence简介"><a href="#DRDS-Sequence简介" class="headerlink" title="DRDS Sequence简介"></a>DRDS Sequence简介</h2><p>DRDS 全局唯一数字序列（64 位数字，对应 MySQL 中 Signed BIGINT 类型）的主要目标是为了生成全局唯一和有序递增的数字序列，<strong>常用于主键列、唯一索引列等值的生成</strong>。</p>
+<h2 id="显式与隐式"><a href="#显式与隐式" class="headerlink" title="显式与隐式"></a>显式与隐式</h2><ul>
+<li>显式 Sequence，通过 Sequence DDL 语法创建和维护，可以独立使用；通过select seq.nextval;获取序列值，seq 是具体 Sequence 的名字；</li>
+<li>隐式 Sequence，在为主键定义 AUTO_INCREMENT 后，用于自动填充主键，由 DRDS 自动维护。</li>
+</ul>
+<blockquote>
+<p>注意：仅拆分表和广播表指定了 AUTO_INCREMENT 后，DRDS 才会创建隐式的 Sequence。<br>非拆分表并不会，非拆分表的 AUTO_INCREMENT 的值由底层 RDS（MySQL）自己生成。  </p>
+</blockquote>
+<h2 id="三种类型"><a href="#三种类型" class="headerlink" title="三种类型"></a>三种类型</h2><h3 id="Group-Sequence（GROUP）"><a href="#Group-Sequence（GROUP）" class="headerlink" title="Group Sequence（GROUP）"></a>Group Sequence（GROUP）</h3><p>全局唯一的 Sequence，产生的值是自然数序列，但是 <strong>不保证连续和单调递增</strong>。如果未指定 Sequence 类型，DRDS <strong>默认使用</strong> Group Sequence。</p>
+<h3 id="Time-based-Sequence（TIME）"><a href="#Time-based-Sequence（TIME）" class="headerlink" title="Time-based Sequence（TIME）"></a>Time-based Sequence（TIME）</h3><p>基于时间戳 + 节点编号 + 序列号组合而成的一种 Sequence，保证全局唯一和 <strong>宏观自增</strong>（产生的序列不连续）。  </p>
+<h3 id="Simple-Sequence（SIMPLE）"><a href="#Simple-Sequence（SIMPLE）" class="headerlink" title="Simple Sequence（SIMPLE）"></a>Simple Sequence（SIMPLE）</h3><p>支持自定义步长、最大值和循环&#x2F;非循环利用。但每产生一个值都要进行一次持久化操作，性能不好。</p>
+<blockquote>
+<p>大部分场景下建议选用Group Sequence<br>如果业务强依赖连续的Sequence，此时只能使用 Simple Sequence（注意性能问题）<br>对于性能要求比较高时优先考虑使用 Time-based Sequence</p>
+</blockquote>
+<h2 id="创建及删除显式Sequence"><a href="#创建及删除显式Sequence" class="headerlink" title="创建及删除显式Sequence"></a>创建及删除显式Sequence</h2><p>默认创建GROUP类型  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> SEQUENCE seq1;</span><br></pre></td></tr></table></figure>
+
+<p>指定GROUP类型  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CREATE GROUP SEQUENCE seq2;</span><br></pre></td></tr></table></figure>
+
+<p>指定TIME类型  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="type">TIME</span> SEQUENCE seq3;</span><br></pre></td></tr></table></figure>
+
+<p>指定SIMPLE类型（起始值是 1000，步长为 2，最大值为 99999999999，增长到最大值后不继续循环）  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> SIMPLE SEQUENCE seq4 <span class="keyword">START</span> <span class="keyword">WITH</span> <span class="number">1000</span> INCREMENT <span class="keyword">BY</span> <span class="number">2</span> MAXVALUE <span class="number">99999999999</span> NOCYCLE;</span><br></pre></td></tr></table></figure>
+
+<p>删除Sequence</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> SEQUENCE seq1;</span><br></pre></td></tr></table></figure>
+
+<p>查询Sequence</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> SEQUENCES</span><br></pre></td></tr></table></figure>
+
+<p>取Sequence的值</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> seq1.NEXTVAL;</span><br><span class="line"><span class="keyword">select</span> seq1.NEXTVAL <span class="keyword">from</span> dual;</span><br></pre></td></tr></table></figure>
+
+<h2 id="隐式用法"><a href="#隐式用法" class="headerlink" title="隐式用法"></a>隐式用法</h2><p>语法  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> <span class="operator">&lt;</span>name<span class="operator">&gt;</span> (</span><br><span class="line">   <span class="operator">&lt;</span><span class="keyword">column</span><span class="operator">&gt;</span> ... AUTO_INCREMENT [ <span class="keyword">BY</span> <span class="keyword">GROUP</span> <span class="operator">|</span> SIMPLE <span class="operator">|</span> <span class="type">TIME</span> ],</span><br><span class="line">   <span class="operator">&lt;</span><span class="keyword">column</span> definition<span class="operator">&gt;</span>,</span><br><span class="line">   ...</span><br><span class="line">) ... AUTO_INCREMENT<span class="operator">=</span><span class="operator">&lt;</span><span class="keyword">start</span> <span class="keyword">value</span><span class="operator">&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>示例  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> `group_seq_tbl` (</span><br><span class="line">  `id` <span class="type">int</span>(<span class="number">11</span>) <span class="keyword">NOT NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `name` <span class="type">varchar</span>(<span class="number">30</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY KEY</span> (`id`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB  AUTO_INCREMENT<span class="operator">=</span><span class="number">2000</span> <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8 dbpartition <span class="keyword">by</span> hash(`id`);</span><br><span class="line"></span><br><span class="line"><span class="keyword">insert into</span> group_seq_tbl (name) <span class="keyword">values</span> (<span class="string">&#x27;foobar&#x27;</span>);</span><br><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> group_seq_tbl;</span><br></pre></td></tr></table></figure>
+
+<p>查看建表语句  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SHOW CREATE TABLE group_seq_tbl;</span><br></pre></td></tr></table></figure>
+
+<p>修改起始值</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SHOW</span> SEQUENCES;</span><br><span class="line"><span class="keyword">ALTER</span> SEQUENCE AUTO_SEQ_group_seq_tbl <span class="keyword">START</span> <span class="keyword">WITH</span> <span class="number">600000</span>;</span><br><span class="line"><span class="keyword">select</span> AUTO_SEQ_group_seq_tbl.nextval;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>将GRUOP类型一个Sequence的START由200000设成300000后，测试nextval时会从400000开始。<br>这不是BUG，是由GROUP特性决定的。使用SIMPLE，才可以保证连续、单调递增。  </p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201709/feign%E5%A3%B0%E6%98%8E%E5%BC%8FREST%E8%B0%83%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201709/feign%E5%A3%B0%E6%98%8E%E5%BC%8FREST%E8%B0%83%E7%94%A8/" class="post-title-link" itemprop="url">Feign-声明式REST调用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:35:01" itemprop="dateCreated datePublished" datetime="2018-11-06T15:35:01+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>本文主要介绍如何使用spring-cloud-feign，在项目中使用Feign进行REST调用。</p>
+<p>通常我们进行微服务间的REST调用时，一般会使用restTemplate，写起来也比较方便，例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ResponseEntity&lt;UserDTO&gt; result = restTemplate.getForEntity(baseurl + &quot;/users?serialNumber=18612341234&quot;, UserDTO.class);</span><br><span class="line"></span><br><span class="line">ResponseEntity&lt;String&gt; result = restTemplate.exchange(baseurl +  &quot;/users/1715043034165359&quot;, HttpMethod.PUT, new HttpEntity(user), String.class);</span><br></pre></td></tr></table></figure>
+<p>但RestTemplate这种方式的缺点是代码量略大，且不太直观。  </p>
+<p>微服务强调跨语言解耦，不提倡以前那种将API部分打包并分发的方式。不同微服务间的业务代码的冗余不可避免。使用Feign，就可以简化Rest客户端这一部分的代码。</p>
+<h2 id="引入pom-xml依赖"><a href="#引入pom-xml依赖" class="headerlink" title="引入pom.xml依赖"></a>引入pom.xml依赖</h2><p>Spring Boot工程中，直接引入spring-cloud-starter-feign依赖即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependencyManagement&gt;</span><br><span class="line">  &lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">      &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">      &lt;artifactId&gt;spring-cloud-dependencies&lt;/artifactId&gt;</span><br><span class="line">      &lt;version&gt;Dalston.SR2&lt;/version&gt;</span><br><span class="line">      &lt;type&gt;pom&lt;/type&gt;</span><br><span class="line">      &lt;scope&gt;import&lt;/scope&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">  &lt;/dependencies&gt;</span><br><span class="line">&lt;/dependencyManagement&gt;</span><br><span class="line"></span><br><span class="line">&lt;dependencies&gt;</span><br><span class="line">  &lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-cloud-starter-feign&lt;/artifactId&gt;</span><br><span class="line">  &lt;/dependency&gt;</span><br><span class="line">&lt;/dependencies&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="application-yml配置"><a href="#application-yml配置" class="headerlink" title="application.yml配置"></a>application.yml配置</h2><p>新版本的Feign默认是禁用Hystrix的，需要手工配置打开。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">feign.hystrix.enabled: true</span><br></pre></td></tr></table></figure>
+
+<p>Feign本身可以与Eureka&#x2F;Ribbon比较好的配合使用，不需要其它配置，直接使用”应用名”进行调用。</p>
+<p>当微服务没有使用Eureka做服务发现时，就需要手工配置Ribbon。例如，当使用marathon-lb时，可以这样配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">marathon-lb-internal.ribbon.listOfServers: marathon-lb-internal.marathon.mesos</span><br></pre></td></tr></table></figure>
+<p>这里指定了一个DNS，当然也可以写死一个或多个IP。</p>
+<h2 id="启用EnableFeignClients注解"><a href="#启用EnableFeignClients注解" class="headerlink" title="启用EnableFeignClients注解"></a>启用EnableFeignClients注解</h2><p>最简单的，可以在Application.java上，加上这个注解：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@EnableFeignClients</span><br></pre></td></tr></table></figure>
+
+<p>或者，新建一个配置类，指定profile：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@Profile(&quot;enable-feign&quot;)</span><br><span class="line">@Configuration</span><br><span class="line">@EnableFeignClients(basePackages = &#123;&quot;com.sitech.sdtools&quot;&#125;)</span><br><span class="line">public class FeignConfiguration &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p>使用配置类+profile的好处是，可以根据不同的环境，非常方便的启用&#x2F;禁用Feign。<br>特别是在单元测试时，由于mockito无法对Feign生成的Bean进行Mock，这时就可以在profile中禁用Feign，直接执行Fallback。  </p>
+<blockquote>
+<p>另外，需要注意一下，如果配置类的路径不是在根路径，而是在com.foo.bar.config这样的包下，需要加上”basePackages”参数。</p>
+</blockquote>
+<h2 id="解决Bean冲突"><a href="#解决Bean冲突" class="headerlink" title="解决Bean冲突"></a>解决Bean冲突</h2><p>我目前的Spring Clound的版本是Dalston.SR2，如果集成了Hystrix，编写Fallback类后会有Bean冲突的问题，貌似是自动生成的@Primary注解无效，具体原因没有深究，可以通过配置解决，示例如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@Configuration</span><br><span class="line">@ConditionalOnClass(&#123;Feign.class&#125;)</span><br><span class="line">public class FeignConfiguration &#123;</span><br><span class="line">    @Bean</span><br><span class="line">    public WebMvcRegistrations feignWebRegistrations() &#123;</span><br><span class="line">        return new WebMvcRegistrationsAdapter() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public RequestMappingHandlerMapping getRequestMappingHandlerMapping() &#123;</span><br><span class="line">                return new FeignFilterRequestMappingHandlerMapping();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private static class FeignFilterRequestMappingHandlerMapping extends RequestMappingHandlerMapping &#123;</span><br><span class="line">        @Override</span><br><span class="line">        protected boolean isHandler(Class&lt;?&gt; beanType) &#123;</span><br><span class="line">            return super.isHandler(beanType) &amp;&amp; (AnnotationUtils.findAnnotation(beanType, FeignClient.class) == null);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="开启日志"><a href="#开启日志" class="headerlink" title="开启日志"></a>开启日志</h2><p>Feign的日志是DEBUG级别，在LogBack中有时需要特别配置一下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;logger name=&quot;com.foo.bar.client&quot; additivity=&quot;false&quot; level=&quot;debug&quot;&gt;</span><br><span class="line">  &lt;appender-ref ref=&quot;stdout&quot;/&gt;</span><br><span class="line">&lt;/logger&gt;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="定义client接口"><a href="#定义client接口" class="headerlink" title="定义client接口"></a>定义client接口</h2><p>下面开始，正式进入正题，定义一个接口，并加上@FeignClient注解。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FeignClient(name = &quot;marathon-lb-internal&quot;, fallback = StaticInfoClientFallback.class)</span></span><br><span class="line"><span class="meta">@RequestMapping(value = &quot;/sd/staticinfo&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">StaticInfoClient</span> &#123;</span><br><span class="line">    <span class="meta">@RequestMapping(value = &quot;/products/&#123;productId&#125;&quot;, method = RequestMethod.GET)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">ProductDTO</span> <span class="title function_">getProductInfo</span><span class="params">(<span class="meta">@PathVariable(&quot;productId&quot;)</span> Long productId)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以直接在服务端的Controller层中拷贝代码，稍做修改即可，非常方便。</p>
+<blockquote>
+<p>但请注意：</p>
+<ol>
+<li><code>@PathVariable(&quot;productId&quot;)</code>，需要显示的指定对应的参数名，不能像SpringMVC一样自动对应。</li>
+<li>目前只能使用<code>@RequestMapping</code>注解，而不能使用<code>@GetMapping</code>等</li>
+</ol>
+</blockquote>
+<h2 id="编写fallback类"><a href="#编写fallback类" class="headerlink" title="编写fallback类"></a>编写fallback类</h2><p>当调用失败时，会执行fallback类中的逻辑。    </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">class StaticInfoClientFallback implements StaticInfoClient &#123;</span><br><span class="line">    private static final Logger logger = LoggerFactory.getLogger(TradeInfoClientFallback.class);</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public ProductDTO getProductInfo(Long productId) &#123;</span><br><span class="line">        logger.error(&quot;StaticInfoClient.getProductInfo 执行失败&quot;);</span><br><span class="line"></span><br><span class="line">        ProductDTO dto = new ProductDTO();</span><br><span class="line">        dto.setProductId(productId);</span><br><span class="line">        dto.setProductName(&quot;产品名称暂时无法获取&quot;);</span><br><span class="line">        return dto;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意不要忘记加上<code>@Component</code></p>
+</blockquote>
+<h2 id="发起REST调用"><a href="#发起REST调用" class="headerlink" title="发起REST调用"></a>发起REST调用</h2><p>REST调用也非常简单，一行代码搞定：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ProductDTO productInfo = staticInfoClient.getProductInfo(entity.getProductId());</span><br></pre></td></tr></table></figure>
+
+<h2 id="END"><a href="#END" class="headerlink" title="END"></a>END</h2><p>Feign的配置略微复杂，坑也比较多，有一定的学习成本的。但带来的好处理，在使用上即优雅又方便。<br>与RestTemplate相比，只能说是各有利弊吧，可以酌情选择。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/" class="post-title-link" itemprop="url">使用dockerfile插件打包微服务镜像</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:34:50" itemprop="dateCreated datePublished" datetime="2018-11-06T15:34:50+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>使用spotify的dockerfile maven插件，可以帮助我们将maven与docker进行集成，更快速的在maven构建过程中进行docker镜像的打包操作。<br>配置仍然是基于Dockerfile的，插件只是辅助。  </p>
+<p>请注意，插件的名称是 <strong>spotify</strong> 的 <strong>dockerfile-maven-plugin</strong> ，而非 <strong>docker-maven-plugin</strong> 。</p>
+<p>详情可访问 <a target="_blank" rel="noopener" href="https://github.com/spotify/dockerfile-maven">github页面</a></p>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>首先准备一个spring-boot工程，假设工程名为playground。另外本机需要安装docker，过程都不再赘述。<br>本文平台为macOS12，docker在不同平台下可能有所差异。  </p>
+<p>由于dockerhub访问较慢，可以用$$先自行搭建一个socks5代理来加速访问。代理不是必须的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export ALL_PROXY=socks5://xx.xx.xx.xx:xx</span><br></pre></td></tr></table></figure>
+
+<h2 id="建立Dockerfile"><a href="#建立Dockerfile" class="headerlink" title="建立Dockerfile"></a>建立Dockerfile</h2><p>在工程目录下新建一个Dockerfile，基于openjdk的镜像：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">FROM openjdk:8-jdk-alpine</span><br><span class="line">VOLUME /tmp</span><br><span class="line">ADD target/playground-1.1.0.jar app.jar</span><br><span class="line">ENV JAVA_OPTS=&quot;&quot;</span><br><span class="line">ENTRYPOINT [ &quot;sh&quot;, &quot;-c&quot;, &quot;java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar&quot; ]</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用docker命令构建镜像"><a href="#使用docker命令构建镜像" class="headerlink" title="使用docker命令构建镜像"></a>使用docker命令构建镜像</h2><p>在使用Maven插件之前，可以试着先用docker命令来进行打包：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t=&quot;yourname/playground:latest&quot; .</span><br></pre></td></tr></table></figure>
+
+<p>查看镜像是否生成：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker images</span><br></pre></td></tr></table></figure>
+
+<p>然后可以使用<code>docker push</code>推送镜像：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker push yourname/playground</span><br></pre></td></tr></table></figure>
+
+<h3 id="编辑pom-xml"><a href="#编辑pom-xml" class="headerlink" title="编辑pom.xml"></a>编辑pom.xml</h3><p>测试通过后，就可以在pom.xml中添加spotify插件了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;properties&gt;</span><br><span class="line">   &lt;docker.image.prefix&gt;yourname&lt;/docker.image.prefix&gt;</span><br><span class="line">&lt;/properties&gt;</span><br><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;plugins&gt;</span><br><span class="line">        &lt;plugin&gt;</span><br><span class="line">            &lt;groupId&gt;com.spotify&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;dockerfile-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;1.3.4&lt;/version&gt;</span><br><span class="line">            &lt;configuration&gt;</span><br><span class="line">                &lt;repository&gt;$&#123;docker.image.prefix&#125;/$&#123;project.artifactId&#125;&lt;/repository&gt;</span><br><span class="line">            &lt;/configuration&gt;</span><br><span class="line">        &lt;/plugin&gt;</span><br><span class="line">    &lt;/plugins&gt;</span><br><span class="line">&lt;/build&gt;</span><br></pre></td></tr></table></figure>
+
+<p>另外还可以添加一个execution，在maven的install生命周期自动进行build和push。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;executions&gt;</span><br><span class="line">	&lt;execution&gt;</span><br><span class="line">		&lt;id&gt;default&lt;/id&gt;</span><br><span class="line">		&lt;phase&gt;install&lt;/phase&gt;</span><br><span class="line">		&lt;goals&gt;</span><br><span class="line">			&lt;goal&gt;build&lt;/goal&gt;</span><br><span class="line">			&lt;goal&gt;push&lt;/goal&gt;</span><br><span class="line">		&lt;/goals&gt;</span><br><span class="line">	&lt;/execution&gt;</span><br><span class="line">&lt;/executions&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用插件构建镜像"><a href="#使用插件构建镜像" class="headerlink" title="使用插件构建镜像"></a>使用插件构建镜像</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn install dockerfile:build</span><br></pre></td></tr></table></figure>
+
+<h3 id="使用插件推送镜像"><a href="#使用插件推送镜像" class="headerlink" title="使用插件推送镜像"></a>使用插件推送镜像</h3><p>在使用dockerfile-maven-plugin推送前，需要先编辑一下<code>~/.docker/config.json</code>，添加用户名及密码，否则会报认证失败。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;auths&quot;: &#123;</span><br><span class="line">    &quot;https://index.docker.io/v1/&quot;: &#123;</span><br><span class="line">      &quot;Username&quot;: &quot;xxxxxx&quot;,</span><br><span class="line">      &quot;Secret&quot;: &quot;xxxxxx&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;credsStore&quot;: &quot;osxkeychain&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后直接运行即可：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn dockerfile:push</span><br></pre></td></tr></table></figure>
+
+<h2 id="运行镜像"><a href="#运行镜像" class="headerlink" title="运行镜像"></a>运行镜像</h2><p>最后，可以使用<code>docker run</code>命令可以将镜像启动，在浏览器中查看一下运行情况</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -p 8080:8080 -t yourname/playground</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>docker logs</code>简单查看日志</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker ps</span><br><span class="line">docker logs f4d7e737f47f</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201710/ZEN-SC-SAMPLE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201710/ZEN-SC-SAMPLE/" class="post-title-link" itemprop="url">ZEN-SC-SAMPLE</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:33:44" itemprop="dateCreated datePublished" datetime="2018-11-06T15:33:44+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>ZEN-SC-SAMPLE:SpringCloud常用组件示例。</p>
+<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><p>更多源码，请移步GitHub:<br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/zen-sc-sample">https://github.com/xiiiblue/zen-sc-sample</a></p>
+<h2 id="启动方式"><a href="#启动方式" class="headerlink" title="启动方式"></a>启动方式</h2><h3 id="Docker方式启动"><a href="#Docker方式启动" class="headerlink" title="Docker方式启动"></a>Docker方式启动</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mvn clean package</span><br><span class="line">docker-compose up</span><br></pre></td></tr></table></figure>
+<h3 id="手工方式启动"><a href="#手工方式启动" class="headerlink" title="手工方式启动"></a>手工方式启动</h3><p>添加DNS</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/hosts</span><br><span class="line">127.0.0.1 zen-eureka</span><br><span class="line">127.0.0.1 zen-zipkin</span><br><span class="line">127.0.0.1 zen-config</span><br></pre></td></tr></table></figure>
+
+<p>在每个模块下分别执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn spring-boot:run</span><br></pre></td></tr></table></figure>
+
+<h2 id="组件清单"><a href="#组件清单" class="headerlink" title="组件清单"></a>组件清单</h2><ul>
+<li>hystrix - 服务降级与融断</li>
+<li>feign - 声明式REST调用</li>
+<li>eureka - 服务注册与发现</li>
+<li>ribbon - 客户端负载均衡</li>
+<li>config-server - 配置中心</li>
+<li>zuul - API网关</li>
+<li>turbine - 监控聚合</li>
+<li>hystrix-dashboard - Hystrix面板</li>
+<li>sleuth - 服务跟踪</li>
+<li>zipkin - 调用链跟踪</li>
+</ul>
+<h2 id="未包含组件"><a href="#未包含组件" class="headerlink" title="未包含组件"></a>未包含组件</h2><ul>
+<li>ELK</li>
+</ul>
+<h2 id="URLs"><a href="#URLs" class="headerlink" title="URLs"></a>URLs</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://localhost:8888/application/default">ConfigServer-配置中心</a></li>
+<li><a target="_blank" rel="noopener" href="http://localhost:8761/">Eureka-服务注册与发现</a></li>
+<li><a target="_blank" rel="noopener" href="http://localhost:8080/swagger-ui.html">Playground-示例微服务</a></li>
+<li><a target="_blank" rel="noopener" href="http://localhost:8040/zen-playground/swagger-ui.html">Zuul-应用网关</a></li>
+<li><a target="_blank" rel="noopener" href="http://localhost:8031/turbine.stream">Turbine-监控聚合</a></li>
+<li><a target="_blank" rel="noopener" href="http://localhost:9411/zipkin/">Zipkin-调用链跟踪</a></li>
+</ul>
+<h2 id="其它说明"><a href="#其它说明" class="headerlink" title="其它说明"></a>其它说明</h2><h3 id="刷新配置"><a href="#刷新配置" class="headerlink" title="刷新配置"></a>刷新配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST http://localhost:8080/refresh</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201711/12factor/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201711/12factor/" class="post-title-link" itemprop="url">The Twelve-Factor App</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:32:46" itemprop="dateCreated datePublished" datetime="2018-11-06T15:32:46+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="地址"><a href="#地址" class="headerlink" title="地址"></a>地址</h2><p><a target="_blank" rel="noopener" href="https://12factor.net/zh_cn">https://12factor.net/zh_cn</a></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>12-Factor 为构建如下的 SaaS 应用提供了方法论：<br>使用标准化流程自动配置，从而使新的开发者花费最少的学习成本加入这个项目。<br>和操作系统之间尽可能的划清界限，在各个系统中提供最大的可移植性。<br>适合部署在现代的云计算平台，从而在服务器和系统管理方面节省资源。<br>将开发环境和生产环境的差异降至最低，并使用持续交付实施敏捷开发。<br>可以在工具、架构和开发流程不发生明显变化的前提下实现扩展。</p>
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><p>I. 基准代码<br>一份基准代码，多份部署<br>II. 依赖<br>显式声明依赖关系<br>III. 配置<br>在环境中存储配置<br>IV. 后端服务<br>把后端服务当作附加资源<br>V. 构建，发布，运行<br>严格分离构建和运行<br>VI. 进程<br>以一个或多个无状态进程运行应用<br>VII. 端口绑定<br>通过端口绑定提供服务<br>VIII. 并发<br>通过进程模型进行扩展<br>IX. 易处理<br>快速启动和优雅终止可最大化健壮性<br>X. 开发环境与线上环境等价<br>尽可能的保持开发，预发布，线上环境相同<br>XI. 日志<br>把日志当作事件流<br>XII. 管理进程<br>后台管理任务当作一次性进程运行</p>
+<p>12-factor应用本身从不考虑存储自己的输出流。 不应该试图去写或者管理日志文件。相反，每一个运行的进程都会直接的标准输出（stdout）事件流。开发环境中，开发人员可以通过这些数据流，实时在终端看到应用的活动。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Ubuntu%E8%BF%9E%E6%8E%A5Android%E6%89%8B%E6%9C%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201803/Ubuntu%E8%BF%9E%E6%8E%A5Android%E6%89%8B%E6%9C%BA/" class="post-title-link" itemprop="url">Ubuntu连接Android手机</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:31:35" itemprop="dateCreated datePublished" datetime="2018-11-06T15:31:35+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="解决Ubuntu无法识别Android手机的问题"><a href="#解决Ubuntu无法识别Android手机的问题" class="headerlink" title="解决Ubuntu无法识别Android手机的问题"></a>解决Ubuntu无法识别Android手机的问题</h2><ol>
+<li>安装mtp相关的包：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libmtp-common mtp-tools libmtp-dev libmtp-runtime libmtp9</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>查看手机的USB信息<br>执行：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsusb</span><br></pre></td></tr></table></figure>
+<p>记录下新增的一条USB设备的信息，以坚果Pro1为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bus 002 Device 011: ID 29a9:7020  </span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>编辑69-libmtp.rules</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vi /lib/udev/rules.d/69-libmtp.rules</span><br></pre></td></tr></table></figure>
+<p>新增一行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ATTR&#123;idVendor&#125;==&quot;29a9&quot;, ATTR&#123;idProduct&#125;==&quot;7020&quot;, SYMLINK+=&quot;libmtp-%k&quot;, ENV&#123;ID_MTP_DEVICE&#125;=&quot;1&quot;, ENV&#123;ID_MEDIA_PLAYER&#125;=&quot;1&quot;</span><br></pre></td></tr></table></figure>
+<p>注意替换掉其中的idVendor和idProduct</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Ubuntu%E4%BB%8EU%E7%9B%98%E5%88%B6%E4%BD%9CISO%E9%95%9C%E5%83%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201803/Ubuntu%E4%BB%8EU%E7%9B%98%E5%88%B6%E4%BD%9CISO%E9%95%9C%E5%83%8F/" class="post-title-link" itemprop="url">Ubuntu从U盘制作ISO镜像</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:31:26" itemprop="dateCreated datePublished" datetime="2018-11-06T15:31:26+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="从启动U盘制作ISO镜像"><a href="#从启动U盘制作ISO镜像" class="headerlink" title="从启动U盘制作ISO镜像"></a>从启动U盘制作ISO镜像</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dd if=/dev/sdx of=/path/to/new.iso</span><br></pre></td></tr></table></figure>
+
+<h2 id="从ISO镜像制作启动U盘"><a href="#从ISO镜像制作启动U盘" class="headerlink" title="从ISO镜像制作启动U盘"></a>从ISO镜像制作启动U盘</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dd if=/path/to/iso of=/dev/sdx</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -238,762 +1129,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Ubuntu%E4%B8%8B%E5%BC%80%E5%90%AFIDEA%E5%90%88%E5%B1%80%E8%8F%9C%E5%8D%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201803/Ubuntu%E4%B8%8B%E5%BC%80%E5%90%AFIDEA%E5%90%88%E5%B1%80%E8%8F%9C%E5%8D%95/" class="post-title-link" itemprop="url">Ubuntu下开启IntelliJ IDEA顶部全局菜单</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:31:04" itemprop="dateCreated datePublished" datetime="2018-11-06T15:31:04+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="安装jayatana"><a href="#安装jayatana" class="headerlink" title="安装jayatana"></a>安装jayatana</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:danjaredg/jayatana</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install jayatana</span><br></pre></td></tr></table></figure>
-
-<h2 id="编辑idea64-vmoptions"><a href="#编辑idea64-vmoptions" class="headerlink" title="编辑idea64.vmoptions"></a>编辑idea64.vmoptions</h2><p>vi &#x2F;path&#x2F;to&#x2F;idea&#x2F;bin&#x2F;idea64.vmoptions<br>追加一行：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-javaagent:/usr/share/java/jayatanaag.jar</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000060530--Ubuntu-No-global-menu-with-Jayatana">https://intellij-support.jetbrains.com/hc/en-us/community/posts/115000060530--Ubuntu-No-global-menu-with-Jayatana</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85instantclient/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201803/Ubuntu%E4%B8%8B%E5%AE%89%E8%A3%85instantclient/" class="post-title-link" itemprop="url">Ubuntu 16.04下安装InstantClient12.2</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:30:54" itemprop="dateCreated datePublished" datetime="2018-11-06T15:30:54+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><p><a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/database/database-technologies/instant-client/downloads/index.html">http://www.oracle.com/technetwork/database/database-technologies/instant-client/downloads/index.html</a></p>
-<p>选择：<br>Instant Client for Linux x86-64</p>
-<p>下载以下两个ZIP包：</p>
-<ul>
-<li>instantclient-basic-linux.x64-12.2.0.1.0.zip  </li>
-<li>instantclient-sqlplus-linux.x64-12.2.0.1.0.zip</li>
-</ul>
-<h2 id="解压安装"><a href="#解压安装" class="headerlink" title="解压安装"></a>解压安装</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">unzip instantclient-basic-linux.x64-12.2.0.1.0.zip</span><br><span class="line">unzip instantclient-sqlplus-linux.x64-12.2.0.1.0.zip</span><br><span class="line">sudo mv instantclient_12_2 /opt/instantclient</span><br></pre></td></tr></table></figure>
-
-<h2 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export ORACLE_HOME=/opt/instantclient</span><br><span class="line">export LD_LIBRARY_PATH=/opt/instantclient</span><br><span class="line">export TNS_ADMIN=/opt/instantclient</span><br><span class="line">export PATH=$PATH:/opt/instantclient</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Snap/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201803/Snap/" class="post-title-link" itemprop="url">Ubuntu下使用Snap管理软件包</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:30:33" itemprop="dateCreated datePublished" datetime="2018-11-06T15:30:33+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="Snap简介"><a href="#Snap简介" class="headerlink" title="Snap简介"></a>Snap简介</h2><p>Ubuntu 16.04引入了snap包管理，它是一种全新的软件包安装管理方式。它和dpkg&#x2F;apt有本质的区别。<br>Snap的安装包扩展名是.snap，类似于一个容器，它包含一个应用程序需要用到的所有文件和库（snap包包含一个私有的root文件系统，里面包含了依赖的软件包）。它们会被安装到单独的目录；各个应用程序之间相互隔离。使用snap有很多好处，首先它解决了软件包的依赖问题；其次，也使应用程序更容易管理。</p>
-<h2 id="Snap安装"><a href="#Snap安装" class="headerlink" title="Snap安装"></a>Snap安装</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install snapd</span><br></pre></td></tr></table></figure>
-
-<h2 id="Snap常用命令"><a href="#Snap常用命令" class="headerlink" title="Snap常用命令"></a>Snap常用命令</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">snap list # 列出已安装</span><br><span class="line">snap find  # 查询</span><br><span class="line">snap find app_name  # 查询</span><br><span class="line">sudo snap install app_name  # 安装</span><br><span class="line">sudo snap refresh john-the-ripper  # 升级</span><br><span class="line">sudo snap remove john-the-ripper  # 御载</span><br></pre></td></tr></table></figure>
-
-<h2 id="使用Snap安装Electronic微信"><a href="#使用Snap安装Electronic微信" class="headerlink" title="使用Snap安装Electronic微信"></a>使用Snap安装Electronic微信</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo snap install  electronic-wechat</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://docs.snapcraft.io/core/install-ubuntu">https://docs.snapcraft.io/core/install-ubuntu</a><br><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/47514122">https://www.zhihu.com/question/47514122</a><br><a target="_blank" rel="noopener" href="http://blog.topspeedsnail.com/archives/4733">http://blog.topspeedsnail.com/archives/4733</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Phoenix%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201803/Phoenix%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Ubuntu16.04下Phoenix安装笔记</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:30:18" itemprop="dateCreated datePublished" datetime="2018-11-06T15:30:18+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="Phoenix与Hive区别"><a href="#Phoenix与Hive区别" class="headerlink" title="Phoenix与Hive区别"></a>Phoenix与Hive区别</h2><p>Hive是HDFS的SQL层，适用于非实时场景<br>Phoenix是HBase的SQL层，适用于实时查询</p>
-<h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://phoenix.apache.org/">https://phoenix.apache.org/</a></p>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiangxizhishi/article/details/77203478">https://blog.csdn.net/xiangxizhishi/article/details/77203478</a> Hive、HBase、Impala的简单对比<br><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/41254468">https://www.zhihu.com/question/41254468</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/d862337247b1">https://www.jianshu.com/p/d862337247b1</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/HBase%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201803/HBase%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Ubuntu16.04下HBase安装笔记</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:30:08" itemprop="dateCreated datePublished" datetime="2018-11-06T15:30:08+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="基础准备"><a href="#基础准备" class="headerlink" title="基础准备"></a>基础准备</h2><ul>
-<li>JDK</li>
-<li>Hadoop</li>
-<li>SSH Server</li>
-</ul>
-<h2 id="下载HBase"><a href="#下载HBase" class="headerlink" title="下载HBase"></a>下载HBase</h2><p><a target="_blank" rel="noopener" href="https://hbase.apache.org/">https://hbase.apache.org/</a></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf hbase-1.4.2-bin.tar.gz</span><br><span class="line">sudo mv hbase-1.4.2 /opt/hbase</span><br></pre></td></tr></table></figure>
-<h2 id="系统环境变量"><a href="#系统环境变量" class="headerlink" title="系统环境变量"></a>系统环境变量</h2><p>export HBASE_MANAGES_ZK&#x3D;true<br>export HBASE_HOME&#x3D;&#x2F;opt&#x2F;hbase<br>export PATH&#x3D;$PATH:&#x2F;opt&#x2F;hbase&#x2F;bin</p>
-<h2 id="写死JAVA-HOME"><a href="#写死JAVA-HOME" class="headerlink" title="写死JAVA_HOME"></a>写死JAVA_HOME</h2><p>vi .&#x2F;conf&#x2F;hbase-env.sh</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre/</span><br></pre></td></tr></table></figure>
-
-<h2 id="单机模式配置"><a href="#单机模式配置" class="headerlink" title="单机模式配置"></a>单机模式配置</h2><p>vi hbase-site.xml</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.rootdir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;file:///tmp/hbase-$&#123;user.name&#125;/hbase&lt;/value&gt;</span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="伪分布模式配置"><a href="#伪分布模式配置" class="headerlink" title="伪分布模式配置"></a>伪分布模式配置</h2><p>vi hbase-site.xml</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.rootdir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;hdfs://localhost:9000/hbase&lt;/value&gt;</span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.cluster.distributed&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;true&lt;/value&gt;</span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<p>启动Hadoop：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./start-all.sh</span><br></pre></td></tr></table></figure>
-
-<h2 id="Hbase启停"><a href="#Hbase启停" class="headerlink" title="Hbase启停"></a>Hbase启停</h2><p>启停:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./bin/start-hbase.sh</span><br><span class="line">./bin/stop-hbase.sh</span><br></pre></td></tr></table></figure>
-
-<p>查看进程：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jps</span><br></pre></td></tr></table></figure>
-
-<p>WEB控制台:<br><a target="_blank" rel="noopener" href="http://localhost:45005/master-status">http://localhost:45005/master-status</a></p>
-<h2 id="HBase-Shell"><a href="#HBase-Shell" class="headerlink" title="HBase Shell"></a>HBase Shell</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./bin/hbase shell</span><br><span class="line">help</span><br></pre></td></tr></table></figure>
-
-
-<p>常用命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">status</span><br><span class="line">create &#x27;test&#x27;, &#x27;cf&#x27;</span><br><span class="line">list &#x27;test&#x27;</span><br><span class="line">describe &#x27;test&#x27;</span><br><span class="line"></span><br><span class="line">disable &#x27;test&#x27;</span><br><span class="line">drop &#x27;test&#x27;</span><br><span class="line">exists &#x27;test&#x27;</span><br><span class="line"></span><br><span class="line">put &#x27;test&#x27;, &#x27;row1&#x27;, &#x27;cf:a&#x27;, &#x27;value1&#x27;</span><br><span class="line">put &#x27;test&#x27;, &#x27;row2&#x27;, &#x27;cf:b&#x27;, &#x27;value2&#x27;</span><br><span class="line">put &#x27;test&#x27;, &#x27;row3&#x27;, &#x27;cf:c&#x27;, &#x27;value3&#x27;</span><br><span class="line"></span><br><span class="line">scan &#x27;test&#x27;</span><br><span class="line">get &#x27;test&#x27;, &#x27;row1&#x27;</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8818e8d40da4">https://www.jianshu.com/p/8818e8d40da4</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/352213f109e5">https://www.jianshu.com/p/352213f109e5</a><br><a target="_blank" rel="noopener" href="https://www.shiyanlou.com/courses/37">https://www.shiyanlou.com/courses/37</a><br><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html">https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201804/Ubuntu%E5%AE%89%E8%A3%85OracleExpress/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201804/Ubuntu%E5%AE%89%E8%A3%85OracleExpress/" class="post-title-link" itemprop="url">Ubuntu安装OracleExpress</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:29:28" itemprop="dateCreated datePublished" datetime="2018-11-06T15:29:28+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p><a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/database/database-technologies/express-edition/downloads/index.html">http://www.oracle.com/technetwork/database/database-technologies/express-edition/downloads/index.html</a></p>
-<p>Download	<br>Oracle Database Express Edition 11g Release 2 for Linux x64</p>
-<p>Copy the downloaded file and paste it in home directory.</p>
-<p>Unzip using the command:</p>
-<p>unzip oracle-xe-11.2.0-1.0.x86_64.rpm.zip<br>Install required packages using the command:</p>
-<p>sudo apt-get install alien libaio1 unixodbc<br>Enter into the Disk1 folder using command:</p>
-<p>cd Disk1&#x2F;<br>Convert RPM package format to DEB package format (that is used by Ubuntu) using the command:</p>
-<p>sudo alien –scripts -d oracle-xe-11.2.0-1.0.x86_64.rpm<br>Create the required chkconfig script using the command:</p>
-<p>sudo pico &#x2F;sbin&#x2F;chkconfig<br>The pico text editor is started and the commands are shown at the bottom of the screen. Now copy and paste the following into the file and save:</p>
-<p>#!&#x2F;bin&#x2F;bash</p>
-<h1 id="Oracle-11gR2-XE-installer-chkconfig-hack-for-Ubuntu"><a href="#Oracle-11gR2-XE-installer-chkconfig-hack-for-Ubuntu" class="headerlink" title="Oracle 11gR2 XE installer chkconfig hack for Ubuntu"></a>Oracle 11gR2 XE installer chkconfig hack for Ubuntu</h1><p>file&#x3D;&#x2F;etc&#x2F;init.d&#x2F;oracle-xe<br>if [[ ! <code>tail -n1 $file | grep INIT</code> ]]; then<br>    echo &gt;&gt; $file<br>    echo ‘### BEGIN INIT INFO’ &gt;&gt; $file<br>    echo ‘# Provides: OracleXE’ &gt;&gt; $file<br>    echo ‘# Required-Start: $remote_fs $syslog’ &gt;&gt; $file<br>    echo ‘# Required-Stop: $remote_fs $syslog’ &gt;&gt; $file<br>    echo ‘# Default-Start: 2 3 4 5’ &gt;&gt; $file<br>    echo ‘# Default-Stop: 0 1 6’ &gt;&gt; $file<br>    echo ‘# Short-Description: Oracle 11g Express Edition’ &gt;&gt; $file<br>    echo ‘### END INIT INFO’ &gt;&gt; $file<br>fi<br>update-rc.d oracle-xe defaults 80 01<br>Change the permission of the chkconfig file using the command:</p>
-<p>sudo chmod 755 &#x2F;sbin&#x2F;chkconfig<br>Set kernel parameters. Oracle 11gR2 XE requires additional kernel parameters which you need to set using the command:</p>
-<p>sudo pico &#x2F;etc&#x2F;sysctl.d&#x2F;60-oracle.conf<br>Copy the following into the file and save:</p>
-<h1 id="Oracle-11g-XE-kernel-parameters"><a href="#Oracle-11g-XE-kernel-parameters" class="headerlink" title="Oracle 11g XE kernel parameters"></a>Oracle 11g XE kernel parameters</h1><p>fs.file-max&#x3D;6815744<br>net.ipv4.ip_local_port_range&#x3D;9000 65000<br>kernel.sem&#x3D;250 32000 100 128<br>kernel.shmmax&#x3D;536870912<br>Verify the change using the command:</p>
-<p>sudo cat &#x2F;etc&#x2F;sysctl.d&#x2F;60-oracle.conf<br>You should see what you entered earlier. Now load the kernel parameters:</p>
-<p>sudo service procps start<br>Verify the new parameters are loaded using:</p>
-<p>sudo sysctl -q fs.file-max<br>You should see the file-max value that you entered earlier.</p>
-<p>Set up &#x2F;dev&#x2F;shm mount point for Oracle. Create the following file using the command:</p>
-<p>sudo pico &#x2F;etc&#x2F;rc2.d&#x2F;S01shm_load<br>Copy the following into the file and save.</p>
-<p>#!&#x2F;bin&#x2F;sh<br>case “$1” in<br>start)<br>    mkdir &#x2F;var&#x2F;lock&#x2F;subsys 2&gt;&#x2F;dev&#x2F;null<br>    touch &#x2F;var&#x2F;lock&#x2F;subsys&#x2F;listener<br>    rm &#x2F;dev&#x2F;shm 2&gt;&#x2F;dev&#x2F;null<br>    mkdir &#x2F;dev&#x2F;shm 2&gt;&#x2F;dev&#x2F;null<br>*)<br>    echo error<br>    exit 1<br>    ;;</p>
-<p>esac<br>Change the permissions of the file using the command:</p>
-<p>sudo chmod 755 &#x2F;etc&#x2F;rc2.d&#x2F;S01shm_load<br>Now execute the following commands:</p>
-<p>sudo ln -s &#x2F;usr&#x2F;bin&#x2F;awk &#x2F;bin&#x2F;awk<br>sudo mkdir &#x2F;var&#x2F;lock&#x2F;subsys<br>sudo touch &#x2F;var&#x2F;lock&#x2F;subsys&#x2F;listener<br>Now, Reboot Your System</p>
-<p>Step 3: Install Oracle<br>Install the oracle DBMS using the command:</p>
-<p>sudo dpkg –install oracle-xe_11.2.0-2_amd64.deb<br>Configure Oracle using the command:</p>
-<p>sudo &#x2F;etc&#x2F;init.d&#x2F;oracle-xe configure<br>Setup environment variables by editting your .bashrc file:</p>
-<p>pico ~&#x2F;.bashrc<br>Add the following lines to the end of the file:</p>
-<p>export ORACLE_HOME&#x3D;&#x2F;u01&#x2F;app&#x2F;oracle&#x2F;product&#x2F;11.2.0&#x2F;xe<br>export ORACLE_SID&#x3D;XE<br>export NLS_LANG&#x3D;<code>$ORACLE_HOME/bin/nls_lang.sh</code><br>export ORACLE_BASE&#x3D;&#x2F;u01&#x2F;app&#x2F;oracle<br>export LD_LIBRARY_PATH&#x3D;$ORACLE_HOME&#x2F;lib:$LD_LIBRARY_PATH<br>export PATH&#x3D;$ORACLE_HOME&#x2F;bin:$PATH<br>Load the changes by executing your profile:</p>
-<p>. ~&#x2F;.bashrc<br>Start the Oracle 11gR2 XE:</p>
-<p>sudo service oracle-xe start<br>Add user YOURUSERNAME to group dba using the command:</p>
-<p>sudo usermod -a -G dba YOURUSERNAME<br>Step 4: Using the Oracle XE Command Shell<br>Start the Oracle XE 11gR2 server using the command:</p>
-<p>sudo service oracle-xe start<br>Start command line shell as the system admin using the command:</p>
-<p>sqlplus sys as sysdba<br>Enter the password that you gave while configuring Oracle earlier. You will now be placed in a SQL environment that only understands SQL commands.</p>
-<p>Create a regular user account in Oracle using the SQL command:</p>
-<p>create user USERNAME identified by PASSWORD;<br>Replace USERNAME and PASSWORD with the username and password of your choice. Please remember this username and password. If you had error executing the above with a message about resetlogs, then execute the following SQL command and try again:</p>
-<p>alter database open resetlogs;<br>Grant privileges to the user account using the SQL command:</p>
-<p>grant connect, resource to USERNAME;<br>Replace USERNAME and PASSWORD with the username and password of your choice. Please remember this username and password.</p>
-<p>Exit the sys admin shell using the SQL command:</p>
-<p>exit;<br>Start the commandline shell as a regular user using the command:</p>
-<p>sqlplus<br>Now, you can run sql commands…</p>
-<p>Installing Oracle XE by hand<br>Installing Oracle XE with Vagrant and Puppet<br>Installing Oracle XE with Docker</p>
-<h2 id="docker方式"><a href="#docker方式" class="headerlink" title="docker方式"></a>docker方式</h2><p><a target="_blank" rel="noopener" href="https://tuhrig.de/3-ways-of-installing-oracle-xe-11g-on-ubuntu/">https://tuhrig.de/3-ways-of-installing-oracle-xe-11g-on-ubuntu/</a><br><a target="_blank" rel="noopener" href="https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce-1">https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce-1</a><br><a target="_blank" rel="noopener" href="https://hub.docker.com/r/alexeiled/docker-oracle-xe-11g/">https://hub.docker.com/r/alexeiled/docker-oracle-xe-11g/</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201805/%E6%B8%85%E7%90%86.DS_Store%E8%84%9A%E6%9C%AC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201805/%E6%B8%85%E7%90%86.DS_Store%E8%84%9A%E6%9C%AC/" class="post-title-link" itemprop="url">Windows下清理.DS_Store文件</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:29:07" itemprop="dateCreated datePublished" datetime="2018-11-06T15:29:07+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>如果涉及macOS与Windows交换文件的话，在Windows会有一些无用的.DS_Store文件需要清理。</p>
-<p>可以在gitbash&#x2F;cygwin&#x2F;cmder下执行如下命令清理：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -name &#x27;*.DS_Store&#x27; -type f -delete</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201805/Windows%E4%B8%8Bgit%E6%8D%A2%E8%A1%8C%E7%AC%A6%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201805/Windows%E4%B8%8Bgit%E6%8D%A2%E8%A1%8C%E7%AC%A6%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Windows下git换行符配置</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:28:51" itemprop="dateCreated datePublished" datetime="2018-11-06T15:28:51+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="最优配置"><a href="#最优配置" class="headerlink" title="最优配置"></a>最优配置</h2><p>为了最大限度兼容macOS以及Linux，需要：  </p>
-<ol>
-<li>提交时转换为LF，检出时不转换  </li>
-<li>拒绝提交包含混合换行符的文件</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global core.autocrlf input</span><br><span class="line">git config --global core.safecrlf true</span><br></pre></td></tr></table></figure>
-
-<h2 id="批量将CRLF转换成LF"><a href="#批量将CRLF转换成LF" class="headerlink" title="批量将CRLF转换成LF"></a>批量将CRLF转换成LF</h2><p>如果在Windows下不慎将部分文本的换行符写为CRLF，可以使用dos2unix工具修复回LF</p>
-<p>在Cmder或Cywin下执行：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f|xargs dos2unix</span><br></pre></td></tr></table></figure>
-
-<h2 id="IDE配置"><a href="#IDE配置" class="headerlink" title="IDE配置"></a>IDE配置</h2><p>注意及时将VS Code、IntelliJ IDEA等编辑器默认配置修改，将换行符置为LF！</p>
-<h2 id="附：autocrlf参数说明"><a href="#附：autocrlf参数说明" class="headerlink" title="附：autocrlf参数说明"></a>附：autocrlf参数说明</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 提交时转换为LF，检出时转换为CRLF</span><br><span class="line">git config --global core.autocrlf true</span><br><span class="line"></span><br><span class="line"># 提交时转换为LF，检出时不转换</span><br><span class="line">git config --global core.autocrlf input</span><br><span class="line"></span><br><span class="line"># 提交检出均不转换</span><br><span class="line">git config --global core.autocrlf false</span><br></pre></td></tr></table></figure>
-
-<h2 id="附：safecrlf参数说明"><a href="#附：safecrlf参数说明" class="headerlink" title="附：safecrlf参数说明"></a>附：safecrlf参数说明</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 拒绝提交包含混合换行符的文件</span><br><span class="line">git config --global core.safecrlf true</span><br><span class="line"></span><br><span class="line"># 允许提交包含混合换行符的文件</span><br><span class="line">git config --global core.safecrlf false</span><br><span class="line"></span><br><span class="line"># 提交包含混合换行符的文件时给出警告</span><br><span class="line">git config --global core.safecrlf warn</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201805/macOS%E4%B8%8B%E4%BD%BF%E7%94%A8brew%E5%BF%AB%E9%80%9F%E5%AE%89%E8%A3%85Kafka/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201805/macOS%E4%B8%8B%E4%BD%BF%E7%94%A8brew%E5%BF%AB%E9%80%9F%E5%AE%89%E8%A3%85Kafka/" class="post-title-link" itemprop="url">macOS下使用brew快速安装Kafka</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:28:39" itemprop="dateCreated datePublished" datetime="2018-11-06T15:28:39+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install kafka</span><br></pre></td></tr></table></figure>
-
-<p>如果缺少JDK8依赖，或安装了JDK10，则需要先通过<code>brew cask</code>插件安装JDK8：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew cask install java8</span><br></pre></td></tr></table></figure>
-
-<h2 id="安装位置"><a href="#安装位置" class="headerlink" title="安装位置"></a>安装位置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/Cellar/zookeeper</span><br><span class="line">/usr/local/Cellar/kafka</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置文件位置"><a href="#配置文件位置" class="headerlink" title="配置文件位置"></a>配置文件位置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/etc/kafka/server.properties</span><br><span class="line">/usr/local/etc/kafka/zookeeper.properties</span><br></pre></td></tr></table></figure>
-
-<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p>直接启动：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zookeeper-server-start /usr/local/etc/kafka/zookeeper.properties &amp;</span><br><span class="line">kafka-server-start /usr/local/etc/kafka/server.properties &amp;</span><br></pre></td></tr></table></figure>
-<p>或通过<code>brew services</code>插件启动</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew services start zookeeper</span><br><span class="line">brew services start kafka</span><br></pre></td></tr></table></figure>
-
-<h2 id="创建topic"><a href="#创建topic" class="headerlink" title="创建topic"></a>创建topic</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test</span><br></pre></td></tr></table></figure>
-<h2 id="查看创建的topic"><a href="#查看创建的topic" class="headerlink" title="查看创建的topic"></a>查看创建的topic</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-topics.sh --list --zookeeper localhost:2181</span><br></pre></td></tr></table></figure>
-
-<h2 id="发送一些消息"><a href="#发送一些消息" class="headerlink" title="发送一些消息"></a>发送一些消息</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-console-producer.sh --broker-list localhost:9092 --topic test </span><br></pre></td></tr></table></figure>
-
-<h2 id="消费消息"><a href="#消费消息" class="headerlink" title="消费消息"></a>消费消息</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning</span><br></pre></td></tr></table></figure>
-
-<h2 id="附：brew-services说明"><a href="#附：brew-services说明" class="headerlink" title="附：brew services说明"></a>附：brew services说明</h2><p><a target="_blank" rel="noopener" href="https://github.com/Homebrew/homebrew-services">https://github.com/Homebrew/homebrew-services</a></p>
-<h2 id="附：brew-cask说明"><a href="#附：brew-cask说明" class="headerlink" title="附：brew cask说明"></a>附：brew cask说明</h2><p><a target="_blank" rel="noopener" href="https://caskroom.github.io/">https://caskroom.github.io</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/26/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/26/">26</a><span class="page-number current">27</span><a class="page-number" href="/page/28/">28</a><a class="page-number" href="/page/29/">29</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/28/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/26/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/26/">26</a><span class="page-number current">27</span><a class="page-number" href="/page/28/">28</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/28/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>

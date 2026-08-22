@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">282</span>
+          <span class="site-state-item-count">291</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,1174 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202510/RouterOS7%E7%9A%84IPv4%E4%B8%8EIPv6%E9%98%B2%E7%81%AB%E5%A2%99%E5%9F%BA%E7%BA%BF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202510/RouterOS7%E7%9A%84IPv4%E4%B8%8EIPv6%E9%98%B2%E7%81%AB%E5%A2%99%E5%9F%BA%E7%BA%BF/" class="post-title-link" itemprop="url">RouterOS 7的IPv4与IPv6防火墙基线</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2025-10-17 00:00:00" itemprop="dateCreated datePublished" datetime="2025-10-17T00:00:00+08:00">2025-10-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 21:18:05" itemprop="dateModified" datetime="2026-08-22T21:18:05+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>RouterOS的防火墙不难写，真正容易出错的是规则顺序。前面一条过于宽泛的<code>drop</code>，会让后面的黑名单规则永远没有机会命中；一条看似普通的FastTrack，也可能绕过策略路由、队列或IPsec。</p>
+<p>我最后保留的是一套很朴素的基线：先放行已经建立的连接，再处理必要的控制流量和内网流量，最后统一丢弃。端口扫描识别、MSS调整和FastTrack都不塞进基础规则，需要时再单独增加。</p>
+<h2 id="动手前先留退路"><a href="#动手前先留退路" class="headerlink" title="动手前先留退路"></a>动手前先留退路</h2><p>防火墙改错以后，最现实的问题不是网络不通，而是远程管理连接也会一起断掉。先导出IPv4和IPv6配置：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall </span><span class="built_in">export</span> <span class="attribute">file</span>=firewall-ipv4-before</span><br><span class="line"><span class="built_in">/ipv6 firewall </span><span class="built_in">export</span> <span class="attribute">file</span>=firewall-ipv6-before</span><br></pre></td></tr></table></figure>
+
+<p>远程修改时建议打开Safe Mode。终端里按<code>Ctrl+X</code>或<code>F4</code>，提示符出现<code>&lt;SAFE&gt;</code>以后再逐段添加规则；连接异常中断时，本次改动会自动回滚。一次不要改太多，RouterOS用于回滚的历史记录数量有限。</p>
+<p>下面的规则使用<code>LAN</code>和<code>WAN</code>接口列表。应用前必须先确认接口归属正确，尤其不要把当前管理入口漏在<code>LAN</code>之外。已有防火墙也不要直接重复粘贴，应该按相同顺序合并到现有规则中。</p>
+<h2 id="IPv4：区分访问路由器和穿过路由器"><a href="#IPv4：区分访问路由器和穿过路由器" class="headerlink" title="IPv4：区分访问路由器和穿过路由器"></a>IPv4：区分访问路由器和穿过路由器</h2><p><code>input</code>链处理的是发给路由器本身的流量，例如WinBox、SSH、DNS和VPN入口。这里默认只信任<code>LAN</code>，公网不开放任何管理端口：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall filter</span></span><br><span class="line"><span class="built_in"></span><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">connection-state</span>=established,related,untracked \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept established, related and untracked&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=drop <span class="attribute">connection-state</span>=invalid \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop invalid&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">protocol</span>=icmp \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept ICMP&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">in-interface-list</span>=LAN \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept traffic from LAN&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=drop \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop everything else&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>如果确实要从公网接入WireGuard或其他服务，应当在最后一条<code>drop</code>之前增加精确的协议和目标端口规则。WinBox、SSH这类管理服务仍然更适合只从内网或VPN访问，而不是为了方便直接暴露到WAN。</p>
+<p><code>forward</code>链处理经过路由器转发的流量。内网可以主动访问外部；公网只能进入已经做过<code>dstnat</code>的服务，其余新连接全部落到最后的丢弃规则：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall filter</span></span><br><span class="line"><span class="built_in"></span><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=accept <span class="attribute">connection-state</span>=established,related,untracked \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept established, related and untracked&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=drop <span class="attribute">connection-state</span>=invalid \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop invalid&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=accept <span class="attribute">in-interface-list</span>=LAN \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept connections from LAN&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=accept <span class="attribute">in-interface-list</span>=WAN <span class="attribute">connection-state</span>=new \</span><br><span class="line">    <span class="attribute">connection-nat-state</span>=dstnat \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept destination NAT from WAN&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=drop \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop everything else&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>这组规则有一个刻意的取舍：<code>LAN</code>里的设备彼此信任。如果网络里还有访客Wi-Fi、IoT或服务器VLAN，就不应把它们一股脑放进同一个可信接口列表，而要分别写清楚允许访问的目标。</p>
+<h2 id="IPv6：不要照搬IPv4思路"><a href="#IPv6：不要照搬IPv4思路" class="headerlink" title="IPv6：不要照搬IPv4思路"></a>IPv6：不要照搬IPv4思路</h2><p>IPv6通常没有IPv4家用网络里那层NAT遮挡，终端拿到公网地址后，是否允许外部访问主要取决于<code>forward</code>链。因此IPv6防火墙不能因为“暂时没用IPv6”就留空。</p>
+<p>路由器本身需要保留ICMPv6。它不只是用来<code>ping</code>，邻居发现、路径MTU发现等机制也依赖ICMPv6。DHCPv6前缀委派则允许来自链路本地地址、发往客户端546端口的UDP报文：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ipv6 firewall filter</span></span><br><span class="line"><span class="built_in"></span><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">connection-state</span>=established,related,untracked \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept established, related and untracked&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=drop <span class="attribute">connection-state</span>=invalid \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop invalid&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">protocol</span>=icmpv6 \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept ICMPv6&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">protocol</span>=udp <span class="attribute">dst-port</span>=546 <span class="attribute">src-address</span>=fe80::/10 \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept DHCPv6 prefix delegation&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">in-interface-list</span>=LAN \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept traffic from LAN&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=drop \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop everything else&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>如果运营商使用DHCPv6 Relay，服务器报文的源地址未必属于<code>fe80::/10</code>，这时需要按实际中继地址调整源地址条件，不能只为了“先通再说”而长期删除限制。</p>
+<p>转发规则继续保留ICMPv6，只允许内网发起新连接：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ipv6 firewall filter</span></span><br><span class="line"><span class="built_in"></span><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=accept <span class="attribute">connection-state</span>=established,related,untracked \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept established, related and untracked&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=drop <span class="attribute">connection-state</span>=invalid \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop invalid&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=accept <span class="attribute">protocol</span>=icmpv6 \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept ICMPv6&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=accept <span class="attribute">in-interface-list</span>=LAN \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept connections from LAN&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=drop \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop everything else&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>需要从公网访问某台IPv6设备时，可以在最后一条<code>drop</code>之前增加目标地址、协议和端口都明确的放行规则。相比直接放开整个地址段，这样更容易看懂，也更容易从计数器发现异常。</p>
+<h2 id="FastTrack为什么没有放进基线"><a href="#FastTrack为什么没有放进基线" class="headerlink" title="FastTrack为什么没有放进基线"></a>FastTrack为什么没有放进基线</h2><p>FastTrack适合普通的IPv4家庭路由，但它会让流量绕过部分防火墙处理、队列、IPsec、流量统计和VRF分配，而且路由查找只使用<code>main</code>表。配置了策略路由、路由标记或特殊队列时，直接FastTrack所有<code>established,related</code>连接很容易得到时好时坏的结果。</p>
+<p>只使用主路由表、确认没有这些依赖时，可以把下面两条放在IPv4<code>forward</code>链前部：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall filter</span></span><br><span class="line"><span class="built_in"></span><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=fasttrack-connection \</span><br><span class="line">    <span class="attribute">connection-state</span>=established,related <span class="attribute">hw-offload</span>=<span class="literal">yes</span> \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;optional: fasttrack established and related&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=accept <span class="attribute">connection-state</span>=established,related \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;optional: accept established and related&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>第二条不能省略，因为并非一个FastTrack连接中的每个包都会走快速路径。IPv6的<code>fasttrack-connection</code>也不应该照抄：RouterOS当前的过滤器文档明确将这个动作标为仅支持IPv4。</p>
+<h2 id="端口扫描识别不是第一道防线"><a href="#端口扫描识别不是第一道防线" class="headerlink" title="端口扫描识别不是第一道防线"></a>端口扫描识别不是第一道防线</h2><p>只要最后的WAN丢弃规则生效，端口探测本身已经无法进入路由器或内网。使用<code>psd</code>把来源加入地址列表，更多是为了分类和观察，而不是替代基础防火墙。</p>
+<p>这里还有一个容易忽略的细节：<code>psd</code>根据同一来源访问不同的<strong>目标端口</strong>来判断扫描，额外写<code>src-port=!443,80</code>过滤的是扫描方的源端口，并不能排除对本机80和443端口的探测。与其维护一组作用可疑、还会持续写日志的黑名单规则，不如先看清是否真的需要这份统计。</p>
+<p>规则调整完成后，可以从计数器确认流量实际命中了哪里：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall filter </span><span class="built_in">print</span> stats</span><br><span class="line"><span class="built_in">/ipv6 firewall filter </span><span class="built_in">print</span> stats</span><br></pre></td></tr></table></figure>
+
+<p>重点看最后几条<code>drop</code>是否有计数、正常业务的放行规则是否命中，以及某条规则是否长期为零。防火墙最终靠顺序生效，注释写得再漂亮，也不能让一条排错位置的规则重新获得机会。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://help.mikrotik.com/docs/spaces/ROS/pages/48660574/Filter">MikroTik：Filter</a></li>
+<li><a target="_blank" rel="noopener" href="https://help.mikrotik.com/docs/spaces/ROS/pages/328227/Packet%2BFlow%2Bin%2BRouterOS">MikroTik：Packet Flow in RouterOS</a></li>
+<li><a target="_blank" rel="noopener" href="https://help.mikrotik.com/docs/spaces/ROS/pages/250708064/Common%2BFirewall%2BMatchers%2Band%2BActions">MikroTik：Common Firewall Matchers and Actions</a></li>
+<li><a target="_blank" rel="noopener" href="https://help.mikrotik.com/docs/spaces/ROS/pages/328155/Configuration%2BManagement">MikroTik：Configuration Management</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202509/PVE%E4%B8%AD%E5%AE%89%E8%A3%85RouterOSCHR%E5%B9%B6%E5%AE%8C%E6%88%90%E5%9F%BA%E7%A1%80%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202509/PVE%E4%B8%AD%E5%AE%89%E8%A3%85RouterOSCHR%E5%B9%B6%E5%AE%8C%E6%88%90%E5%9F%BA%E7%A1%80%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">PVE中安装RouterOS CHR并完成基础网络配置</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2025-09-17 00:00:00" itemprop="dateCreated datePublished" datetime="2025-09-17T00:00:00+08:00">2025-09-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 21:51:42" itemprop="dateModified" datetime="2026-08-22T21:51:42+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>在PVE里运行RouterOS，直接使用官方CHR镜像比从x86 ISO安装更合适。CHR本来就是面向虚拟化环境的RouterOS版本，官方提供RAW磁盘镜像，也支持KVM里的Virtio网卡和磁盘。</p>
+<p>这条安装链路还有一个好处：磁盘来自官方镜像，授权使用CHR自己的System ID和许可证体系，不需要伪造硬盘型号、修改MBR或导入来历不明的软件Key。免费许可证可以长期运行，但每个接口的上传速度限制为1Mbps；正式承担路由流量时，应当使用试用或购买合适的CHR许可证。</p>
+<h2 id="先分清PVE里的两个网络"><a href="#先分清PVE里的两个网络" class="headerlink" title="先分清PVE里的两个网络"></a>先分清PVE里的两个网络</h2><p>RouterOS虚拟机至少需要两个网络接口：一个接外部网络，一个接内部网络。它们在PVE里分别连接到哪个Linux Bridge，取决于宿主机的物理网卡和现有拓扑，不能直接照抄<code>vmbr0</code>、<code>vmbr1</code>。</p>
+<p>在PVE宿主机上先查看网桥和当前虚拟机配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ip -br <span class="built_in">link</span> show <span class="built_in">type</span> bridge</span><br><span class="line"><span class="built_in">cat</span> /etc/network/interfaces</span><br><span class="line">qm list</span><br></pre></td></tr></table></figure>
+
+<p>如果PVE管理地址也在其中一个网桥上，不要在验证RouterOS之前迁移管理网关。比较稳妥的做法是保留原有管理路径，先让CHR的WAN接口保持断开，只通过LAN侧控制台完成密码和防火墙配置。</p>
+<h2 id="导入官方CHR磁盘镜像"><a href="#导入官方CHR磁盘镜像" class="headerlink" title="导入官方CHR磁盘镜像"></a>导入官方CHR磁盘镜像</h2><p>先从<a target="_blank" rel="noopener" href="https://mikrotik.com/download">MikroTik下载页</a>确认当前Stable版本，再把版本号填入变量。下面以<code>7.21.4</code>说明下载地址格式，版本变化时只替换这一处：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">chr_version=<span class="string">&quot;7.21.4&quot;</span></span><br><span class="line">work_dir=<span class="string">&quot;<span class="subst">$(mktemp -d)</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">cd</span> <span class="string">&quot;<span class="variable">$work_dir</span>&quot;</span></span><br><span class="line">curl -fLO <span class="string">&quot;https://download.mikrotik.com/routeros/<span class="variable">$&#123;chr_version&#125;</span>/chr-<span class="variable">$&#123;chr_version&#125;</span>.img.zip&quot;</span></span><br><span class="line">unzip <span class="string">&quot;chr-<span class="variable">$&#123;chr_version&#125;</span>.img.zip&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>创建虚拟机时先不添加网卡。<code>vmid</code>必须是当前PVE集群中尚未使用的编号，<code>storage</code>则替换为实际用于虚拟机磁盘的存储：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">vmid=<span class="string">&quot;201&quot;</span></span><br><span class="line">storage=<span class="string">&quot;local-lvm&quot;</span></span><br><span class="line"></span><br><span class="line">qm create <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span> \</span><br><span class="line">  --name routeros-chr \</span><br><span class="line">  --ostype l26 \</span><br><span class="line">  --memory 1024 \</span><br><span class="line">  --sockets 1 \</span><br><span class="line">  --cores 2 \</span><br><span class="line">  --onboot 0</span><br><span class="line"></span><br><span class="line">qm disk import <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span> <span class="string">&quot;chr-<span class="variable">$&#123;chr_version&#125;</span>.img&quot;</span> <span class="string">&quot;<span class="variable">$storage</span>&quot;</span></span><br><span class="line">qm config <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>qm disk import</code>会把外部镜像导入为<code>unused0</code>，还需要把它挂到虚拟机并设为启动盘：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">disk_volume=<span class="string">&quot;<span class="subst">$(qm config <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span> \</span></span></span><br><span class="line"><span class="subst"><span class="string">  | awk -F&#x27;: &#x27; &#x27;/^unused0:/ &#123;print $2&#125;&#x27; \</span></span></span><br><span class="line"><span class="subst"><span class="string">  | cut -d, -f1)</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">test</span> -n <span class="string">&quot;<span class="variable">$disk_volume</span>&quot;</span></span><br><span class="line">qm <span class="built_in">set</span> <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span> --virtio0 <span class="string">&quot;<span class="variable">$disk_volume</span>&quot;</span></span><br><span class="line">qm <span class="built_in">set</span> <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span> --boot order=virtio0</span><br></pre></td></tr></table></figure>
+
+<p>这里导入的是已经包含RouterOS的CHR磁盘。先用<code>qemu-img create</code>建立一块空盘，再执行<code>qm importdisk</code>，并不会自动把RouterOS安装进去；这是两种用途不同的操作。</p>
+<h2 id="添加网卡时先断开WAN"><a href="#添加网卡时先断开WAN" class="headerlink" title="添加网卡时先断开WAN"></a>添加网卡时先断开WAN</h2><p>假设已经确认<code>vmbr0</code>连接外部网络、<code>vmbr1</code>连接内部网络，可以这样添加两块Virtio网卡：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">qm <span class="built_in">set</span> <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span> --net0 virtio,bridge=vmbr0,link_down=1</span><br><span class="line">qm <span class="built_in">set</span> <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span> --net1 virtio,bridge=vmbr1</span><br><span class="line">qm config <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span></span><br><span class="line">qm start <span class="string">&quot;<span class="variable">$vmid</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>link_down=1</code>让WAN侧暂时保持断开。实际网桥名称必须按宿主机修改；如果外部网络通过VLAN进入，还要在PVE网卡配置中加入对应Tag，不能只凭<code>net0</code>和<code>net1</code>的顺序判断用途。</p>
+<p>启动后从PVE的NoVNC控制台进入RouterOS。默认用户是<code>admin</code>且没有密码，首次登录应立即按提示设置强密码。密码不要写进<code>qm</code>命令、RouterOS导出文件或博客示例。</p>
+<p>继续配置前先看一眼当前状态。不同镜像和初始化方式可能带来不同的默认配置，已有同名接口列表、DHCP或防火墙规则时不能重复添加：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/<span class="built_in">export</span></span><br><span class="line"><span class="built_in">/system </span>default-configuration <span class="built_in">print</span></span><br><span class="line"><span class="built_in">/interface </span>list <span class="built_in">print</span></span><br><span class="line"><span class="built_in">/ip firewall filter </span>print</span><br></pre></td></tr></table></figure>
+
+<p>后面的命令按一台没有同名对象的新CHR编写。如果当前已经存在可用的默认配置，应当逐项合并，而不是为了套用示例先执行无默认配置的重置。</p>
+<h2 id="根据MAC地址确认接口"><a href="#根据MAC地址确认接口" class="headerlink" title="根据MAC地址确认接口"></a>根据MAC地址确认接口</h2><p>PVE里的<code>net0</code>通常对应RouterOS的<code>ether1</code>，但增加、删除或重排网卡后不能继续依赖这个假设。先在PVE侧记录两块网卡的MAC地址，再到RouterOS控制台核对：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qm config 201 | grep -E <span class="string">&#x27;^net[0-9]+:&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>RouterOS里查看接口详情：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/interface ethernet </span><span class="built_in">print</span> detail</span><br></pre></td></tr></table></figure>
+
+<p>确认无误后再改成可读名称，并加入接口列表：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/interface ethernet </span><span class="built_in">set</span> [<span class="built_in">find</span> <span class="attribute">default-name</span>=ether1] <span class="attribute">name</span>=wan</span><br><span class="line"><span class="built_in">/interface ethernet </span><span class="built_in">set</span> [<span class="built_in">find</span> <span class="attribute">default-name</span>=ether2] <span class="attribute">name</span>=lan</span><br><span class="line"></span><br><span class="line"><span class="built_in">/interface </span>list <span class="built_in">add</span> <span class="attribute">name</span>=WAN</span><br><span class="line"><span class="built_in">/interface </span>list <span class="built_in">add</span> <span class="attribute">name</span>=LAN</span><br><span class="line"><span class="built_in">/interface </span>list member <span class="built_in">add</span> <span class="attribute">list</span>=WAN <span class="attribute">interface</span>=wan</span><br><span class="line"><span class="built_in">/interface </span>list member <span class="built_in">add</span> <span class="attribute">list</span>=LAN <span class="attribute">interface</span>=lan</span><br></pre></td></tr></table></figure>
+
+<p>如果MAC地址与这里的<code>ether1</code>、<code>ether2</code>对应关系不同，应当交换命令里的接口，不能为了保持示例顺序而把外网误认成内网。</p>
+<h2 id="在接通WAN前建立最小防火墙"><a href="#在接通WAN前建立最小防火墙" class="headerlink" title="在接通WAN前建立最小防火墙"></a>在接通WAN前建立最小防火墙</h2><p>先允许已有连接、ICMP、LAN管理和WAN侧DHCP应答，其余访问路由器自身的流量统一丢弃：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall filter</span></span><br><span class="line"><span class="built_in"></span><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">connection-state</span>=established,related,untracked \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept established, related and untracked&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=drop <span class="attribute">connection-state</span>=invalid \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop invalid&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">protocol</span>=icmp \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept ICMP&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">in-interface-list</span>=LAN \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept LAN management&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=accept <span class="attribute">in-interface-list</span>=WAN <span class="attribute">protocol</span>=udp \</span><br><span class="line">    <span class="attribute">src-port</span>=67 <span class="attribute">dst-port</span>=68 <span class="attribute">comment</span>=<span class="string">&quot;base: accept DHCP reply&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=input <span class="attribute">action</span>=drop \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop everything else&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>转发链只允许LAN主动访问外部网络：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall filter</span></span><br><span class="line"><span class="built_in"></span><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=accept <span class="attribute">connection-state</span>=established,related,untracked \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept established, related and untracked&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=drop <span class="attribute">connection-state</span>=invalid \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop invalid&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=accept <span class="attribute">in-interface-list</span>=LAN \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: accept connections from LAN&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">chain</span>=forward <span class="attribute">action</span>=drop \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: drop everything else&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>这只是IPv4首次启动所需的最小范围。需要IPv6、端口映射或更细的网络分区时，再按<a href="https://www.bluexiii.com/202510/RouterOS7%E7%9A%84IPv4%E4%B8%8EIPv6%E9%98%B2%E7%81%AB%E5%A2%99%E5%9F%BA%E7%BA%BF/">RouterOS 7的IPv4与IPv6防火墙基线</a>补充，不要为了让虚拟机先通网而临时放开整个WAN输入链。</p>
+<h2 id="配置LAN、DHCP和WAN"><a href="#配置LAN、DHCP和WAN" class="headerlink" title="配置LAN、DHCP和WAN"></a>配置LAN、DHCP和WAN</h2><p>这里使用RFC文档网段<code>192.0.2.0/24</code>作为占位符，实际部署时应替换为自己的私有网段。先给LAN配置地址和DHCP：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip address </span><span class="built_in">add</span> <span class="attribute">address</span>=192.0.2.1/24 <span class="attribute">interface</span>=lan</span><br><span class="line"><span class="built_in">/ip pool </span><span class="built_in">add</span> <span class="attribute">name</span>=lan-pool <span class="attribute">ranges</span>=192.0.2.100-192.0.2.199</span><br><span class="line"><span class="built_in">/ip dhcp-server </span><span class="built_in">add</span> <span class="attribute">name</span>=lan-dhcp <span class="attribute">interface</span>=lan <span class="attribute">address-pool</span>=lan-pool <span class="attribute">disabled</span>=<span class="literal">no</span></span><br><span class="line"><span class="built_in">/ip dhcp-server network </span><span class="built_in">add</span> <span class="attribute">address</span>=192.0.2.0/24 \</span><br><span class="line">    <span class="attribute">gateway</span>=192.0.2.1 <span class="attribute">dns-server</span>=192.0.2.1</span><br><span class="line"><span class="built_in">/ip dns </span><span class="built_in">set</span> <span class="attribute">allow-remote-requests</span>=<span class="literal">yes</span></span><br></pre></td></tr></table></figure>
+
+<p>然后回到PVE，在虚拟机硬件页面编辑WAN网卡，把Disconnected选项取消。不要重新添加网卡，也不要用一条缺少原MAC地址的<code>qm set --net0</code>覆盖它，否则RouterOS里的接口对应关系可能跟着变化。</p>
+<p>WAN通过DHCP获取地址时，在RouterOS中增加客户端和源地址转换：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip dhcp-client </span><span class="built_in">add</span> <span class="attribute">interface</span>=wan <span class="attribute">disabled</span>=<span class="literal">no</span> <span class="attribute">use-peer-dns</span>=<span class="literal">yes</span></span><br><span class="line"><span class="built_in">/ip firewall nat </span><span class="built_in">add</span> <span class="attribute">chain</span>=srcnat <span class="attribute">out-interface-list</span>=WAN <span class="attribute">action</span>=masquerade \</span><br><span class="line">    <span class="attribute">comment</span>=<span class="string">&quot;base: masquerade LAN traffic&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>最后检查地址、默认路由、DNS和许可证状态：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip address </span><span class="built_in">print</span></span><br><span class="line"><span class="built_in">/ip route </span><span class="built_in">print</span> where <span class="attribute">dst-address</span>=0.0.0.0/0</span><br><span class="line"><span class="built_in">/ip dhcp-client </span><span class="built_in">print</span> detail</span><br><span class="line"><span class="built_in">/ip dns </span><span class="built_in">print</span></span><br><span class="line"><span class="built_in">/system </span>license print</span><br></pre></td></tr></table></figure>
+
+<p>CHR首次启动使用Free许可证。1Mbps限制足够完成配置和功能验证，不适合长期承担正常宽带出口；需要更高吞吐量时，通过MikroTik账户申请60天Trial或购买P1、P10、P-Unlimited许可证。许可证绑定CHR的System ID，复制磁盘不能重新获得一段试用期。</p>
+<p>配置和连通性确认以后，再在PVE中启用<code>Start at boot</code>。RouterOS提供DHCP或网关服务时，还应设置启动顺序，让它早于依赖它的虚拟机启动。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://manual.mikrotik.com/docs/getting-started/installation-and-upgrade/install/chr-installation/">MikroTik：CHR Installation</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.mikrotik.com/docs/getting-started/installation-and-upgrade/install/chr-installation/proxmox/">MikroTik：CHR Proxmox VE Installation</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.mikrotik.com/docs/getting-started/routeros-licensing/chr/chr-licensing/">MikroTik：CHR Licensing</a></li>
+<li><a target="_blank" rel="noopener" href="https://pve.proxmox.com/pve-docs/pve-admin-guide.html">Proxmox VE Administration Guide</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">从PyTorch到ONNX和TensorRT的YOLO部署</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2025-06-30 00:00:00" itemprop="dateCreated datePublished" datetime="2025-06-30T00:00:00+08:00">2025-06-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 20:15:22" itemprop="dateModified" datetime="2026-08-22T20:15:22+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>在NVIDIAGPU上部署YOLO时，我最后选择了TensorRTEngine加Ultralytics推理。做这个选择之前，需要先弄清<code>.pt</code>、<code>.onnx</code>和<code>.engine</code>分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.ultralytics.com/modes/export/">Ultralytics模型导出</a></li>
+<li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/install/">ONNXRuntime安装</a></li>
+<li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html">CUDAExecutionProvider</a></li>
+<li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html">TensorRTExecutionProvider</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/tensorrt/latest/installing-tensorrt/installing.html">TensorRT安装指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/support-matrix.html">TensorRT支持矩阵</a></li>
+</ul>
+<h2 id="三种模型文件"><a href="#三种模型文件" class="headerlink" title="三种模型文件"></a>三种模型文件</h2><p><code>.pt</code>是PyTorch检查点，也是训练阶段最方便保留的格式。使用Ultralytics加载时，模型结构、权重和任务相关信息都由原来的Python环境处理，适合继续训练、验证和直接推理。</p>
+<p><code>.onnx</code>保存的是标准化计算图，不依赖原来的PyTorch执行过程。它可以交给ONNXRuntime的CPU、CUDA或TensorRTExecutionProvider，也方便接入其他支持ONNX的推理引擎。</p>
+<p>这里的<code>.engine</code>专指TensorRT序列化引擎，也叫plan。它已经针对TensorRT版本、平台和GPU进行编译，启动时不再重新解析完整的ONNX图，但兼容范围比ONNX窄。默认生成的engine不能随意换到另一种GPU、操作系统或TensorRT版本上运行，部署环境变化后通常需要重新构建。</p>
+<p>选择TensorRTEngine加Ultralytics推理，主要是为了保持调用代码一致。这个选择不代表engine在所有环境都更快；脱离目标硬件、输入尺寸、批量大小和精度谈固定的性能百分比没有意义，延迟和吞吐量还是要在实际部署环境中比较。</p>
+<h2 id="导出ONNX"><a href="#导出ONNX" class="headerlink" title="导出ONNX"></a>导出ONNX</h2><p>先在训练环境安装Ultralytics和ONNX依赖：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m pip install --upgrade ultralytics onnx</span><br></pre></td></tr></table></figure>
+
+<p>使用Python导出：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ultralytics <span class="keyword">import</span> YOLO</span><br><span class="line"></span><br><span class="line">model = YOLO(<span class="string">&quot;best.pt&quot;</span>)</span><br><span class="line">model.export(</span><br><span class="line">    <span class="built_in">format</span>=<span class="string">&quot;onnx&quot;</span>,</span><br><span class="line">    imgsz=<span class="number">640</span>,</span><br><span class="line">    dynamic=<span class="literal">False</span>,</span><br><span class="line">    simplify=<span class="literal">True</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>输入尺寸固定时保持<code>dynamic=False</code>，部署配置更简单；确实需要接受多种尺寸时再启用动态形状。<code>opset</code>不指定时由Ultralytics选择当前支持的版本，只有目标运行时有明确限制时才固定。</p>
+<p>导出后先检查模型格式：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnx</span><br><span class="line"></span><br><span class="line">model = onnx.load(<span class="string">&quot;best.onnx&quot;</span>)</span><br><span class="line">onnx.checker.check_model(model)</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用ONNXRuntime"><a href="#使用ONNXRuntime" class="headerlink" title="使用ONNXRuntime"></a>使用ONNXRuntime</h2><p>CPU和GPU包二选一安装，不要同时留在同一个环境中：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># CPU</span></span><br><span class="line">python -m pip install onnxruntime</span><br><span class="line"></span><br><span class="line"><span class="comment"># NVIDIAGPU</span></span><br><span class="line">python -m pip install onnxruntime-gpu</span><br></pre></td></tr></table></figure>
+
+<p>PyPI上的<code>onnxruntime-gpu</code>默认对应CUDA12.x。实际安装前还要根据ONNXRuntime的CUDAExecutionProvider兼容表核对CUDA和cuDNN主版本，不能只看<code>nvidia-smi</code>显示的CUDA上限。</p>
+<p>确认当前环境真正加载了哪些ExecutionProvider：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnxruntime <span class="keyword">as</span> ort</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(ort.__version__)</span><br><span class="line"><span class="built_in">print</span>(ort.get_available_providers())</span><br></pre></td></tr></table></figure>
+
+<p>创建CUDA推理会话时把CPU放在后面作为回退：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnxruntime <span class="keyword">as</span> ort</span><br><span class="line"></span><br><span class="line">session = ort.InferenceSession(</span><br><span class="line">    <span class="string">&quot;best.onnx&quot;</span>,</span><br><span class="line">    providers=[<span class="string">&quot;CUDAExecutionProvider&quot;</span>, <span class="string">&quot;CPUExecutionProvider&quot;</span>],</span><br><span class="line">)</span><br><span class="line"><span class="built_in">print</span>(session.get_providers())</span><br></pre></td></tr></table></figure>
+
+<p><code>get_available_providers()</code>只能说明当前安装包包含哪些Provider，<code>session.get_providers()</code>用来确认这个Session接受了哪些Provider。两者都不能单独证明每个节点实际分配到了GPU，还要留意启动日志中是否有CUDA或cuDNN动态库加载失败。</p>
+<h3 id="TensorRTExecutionProvider"><a href="#TensorRTExecutionProvider" class="headerlink" title="TensorRTExecutionProvider"></a>TensorRTExecutionProvider</h3><p>ONNXRuntime也可以把支持的子图交给TensorRT，不支持的节点继续交给CUDA。Provider顺序要把TensorRT放在CUDA前面：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnxruntime <span class="keyword">as</span> ort</span><br><span class="line"></span><br><span class="line">providers = [</span><br><span class="line">    (</span><br><span class="line">        <span class="string">&quot;TensorrtExecutionProvider&quot;</span>,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="string">&quot;device_id&quot;</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="string">&quot;trt_fp16_enable&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">            <span class="string">&quot;trt_engine_cache_enable&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">            <span class="string">&quot;trt_engine_cache_path&quot;</span>: <span class="string">&quot;./trt-cache&quot;</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">    ),</span><br><span class="line">    (<span class="string">&quot;CUDAExecutionProvider&quot;</span>, &#123;<span class="string">&quot;device_id&quot;</span>: <span class="number">0</span>&#125;),</span><br><span class="line">    <span class="string">&quot;CPUExecutionProvider&quot;</span>,</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">session = ort.InferenceSession(<span class="string">&quot;best.onnx&quot;</span>, providers=providers)</span><br><span class="line"><span class="built_in">print</span>(session.get_providers())</span><br></pre></td></tr></table></figure>
+
+<p>第一次创建Session会编译TensorRT子图，冷启动可能很慢。启用engine缓存后，后续启动可以直接复用；模型、ONNXRuntime、TensorRT、构建参数或GPU发生变化时应清理旧缓存重新生成。</p>
+<h2 id="导出TensorRTEngine"><a href="#导出TensorRTEngine" class="headerlink" title="导出TensorRTEngine"></a>导出TensorRTEngine</h2><p>Ultralytics可以从<code>.pt</code>直接生成engine：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ultralytics <span class="keyword">import</span> YOLO</span><br><span class="line"></span><br><span class="line">model = YOLO(<span class="string">&quot;best.pt&quot;</span>)</span><br><span class="line">model.export(</span><br><span class="line">    <span class="built_in">format</span>=<span class="string">&quot;engine&quot;</span>,</span><br><span class="line">    imgsz=<span class="number">640</span>,</span><br><span class="line">    quantize=<span class="number">16</span>,</span><br><span class="line">    workspace=<span class="number">4</span>,</span><br><span class="line">    verbose=<span class="literal">True</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>当前Ultralytics文档使用<code>quantize=16</code>表示FP16。旧版本常见的<code>half=True</code>仍可能可用，但已经属于兼容参数。<code>workspace=4</code>表示最多使用4GiB工作空间；显存不紧张时也可以省略，让TensorRT自动决定。</p>
+<p>engine会针对构建时的GPU和TensorRT环境选择内核，最好直接在最终部署机器上导出。若需要跨机器分发，先根据TensorRT的版本兼容和硬件兼容选项确认边界，不能把普通engine当成ONNX一样复制使用。</p>
+<h2 id="安装TensorRT运行时"><a href="#安装TensorRT运行时" class="headerlink" title="安装TensorRT运行时"></a>安装TensorRT运行时</h2><p>TensorRT提供PyPI、Debian&#x2F;RPM、Tar包和容器等安装方式。Python项目只使用API时，PyPI最省事；需要<code>trtexec</code>、C++头文件或同时保留多个系统版本时，再选择系统包或Tar包。</p>
+<p>例如现有环境是CUDA12.x，可以明确安装对应的Python包：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m pip install --upgrade tensorrt-cu12</span><br></pre></td></tr></table></figure>
+
+<p>验证Python接口和CUDA初始化：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorrt <span class="keyword">as</span> trt</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(trt.__version__)</span><br><span class="line"><span class="keyword">assert</span> trt.Builder(trt.Logger())</span><br></pre></td></tr></table></figure>
+
+<p>PyPI安装不包含<code>trtexec</code>。如果使用Debian、RPM、Tar包或容器安装，再用下面的命令检查CLI：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trtexec --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+
+<p>TensorRT、CUDA、驱动、Python和GPU的支持范围变化很快，安装时直接从支持矩阵选择一组匹配版本，不要把某一组TensorRT、CUDA和Python版本当作长期安装规则。</p>
+<p>自己编写CUDA扩展时，<code>CUDA_HOME</code>应指向Toolkit根目录，而不是它的<code>bin</code>目录：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> CUDA_HOME=/usr/local/cuda-X.Y</span><br></pre></td></tr></table></figure>
+
+<p>上面的Ultralytics、ONNXRuntime和TensorRTPython路径没有直接使用PyCUDA，不需要为了运行engine额外安装。只有自己的推理代码明确<code>import pycuda</code>时，再按该项目的依赖补上。</p>
+<h2 id="使用Ultralytics统一调用"><a href="#使用Ultralytics统一调用" class="headerlink" title="使用Ultralytics统一调用"></a>使用Ultralytics统一调用</h2><p>如果不想分别维护ONNXRuntime和TensorRT推理代码，可以继续用Ultralytics加载三种文件。模型路径变化，预测接口基本一致：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ultralytics <span class="keyword">import</span> YOLO</span><br><span class="line"></span><br><span class="line">pt_model = YOLO(<span class="string">&quot;best.pt&quot;</span>)</span><br><span class="line">onnx_model = YOLO(<span class="string">&quot;best.onnx&quot;</span>)</span><br><span class="line">engine_model = YOLO(<span class="string">&quot;best.engine&quot;</span>)</span><br><span class="line"></span><br><span class="line">pt_model.predict(source=<span class="string">&quot;image.jpg&quot;</span>, device=<span class="number">0</span>)</span><br><span class="line">onnx_model.predict(source=<span class="string">&quot;image.jpg&quot;</span>, device=<span class="number">0</span>)</span><br><span class="line">engine_model.predict(source=<span class="string">&quot;image.jpg&quot;</span>, device=<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这种方式部署简单，但运行环境仍要安装Ultralytics及其依赖。追求更小的运行环境或需要C++集成时，直接使用ONNXRuntime或TensorRT原生API更合适。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" class="post-title-link" itemprop="url">uv常用操作：Python、脚本、工具与项目管理</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2025-04-03 00:00:00" itemprop="dateCreated datePublished" datetime="2025-04-03T00:00:00+08:00">2025-04-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>Python版本、虚拟环境、项目依赖和临时命令行工具原本分散在不同工具中，uv把它们收进了一套命令。日常开发基本可以围绕<code>uv python</code>、<code>uv run</code>、<code>uv tool</code>和项目命令完成，使用的uv版本为0.12.5。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/">uv文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/guides/install-python/">Python版本管理</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/concepts/projects/sync/">项目依赖与同步</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/guides/tools/">命令行工具</a></li>
+</ul>
+<h2 id="安装uv"><a href="#安装uv" class="headerlink" title="安装uv"></a>安装uv</h2><p>macOS和Linux可以使用官方安装脚本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -LsSf https://astral.sh/uv/install.sh | sh</span><br><span class="line">uv --version</span><br></pre></td></tr></table></figure>
+
+<p>通过Homebrew安装：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install uv</span><br></pre></td></tr></table></figure>
+
+<h2 id="管理Python版本"><a href="#管理Python版本" class="headerlink" title="管理Python版本"></a>管理Python版本</h2><p>uv可以安装多个Python版本，也能直接使用系统中已有的Python：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv python install 3.10 3.11 3.12</span><br><span class="line">uv python list</span><br></pre></td></tr></table></figure>
+
+<p>在项目中固定Python版本，会生成<code>.python-version</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uv python pin 3.11</span><br></pre></td></tr></table></figure>
+
+<p>创建指定版本的虚拟环境：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv venv --python 3.12</span><br><span class="line"><span class="built_in">source</span> .venv/bin/activate</span><br></pre></td></tr></table></figure>
+
+<p>只指定<code>3.12</code>比固定到某个补丁版本更省事，uv会选择满足条件的版本。</p>
+<h2 id="配置包索引"><a href="#配置包索引" class="headerlink" title="配置包索引"></a>配置包索引</h2><p>临时指定默认索引：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv add \</span><br><span class="line">  --default-index https://pypi.tuna.tsinghua.edu.cn/simple \</span><br><span class="line">  requests</span><br></pre></td></tr></table></figure>
+
+<p>也可以使用环境变量：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> UV_DEFAULT_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple</span><br></pre></td></tr></table></figure>
+
+<p>项目的<code>pyproject.toml</code>使用<code>[[tool.uv.index]]</code>：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[[tool.uv.index]]</span></span><br><span class="line"><span class="attr">name</span> = <span class="string">&quot;mirror&quot;</span></span><br><span class="line"><span class="attr">url</span> = <span class="string">&quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;</span></span><br><span class="line"><span class="attr">default</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>独立的<code>uv.toml</code>没有<code>tool.uv</code>前缀：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[[index]]</span></span><br><span class="line"><span class="attr">name</span> = <span class="string">&quot;mirror&quot;</span></span><br><span class="line"><span class="attr">url</span> = <span class="string">&quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;</span></span><br><span class="line"><span class="attr">default</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>用户级配置可以放在<code>~/.config/uv/uv.toml</code>。<code>uv tool</code>属于用户级操作，不读取项目中的索引配置，需要使用用户级配置、环境变量或命令行参数。</p>
+<h2 id="运行单文件脚本"><a href="#运行单文件脚本" class="headerlink" title="运行单文件脚本"></a>运行单文件脚本</h2><p>临时给脚本增加依赖，不会修改当前项目：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv run --with rich example.py</span><br><span class="line">uv run --with <span class="string">&#x27;rich&gt;12,&lt;13&#x27;</span> example.py</span><br><span class="line">uv run --python 3.10 example.py</span><br></pre></td></tr></table></figure>
+
+<p>需要长期保留依赖时，可以把PEP723元数据写进脚本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv init --script example.py --python 3.12</span><br><span class="line">uv add --script example.py <span class="string">&#x27;requests&lt;3&#x27;</span> rich</span><br><span class="line">uv run example.py</span><br></pre></td></tr></table></figure>
+
+<p>脚本默认不会自动生成锁文件。需要固定依赖时单独锁定：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uv lock --script example.py</span><br></pre></td></tr></table></figure>
+
+<p>锁文件会写到脚本旁边，例如<code>example.py.lock</code>。</p>
+<h2 id="运行和安装命令行工具"><a href="#运行和安装命令行工具" class="headerlink" title="运行和安装命令行工具"></a>运行和安装命令行工具</h2><p>偶尔使用的工具直接通过<code>uvx</code>运行。它是<code>uv tool run</code>的简写，每个工具使用独立的临时环境：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uvx ruff check .</span><br><span class="line">uv tool run ruff check .</span><br><span class="line"></span><br><span class="line">uvx --from httpie http --version</span><br><span class="line">uvx ruff@0.3.0 check .</span><br><span class="line">uvx --with mkdocs-material mkdocs --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+
+<p>经常使用的工具可以持久安装：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv tool install <span class="string">&#x27;ruff&gt;=0.4&#x27;</span></span><br><span class="line">uv tool update-shell</span><br><span class="line">ruff --version</span><br></pre></td></tr></table></figure>
+
+<p>版本范围要加引号，否则Shell可能把<code>&gt;</code>识别成输出重定向。</p>
+<p>查看、升级和删除工具：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uv tool list</span><br><span class="line">uv tool upgrade ruff</span><br><span class="line">uv tool upgrade --all</span><br><span class="line">uv tool uninstall ruff</span><br></pre></td></tr></table></figure>
+
+<p>工具需要特定Python版本时显式指定：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uvx --python 3.10 ruff</span><br><span class="line">uv tool install --python 3.10 ruff</span><br><span class="line">uv tool upgrade --python 3.10 ruff</span><br></pre></td></tr></table></figure>
+
+<h2 id="管理项目"><a href="#管理项目" class="headerlink" title="管理项目"></a>管理项目</h2><p>创建项目并添加依赖：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uv init hello-world</span><br><span class="line"><span class="built_in">cd</span> hello-world</span><br><span class="line"></span><br><span class="line">uv add requests</span><br><span class="line">uv add <span class="string">&#x27;requests==2.31.0&#x27;</span></span><br><span class="line">uv add git+https://github.com/psf/requests</span><br></pre></td></tr></table></figure>
+
+<p>从现有依赖文件迁移：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uv add -r requirements.txt -c constraints.txt</span><br></pre></td></tr></table></figure>
+
+<p>删除或升级单个依赖：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv remove requests</span><br><span class="line">uv lock --upgrade-package requests</span><br></pre></td></tr></table></figure>
+
+<p><code>uv.lock</code>记录完整的解析结果，<code>uv sync</code>将项目环境同步到锁文件：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv lock</span><br><span class="line">uv <span class="built_in">sync</span></span><br></pre></td></tr></table></figure>
+
+<p><code>uv run</code>会在运行前自动检查锁文件并同步环境，通常不需要手工激活<code>.venv</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uv run python main.py</span><br><span class="line"></span><br><span class="line">uv add flask</span><br><span class="line">uv run flask run -p 3000</span><br></pre></td></tr></table></figure>
+
+<p>CI中不希望命令悄悄修改锁文件时，可以使用<code>--locked</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv <span class="built_in">sync</span> --locked</span><br><span class="line">uv run --locked python main.py</span><br></pre></td></tr></table></figure>
+
+<h2 id="构建和发布"><a href="#构建和发布" class="headerlink" title="构建和发布"></a>构建和发布</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv build</span><br><span class="line">uv publish</span><br></pre></td></tr></table></figure>
+
+<p>构建产物位于<code>dist/</code>。发布前需要在目标包索引中配置认证；如果项目配置了多个索引，使用<code>uv publish --index &lt;name&gt;</code>明确指定发布目标。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Qdrant的Docker启动与RESTAPI常用操作</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-09-24 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-24T00:00:00+08:00">2024-09-24</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>本地调试Qdrant时，用Docker启动服务，再直接通过RESTAPI操作Collection和Point就足够了。查询接口已经统一到QueryAPI，旧的Search接口不再继续使用。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/quick-start/">Qdrant本地启动</a></li>
+<li><a target="_blank" rel="noopener" href="https://api.qdrant.tech/">QdrantRESTAPI</a></li>
+<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/search/">QueryAPI</a></li>
+<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/security/">安全配置</a></li>
+</ul>
+<h2 id="Docker启动"><a href="#Docker启动" class="headerlink" title="Docker启动"></a>Docker启动</h2><p>示例使用<code>v1.19.0</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> \</span><br><span class="line">  --name qdrant \</span><br><span class="line">  -p 127.0.0.1:6333:6333 \</span><br><span class="line">  -p 127.0.0.1:6334:6334 \</span><br><span class="line">  -v <span class="string">&quot;<span class="variable">$PWD</span>/qdrant_storage:/qdrant/storage&quot;</span> \</span><br><span class="line">  qdrant/qdrant:v1.19.0</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>RESTAPI：<code>http://localhost:6333</code></li>
+<li>WebUI：<code>http://localhost:6333/dashboard</code></li>
+<li>gRPC：<code>localhost:6334</code></li>
+</ul>
+<p>DockerCompose配置：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">qdrant:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">qdrant/qdrant:v1.19.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">qdrant</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;127.0.0.1:6333:6333&quot;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;127.0.0.1:6334:6334&quot;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./qdrant_storage:/qdrant/storage</span></span><br></pre></td></tr></table></figure>
+
+<p>自建Qdrant默认没有认证和TLS，所以这里只绑定到<code>127.0.0.1</code>。需要从其他机器访问时，先配置APIKey、TLS或带鉴权的反向代理，不要直接把6333和6334端口暴露到公网。</p>
+<p>下面的RESTAPI示例都使用本机地址：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> QDRANT_URL=http://localhost:6333</span><br></pre></td></tr></table></figure>
+
+<h2 id="Collection"><a href="#Collection" class="headerlink" title="Collection"></a>Collection</h2><p>列出Collection：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>创建一个4维向量的Collection：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X PUT \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;vectors&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;size&quot;: 4,</span></span><br><span class="line"><span class="string">      &quot;distance&quot;: &quot;Cosine&quot;</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>查看Collection和检查是否存在：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection&quot;</span></span><br><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/exists&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>创建别名：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/aliases&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;actions&quot;: [</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;create_alias&quot;: &#123;</span></span><br><span class="line"><span class="string">          &quot;collection_name&quot;: &quot;test_collection&quot;,</span></span><br><span class="line"><span class="string">          &quot;alias_name&quot;: &quot;production_collection&quot;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      &#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Point"><a href="#Point" class="headerlink" title="Point"></a>Point</h2><p>批量写入3个Point：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X PUT \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points?wait=true&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;points&quot;: [</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 1,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;red&quot;, &quot;city&quot;: &quot;Beijing&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.9, 0.1, 0.1, 0.2]</span></span><br><span class="line"><span class="string">      &#125;,</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 2,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;green&quot;, &quot;city&quot;: &quot;Shanghai&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.1, 0.9, 0.1, 0.2]</span></span><br><span class="line"><span class="string">      &#125;,</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 3,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;blue&quot;, &quot;city&quot;: &quot;Beijing&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.1, 0.1, 0.9, 0.2]</span></span><br><span class="line"><span class="string">      &#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Scroll查询"><a href="#Scroll查询" class="headerlink" title="Scroll查询"></a>Scroll查询</h2><p>Scroll不计算向量相似度，适合按条件遍历Point：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/scroll&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 10,</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true,</span></span><br><span class="line"><span class="string">    &quot;with_vector&quot;: false</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>返回结果中的<code>next_page_offset</code>可以作为下一次请求的<code>offset</code>。</p>
+<h2 id="向量查询"><a href="#向量查询" class="headerlink" title="向量查询"></a>向量查询</h2><p><code>points/search</code>属于旧接口，向量查询改用QueryAPI：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/query&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;query&quot;: [0.2, 0.1, 0.9, 0.7],</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;params&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;hnsw_ef&quot;: 128,</span></span><br><span class="line"><span class="string">      &quot;exact&quot;: false</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 3,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>也可以使用已有Point的ID作为查询向量：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/query&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;query&quot;: 2,</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 3,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="统计"><a href="#统计" class="headerlink" title="统计"></a>统计</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/count&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;exact&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="删除Point"><a href="#删除Point" class="headerlink" title="删除Point"></a>删除Point</h2><p>按ID删除Point：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/delete?wait=true&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;&quot;points&quot;: [1, 3]&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/" class="post-title-link" itemprop="url">Ubuntu下搭建CUDA与容器GPU工具链</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-09-19 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-19T00:00:00+08:00">2024-09-19</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>我在Ubuntu22.04上既要使用CUDA进行本机开发，也要让Docker容器调用GPU。整套环境除了Toolkit，还涉及驱动、cuDNN和NVIDIAContainerToolkit，其中最容易出问题的是几组版本之间的兼容关系。</p>
+<h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.nvidia.com/Download/index.aspx?lang=en-us">NVIDIA驱动</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-toolkit-archive">CUDAToolkit归档</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/cudnn-downloads">cuDNN下载</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN归档</a></li>
+</ul>
+<h2 id="先核对版本"><a href="#先核对版本" class="headerlink" title="先核对版本"></a>先核对版本</h2><p>驱动、CUDA和GCC的对应关系会变化，直接查当前版本的ReleaseNotes比保存一张静态大表可靠：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/">CUDAToolkitReleaseNotes</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deploy/cuda-compatibility/">CUDACompatibility</a></li>
+</ul>
+<p>先看机器上的现状：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi</span><br><span class="line"><span class="built_in">command</span> -v nvcc &amp;&amp; nvcc --version</span><br><span class="line"><span class="built_in">ls</span> -ld /usr/local/cuda* 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p><code>nvidia-smi</code>顶部的<code>CUDAVersion</code>是驱动支持的最高CUDA版本，不代表已经安装了同版本的Toolkit。Toolkit版本以<code>nvcc --version</code>和安装目录为准。</p>
+<h2 id="使用Runfile安装CUDA"><a href="#使用Runfile安装CUDA" class="headerlink" title="使用Runfile安装CUDA"></a>使用Runfile安装CUDA</h2><p>Runfile适合离线安装或固定版本。能使用APT的机器还是优先用软件包，后续卸载和内核升级都省事一些。</p>
+<p>先安装编译工具和当前内核头文件：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y build-essential linux-headers-<span class="string">&quot;<span class="subst">$(uname -r)</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>下载完成后核对校验值，再运行安装器：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sha256sum</span> cuda_&lt;version&gt;_linux.run</span><br><span class="line"><span class="built_in">sudo</span> sh cuda_&lt;version&gt;_linux.run</span><br></pre></td></tr></table></figure>
+
+<p>如果驱动已经通过APT或单独的Runfile装好，在交互界面中取消<code>Driver</code>，只安装<code>CUDAToolkit</code>。不要让两种安装方式同时管理驱动。</p>
+<p>安装完成后按实际目录配置环境变量：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=/usr/local/cuda-X.Y/bin:<span class="variable">$PATH</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=/usr/local/cuda-X.Y/lib64:<span class="variable">$&#123;LD_LIBRARY_PATH:-&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>确认<code>nvcc --version</code>正常后，再写入Shell配置文件。</p>
+<p>以前为了切换GCC，我直接改过<code>/usr/bin/gcc</code>软链接。这会影响系统中其他编译任务，现在更合适的做法是并行安装所需版本，并在构建时单独指定：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CC=/usr/bin/gcc-X CXX=/usr/bin/g++-X cmake -S . -B build</span><br></pre></td></tr></table></figure>
+
+<p>Runfile安装的Toolkit可以使用自带卸载器删除：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> /usr/local/cuda-X.Y/bin/cuda-uninstaller</span><br></pre></td></tr></table></figure>
+
+<h2 id="cuDNN"><a href="#cuDNN" class="headerlink" title="cuDNN"></a>cuDNN</h2><p>cuDNN还要单独核对CUDA版本和系统支持范围：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/cudnn/installation/latest/linux.html">cuDNN安装指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/cudnn/backend/latest/reference/support-matrix.html">cuDNNSupportMatrix</a></li>
+</ul>
+<p>当前系统如果已经配置NVIDIA软件源，可以直接安装与CUDA主版本对应的软件包。例如cuDNN9配合CUDA12：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y cudnn9-cuda-12</span><br></pre></td></tr></table></figure>
+
+<h2 id="Docker中使用GPU"><a href="#Docker中使用GPU" class="headerlink" title="Docker中使用GPU"></a>Docker中使用GPU</h2><p>旧的<code>nvidia-container-runtime</code>仓库已经归档，现在使用<code>nvidia-container-toolkit</code>。这里有一个容易混淆的地方：容器使用宿主机的GPU驱动，CUDA用户态库通常放在镜像里，所以镜像版本仍然受宿主机驱动限制。</p>
+<p>Ubuntu下配置APT仓库：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y --no-install-recommends \</span><br><span class="line">  ca-certificates curl gnupg2</span><br><span class="line"></span><br><span class="line">curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \</span><br><span class="line">  | <span class="built_in">sudo</span> gpg --dearmor \</span><br><span class="line">    -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg</span><br><span class="line"></span><br><span class="line">curl -sL https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \</span><br><span class="line">  | sed <span class="string">&#x27;s#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g&#x27;</span> \</span><br><span class="line">  | <span class="built_in">sudo</span> <span class="built_in">tee</span> /etc/apt/sources.list.d/nvidia-container-toolkit.list</span><br></pre></td></tr></table></figure>
+
+<p>安装并写入Docker运行时配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y nvidia-container-toolkit</span><br><span class="line"><span class="built_in">sudo</span> nvidia-ctk runtime configure --runtime=docker</span><br><span class="line"><span class="built_in">sudo</span> systemctl restart docker</span><br></pre></td></tr></table></figure>
+
+<p><code>nvidia-ctk</code>会修改<code>/etc/docker/daemon.json</code>，已有自定义配置时先备份这个文件。</p>
+<p>从<a target="_blank" rel="noopener" href="https://hub.docker.com/r/nvidia/cuda/tags">NVIDIACUDA镜像标签</a>中选一个宿主机驱动支持的版本进行验证：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> --gpus all \</span><br><span class="line">  nvidia/cuda:&lt;toolkit-tag&gt;-base-ubuntu22.04 \</span><br><span class="line">  nvidia-smi</span><br></pre></td></tr></table></figure>
+
+<p>宿主机的<code>nvidia-smi</code>正常、容器中却找不到GPU时，检查Docker运行时和Toolkit版本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker info | sed -n <span class="string">&#x27;/Runtimes/,+3p&#x27;</span></span><br><span class="line">nvidia-ctk --version</span><br><span class="line">journalctl -u docker -n 100 --no-pager</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-installation-guide-linux/">NVIDIACUDAInstallationGuideforLinux</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html">NVIDIAContainerToolkit安装指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/NVIDIA/nvidia-container-toolkit">NVIDIAContainerToolkit源码</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Git%E5%AD%90%E6%A8%A1%E5%9D%97%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202409/Git%E5%AD%90%E6%A8%A1%E5%9D%97%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Git子模块常用操作</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-09-18 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-18T00:00:00+08:00">2024-09-18</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>Git子模块本身的命令不多，真正容易漏掉的是主仓库只记录子模块的某个提交。子模块更新完成后，必须回到主仓库提交gitlink变化，否则其他人仍会取得旧版本。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://git-scm.com/docs/git-submodule">Git子模块文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E5%AD%90%E6%A8%A1%E5%9D%97">ProGit：子模块</a></li>
+</ul>
+<h2 id="克隆包含子模块的项目"><a href="#克隆包含子模块的项目" class="headerlink" title="克隆包含子模块的项目"></a>克隆包含子模块的项目</h2><p>克隆时可以顺便初始化所有子模块：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> \</span><br><span class="line">  --recurse-submodules \</span><br><span class="line">  https://example.com/project.git</span><br></pre></td></tr></table></figure>
+
+<p>普通克隆完成后，也可以再初始化：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git submodule update --init --recursive</span><br></pre></td></tr></table></figure>
+
+<p><code>--recursive</code>会继续处理子模块中的子模块。</p>
+<h2 id="添加子模块"><a href="#添加子模块" class="headerlink" title="添加子模块"></a>添加子模块</h2><p>添加时指定仓库地址、跟踪分支和本地目录：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">git submodule add \</span><br><span class="line">  -b main \</span><br><span class="line">  https://example.com/common.git \</span><br><span class="line">  app</span><br><span class="line"></span><br><span class="line">git submodule status</span><br><span class="line">git status</span><br><span class="line">git commit -m <span class="string">&#x27;添加common子模块&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>Git会新增<code>.gitmodules</code>，并在主仓库中记录子模块当前提交。主仓库记录的是一个确定的提交，不是子模块目录中的全部文件。</p>
+<p>已有子模块可以修改跟踪分支：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git submodule set-branch --branch main app</span><br><span class="line">git add .gitmodules</span><br><span class="line">git commit -m <span class="string">&#x27;调整子模块跟踪分支&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>这个分支配置只影响<code>git submodule update --remote</code>。普通的<code>git submodule update</code>仍以主仓库记录的提交为准。</p>
+<h2 id="更新子模块"><a href="#更新子模块" class="headerlink" title="更新子模块"></a>更新子模块</h2><p>拉取主仓库后，将子模块切换到主仓库记录的版本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git pull</span><br><span class="line">git submodule update --init --recursive</span><br></pre></td></tr></table></figure>
+
+<p>如果需要取得子模块远程分支上的最新提交：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git submodule update --remote app</span><br><span class="line">git status</span><br><span class="line">git add app</span><br><span class="line">git commit -m <span class="string">&#x27;更新common子模块&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>最后两步不能省。子模块更新后，主仓库中的gitlink也发生了变化，需要提交才能让其他人取得同一个版本。</p>
+<p>直接进入子模块开发时也一样：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git -C app switch main</span><br><span class="line">git -C app pull</span><br><span class="line"></span><br><span class="line">git add app</span><br><span class="line">git commit -m <span class="string">&#x27;更新common子模块&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="修改仓库地址"><a href="#修改仓库地址" class="headerlink" title="修改仓库地址"></a>修改仓库地址</h2><p>子模块迁移到新地址后，需要同时更新<code>.gitmodules</code>和本地配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git submodule set-url \</span><br><span class="line">  app \</span><br><span class="line">  https://example.com/common.git</span><br><span class="line"></span><br><span class="line">git submodule <span class="built_in">sync</span> --recursive</span><br><span class="line">git add .gitmodules</span><br><span class="line">git commit -m <span class="string">&#x27;修改子模块地址&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="停用和删除"><a href="#停用和删除" class="headerlink" title="停用和删除"></a>停用和删除</h2><p>只想清掉本地工作目录，不修改主仓库历史：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git submodule deinit app</span><br></pre></td></tr></table></figure>
+
+<p>以后可以重新初始化：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git submodule update --init app</span><br></pre></td></tr></table></figure>
+
+<p>从主仓库中删除子模块：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">rm</span> app</span><br><span class="line">git commit -m <span class="string">&#x27;删除common子模块&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>不要直接删除子模块目录。<code>git rm</code>会同时处理主仓库中的gitlink和<code>.gitmodules</code>配置。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/" class="post-title-link" itemprop="url">Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-08-17 00:00:00" itemprop="dateCreated datePublished" datetime="2024-08-17T00:00:00+08:00">2024-08-17</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 20:15:22" itemprop="dateModified" datetime="2026-08-22T20:15:22+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>这台Ubuntu桌面机同时承担GPU计算任务。我想单独调节风扇，并让核显负责桌面输出，尽量减少独立显卡上的常驻显存。下面的操作只对应这台机器当时的硬件和驱动版本。</p>
+<h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系统</td>
+<td>Ubuntu22.04</td>
+</tr>
+<tr>
+<td>显卡</td>
+<td>GeForceRTX2080Ti</td>
+</tr>
+<tr>
+<td>驱动</td>
+<td>535.86.05</td>
+</tr>
+<tr>
+<td>CUDA</td>
+<td>11.8.89</td>
+</tr>
+</tbody></table>
+<h2 id="使用NVIDIASettings调整风扇"><a href="#使用NVIDIASettings调整风扇" class="headerlink" title="使用NVIDIASettings调整风扇"></a>使用NVIDIASettings调整风扇</h2><p>先生成Xorg配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nvidia-xconfig \</span><br><span class="line">  --allow-empty-initial-configuration \</span><br><span class="line">  --cool-bits=4</span><br></pre></td></tr></table></figure>
+
+<p>也可以手工增加<code>/etc/X11/xorg.conf.d/20-nvidia.conf</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Section &quot;Device&quot;</span><br><span class="line">    Identifier &quot;Device0&quot;</span><br><span class="line">    Driver &quot;nvidia&quot;</span><br><span class="line">    Option &quot;Coolbits&quot; &quot;4&quot;</span><br><span class="line">EndSection</span><br></pre></td></tr></table></figure>
+
+<p>重启后，在Xorg桌面中打开：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-settings</span><br></pre></td></tr></table></figure>
+
+<p>只控制风扇时，Coolbits使用<code>4</code>即可。<code>28</code>虽然也能打开风扇控制，但同时启用了频率偏移和超压，没有必要。这个配置属于NVIDIA驱动的高级功能，改完先观察温度和稳定性：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 nvidia-smi</span><br></pre></td></tr></table></figure>
+
+<p>我当时还遇到过<code>nvidia settings failed to set fan speed</code>。通过放宽<code>Xwrapper.config</code>权限可以绕过去，但这个处理范围过大，不建议照抄。先检查当前会话是否为Xorg、<code>DISPLAY</code>是否正确，以及独立显卡是否属于当前XScreen：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$XDG_SESSION_TYPE</span>&quot;</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$DISPLAY</span>&quot;</span></span><br><span class="line">nvidia-settings -q gpus</span><br></pre></td></tr></table></figure>
+
+<p>较新的驱动不一定继续提供相同的Coolbits能力，具体以当前驱动的README和<code>nvidia-settings</code>实际显示为准。</p>
+<h2 id="使用核显输出桌面"><a href="#使用核显输出桌面" class="headerlink" title="使用核显输出桌面"></a>使用核显输出桌面</h2><p>这台机器还有核显。让核显负责桌面输出后，独立显卡只保留计算任务，<code>nvidia-smi</code>中桌面进程占用的显存可以降到几MB。</p>
+<p>我的操作顺序如下：</p>
+<ol>
+<li>在BIOS中将核显设为首选显示设备。</li>
+<li>把显示器接到主板视频接口。</li>
+<li>将Ubuntu切换到核显模式并重启。</li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prime-select query</span><br><span class="line"><span class="built_in">sudo</span> prime-select intel</span><br><span class="line"><span class="built_in">sudo</span> reboot</span><br></pre></td></tr></table></figure>
+
+<p>重启后检查桌面渲染设备和独立显卡占用：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glxinfo -B | sed -n <span class="string">&#x27;1,12p&#x27;</span></span><br><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure>
+
+<p>我还试过在<code>NVIDIASettings</code>中将Profile改为<code>On-Demand</code>。这台机器重启后本地没有正常显示，不过SSH仍能登录，独立显卡显存也确实只占了几MB。台式机的BIOS、视频接口和PRIME组合差异比较大，这一步不能直接当作通用配置。</p>
+<p>如果修改Xorg配置后进不了桌面，可以从TTY或SSH禁用新增文件：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">mv</span> /etc/X11/xorg.conf.d/20-nvidia.conf \</span><br><span class="line">  /etc/X11/xorg.conf.d/20-nvidia.conf.disabled</span><br><span class="line"><span class="built_in">sudo</span> reboot</span><br></pre></td></tr></table></figure>
+
+<h2 id="其他工具"><a href="#其他工具" class="headerlink" title="其他工具"></a>其他工具</h2><p><a target="_blank" rel="noopener" href="https://github.com/andyljones/coolgpus">coolgpus</a>可以直接设置转速或温度曲线。使用前仍要保证驱动已经开放风扇控制：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pip install coolgpus</span><br><span class="line"></span><br><span class="line">coolgpus --speed 99 99</span><br><span class="line">coolgpus --temp 20 55 80 --speed 5 30 99</span><br></pre></td></tr></table></figure>
+
+<p>使用<a target="_blank" rel="noopener" href="https://github.com/wilicc/gpu-burn">gpu-burn</a>测试时，可以限制时间、显存占用和显卡编号：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 运行1小时</span></span><br><span class="line">./gpu_burn -d 3600</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用50%显存</span></span><br><span class="line">./gpu_burn -m 50%</span><br><span class="line"></span><br><span class="line"><span class="comment"># 只测试GPU2</span></span><br><span class="line">./gpu_burn -i 2</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://download.nvidia.com/XFree86/Linux-x86_64/535.86.05/README/xconfigoptions.html">535.86.05驱动的X配置选项</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/latest/">NVIDIALinux驱动安装指南</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/canonical/nvidia-prime">Ubuntu的nvidia-prime项目</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202406/%E8%AF%AD%E9%9F%B3%E5%8A%A9%E6%89%8B%E9%80%89%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202406/%E8%AF%AD%E9%9F%B3%E5%8A%A9%E6%89%8B%E9%80%89%E5%9E%8B/" class="post-title-link" itemprop="url">语音助手选型</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-05-29 09:19:09" itemprop="dateCreated datePublished" datetime="2024-05-29T09:19:09+08:00">2024-05-29</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="Whisper自动语音识别"><a href="#Whisper自动语音识别" class="headerlink" title="Whisper自动语音识别"></a>Whisper自动语音识别</h2><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://mdnice.com/writing/a40f4bcd3b3e40d8931512186982b711">https://mdnice.com/writing/a40f4bcd3b3e40d8931512186982b711</a></li>
+<li><a target="_blank" rel="noopener" href="https://transformers.run/">https://transformers.run/</a></li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/docs/transformers/main_classes/pipelines">https://huggingface.co/docs/transformers/main_classes/pipelines</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/openai/whisper">https://github.com/openai/whisper</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/askrella/speech-rest-api">https://github.com/askrella/speech-rest-api</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/wuhanchu/whisper_service/blob/main/run.py">https://github.com/wuhanchu/whisper_service/blob/main/run.py</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/muaz-khan/RecordRTC/issues/630">https://github.com/muaz-khan/RecordRTC/issues/630</a></li>
+</ul>
+<h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://openai.com/index/whisper/">https://openai.com/index/whisper/</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/openai/whisper">https://github.com/openai/whisper</a></li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/openai/whisper-large-v3">https://huggingface.co/openai/whisper-large-v3</a></li>
+</ul>
+<h2 id="语义相似度比对"><a href="#语义相似度比对" class="headerlink" title="语义相似度比对"></a>语义相似度比对</h2><h3 id="参考-1"><a href="#参考-1" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/whxf/awesome-chinese-nlp/blob/master/doc/%E6%96%87%E6%9C%AC%E7%9B%B8%E4%BC%BC%E5%BA%A6.md">https://github.com/whxf/awesome-chinese-nlp/blob/master/doc/%E6%96%87%E6%9C%AC%E7%9B%B8%E4%BC%BC%E5%BA%A6.md</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/huaweicloud/ModelArts-Lab/blob/master/notebook/DL_nlp_text_similarity/text_similarity.ipynb">https://github.com/huaweicloud/ModelArts-Lab/blob/master/notebook/DL_nlp_text_similarity/text_similarity.ipynb</a></li>
+</ul>
+<h3 id="Sentence-Similarity"><a href="#Sentence-Similarity" class="headerlink" title="Sentence Similarity"></a>Sentence Similarity</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/models?pipeline_tag=sentence-similarity&language=zh&sort=trending">https://huggingface.co/models?pipeline_tag=sentence-similarity&amp;language=zh&amp;sort=trending</a></li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/shibing624/text2vec-base-chinese">https://huggingface.co/shibing624/text2vec-base-chinese</a>   102M params</li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/sentence-transformers/LaBSE">https://huggingface.co/sentence-transformers/LaBSE</a>   471M params</li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/GanymedeNil/text2vec-large-chinese">https://huggingface.co/GanymedeNil/text2vec-large-chinese</a>  326M params</li>
+</ul>
+<h3 id="Feature-Extraction"><a href="#Feature-Extraction" class="headerlink" title="Feature Extraction"></a>Feature Extraction</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/models?pipeline_tag=feature-extraction&language=zh&sort=trending">https://huggingface.co/models?pipeline_tag=feature-extraction&amp;language=zh&amp;sort=trending</a></li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/maidalun1020/bce-embedding-base_v1">https://huggingface.co/maidalun1020/bce-embedding-base_v1</a></li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/intfloat/multilingual-e5-large">https://huggingface.co/intfloat/multilingual-e5-large</a></li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/BAAI/bge-large-zh-v1.5">https://huggingface.co/BAAI/bge-large-zh-v1.5</a></li>
+</ul>
+<h3 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -385,853 +1553,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202312/JetLinks%E4%BE%9D%E8%B5%96%E6%A2%B3%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202312/JetLinks%E4%BE%9D%E8%B5%96%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">JetLinks依赖梳理</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-01-21 13:54:23" itemprop="dateCreated datePublished" datetime="2024-01-21T13:54:23+08:00">2024-01-21</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="hsweb-easy-orm"><a href="#hsweb-easy-orm" class="headerlink" title="hsweb-easy-orm"></a>hsweb-easy-orm</h2><p><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-easy-orm">https://github.com/hs-web/hsweb-easy-orm</a><br>org.hswebframework:hsweb-easy-orm:4.1.2-SNAPSHOT</p>
-<h2 id="hsweb-framework"><a href="#hsweb-framework" class="headerlink" title="hsweb-framework"></a>hsweb-framework</h2><p><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-framework">https://github.com/hs-web/hsweb-framework</a><br>org.hswebframework.web:4.0.17-SNAPSHOT</p>
-<h2 id="reactor-excel"><a href="#reactor-excel" class="headerlink" title="reactor-excel"></a>reactor-excel</h2><p><a target="_blank" rel="noopener" href="https://github.com/hs-web/reactor-excel">https://github.com/hs-web/reactor-excel</a><br>org.hswebframework:reactor-excel:1.0.6-SNAPSHOT</p>
-<h2 id="jetlinks-core"><a href="#jetlinks-core" class="headerlink" title="jetlinks-core"></a>jetlinks-core</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-core">https://github.com/jetlinks/jetlinks-core</a><br>org.jetlinks:jetlinks-core:1.2.2-SNAPSHOT</p>
-<h2 id="jetlinks-supports"><a href="#jetlinks-supports" class="headerlink" title="jetlinks-supports"></a>jetlinks-supports</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-supports">https://github.com/jetlinks/jetlinks-supports</a><br>org.jetlinks:jetlinks-supports:1.2.2-SNAPSHOT</p>
-<h2 id="rule-engine"><a href="#rule-engine" class="headerlink" title="rule-engine"></a>rule-engine</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/rule-engine">https://github.com/jetlinks/rule-engine</a><br>org.jetlinks:rule-engine:1.2.2-SNAPSHOT</p>
-<h2 id="reactor-ql"><a href="#reactor-ql" class="headerlink" title="reactor-ql"></a>reactor-ql</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/reactor-ql">https://github.com/jetlinks/reactor-ql</a><br>org.jetlinks:reactor-ql:1.0.17-SNAPSHOT</p>
-<h2 id="jetlinks-plugin"><a href="#jetlinks-plugin" class="headerlink" title="jetlinks-plugin"></a>jetlinks-plugin</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-plugin">https://github.com/jetlinks/jetlinks-plugin</a><br>org.jetlinks.plugin:jetlinks-plugin:1.0.2-SNAPSHOT</p>
-<h2 id="jetlinks-community"><a href="#jetlinks-community" class="headerlink" title="jetlinks-community"></a>jetlinks-community</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-community">https://github.com/jetlinks/jetlinks-community</a><br>org.jetlinks.community:jetlinks-community:2.2.0-SNAPSHOT</p>
-<h2 id="jetlinks-ui-vue"><a href="#jetlinks-ui-vue" class="headerlink" title="jetlinks-ui-vue"></a>jetlinks-ui-vue</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-ui-vue">https://github.com/jetlinks/jetlinks-ui-vue</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202401/RocketMQ%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202401/RocketMQ%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">RocketMQ部署</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-01-10 16:16:14" itemprop="dateCreated datePublished" datetime="2024-01-10T16:16:14+08:00">2024-01-10</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><p><a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq">https://github.com/apache/rocketmq</a></p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq-docker">https://github.com/apache/rocketmq-docker</a></p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq-clients/blob/master/java/README-CN.md">https://github.com/apache/rocketmq-clients/blob/master/java/README-CN.md</a></p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="https://rocketmq.apache.org/">https://rocketmq.apache.org/</a></p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/">https://rocketmq.apache.org/zh/docs/</a></p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="https://hub.docker.com/r/apache/rocketmq/tags">https://hub.docker.com/r/apache/rocketmq/tags</a></p>
-</li>
-</ul>
-<h2 id="异步转Reactor"><a href="#异步转Reactor" class="headerlink" title="异步转Reactor"></a>异步转Reactor</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://medium.com/javarevisited/converting-async-client-to-reactive-69a506f80d34">https://medium.com/javarevisited/converting-async-client-to-reactive-69a506f80d34</a></li>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/50363612/convert-a-callback-into-a-reactive-publisher-flux">https://stackoverflow.com/questions/50363612/convert-a-callback-into-a-reactive-publisher-flux</a></li>
-</ul>
-<h2 id="原生方式部署"><a href="#原生方式部署" class="headerlink" title="原生方式部署"></a>原生方式部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 版本 5.1.4</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line"><span class="built_in">nohup</span> sh bin/mqnamesrv &amp;</span><br><span class="line"><span class="built_in">nohup</span> sh bin/mqbroker -n localhost:9876 &amp;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭</span></span><br><span class="line">sh bin/mqshutdown broker</span><br><span class="line">sh bin/mqshutdown namesrv</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证</span></span><br><span class="line"><span class="built_in">export</span> NAMESRV_ADDR=10.10.51.4:9876</span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Producer</span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Consumer</span><br><span class="line"></span><br><span class="line"><span class="comment"># dashboard</span></span><br><span class="line">docker run -d --name rocketmq-dashboard -e <span class="string">&quot;JAVA_OPTS=-Drocketmq.namesrv.addr=10.10.51.4:9876&quot;</span> -p 38080:8080 -t apacherocketmq/rocketmq-dashboard:latest</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="控制台"><a href="#控制台" class="headerlink" title="控制台"></a>控制台</h2><p>10.10.51.4:9876<br><a target="_blank" rel="noopener" href="http://10.10.51.4:38080/">http://10.10.51.4:38080</a></p>
-<h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh bin/mqadmin updateTopic -c DefaultCluster -t TopicTest2 -n 10.10.51.4:9876</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202401/Jaeger%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202401/Jaeger%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Jaeger学习笔记</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-01-03 11:38:05" itemprop="dateCreated datePublished" datetime="2024-01-03T11:38:05+08:00">2024-01-03</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p><a target="_blank" rel="noopener" href="https://www.jaegertracing.io/">https://www.jaegertracing.io/</a><br><a target="_blank" rel="noopener" href="https://www.jaegertracing.io/docs/1.52/getting-started/">https://www.jaegertracing.io/docs/1.52/getting-started/</a></p>
-<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> --name jaeger \</span><br><span class="line">  -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 \</span><br><span class="line">  -e COLLECTOR_OTLP_ENABLED=<span class="literal">true</span> \</span><br><span class="line">  -p 6831:6831/udp \</span><br><span class="line">  -p 6832:6832/udp \</span><br><span class="line">  -p 5778:5778 \</span><br><span class="line">  -p 16686:16686 \</span><br><span class="line">  -p 4317:4317 \</span><br><span class="line">  -p 4318:4318 \</span><br><span class="line">  -p 14250:14250 \</span><br><span class="line">  -p 14268:14268 \</span><br><span class="line">  -p 14269:14269 \</span><br><span class="line">  -p 9411:9411 \</span><br><span class="line">  jaegertracing/all-in-one:1.45</span><br><span class="line"></span><br><span class="line">docker run --<span class="built_in">rm</span> --name jaeger \</span><br><span class="line">  -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 \</span><br><span class="line">  -e COLLECTOR_OTLP_ENABLED=<span class="literal">true</span> \</span><br><span class="line">  -p 6831:6831/udp \</span><br><span class="line">  -p 6832:6832/udp \</span><br><span class="line">  -p 5778:5778 \</span><br><span class="line">  -p 16686:16686 \</span><br><span class="line">  -p 4317:4317 \</span><br><span class="line">  -p 4318:4318 \</span><br><span class="line">  -p 14250:14250 \</span><br><span class="line">  -p 14268:14268 \</span><br><span class="line">  -p 14269:14269 \</span><br><span class="line">  -p 9411:9411 \</span><br><span class="line">  jaegertracing/all-in-one:1.52</span><br></pre></td></tr></table></figure>
-
-<h2 id="endpoint"><a href="#endpoint" class="headerlink" title="endpoint"></a>endpoint</h2><p><a target="_blank" rel="noopener" href="http://10.10.51.4:14250/">http://10.10.51.4:14250</a></p>
-<h2 id="Console"><a href="#Console" class="headerlink" title="Console"></a>Console</h2><p><a target="_blank" rel="noopener" href="http://10.10.51.4:16686/">http://10.10.51.4:16686</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202312/SRS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202312/SRS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">SRS学习笔记</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-12-20 17:09:25" itemprop="dateCreated datePublished" datetime="2023-12-20T17:09:25+08:00">2023-12-20</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://ossrs.net/lts/zh-cn/">https://ossrs.net/lts/zh-cn/</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/356937898">https://zhuanlan.zhihu.com/p/356937898</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/606839253">https://zhuanlan.zhihu.com/p/606839253</a></li>
-</ul>
-<h2 id="ffmpeg"><a href="#ffmpeg" class="headerlink" title="ffmpeg"></a>ffmpeg</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.osxexperts.net/?utm_source=ld246.com">https://www.osxexperts.net/?utm_source=ld246.com</a></li>
-<li><a target="_blank" rel="noopener" href="https://evermeet.cx/ffmpeg/">https://evermeet.cx/ffmpeg/</a></li>
-</ul>
-<h2 id="gb28181-client"><a href="#gb28181-client" class="headerlink" title="gb28181-client"></a>gb28181-client</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.happytimesoft.com/products/gb28181-device/index.html">https://www.happytimesoft.com/products/gb28181-device/index.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/dute7liang/gb28181-client">https://github.com/dute7liang/gb28181-client</a></li>
-</ul>
-<h2 id="开发环境SRS"><a href="#开发环境SRS" class="headerlink" title="开发环境SRS"></a>开发环境SRS</h2><p><a target="_blank" rel="noopener" href="http://10.10.51.4:8180/">http://10.10.51.4:8180</a></p>
-<p>rtmp:&#x2F;&#x2F;10.10.51.4&#x2F;live&#x2F;livestream</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">docker run --name bifrost-srs \</span><br><span class="line">-e TZ=Asia/Shanghai \</span><br><span class="line">-e CANDIDATE=10.10.51.4 \</span><br><span class="line">-p 1935:1935 \</span><br><span class="line">-p 1985:1985 \</span><br><span class="line">-p 8080:8080 \</span><br><span class="line">-p 9000:9000 \</span><br><span class="line">-p 9000:9000/udp \</span><br><span class="line">-p 8000:8000/udp \</span><br><span class="line">-p 58300:58300  \</span><br><span class="line">-p 58300:58300/udp \</span><br><span class="line">-p 5060:5060/udp \</span><br><span class="line">-v ./srs.conf:/usr/local/srs/conf/srs.conf \</span><br><span class="line">registry.cn-shenzhen.aliyuncs.com/jetlinks/srs:v4.0.56</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="SRS"><a href="#SRS" class="headerlink" title="SRS"></a>SRS</h2><p><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs">https://github.com/ossrs/srs</a><br><a target="_blank" rel="noopener" href="https://ossrs.net/lts/zh-cn/docs/v5/doc/getting-started">https://ossrs.net/lts/zh-cn/docs/v5/doc/getting-started</a><br><a target="_blank" rel="noopener" href="https://ossrs.net/lts/zh-cn/docs/v6/doc/gb28181">https://ossrs.net/lts/zh-cn/docs/v6/doc/gb28181</a><br><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs/blob/develop/trunk/conf/gb28181.conf">https://github.com/ossrs/srs/blob/develop/trunk/conf/gb28181.conf</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">docker run --<span class="built_in">rm</span> --name srs \</span><br><span class="line">-e CANDIDATE=10.10.51.3 \</span><br><span class="line">--network host \</span><br><span class="line">registry.cn-hangzhou.aliyuncs.com/ossrs/srs:5 ./objs/srs -c conf/gb28181.conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># -v ./srs.conf:/usr/local/srs/conf/srs.conf \</span></span><br><span class="line"></span><br><span class="line">http://10.10.51.3:8080</span><br><span class="line"></span><br><span class="line">rtmp://10.10.51.3/live/obs</span><br><span class="line">http://10.10.51.3:8080/live/obs.flv</span><br></pre></td></tr></table></figure>
-
-<h2 id="zlmediakit"><a href="#zlmediakit" class="headerlink" title="zlmediakit"></a>zlmediakit</h2><p><a target="_blank" rel="noopener" href="https://docs.zlmediakit.com/">https://docs.zlmediakit.com/</a><br><a target="_blank" rel="noopener" href="https://github.com/ZLMediaKit/ZLMediaKit">https://github.com/ZLMediaKit/ZLMediaKit</a><br><a target="_blank" rel="noopener" href="https://github.com/ZLMediaKit/ZLMediaKit/wiki/%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B">https://github.com/ZLMediaKit/ZLMediaKit/wiki/%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B</a><br><a target="_blank" rel="noopener" href="https://github.com/ZLMediaKit/ZLMediaKit/wiki/GB28181%E6%8E%A8%E6%B5%81">https://github.com/ZLMediaKit/ZLMediaKit/wiki/GB28181%E6%8E%A8%E6%B5%81</a><br><a target="_blank" rel="noopener" href="https://notemi.cn/wvp---zlmedia-kit---mediaserverui-to-realize-streaming-playback-and-recording-of-camera-gb28181.html">https://notemi.cn/wvp---zlmedia-kit---mediaserverui-to-realize-streaming-playback-and-recording-of-camera-gb28181.html</a><br><a target="_blank" rel="noopener" href="http://dlgcy.com/gb28181-solution-zlmediakit-mediaserverui/">http://dlgcy.com/gb28181-solution-zlmediakit-mediaserverui/</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -<span class="built_in">id</span> -p 1935:1935 -p 8080:80 -p 8443:443 -p 8554:554 -p 10000:10000 -p 10000:10000/udp -p 8000:8000/udp -p 9000:9000/udp zlmediakit/zlmediakit:master</span><br><span class="line"></span><br><span class="line">https://10.10.51.3:8080</span><br><span class="line">https://10.10.51.3:8080/webassist/</span><br></pre></td></tr></table></figure>
-
-<h2 id="livegbs"><a href="#livegbs" class="headerlink" title="livegbs"></a>livegbs</h2><p><a target="_blank" rel="noopener" href="https://www.liveqing.com/docs/products/LiveGBS.html">https://www.liveqing.com/docs/products/LiveGBS.html</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202310/Reactor%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202310/Reactor%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Reactor学习笔记</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-10-11 15:06:02" itemprop="dateCreated datePublished" datetime="2023-10-11T15:06:02+08:00">2023-10-11</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="学习路径"><a href="#学习路径" class="headerlink" title="学习路径"></a>学习路径</h2><ul>
-<li>响应式: Java8 -&gt; Netty -&gt; VertX -&gt; Reactor -&gt; WebFlux</li>
-<li>周边组件: r2dbc</li>
-<li>后端框架: hs-web、easy-orm</li>
-<li>其它: NIO&#x2F;AIO&#x2F;Reactor、IO多路复用</li>
-</ul>
-<h2 id="Java8"><a href="#Java8" class="headerlink" title="Java8"></a>Java8</h2><ul>
-<li>Java8 in Action</li>
-</ul>
-<h2 id="Netty"><a href="#Netty" class="headerlink" title="Netty"></a>Netty</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://dongzl.github.io/netty-handbook/#/_content/chapter01">https://dongzl.github.io/netty-handbook/#/_content/chapter01</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/dongzl/netty-handbook">https://github.com/dongzl/netty-handbook</a></li>
-</ul>
-<h2 id="VertX"><a href="#VertX" class="headerlink" title="VertX"></a>VertX</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://start.vertx.io/">https://start.vertx.io/</a>  脚手架</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/vert-x3/vertx-examples">https://github.com/vert-x3/vertx-examples</a>  示例</li>
-<li><a target="_blank" rel="noopener" href="https://vertx-china.github.io/docs/">https://vertx-china.github.io/docs/</a>  中文文档</li>
-<li><a target="_blank" rel="noopener" href="https://lang-yu.gitbook.io/vert.x/01-index/01-1-functional-programming">https://lang-yu.gitbook.io/vert.x/01-index/01-1-functional-programming</a></li>
-</ul>
-<h2 id="Reactor"><a href="#Reactor" class="headerlink" title="Reactor"></a>Reactor</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://projectreactor.io/learn">https://projectreactor.io/learn</a>  Reactor官网</li>
-<li><a target="_blank" rel="noopener" href="https://projectreactor.io/docs/core/release/reference/#which-operator">https://projectreactor.io/docs/core/release/reference/#which-operator</a>  Reactor3官网教程</li>
-<li><a target="_blank" rel="noopener" href="https://easywheelsoft.github.io/reactor-core-zh/index.html">https://easywheelsoft.github.io/reactor-core-zh/index.html</a>  Reactor3教程中文翻译</li>
-<li><a target="_blank" rel="noopener" href="https://potoyang.gitbook.io/spring-in-action-v5/di-10-zhang-reactor-jie-shao/10.3-tong-yong-xiang-ying-shi-cao-zuo-shi-zhan/10.3.3-zhuan-huan-he-guo-lv-xiang-ying-shi-liu">https://potoyang.gitbook.io/spring-in-action-v5/di-10-zhang-reactor-jie-shao/10.3-tong-yong-xiang-ying-shi-cao-zuo-shi-zhan/10.3.3-zhuan-huan-he-guo-lv-xiang-ying-shi-liu</a>  Spring实战电子书</li>
-<li><a target="_blank" rel="noopener" href="https://tech.io/playgrounds/929/reactive-programming-with-reactor-3/Intro">https://tech.io/playgrounds/929/reactive-programming-with-reactor-3/Intro</a>  互动练习</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/HikariShine/LearnReactive/blob/master/src/main/java/com/hikarishine/learn/reactive/handon/Part02Mono.java">https://github.com/HikariShine/LearnReactive/blob/master/src/main/java/com/hikarishine/learn/reactive/handon/Part02Mono.java</a>  互动练习答案</li>
-<li><a target="_blank" rel="noopener" href="https://skyao.io/learning-reactor/docs.html">https://skyao.io/learning-reactor/docs.html</a>  Reactor学习笔记</li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000024499748">https://segmentfault.com/a/1190000024499748</a>  Java反应式框架Reactor中的Mono和Flux</li>
-<li><a target="_blank" rel="noopener" href="https://www.cnkirito.moe/comparing-rxjava/">https://www.cnkirito.moe/comparing-rxjava/</a>  八个层面比较 Java 8, RxJava, Reactor</li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7ee89f70dfe5">https://www.jianshu.com/p/7ee89f70dfe5</a>  Spring Reactor 入门与实践</li>
-<li><a target="_blank" rel="noopener" href="https://www.infoq.cn/article/reactor-by-example">https://www.infoq.cn/article/reactor-by-example</a>  Reactor 实例解析</li>
-<li><a target="_blank" rel="noopener" href="https://mercyblitz.github.io/2018/07/25/Reactive-Programming-%E4%B8%80%E7%A7%8D%E6%8A%80%E6%9C%AF-%E5%90%84%E8%87%AA%E8%A1%A8%E8%BF%B0/">https://mercyblitz.github.io/2018/07/25/Reactive-Programming-一种技术-各自表述/</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/luo15242208310/article/details/112060578">https://blog.csdn.net/luo15242208310/article/details/112060578</a>  reactor merge vs concat、flatMap vs concatMap</li>
-</ul>
-<h2 id="WebFlux"><a href="#WebFlux" class="headerlink" title="WebFlux"></a>WebFlux</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.spring.io/spring-framework/reference/web/webflux.html">https://docs.spring.io/spring-framework/reference/web/webflux.html</a>  官网教程</li>
-<li><a target="_blank" rel="noopener" href="https://www.baeldung.com/spring-webflux">https://www.baeldung.com/spring-webflux</a>  教程</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/piomin/sample-spring-cloud-webflux">https://github.com/piomin/sample-spring-cloud-webflux</a>  示例</li>
-</ul>
-<h2 id="HsWeb"><a href="#HsWeb" class="headerlink" title="HsWeb"></a>HsWeb</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-framework">https://github.com/hs-web/hsweb-framework</a>   GitHub hsweb</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-easy-orm">https://github.com/hs-web/hsweb-easy-orm</a>    GitHub easy-orm</li>
-<li><a target="_blank" rel="noopener" href="https://docs.hsweb.io/framework/">https://docs.hsweb.io/framework/</a>           用户手册</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/zhou-hao/hsweb4-examples">https://github.com/zhou-hao/hsweb4-examples</a>   示例</li>
-</ul>
-<h2 id="r2dbc"><a href="#r2dbc" class="headerlink" title="r2dbc"></a>r2dbc</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://r2dbc.io/">https://r2dbc.io/</a></li>
-<li><a target="_blank" rel="noopener" href="https://spring.io/projects/spring-data-r2dbc">https://spring.io/projects/spring-data-r2dbc</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/spring-projects/spring-data-examples/tree/main/r2dbc/example">https://github.com/spring-projects/spring-data-examples/tree/main/r2dbc/example</a>  示例代码</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/r2dbc/r2dbc-pool">https://github.com/r2dbc/r2dbc-pool</a> 连接池</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/asyncer-io/r2dbc-mysql">https://github.com/asyncer-io/r2dbc-mysql</a>  驱动</li>
-</ul>
-<h2 id="其它工具"><a href="#其它工具" class="headerlink" title="其它工具"></a>其它工具</h2><h3 id="BlockHound"><a href="#BlockHound" class="headerlink" title="BlockHound"></a>BlockHound</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/reactor/BlockHound">https://github.com/reactor/BlockHound</a></li>
-</ul>
-<h3 id="reactor-ql"><a href="#reactor-ql" class="headerlink" title="reactor-ql"></a>reactor-ql</h3><ul>
-<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/reactor-ql.html#device-properties-latest">http://doc.jetlinks.cn/dev-guide/reactor-ql.html#device-properties-latest</a></li>
-</ul>
-<h2 id="其它参考文档"><a href="#其它参考文档" class="headerlink" title="其它参考文档"></a>其它参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/yq1czn3c5qkrpv4g">https://hanta.yuque.com/px7kg1/nn1gdr/yq1czn3c5qkrpv4g</a>  JetLinks响应式编程说明</li>
-<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/reactor.html#null%E5%A4%84%E7%90%86">http://doc.jetlinks.cn/dev-guide/reactor.html#null%E5%A4%84%E7%90%86</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/flydean/p/13935084.html">https://www.cnblogs.com/flydean/p/13935084.html</a> 响应式编程简介之:Reactor </li>
-<li><a target="_blank" rel="noopener" href="https://xwjie.github.io/webflux/webflux-study-path.html">https://xwjie.github.io/webflux/webflux-study-path.html</a>  webflux学习路径</li>
-<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903631133622285">https://juejin.cn/post/6844903631133622285</a>  聊聊Spring Reactor反应式编程</li>
-<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/7011463863602249741">https://juejin.cn/post/7011463863602249741</a>  反应式编程教程</li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000042359463">https://segmentfault.com/a/1190000042359463</a>  Reactor 之 onErrorContinue 和 onErrorResume</li>
-<li><a target="_blank" rel="noopener" href="https://www.jdon.com/53431.html">https://www.jdon.com/53431.html</a>  Spring响应式Reactive编程的10个陷阱</li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/flydean/p/13957083.html">https://www.cnblogs.com/flydean/p/13957083.html</a> Reactor中的Thread和Scheduler </li>
-<li><a target="_blank" rel="noopener" href="https://www.cnkirito.moe/comparing-rxjava/">https://www.cnkirito.moe/comparing-rxjava/</a>  八个层面比较 Java 8, RxJava, Reactor</li>
-<li><a target="_blank" rel="noopener" href="https://cheng-dp.github.io/2018/08/11/nio-aio-reactor-proactor/">https://cheng-dp.github.io/2018/08/11/nio-aio-reactor-proactor/</a>   NIO、AIO和Reactor、Proactor模式</li>
-<li><a target="_blank" rel="noopener" href="https://www.xiaolincoding.com/os/8_network_system/selete_poll_epoll.html">https://www.xiaolincoding.com/os/8_network_system/selete_poll_epoll.html</a>   IO多路复用Select，poll和epoll</li>
-</ul>
-<h2 id="编程范式"><a href="#编程范式" class="headerlink" title="编程范式"></a>编程范式</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/7008369009628282894">https://juejin.cn/post/7008369009628282894</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.freecodecamp.org/chinese/news/an-introduction-to-programming-paradigms/">https://www.freecodecamp.org/chinese/news/an-introduction-to-programming-paradigms/</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/282291911">https://zhuanlan.zhihu.com/p/282291911</a></li>
-<li><a target="_blank" rel="noopener" href="https://wx-chevalier.github.io/books/designpattern-notes/01.%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/">https://wx-chevalier.github.io/books/designpattern-notes/01.%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/</a></li>
-<li><a target="_blank" rel="noopener" href="https://seekplum.github.io/programming-paradigm/">https://seekplum.github.io/programming-paradigm/</a></li>
-<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Programming_paradigm">https://en.wikipedia.org/wiki/Programming_paradigm</a></li>
-<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stream_processing">https://en.wikipedia.org/wiki/Stream_processing</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202309/ThingsBoard%E5%88%9D%E6%8E%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202309/ThingsBoard%E5%88%9D%E6%8E%A2/" class="post-title-link" itemprop="url">ThingsBoard初探</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-09-18 17:13:02" itemprop="dateCreated datePublished" datetime="2023-09-18T17:13:02+08:00">2023-09-18</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/thingsboard/thingsboard">https://github.com/thingsboard/thingsboard</a></li>
-<li><a target="_blank" rel="noopener" href="https://thingsboard.io/docs/getting-started-guides/helloworld/">https://thingsboard.io/docs/getting-started-guides/helloworld/</a></li>
-</ul>
-<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p ~/.mytb-data &amp;&amp; <span class="built_in">sudo</span> <span class="built_in">chown</span> -R 799:799 ~/.mytb-data</span><br><span class="line"><span class="built_in">mkdir</span> -p ~/.mytb-logs &amp;&amp; <span class="built_in">sudo</span> <span class="built_in">chown</span> -R 799:799 ~/.mytb-logs</span><br><span class="line"></span><br><span class="line">docker run -itd -p 8080:9090 -p 7070:7070 -p 1883:1883 -p 5683-5688:5683-5688/udp -v ~/.mytb-data:/data \</span><br><span class="line">-v ~/.mytb-logs:/var/log/thingsboard --name mytb --restart always thingsboard/tb-postgres</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202309/JetLinks%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202309/JetLinks%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">JetLinks学习笔记</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-09-14 15:57:19" itemprop="dateCreated datePublished" datetime="2023-09-14T15:57:19+08:00">2023-09-14</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://www.jetlinks.cn/#/">https://www.jetlinks.cn/#/</a>  官网</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/fu73f6thmd0whwot">https://hanta.yuque.com/px7kg1/yfac2l/fu73f6thmd0whwot</a>  企业版更新记录</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/fkfxgxlr240dvndk">https://hanta.yuque.com/px7kg1/yfac2l/fkfxgxlr240dvndk</a>  社区版更新记录</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/vqace84z3efqnakd">https://hanta.yuque.com/px7kg1/yfac2l/vqace84z3efqnakd</a>  功能对比</li>
-</ul>
-<h3 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-community">https://github.com/jetlinks/jetlinks-community</a>  后端代码</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-ui-vue">https://github.com/jetlinks/jetlinks-ui-vue</a>  前端代码</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-official-protocol">https://github.com/jetlinks/jetlinks-official-protocol</a>  官方接入协议</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/device-simulator">https://github.com/jetlinks/device-simulator</a>  官方设备模拟器</li>
-</ul>
-<h3 id="使用手册"><a href="#使用手册" class="headerlink" title="使用手册"></a>使用手册</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l">https://hanta.yuque.com/px7kg1/yfac2l</a>  使用手册</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/tvlxz93cht8zyl94">https://hanta.yuque.com/px7kg1/yfac2l/tvlxz93cht8zyl94</a>  架构图</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/svxnz51wtqo0f2rv">https://hanta.yuque.com/px7kg1/yfac2l/svxnz51wtqo0f2rv</a>  MQTT直连接入</li>
-<li><a target="_blank" rel="noopener" href="https://demo.jetlinks.cn/api/mqtt-auth-generator.html">https://demo.jetlinks.cn/api/mqtt-auth-generator.html</a>  官方协议MQTT用户名密码生成工具</li>
-</ul>
-<h3 id="企业版功能"><a href="#企业版功能" class="headerlink" title="企业版功能"></a>企业版功能</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/sqr1maoef7bnw016">https://hanta.yuque.com/px7kg1/yfac2l/sqr1maoef7bnw016</a>  OneNet接入</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/en2f0iu1r8af66uu">https://hanta.yuque.com/px7kg1/yfac2l/en2f0iu1r8af66uu</a>  规则引擎</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/yfac2l/nwd0gpo80g52qgdm">https://hanta.yuque.com/px7kg1/yfac2l/nwd0gpo80g52qgdm</a>  开放API</li>
-<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/colony-deploy.html">http://doc.jetlinks.cn/dev-guide/colony-deploy.html</a>  集群部署</li>
-</ul>
-<h3 id="后端开发"><a href="#后端开发" class="headerlink" title="后端开发"></a>后端开发</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr">https://hanta.yuque.com/px7kg1/nn1gdr</a>  开发手册</li>
-<li><a target="_blank" rel="noopener" href="https://vertx.io/docs/vertx-mqtt/java/">https://vertx.io/docs/vertx-mqtt/java/</a> vertx-mqtt</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/dev/dcwrzvngbg46ls8v">https://hanta.yuque.com/px7kg1/dev/dcwrzvngbg46ls8v</a>  响应式编程</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/gfqb3xmxg8fsvyxf">https://hanta.yuque.com/px7kg1/nn1gdr/gfqb3xmxg8fsvyxf</a>  系统模块说明</li>
-</ul>
-<h3 id="前端开发"><a href="#前端开发" class="headerlink" title="前端开发"></a>前端开发</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-ui-vue">https://github.com/jetlinks/jetlinks-ui-vue</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-ui-components">https://github.com/jetlinks/jetlinks-ui-components</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.antdv.com/components/overview-cn">https://www.antdv.com/components/overview-cn</a></li>
-<li><a target="_blank" rel="noopener" href="https://cn.vuejs.org/">https://cn.vuejs.org/</a></li>
-<li><a target="_blank" rel="noopener" href="https://cn.vitejs.dev/">https://cn.vitejs.dev/</a></li>
-</ul>
-<h3 id="协议开发"><a href="#协议开发" class="headerlink" title="协议开发"></a>协议开发</h3><ul>
-<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/jetlinks-protocol-support.html">http://doc.jetlinks.cn/dev-guide/jetlinks-protocol-support.html</a>  官方协议说明</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/hg5r4psvn9fdsv1c">https://hanta.yuque.com/px7kg1/nn1gdr/hg5r4psvn9fdsv1c</a>  协议包开发</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/atpog2hc57l9fihz">https://hanta.yuque.com/px7kg1/nn1gdr/atpog2hc57l9fihz</a>  官方协议TCP报文</li>
-<li><a target="_blank" rel="noopener" href="https://doc.v1.jetlinks.cn/best-practices/start.html">https://doc.v1.jetlinks.cn/best-practices/start.html</a> 最佳实践</li>
-<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/zx6g20pzmsce2qh9">https://hanta.yuque.com/px7kg1/nn1gdr/zx6g20pzmsce2qh9</a> 协议包内使用缓存</li>
-</ul>
-<hr>
-<h2 id="物模型"><a href="#物模型" class="headerlink" title="物模型"></a>物模型</h2><ul>
-<li>属性	用于描述设备运行时的状态，分为可读写和只读属性，比如温度传感器所读取的环境温度或者是插座的开关状态</li>
-<li>方法	设备可被用户调用并执行的方法，包含输入参数和返回参数，前者用于方法执行时的参数，后者用于上报方法执行后的结果。方法分为异步和同步执行两种类型</li>
-<li>事件	用于定义设备运行过程中所产生的消息，包括“信息”、“告警”和“错误”三种类型</li>
-</ul>
-<hr>
-<h2 id="前端工程启动"><a href="#前端工程启动" class="headerlink" title="前端工程启动"></a>前端工程启动</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yarn install --update-checksums</span><br><span class="line">yarn dev</span><br></pre></td></tr></table></figure>
-
-
-<hr>
-<h2 id="创建协议工程"><a href="#创建协议工程" class="headerlink" title="创建协议工程"></a>创建协议工程</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">mvn dependency:get \</span><br><span class="line">-DremoteRepositories=https://nexus.hsweb.me/content/groups/public \</span><br><span class="line">-DgroupId=org.jetlinks.protocol \</span><br><span class="line">-DartifactId=protocol-archetype \</span><br><span class="line">-Dversion=1.0.0-SNAPSHOT \</span><br><span class="line">&amp;&amp; \</span><br><span class="line">mvn archetype:generate \</span><br><span class="line">-DarchetypeGroupId=org.jetlinks.protocol \</span><br><span class="line">-DarchetypeArtifactId=protocol-archetype \</span><br><span class="line">-DarchetypeVersion=1.0.0-SNAPSHOT \</span><br><span class="line">-DoutputDirectory=./ \</span><br><span class="line">-DgroupId=com.telchina \</span><br><span class="line">-DartifactId=jetlinks-tc-protocol \</span><br><span class="line">-Dversion=1.0 \</span><br><span class="line">-DarchetypeCatalog=<span class="built_in">local</span> \</span><br><span class="line">-DinteractiveMode=<span class="literal">false</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202309/Erlang%E5%88%9D%E6%8E%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202309/Erlang%E5%88%9D%E6%8E%A2/" class="post-title-link" itemprop="url">erlang初探</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-09-12 15:29:08" itemprop="dateCreated datePublished" datetime="2023-09-12T15:29:08+08:00">2023-09-12</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.erlang.org/">https://www.erlang.org/</a></li>
-</ul>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.w3cschool.cn/erlang/">https://www.w3cschool.cn/erlang/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.yiibai.com/erlang/">https://www.yiibai.com/erlang/</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/B_uggggg/article/details/109343412">https://blog.csdn.net/B_uggggg/article/details/109343412</a></li>
-</ul>
-<h2 id="开发环境"><a href="#开发环境" class="headerlink" title="开发环境"></a>开发环境</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/erlang/rebar3">https://github.com/erlang/rebar3</a></li>
-<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1711146">https://cloud.tencent.com/developer/article/1711146</a></li>
-</ul>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装erlang版本25</span></span><br><span class="line">brew install erlang@25</span><br><span class="line"><span class="comment"># rebar3下载</span></span><br><span class="line">wget https://s3.amazonaws.com/rebar3/rebar3 &amp;&amp; <span class="built_in">chmod</span> +x rebar3</span><br><span class="line"><span class="comment"># 新建一个简单app项目</span></span><br><span class="line">$ rebar3 new app &lt;projName&gt;</span><br><span class="line"><span class="comment"># 新建一个多app项目</span></span><br><span class="line">$ rebar3 new release &lt;projName&gt;</span><br><span class="line"><span class="comment"># 新建一个简单app项目</span></span><br><span class="line">$ rebar3 new lib &lt;projName&gt;</span><br><span class="line"><span class="comment"># 新建一个rebar插件</span></span><br><span class="line">$ rebar3 new plugin &lt;projName&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202309/EMQX%E5%88%9D%E6%8E%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202309/EMQX%E5%88%9D%E6%8E%A2/" class="post-title-link" itemprop="url">EMQX初探</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-09-12 09:23:36" itemprop="dateCreated datePublished" datetime="2023-09-12T09:23:36+08:00">2023-09-12</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.emqx.io/downloads">https://www.emqx.io/downloads</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.emqx.io/docs/en/v5.1/getting-started/getting-started.html#start-emqx">https://www.emqx.io/docs/en/v5.1/getting-started/getting-started.html#start-emqx</a></li>
-</ul>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.emqx.io/docs/en/v5.1/messaging/mqtt-concepts.html#publish-subscribe-pattern">https://www.emqx.io/docs/en/v5.1/messaging/mqtt-concepts.html#publish-subscribe-pattern</a>   MQTT 核心概念</li>
-<li><a target="_blank" rel="noopener" href="https://www.emqx.com/en/blog/advanced-features-of-mqtt-topics">https://www.emqx.com/en/blog/advanced-features-of-mqtt-topics</a> MQTT 主题和通配符</li>
-</ul>
-<h2 id="emqx安装"><a href="#emqx安装" class="headerlink" title="emqx安装"></a>emqx安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Docker安装</span></span><br><span class="line">docker pull emqx/emqx:5.2.0</span><br><span class="line">docker run -d --name emqx -p 1883:1883 -p 8083:8083 -p 8084:8084 -p 8883:8883 -p 18083:18083 emqx/emqx:5.2.0</span><br><span class="line"></span><br><span class="line"><span class="comment"># Ubuntu</span></span><br><span class="line">curl -s https://assets.emqx.com/scripts/install-emqx-deb.sh | <span class="built_in">sudo</span> bash</span><br><span class="line"><span class="built_in">sudo</span> apt-get install emqx</span><br><span class="line"><span class="built_in">sudo</span> systemctl start emqx</span><br><span class="line"></span><br><span class="line"><span class="comment"># UI</span></span><br><span class="line">http://localhost:18083/</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="mqttx客户端"><a href="#mqttx客户端" class="headerlink" title="mqttx客户端"></a>mqttx客户端</h2><h3 id="GUI"><a href="#GUI" class="headerlink" title="GUI"></a>GUI</h3><p><a target="_blank" rel="noopener" href="https://mqttx.app/">https://mqttx.app/</a></p>
-<h3 id="CLI"><a href="#CLI" class="headerlink" title="CLI"></a>CLI</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># CLI安装</span></span><br><span class="line">brew install emqx/mqttx/mqttx-cli</span><br><span class="line"><span class="comment"># 订阅</span></span><br><span class="line">mqttx sub -t <span class="string">&#x27;testtopic/#&#x27;</span> -q 1 -h <span class="string">&#x27;localhost&#x27;</span> -p 1883 <span class="string">&#x27;public&#x27;</span> -v</span><br><span class="line"><span class="comment"># 发布</span></span><br><span class="line">mqttx pub -t <span class="string">&#x27;testtopic/1&#x27;</span> -q 1 -h <span class="string">&#x27;localhost&#x27;</span> -p 1883 -m <span class="string">&#x27;from MQTTX CLI&#x27;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="QOS"><a href="#QOS" class="headerlink" title="QOS"></a>QOS</h2><ul>
-<li>QoS 0：最多传递一次消息，可能会丢失；</li>
-<li>QoS 1：至少传递一次消息并保证到达，但可能会重复；</li>
-<li>QoS 2：仅传递一次消息并保证无重复到达。</li>
-</ul>
-<h2 id="Make"><a href="#Make" class="headerlink" title="Make"></a>Make</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/emqx/emqx.git</span><br><span class="line"><span class="built_in">cd</span> emqx</span><br><span class="line">make</span><br><span class="line">_build/emqx/rel/emqx/bin/emqx console</span><br></pre></td></tr></table></figure>
-
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>

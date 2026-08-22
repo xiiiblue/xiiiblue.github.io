@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="我把ComfyUI装在一台带GPU的Linux主机上，浏览器从另一台电脑访问。安装本身不复杂，容易留下问题的是远程监听：直接让ComfyUI暴露在局域网甚至公网，模型、工作流和生成结果都会跟着暴露。 最后的结构是ComfyUI只监听本机回环地址，Nginx再提供一个带认证的入口；跨网络访问时继续套SSH隧道或VPN，不直接开放ComfyUI端口。 用comfy-cli安装官方的comfy-cli可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ComfyUI的安装、远程访问与模型管理">
+<meta property="og:url" content="https://www.bluexiii.com/202604/ComfyUI%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E4%B8%8E%E6%A8%A1%E5%9E%8B%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="我把ComfyUI装在一台带GPU的Linux主机上，浏览器从另一台电脑访问。安装本身不复杂，容易留下问题的是远程监听：直接让ComfyUI暴露在局域网甚至公网，模型、工作流和生成结果都会跟着暴露。 最后的结构是ComfyUI只监听本机回环地址，Nginx再提供一个带认证的入口；跨网络访问时继续套SSH隧道或VPN，不直接开放ComfyUI端口。 用comfy-cli安装官方的comfy-cli可">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-04-22T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-22T14:10:00.000Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.bluexiii.com/202604/ComfyUI%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E4%B8%8E%E6%A8%A1%E5%9E%8B%E7%AE%A1%E7%90%86/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202604/ComfyUI%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E4%B8%8E%E6%A8%A1%E5%9E%8B%E7%AE%A1%E7%90%86/","path":"202604/ComfyUI的安装、远程访问与模型管理/","title":"ComfyUI的安装、远程访问与模型管理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ComfyUI的安装、远程访问与模型管理 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BlueXIII's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8comfy-cli%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">用comfy-cli安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8Nginx%E5%A2%9E%E5%8A%A0%E8%AE%BF%E9%97%AE%E5%85%A5%E5%8F%A3"><span class="nav-number">2.</span> <span class="nav-text">用Nginx增加访问入口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E6%94%BE%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="nav-number">3.</span> <span class="nav-text">模型放在哪里</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8Bsafetensors%E5%85%83%E6%95%B0%E6%8D%AE"><span class="nav-number">4.</span> <span class="nav-text">查看safetensors元数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E5%89%8D%E7%95%99%E4%B8%80%E4%BB%BD%E5%8F%AF%E5%9B%9E%E9%80%80%E7%8A%B6%E6%80%81"><span class="nav-number">5.</span> <span class="nav-text">更新前留一份可回退状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">291</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202604/ComfyUI%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E4%B8%8E%E6%A8%A1%E5%9E%8B%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="ComfyUI的安装、远程访问与模型管理 | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ComfyUI的安装、远程访问与模型管理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-04-23 00:00:00" itemprop="dateCreated datePublished" datetime="2026-04-23T00:00:00+08:00">2026-04-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 22:10:00" itemprop="dateModified" datetime="2026-08-22T22:10:00+08:00">2026-08-22</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+<p>我把ComfyUI装在一台带GPU的Linux主机上，浏览器从另一台电脑访问。安装本身不复杂，容易留下问题的是远程监听：直接让ComfyUI暴露在局域网甚至公网，模型、工作流和生成结果都会跟着暴露。</p>
+<p>最后的结构是ComfyUI只监听本机回环地址，Nginx再提供一个带认证的入口；跨网络访问时继续套SSH隧道或VPN，不直接开放ComfyUI端口。</p>
+<h2 id="用comfy-cli安装"><a href="#用comfy-cli安装" class="headerlink" title="用comfy-cli安装"></a>用comfy-cli安装</h2><p>官方的<code>comfy-cli</code>可以管理安装、启动、更新、模型和自定义节点。单独创建Python环境，避免和其他推理项目互相污染：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">conda create -n comfy-env python=3.11 -y</span><br><span class="line">conda activate comfy-env</span><br><span class="line"></span><br><span class="line">python -m pip install --upgrade comfy-cli</span><br><span class="line">comfy --install-completion</span><br><span class="line">comfy install</span><br></pre></td></tr></table></figure>
+
+<p>ComfyUI还需要与显卡匹配的CUDA、ROCm或其他运行时。<code>comfy install</code>成功并不代表GPU环境一定正确，首次启动后仍要看终端里识别到的设备和PyTorch后端。</p>
+<p>先让服务只监听回环地址：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">conda activate comfy-env</span><br><span class="line">comfy launch -- --listen 127.0.0.1 --port 8189</span><br></pre></td></tr></table></figure>
+
+<p>这里传给ComfyUI本身的参数放在<code>--</code>之后。使用回环地址监听以后，即使Nginx配置出错，8189端口也不会直接出现在其他主机上。</p>
+<h2 id="用Nginx增加访问入口"><a href="#用Nginx增加访问入口" class="headerlink" title="用Nginx增加访问入口"></a>用Nginx增加访问入口</h2><p>Basic Auth适合给内网或SSH隧道再加一道门槛，但它本身不加密密码。下面仍然只让Nginx监听回环地址：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt update</span><br><span class="line"><span class="built_in">sudo</span> apt install -y nginx apache2-utils</span><br><span class="line"><span class="built_in">sudo</span> htpasswd -c /etc/nginx/.comfyui_htpasswd comfyuser</span><br></pre></td></tr></table></figure>
+
+<p>创建<code>/etc/nginx/sites-available/comfyui</code>：</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">server</span> &#123;</span><br><span class="line">    <span class="attribute">listen</span> <span class="number">127.0.0.1:8188</span>;</span><br><span class="line">    <span class="attribute">server_name</span> localhost;</span><br><span class="line"></span><br><span class="line">    <span class="attribute">client_max_body_size</span> <span class="number">200M</span>;</span><br><span class="line"></span><br><span class="line">    <span class="attribute">auth_basic</span> <span class="string">&quot;ComfyUI&quot;</span>;</span><br><span class="line">    <span class="attribute">auth_basic_user_file</span> /etc/nginx/.comfyui_htpasswd;</span><br><span class="line"></span><br><span class="line">    <span class="section">location</span> / &#123;</span><br><span class="line">        <span class="attribute">proxy_pass</span> http://127.0.0.1:8189;</span><br><span class="line">        <span class="attribute">proxy_http_version</span> <span class="number">1</span>.<span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="attribute">proxy_set_header</span> Upgrade <span class="variable">$http_upgrade</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> Connection <span class="string">&quot;upgrade&quot;</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> Host <span class="variable">$host</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> X-Real-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">        <span class="attribute">proxy_set_header</span> X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line"></span><br><span class="line">        <span class="attribute">proxy_read_timeout</span> <span class="number">3600</span>;</span><br><span class="line">        <span class="attribute">proxy_send_timeout</span> <span class="number">3600</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ComfyUI的队列和进度更新会使用WebSocket，因此<code>Upgrade</code>和<code>Connection</code>这两项不能省略。启用站点前先检查配置：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">ln</span> -s /etc/nginx/sites-available/comfyui \</span><br><span class="line">  /etc/nginx/sites-enabled/comfyui</span><br><span class="line"><span class="built_in">sudo</span> nginx -t</span><br><span class="line"><span class="built_in">sudo</span> systemctl reload nginx</span><br></pre></td></tr></table></figure>
+
+<p>从自己的电脑建立SSH隧道：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -L 8188:127.0.0.1:8188 user@192.0.2.10</span><br></pre></td></tr></table></figure>
+
+<p>浏览器随后访问<code>http://127.0.0.1:8188</code>。如果改成局域网监听，应同时用主机防火墙限制来源；需要公网访问则应配置HTTPS或放在可信VPN之后，不能只依赖明文Basic Auth。</p>
+<h2 id="模型放在哪里"><a href="#模型放在哪里" class="headerlink" title="模型放在哪里"></a>模型放在哪里</h2><p>ComfyUI会按模型用途读取不同目录，下载前要先看工作流中节点需要的类型。完整Checkpoint通常放在<code>models/checkpoints</code>，VAE、LoRA、文本编码器和扩散模型分别有自己的目录，不能只看扩展名全部堆到一起。</p>
+<p><code>comfy-cli</code>可以直接按URL下载到相对目录：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">comfy model download \</span><br><span class="line">  --url <span class="string">&#x27;https://example.com/model.safetensors&#x27;</span> \</span><br><span class="line">  --relative-path models/checkpoints</span><br></pre></td></tr></table></figure>
+
+<p>从Hugging Face只取仓库里的单个文件时，<code>hf</code>命令更方便：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">python -m pip install --upgrade <span class="string">&#x27;huggingface_hub[cli]&#x27;</span> hf_xet</span><br><span class="line"></span><br><span class="line">hf download Comfy-Org/Qwen-Image_ComfyUI \</span><br><span class="line">  split_files/vae/qwen_image_vae.safetensors \</span><br><span class="line">  --local-dir ./hf-models</span><br></pre></td></tr></table></figure>
+
+<p>先下载到临时目录，再移动到对应模型目录，可以避免中途失败留下一个看起来正常、实际不完整的文件。模型来源只使用作者仓库、Hugging Face等可追溯页面，不使用带提取码的二次打包资源。</p>
+<p>如果多个ComfyUI实例需要共享模型，不必复制几份。官方支持在ComfyUI根目录创建<code>extra_model_paths.yaml</code>，从外部目录增加搜索路径：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">shared_models:</span></span><br><span class="line">  <span class="attr">base_path:</span> <span class="string">/srv/ai-models</span></span><br><span class="line">  <span class="attr">checkpoints:</span> <span class="string">checkpoints</span></span><br><span class="line">  <span class="attr">vae:</span> <span class="string">vae</span></span><br><span class="line">  <span class="attr">loras:</span> <span class="string">loras</span></span><br><span class="line">  <span class="attr">diffusion_models:</span> <span class="string">diffusion_models</span></span><br><span class="line">  <span class="attr">text_encoders:</span> <span class="string">text_encoders</span></span><br></pre></td></tr></table></figure>
+
+<p>路径调整后要重启ComfyUI。某个模型在节点下拉框里消失时，先检查它是否放对目录，以及YAML缩进和实际文件权限，不要立刻重新下载。</p>
+<h2 id="查看safetensors元数据"><a href="#查看safetensors元数据" class="headerlink" title="查看safetensors元数据"></a>查看safetensors元数据</h2><p>模型文件名经常被改过，只凭名称很难判断来源和用途。safetensors文件如果带有元数据，可以在CPU上读取，不需要把权重加载进显存：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> safetensors <span class="keyword">import</span> safe_open</span><br><span class="line"></span><br><span class="line">model_path = <span class="string">&quot;./model.safetensors&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> safe_open(model_path, framework=<span class="string">&quot;pt&quot;</span>, device=<span class="string">&quot;cpu&quot;</span>) <span class="keyword">as</span> model:</span><br><span class="line">    <span class="built_in">print</span>(model.metadata())</span><br><span class="line">    keys = <span class="built_in">list</span>(model.keys())</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;tensor count:&quot;</span>, <span class="built_in">len</span>(keys))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;first keys:&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> key <span class="keyword">in</span> keys[:<span class="number">20</span>]:</span><br><span class="line">        <span class="built_in">print</span>(key)</span><br></pre></td></tr></table></figure>
+
+<p>元数据可能为空，也不能单独证明文件安全或模型来源可靠；它只是在模型无法识别时多提供一条线索。</p>
+<h2 id="更新前留一份可回退状态"><a href="#更新前留一份可回退状态" class="headerlink" title="更新前留一份可回退状态"></a>更新前留一份可回退状态</h2><p>ComfyUI和自定义节点更新频繁，工作流失效往往不是主程序单独造成的。<code>comfy-cli</code>支持快照和更新，操作前先看当前命令帮助，记录核心版本、自定义节点和Python环境，再逐项升级。不要在同一次变更里同时更新ComfyUI、PyTorch、显卡驱动和全部节点，否则出问题后很难确认是哪一层发生变化。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.comfy.org/comfy-cli/getting-started">ComfyUI CLI入门</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.comfy.org/installation/manual_install">ComfyUI手工安装</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.comfy.org/troubleshooting/model-issues">ComfyUI模型问题排查</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/" rel="prev" title="BM1684X上将YOLOv8量化为INT8BModel">
+                  <i class="fa fa-angle-left"></i> BM1684X上将YOLOv8量化为INT8BModel
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/202605/HermesAgent%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81Profile%E4%B8%8E%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/" rel="next" title="Hermes Agent的安装、Profile与日常运维">
+                  Hermes Agent的安装、Profile与日常运维 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

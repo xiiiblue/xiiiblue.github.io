@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="RouterOS的Address List可以被Filter、Mangle和NAT规则重复引用，很适合保存地区、运营商或云厂商的网段。公开IP地址库通常只提供一行一个CIDR的文本文件，数量多时，手工改成RouterOS命令既费事，也很难及时发现坏数据。 最简单的写法是用Python直接拼接命令，遇到导入错误就用on-error&#x3D;{}跳过。这样生成得快，问题也很明显：非法地址、IPv4和IPv6混">
+<meta property="og:type" content="article">
+<meta property="og:title" content="将IP网段批量转换为RouterOS Address List">
+<meta property="og:url" content="https://www.bluexiii.com/202511/%E5%B0%86IP%E7%BD%91%E6%AE%B5%E6%89%B9%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BARouterOSAddressList/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="RouterOS的Address List可以被Filter、Mangle和NAT规则重复引用，很适合保存地区、运营商或云厂商的网段。公开IP地址库通常只提供一行一个CIDR的文本文件，数量多时，手工改成RouterOS命令既费事，也很难及时发现坏数据。 最简单的写法是用Python直接拼接命令，遇到导入错误就用on-error&#x3D;{}跳过。这样生成得快，问题也很明显：非法地址、IPv4和IPv6混">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-11-04T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-22T13:58:52.000Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.bluexiii.com/202511/%E5%B0%86IP%E7%BD%91%E6%AE%B5%E6%89%B9%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BARouterOSAddressList/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202511/%E5%B0%86IP%E7%BD%91%E6%AE%B5%E6%89%B9%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BARouterOSAddressList/","path":"202511/将IP网段批量转换为RouterOSAddressList/","title":"将IP网段批量转换为RouterOS Address List"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>将IP网段批量转换为RouterOS Address List | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BlueXIII's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BE%93%E5%85%A5%E6%96%87%E4%BB%B6%E5%8F%AA%E4%BF%9D%E7%95%99CIDR"><span class="nav-number">1.</span> <span class="nav-text">输入文件只保留CIDR</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90RouterOS%E5%AF%BC%E5%85%A5%E6%96%87%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">生成RouterOS导入文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AA%E6%9B%BF%E6%8D%A2%E8%84%9A%E6%9C%AC%E7%AE%A1%E7%90%86%E7%9A%84%E6%9D%A1%E7%9B%AE"><span class="nav-number">3.</span> <span class="nav-text">只替换脚本管理的条目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88Dry-Run%E5%86%8D%E6%AD%A3%E5%BC%8F%E5%AF%BC%E5%85%A5"><span class="nav-number">4.</span> <span class="nav-text">先Dry Run再正式导入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%96%E9%83%A8%E5%88%97%E8%A1%A8%E8%A6%81%E4%BF%9D%E7%95%99%E6%9D%A5%E6%BA%90%E5%92%8C%E6%9B%B4%E6%96%B0%E6%97%B6%E9%97%B4"><span class="nav-number">5.</span> <span class="nav-text">外部列表要保留来源和更新时间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">291</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202511/%E5%B0%86IP%E7%BD%91%E6%AE%B5%E6%89%B9%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BARouterOSAddressList/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="将IP网段批量转换为RouterOS Address List | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          将IP网段批量转换为RouterOS Address List
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2025-11-05 00:00:00" itemprop="dateCreated datePublished" datetime="2025-11-05T00:00:00+08:00">2025-11-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 21:58:52" itemprop="dateModified" datetime="2026-08-22T21:58:52+08:00">2026-08-22</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+<p>RouterOS的Address List可以被Filter、Mangle和NAT规则重复引用，很适合保存地区、运营商或云厂商的网段。公开IP地址库通常只提供一行一个CIDR的文本文件，数量多时，手工改成RouterOS命令既费事，也很难及时发现坏数据。</p>
+<p>最简单的写法是用Python直接拼接命令，遇到导入错误就用<code>on-error={}</code>跳过。这样生成得快，问题也很明显：非法地址、IPv4和IPv6混用、重复网段都会被留到路由器处理，导入结束后甚至不知道漏了哪些条目。更稳妥的做法是在生成<code>.rsc</code>之前完成严格校验、去重和合并，RouterOS只负责执行已经检查过的命令。</p>
+<h2 id="输入文件只保留CIDR"><a href="#输入文件只保留CIDR" class="headerlink" title="输入文件只保留CIDR"></a>输入文件只保留CIDR</h2><p>输入文件使用一行一个网段的形式，空行和<code>#</code>之后的注释会被忽略。例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># documentation networks</span><br><span class="line">192.0.2.0/25</span><br><span class="line">192.0.2.128/25</span><br><span class="line">198.51.100.0/24</span><br><span class="line">198.51.100.0/24</span><br></pre></td></tr></table></figure>
+
+<p>这里故意放了两个可以合并的相邻网段和一个重复项。生成时，Python标准库<code>ipaddress</code>会把它们压缩成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">192.0.2.0/24</span><br><span class="line">198.51.100.0/24</span><br></pre></td></tr></table></figure>
+
+<p>脚本使用严格模式解析CIDR。像<code>192.0.2.1/24</code>这样带有主机位的写法会直接报错，而不是悄悄改成<code>192.0.2.0/24</code>。对于要进入防火墙的外部数据，明确失败比自动猜测更容易发现上游变化。</p>
+<h2 id="生成RouterOS导入文件"><a href="#生成RouterOS导入文件" class="headerlink" title="生成RouterOS导入文件"></a>生成RouterOS导入文件</h2><p>下面的脚本只使用Python标准库，要求Python 3.10或更高版本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> annotations</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"><span class="keyword">import</span> ipaddress</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Network = ipaddress.IPv4Network | ipaddress.IPv6Network</span><br><span class="line">LIST_NAME_PATTERN = re.<span class="built_in">compile</span>(<span class="string">r&quot;^[A-Za-z0-9_.-]+$&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">read_networks</span>(<span class="params">path: Path, family: <span class="built_in">int</span></span>) -&gt; <span class="built_in">list</span>[Network]:</span><br><span class="line">    networks: <span class="built_in">list</span>[Network] = []</span><br><span class="line">    errors: <span class="built_in">list</span>[<span class="built_in">str</span>] = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> line_number, raw_line <span class="keyword">in</span> <span class="built_in">enumerate</span>(</span><br><span class="line">        path.read_text(encoding=<span class="string">&quot;utf-8&quot;</span>).splitlines(), start=<span class="number">1</span></span><br><span class="line">    ):</span><br><span class="line">        value = raw_line.split(<span class="string">&quot;#&quot;</span>, maxsplit=<span class="number">1</span>)[<span class="number">0</span>].strip()</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> value:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            network = ipaddress.ip_network(value, strict=<span class="literal">True</span>)</span><br><span class="line">        <span class="keyword">except</span> ValueError <span class="keyword">as</span> error:</span><br><span class="line">            errors.append(<span class="string">f&quot;第<span class="subst">&#123;line_number&#125;</span>行：<span class="subst">&#123;value&#125;</span>（<span class="subst">&#123;error&#125;</span>）&quot;</span>)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> network.version != family:</span><br><span class="line">            errors.append(</span><br><span class="line">                <span class="string">f&quot;第<span class="subst">&#123;line_number&#125;</span>行：<span class="subst">&#123;value&#125;</span>（期望IPv<span class="subst">&#123;family&#125;</span>）&quot;</span></span><br><span class="line">            )</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        networks.append(network)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> errors:</span><br><span class="line">        <span class="keyword">raise</span> SystemExit(<span class="string">&quot;输入文件存在错误：\n&quot;</span> + <span class="string">&quot;\n&quot;</span>.join(errors))</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> networks:</span><br><span class="line">        <span class="keyword">raise</span> SystemExit(<span class="string">&quot;输入文件中没有可用网段&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">list</span>(ipaddress.collapse_addresses(networks))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">render_routeros</span>(<span class="params"></span></span><br><span class="line"><span class="params">    networks: <span class="built_in">list</span>[Network], list_name: <span class="built_in">str</span>, family: <span class="built_in">int</span></span></span><br><span class="line"><span class="params"></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    menu = (</span><br><span class="line">        <span class="string">&quot;/ip firewall address-list&quot;</span></span><br><span class="line">        <span class="keyword">if</span> family == <span class="number">4</span></span><br><span class="line">        <span class="keyword">else</span> <span class="string">&quot;/ipv6 firewall address-list&quot;</span></span><br><span class="line">    )</span><br><span class="line">    marker = <span class="string">f&quot;managed:<span class="subst">&#123;list_name&#125;</span>&quot;</span></span><br><span class="line">    lines = [</span><br><span class="line">        <span class="string">f&#x27;/log info &quot;Loading <span class="subst">&#123;list_name&#125;</span> address list&quot;&#x27;</span>,</span><br><span class="line">        menu,</span><br><span class="line">        <span class="string">f&#x27;remove [find list=&quot;<span class="subst">&#123;list_name&#125;</span>&quot; comment=&quot;<span class="subst">&#123;marker&#125;</span>&quot;]&#x27;</span>,</span><br><span class="line">    ]</span><br><span class="line"></span><br><span class="line">    lines.extend(</span><br><span class="line">        <span class="string">f&#x27;add address=<span class="subst">&#123;network.with_prefixlen&#125;</span> &#x27;</span></span><br><span class="line">        <span class="string">f&#x27;list=&quot;<span class="subst">&#123;list_name&#125;</span>&quot; comment=&quot;<span class="subst">&#123;marker&#125;</span>&quot;&#x27;</span></span><br><span class="line">        <span class="keyword">for</span> network <span class="keyword">in</span> networks</span><br><span class="line">    )</span><br><span class="line">    lines.append(<span class="string">f&#x27;/log info &quot;Loaded <span class="subst">&#123;list_name&#125;</span> address list&quot;&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;\n&quot;</span>.join(lines) + <span class="string">&quot;\n&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">main</span>() -&gt; <span class="literal">None</span>:</span><br><span class="line">    parser = argparse.ArgumentParser(</span><br><span class="line">        description=<span class="string">&quot;Convert CIDR lines to a RouterOS address-list script&quot;</span></span><br><span class="line">    )</span><br><span class="line">    parser.add_argument(<span class="string">&quot;input&quot;</span>, <span class="built_in">type</span>=Path)</span><br><span class="line">    parser.add_argument(<span class="string">&quot;output&quot;</span>, <span class="built_in">type</span>=Path)</span><br><span class="line">    parser.add_argument(<span class="string">&quot;--list-name&quot;</span>, required=<span class="literal">True</span>)</span><br><span class="line">    parser.add_argument(</span><br><span class="line">        <span class="string">&quot;--family&quot;</span>, choices=(<span class="string">&quot;ipv4&quot;</span>, <span class="string">&quot;ipv6&quot;</span>), default=<span class="string">&quot;ipv4&quot;</span></span><br><span class="line">    )</span><br><span class="line">    args = parser.parse_args()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> LIST_NAME_PATTERN.fullmatch(args.list_name):</span><br><span class="line">        <span class="keyword">raise</span> SystemExit(</span><br><span class="line">            <span class="string">&quot;列表名只能包含英文字母、数字、点、下划线和连字符&quot;</span></span><br><span class="line">        )</span><br><span class="line">    <span class="keyword">if</span> args.output.exists():</span><br><span class="line">        <span class="keyword">raise</span> SystemExit(<span class="string">f&quot;输出文件已存在：<span class="subst">&#123;args.output&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    family = <span class="number">4</span> <span class="keyword">if</span> args.family == <span class="string">&quot;ipv4&quot;</span> <span class="keyword">else</span> <span class="number">6</span></span><br><span class="line">    networks = read_networks(args.<span class="built_in">input</span>, family)</span><br><span class="line">    content = render_routeros(networks, args.list_name, family)</span><br><span class="line">    args.output.write_text(content, encoding=<span class="string">&quot;utf-8&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;已生成<span class="subst">&#123;args.output&#125;</span>，共<span class="subst">&#123;<span class="built_in">len</span>(networks)&#125;</span>个网段&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p>假设脚本保存为<code>cidr_to_routeros.py</code>，输入文件为<code>networks.txt</code>，生成IPv4列表：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">python3 cidr_to_routeros.py \</span><br><span class="line">  networks.txt \</span><br><span class="line">  region_ipv4-20251105.rsc \</span><br><span class="line">  --list-name region_ipv4</span><br></pre></td></tr></table></figure>
+
+<p>需要生成IPv6列表时显式指定地址族：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">python3 cidr_to_routeros.py \</span><br><span class="line">  networks-v6.txt \</span><br><span class="line">  region_ipv6-20251105.rsc \</span><br><span class="line">  --list-name region_ipv6 \</span><br><span class="line">  --family ipv6</span><br></pre></td></tr></table></figure>
+
+<p>列表名被限制在字母、数字、点、下划线和连字符内，是为了避免未经转义的名称破坏RouterOS脚本语法。输出文件已经存在时也会停止，避免一次重新生成覆盖掉仍需要对比的旧版本。</p>
+<h2 id="只替换脚本管理的条目"><a href="#只替换脚本管理的条目" class="headerlink" title="只替换脚本管理的条目"></a>只替换脚本管理的条目</h2><p>生成的<code>.rsc</code>大致如下：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/log <span class="built_in">info</span> <span class="string">&quot;Loading region_ipv4 address list&quot;</span></span><br><span class="line"><span class="built_in">/ip firewall address-list</span></span><br><span class="line"><span class="built_in"></span><span class="built_in">remove</span> [<span class="built_in">find</span> <span class="attribute">list</span>=<span class="string">&quot;region_ipv4&quot;</span> <span class="attribute">comment</span>=<span class="string">&quot;managed:region_ipv4&quot;</span>]</span><br><span class="line"><span class="built_in">add</span> <span class="attribute">address</span>=192.0.2.0/24 <span class="attribute">list</span>=<span class="string">&quot;region_ipv4&quot;</span> <span class="attribute">comment</span>=<span class="string">&quot;managed:region_ipv4&quot;</span></span><br><span class="line"><span class="built_in">add</span> <span class="attribute">address</span>=198.51.100.0/24 <span class="attribute">list</span>=<span class="string">&quot;region_ipv4&quot;</span> <span class="attribute">comment</span>=<span class="string">&quot;managed:region_ipv4&quot;</span></span><br><span class="line">/log <span class="built_in">info</span> <span class="string">&quot;Loaded region_ipv4 address list&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>脚本没有直接删除<code>region_ipv4</code>中的所有记录，只删除<code>comment=&quot;managed:region_ipv4&quot;</code>的条目。这样，同名列表中临时增加的手工记录和RouterOS动态生成的记录不会被顺手清掉。</p>
+<p>这仍然不是事务更新：旧的托管条目会先删除，新条目再逐行加入。地址列表被实时规则引用时，中间会有一个很短的空窗；如果导入在中途失败，还可能只留下部分新数据。对连续性要求高的规则，应该生成带日期的新列表名，完整导入并检查后，再把引用它的Filter或Mangle规则切换到新名称。</p>
+<h2 id="先Dry-Run再正式导入"><a href="#先Dry-Run再正式导入" class="headerlink" title="先Dry Run再正式导入"></a>先Dry Run再正式导入</h2><p>把<code>.rsc</code>上传到RouterOS的Files后，先备份当前列表。RouterOS 7.13及以后可以只导出指定Address List：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall address-list </span><span class="built_in">export</span> \</span><br><span class="line">    where <span class="attribute">list</span>=region_ipv4 <span class="attribute">file</span>=region_ipv4-before</span><br></pre></td></tr></table></figure>
+
+<p>正式执行前使用Verbose模式的Dry Run检查语法：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/import <span class="attribute">file-name</span>=region_ipv4-20251105.rsc <span class="attribute">verbose</span>=<span class="literal">yes</span> <span class="attribute">dry-run</span>=<span class="literal">yes</span></span><br></pre></td></tr></table></figure>
+
+<p>Dry Run通过以后再导入：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/import <span class="attribute">file-name</span>=region_ipv4-20251105.rsc <span class="attribute">verbose</span>=<span class="literal">yes</span></span><br></pre></td></tr></table></figure>
+
+<p>最后确认条目数量，并抽查合并后的网段：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall address-list </span><span class="built_in">print</span> count-only where <span class="attribute">list</span>=region_ipv4</span><br><span class="line"><span class="built_in">/ip firewall address-list </span><span class="built_in">print</span> where <span class="attribute">list</span>=region_ipv4</span><br></pre></td></tr></table></figure>
+
+<p>Dry Run只能检查脚本执行和语法问题，不能证明外部IP分类准确，也不能判断某条防火墙规则是否应该使用这份列表。Address List本身不会改变流量，真正的放行、丢弃、标记或分流仍由引用它的Filter、Mangle、NAT和路由配置决定。</p>
+<h2 id="外部列表要保留来源和更新时间"><a href="#外部列表要保留来源和更新时间" class="headerlink" title="外部列表要保留来源和更新时间"></a>外部列表要保留来源和更新时间</h2><p><a target="_blank" rel="noopener" href="https://github.com/metowolf/iplist">metowolf&#x2F;iplist</a>提供国家、地区、运营商和云厂商等分类的CIDR文本，并持续更新。使用这类列表时，最好同时保留原始下载文件和生成日期，而不是只留下最终<code>.rsc</code>。当条目数量突然大幅变化时，先比较新旧输入，再决定是否导入。</p>
+<p>IP归属数据天然会变化，也可能存在分类误差。它适合做分流、统计或辅助匹配，不适合作为唯一的安全身份依据。尤其是白名单场景，不能因为某个地址出现在第三方地区列表里，就跳过认证和更精确的访问控制。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://manual.mikrotik.com/docs/firewall-and-quality-of-service/firewall/address-lists/">MikroTik：Address-lists</a></li>
+<li><a target="_blank" rel="noopener" href="https://manual.mikrotik.com/docs/getting-started/configuration-management/">MikroTik：Configuration Management</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.python.org/3/library/ipaddress.html">Python：ipaddress</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/metowolf/iplist">metowolf&#x2F;iplist</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/202510/PhanTun%E3%80%81udp2raw%E4%B8%8Ewstunnel%E7%9A%84UDP%E9%9A%A7%E9%81%93%E9%80%89%E6%8B%A9/" rel="prev" title="PhanTun、udp2raw与wstunnel的UDP隧道选择">
+                  <i class="fa fa-angle-left"></i> PhanTun、udp2raw与wstunnel的UDP隧道选择
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/202511/%E7%94%A8OctoPrint%E5%92%8CRestreamer%E8%BF%9C%E7%A8%8B%E6%9F%A5%E7%9C%8B3D%E6%89%93%E5%8D%B0%E6%9C%BA/" rel="next" title="用OctoPrint和Restreamer远程查看3D打印机">
+                  用OctoPrint和Restreamer远程查看3D打印机 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
