@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">291</span>
+          <span class="site-state-item-count">292</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,84 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202209/Docker%E7%89%88EasyConnect/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202209/Docker%E7%89%88EasyConnect/" class="post-title-link" itemprop="url">Docker版EasyConnect</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2022-11-02 17:23:58" itemprop="dateCreated datePublished" datetime="2022-11-02T17:23:58+08:00">2022-11-02</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>部分EasyConnect由于启用了专线模式，在连接成功后，本机会切断互联网连接，且局域网内其它机器也无法访问到本机。<br>这样一来，使得Windows虚拟机 + 虚拟机内CCProxy + 宿主机Proxifier的连接方式变得不可用。<br>尝试通过修改路由表的方式，也无法绕开EC专线模式的限制。最近有人制做了EC的Docker镜像，可以将EC运行在容器内，另外顺利绕过了专线模式。</p>
+<h2 id="GitHub"><a href="#GitHub" class="headerlink" title="GitHub"></a>GitHub</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/Hagb/docker-easyconnect">https://github.com/Hagb/docker-easyconnect</a></li>
+<li><a target="_blank" rel="noopener" href="https://hub.docker.com/r/hagb/docker-easyconnect">https://hub.docker.com/r/hagb/docker-easyconnect</a></li>
+</ul>
+<h2 id="启动命令"><a href="#启动命令" class="headerlink" title="启动命令"></a>启动命令</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 连接EC</span></span><br><span class="line">docker run --name ec_xxx --device /dev/net/tun --cap-add NET_ADMIN -ti -p 127.0.0.1:1080:1080 -p 127.0.0.1:8888:8888 -e EC_VER=7.6.3 -e CLI_OPTS=<span class="string">&quot;-d https://连接地址 -u 用户名 -p 密码&quot;</span> hagb/docker-easyconnect:cli</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开启SSH隧道</span></span><br><span class="line">ssh -o ProxyCommand=<span class="string">&#x27;nc -x 127.0.0.1:1080 %h %p&#x27;</span> -CfNg -D7000 -p2201 root@10.180.248.88</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意: 开通SSH隧道时，可以直接加入<code>-o ProxyCommand</code>参数，使ssh走1080代理。当然也可以在Proxifier上配置规则，强行使10.180.248.88整个网段走代理。<br>连接不同EC时，需要选择匹配的版本</p>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -889,77 +967,6 @@
 <li>torna</li>
 </ul>
 <h2 id="torna安装"><a href="#torna安装" class="headerlink" title="torna安装"></a>torna安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">docker pull tanghc2020/torna:1.15.7</span><br><span class="line"></span><br><span class="line">docker run --name torna --restart=always \</span><br><span class="line">  -p 7700:7700 \</span><br><span class="line">  -e JAVA_OPTS=<span class="string">&quot;-Xms256m -Xmx256m&quot;</span> \</span><br><span class="line">  -e MYSQL_HOST=<span class="string">&quot;10.193.2.12:3306&quot;</span> \</span><br><span class="line">  -e MYSQL_SCHEMA=<span class="string">&quot;torna&quot;</span> \</span><br><span class="line">  -e MYSQL_USERNAME=<span class="string">&quot;root&quot;</span> \</span><br><span class="line">  -e MYSQL_PASSWORD=<span class="string">&quot;yourpass&quot;</span> \</span><br><span class="line">  -d tanghc2020/torna:1.15.7</span><br><span class="line"></span><br><span class="line">http://10.193.2.12:7700</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202206/SSH%E5%8F%8C%E5%90%91%E9%9A%A7%E9%81%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202206/SSH%E5%8F%8C%E5%90%91%E9%9A%A7%E9%81%93/" class="post-title-link" itemprop="url">SSH双向隧道</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2022-11-02 17:19:25" itemprop="dateCreated datePublished" datetime="2022-11-02T17:19:25+08:00">2022-11-02</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://www.zsythink.net/archives/2450">https://www.zsythink.net/archives/2450</a></li>
-</ul>
-<h2 id="脚本"><a href="#脚本" class="headerlink" title="脚本"></a>脚本</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1、通过本地端口建立ssh隧道转发请求</span></span><br><span class="line">ssh -CNg -D8000 -p9922 root@10.80.8.238</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2、ssh隧道代理本地端口</span></span><br><span class="line">ssh -N -R 20001:127.0.0.1:20001 root@10.193.2.5</span><br></pre></td></tr></table></figure>
       
     </div>
 

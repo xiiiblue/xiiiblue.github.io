@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">291</span>
+          <span class="site-state-item-count">292</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,93 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%98%E6%96%B9Helm%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202305/%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%98%E6%96%B9Helm%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">常用中间件官方Helm安装</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-05-29 14:25:09" itemprop="dateCreated datePublished" datetime="2023-05-29T14:25:09+08:00">2023-05-29</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/mysql">https://artifacthub.io/packages/helm/bitnami/mysql</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/mysql --version 9.9.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami mysql 9.9.1</span><br><span class="line">helm install mysql ./mysql --namespace mysql --create-namespace</span><br><span class="line">helm status mysql -n mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># DNS</span></span><br><span class="line">mysql.mysql.svc.cluster.local:3306</span><br><span class="line"><span class="comment"># 查看root用户名</span></span><br><span class="line">MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace mysql mysql -o jsonpath=<span class="string">&quot;&#123;.data.mysql-root-password&#125;&quot;</span> | <span class="built_in">base64</span> -d)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$MYSQL_ROOT_PASSWORD</span>  <span class="comment"># rVrmiKcXOo</span></span><br><span class="line"><span class="comment"># 运行客户端</span></span><br><span class="line">kubectl run mysql-client --<span class="built_in">rm</span> --<span class="built_in">tty</span> -i --restart=<span class="string">&#x27;Never&#x27;</span> --image  docker.io/bitnami/mysql:8.0.33-debian-11-r7 --namespace mysql --<span class="built_in">env</span> MYSQL_ROOT_PASSWORD=<span class="variable">$MYSQL_ROOT_PASSWORD</span> --<span class="built_in">command</span> -- bash</span><br><span class="line">mysql -h mysql.mysql.svc.cluster.local -uroot -p<span class="string">&quot;<span class="variable">$MYSQL_ROOT_PASSWORD</span>&quot;</span></span><br><span class="line"><span class="comment"># 本机port-forward</span></span><br><span class="line">kubectl port-forward --namespace mysql svc/mysql 3306:3306</span><br></pre></td></tr></table></figure>
+
+<h2 id="Redis"><a href="#Redis" class="headerlink" title="Redis"></a>Redis</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/redis">https://artifacthub.io/packages/helm/bitnami/redis</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo bitnami/redis --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/redis --version 17.10.3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami redis 17.10.3</span><br><span class="line">helm install redis ./redis --namespace redis --create-namespace</span><br><span class="line">helm status redis -n redis</span><br><span class="line"></span><br><span class="line"><span class="comment"># DNS</span></span><br><span class="line">redis-master.redis.svc.cluster.local <span class="keyword">for</span> <span class="built_in">read</span>/write operations (port 6379)</span><br><span class="line">redis-replicas.redis.svc.cluster.local <span class="keyword">for</span> read-only operations (port 6379)</span><br><span class="line"><span class="comment"># 查看密码</span></span><br><span class="line"><span class="built_in">export</span> REDIS_PASSWORD=$(kubectl get secret --namespace redis redis -o jsonpath=<span class="string">&quot;&#123;.data.redis-password&#125;&quot;</span> | <span class="built_in">base64</span> -d)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$REDIS_PASSWORD</span> <span class="comment"># 4BEkvq5vdW</span></span><br><span class="line"><span class="comment"># 运行Client</span></span><br><span class="line">kubectl run --namespace redis redis-client --restart=<span class="string">&#x27;Never&#x27;</span>  --<span class="built_in">env</span> REDIS_PASSWORD=<span class="variable">$REDIS_PASSWORD</span>  --image docker.io/bitnami/redis:7.0.11-debian-11-r7 --<span class="built_in">command</span> -- <span class="built_in">sleep</span> infinity</span><br><span class="line">kubectl <span class="built_in">exec</span> --<span class="built_in">tty</span> -i redis-client --namespace redis -- bash</span><br><span class="line">REDISCLI_AUTH=<span class="string">&quot;<span class="variable">$REDIS_PASSWORD</span>&quot;</span> redis-cli -h redis-master</span><br><span class="line"><span class="comment"># 本机port-forward</span></span><br><span class="line">kubectl port-forward --namespace redis svc/redis-master 6379:6379</span><br><span class="line">REDISCLI_AUTH=<span class="string">&quot;<span class="variable">$REDIS_PASSWORD</span>&quot;</span> redis-cli -h 127.0.0.1 -p 6379</span><br></pre></td></tr></table></figure>
+
+<h2 id="Zookeeper"><a href="#Zookeeper" class="headerlink" title="Zookeeper"></a>Zookeeper</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/zookeeper">https://artifacthub.io/packages/helm/bitnami/zookeeper</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo bitnami/zookeeper --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/zookeeper --version 11.3.2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami zookeeper 11.3.2</span><br><span class="line">helm install zookeeper ./zookeeper --namespace zookeeper --create-namespace</span><br><span class="line">helm status zookeeper -n zookeeper</span><br><span class="line"></span><br><span class="line"><span class="comment"># DNS</span></span><br><span class="line">zookeeper.zookeeper.svc.cluster.local</span><br><span class="line"><span class="comment"># 客户端</span></span><br><span class="line"><span class="built_in">export</span> POD_NAME=$(kubectl get pods --namespace zookeeper -l <span class="string">&quot;app.kubernetes.io/name=zookeeper,app.kubernetes.io/instance=zookeeper,app.kubernetes.io/component=zookeeper&quot;</span> -o jsonpath=<span class="string">&quot;&#123;.items[0].metadata.name&#125;&quot;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$POD_NAME</span></span><br><span class="line">kubectl <span class="built_in">exec</span> -it  --namespace zookeeper <span class="variable">$POD_NAME</span> -- zkCli.sh</span><br><span class="line"><span class="comment"># 本机port-forward</span></span><br><span class="line">kubectl port-forward --namespace zookeeper svc/zookeeper 2181:2181</span><br><span class="line">zkCli.sh 127.0.0.1:2181</span><br></pre></td></tr></table></figure>
+
+<h2 id="Minio"><a href="#Minio" class="headerlink" title="Minio"></a>Minio</h2><p><a target="_blank" rel="noopener" href="https://helm.min.io/">https://helm.min.io/</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add minio https://helm.min.io/</span><br><span class="line">helm update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo minio/minio --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull minio/minio --version 8.0.10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart minio minio 8.0.10</span><br><span class="line">helm install minio ./minio --namespace minio --create-namespace</span><br><span class="line">helm status minio -n minio</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本机portforward</span></span><br><span class="line"><span class="built_in">export</span> POD_NAME=$(kubectl get pods --namespace minio -l <span class="string">&quot;release=minio&quot;</span> -o jsonpath=<span class="string">&quot;&#123;.items[0].metadata.name&#125;&quot;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$POD_NAME</span></span><br><span class="line">kubectl port-forward <span class="variable">$POD_NAME</span> 9000 --namespace minio</span><br><span class="line"><span class="comment"># 查看access_key/secret_key</span></span><br><span class="line">ACCESS_KEY=$(kubectl get secret minio --namespace minio -o jsonpath=<span class="string">&quot;&#123;.data.accesskey&#125;&quot;</span> | <span class="built_in">base64</span> --decode) </span><br><span class="line">SECRET_KEY=$(kubectl get secret minio --namespace minio -o jsonpath=<span class="string">&quot;&#123;.data.secretkey&#125;&quot;</span> | <span class="built_in">base64</span> --decode)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$ACCESS_KEY</span> <span class="variable">$SECRET_KEY</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/nginx">https://artifacthub.io/packages/helm/bitnami/nginx</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo bitnami/nginx --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/nginx --version 14.2.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami nginx 14.2.1</span><br><span class="line">helm install nginx ./nginx --namespace nginx --create-namespace</span><br><span class="line">helm status nginx -n nginx</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> SERVICE_PORT=$(kubectl get --namespace nginx -o jsonpath=<span class="string">&quot;&#123;.spec.ports[0].port&#125;&quot;</span> services nginx)</span><br><span class="line"><span class="built_in">export</span> SERVICE_IP=$(kubectl get svc --namespace nginx nginx -o jsonpath=<span class="string">&#x27;&#123;.status.loadBalancer.ingress[0].ip&#125;&#x27;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;http://<span class="variable">$&#123;SERVICE_IP&#125;</span>:<span class="variable">$&#123;SERVICE_PORT&#125;</span>&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Neo4j"><a href="#Neo4j" class="headerlink" title="Neo4j"></a>Neo4j</h2><p><a target="_blank" rel="noopener" href="https://github.com/neo4j-contrib/neo4j-helm">https://github.com/neo4j-contrib/neo4j-helm</a><br><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/neo4j-helm-charts/neo4j">https://artifacthub.io/packages/helm/neo4j-helm-charts/neo4j</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编辑镜像清单</span></span><br><span class="line">dockemon edit</span><br><span class="line">neo4j:4.4.10-enterprise</span><br><span class="line">gcr.io/neo4j-helm/restore:4.1.0-1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 推送离线镜像</span></span><br><span class="line">dockemon image</span><br><span class="line"></span><br><span class="line"><span class="comment"># 手工下载Chart</span></span><br><span class="line">https://github.com/neo4j-contrib/neo4j-helm/releases</span><br><span class="line">tar -zxvf neo4j-4.4.10.1.tgz &amp; <span class="built_in">cd</span> neo4j</span><br><span class="line"><span class="comment"># 注意修改values.yaml，pvc.size改小</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Chart安装</span></span><br><span class="line">helm install neo4j ./neo4j --<span class="built_in">set</span> core.standalone=<span class="literal">true</span> --<span class="built_in">set</span> acceptLicenseAgreement=<span class="built_in">yes</span> --<span class="built_in">set</span> neo4jPassword=abcd1234 --namespace neo4j --create-namespace</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -980,78 +1067,6 @@
 <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># macOS下brew安装</span></span><br><span class="line">brew install kubecm</span><br><span class="line"></span><br><span class="line"><span class="comment"># Linux下二进制安装</span></span><br><span class="line">wget https://github.com/sunny0826/kubecm/releases/download/v0.23.0/kubecm_v0.23.0_Linux_x86_64.tar.gz</span><br></pre></td></tr></table></figure>
 
 <h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 配置Alias（可选）</span></span><br><span class="line"><span class="built_in">alias</span> k=kubectl</span><br><span class="line"><span class="built_in">alias</span> kc=kubecm</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加一个集群至～/.kube/config</span></span><br><span class="line">kubecm add -f config.qke</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重命名</span></span><br><span class="line">kubecm rename</span><br><span class="line"></span><br><span class="line"><span class="comment"># 移除集群</span></span><br><span class="line">kubecm delete</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看集群</span></span><br><span class="line">kubecm list</span><br><span class="line">kc l</span><br><span class="line"></span><br><span class="line"><span class="comment"># 切换集群</span></span><br><span class="line">kubecm switch</span><br><span class="line">kc s</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202304/K9S%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202304/K9S%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">K9S常用操作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-04-25 13:30:08" itemprop="dateCreated datePublished" datetime="2023-04-25T13:30:08+08:00">2023-04-25</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://i.cloudnative.to/toolkits/kubernetes/k9s">https://i.cloudnative.to/toolkits/kubernetes/k9s</a></p>
-<h2 id="离线安装"><a href="#离线安装" class="headerlink" title="离线安装"></a>离线安装</h2><p><a target="_blank" rel="noopener" href="https://k9scli.io/topics/install/">https://k9scli.io/topics/install/</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf k9s_Linux_amd64.tar.gz</span><br><span class="line"><span class="built_in">cp</span> ./k9s /usr/local/bin/</span><br></pre></td></tr></table></figure>
-
-<h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启动</span></span><br><span class="line">k9s</span><br><span class="line">k9s -n your_namespace</span><br><span class="line">$ k9s --<span class="built_in">readonly</span></span><br><span class="line">k9s info</span><br><span class="line"><span class="comment"># 帮助</span></span><br><span class="line">?</span><br><span class="line"><span class="comment"># 显示所有别名</span></span><br><span class="line">ctrl+a</span><br><span class="line"><span class="comment"># 查看资源</span></span><br><span class="line">:po  <span class="comment"># pods</span></span><br><span class="line">:dp  <span class="comment"># deployments</span></span><br><span class="line">:rs  <span class="comment"># replicasets</span></span><br><span class="line">:svc  <span class="comment"># services</span></span><br><span class="line">:cm  <span class="comment"># configmap</span></span><br><span class="line">:sec  <span class="comment"># secrets</span></span><br><span class="line">:rb <span class="comment"># rolebinding</span></span><br><span class="line">:ns <span class="comment"># namespaces</span></span><br><span class="line">:node <span class="comment"># nodes</span></span><br><span class="line">:dp 或 :rs</span><br><span class="line"></span><br><span class="line"><span class="comment"># 快捷操作（界面上方有提示）</span></span><br><span class="line">ctrl-d <span class="comment"># 删除</span></span><br><span class="line">a <span class="comment"># attach</span></span><br><span class="line">d <span class="comment"># 查看描述 </span></span><br><span class="line">e <span class="comment"># 编辑</span></span><br><span class="line">l <span class="comment"># 日志</span></span><br><span class="line">s <span class="comment"># shell</span></span><br><span class="line">/  <span class="comment"># 过滤</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 伸缩</span></span><br><span class="line">按`:dp`进入deployments界面后，按`s`调整</span><br><span class="line"></span><br><span class="line"><span class="comment"># 端口转发</span></span><br><span class="line">shift-f</span><br><span class="line"></span><br><span class="line"><span class="comment"># Pulses高级功能，资源总览</span></span><br><span class="line">:pu</span><br><span class="line"></span><br><span class="line"><span class="comment"># XRay高级功能，显示资源关系图，支持探查：Pods, Deployments, StatefulSets, Services, DaemonSets</span></span><br><span class="line">:x po</span><br><span class="line">:x dp</span><br><span class="line">:x sts</span><br><span class="line">:x svc</span><br><span class="line">:x ds</span><br><span class="line"></span><br><span class="line"><span class="comment"># Popeye功能，报告潜在问题</span></span><br><span class="line">:popeye</span><br></pre></td></tr></table></figure>
       
     </div>
 

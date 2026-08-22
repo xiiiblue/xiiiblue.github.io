@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">291</span>
+          <span class="site-state-item-count">292</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,78 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-9-Postgres%E5%8E%9F%E7%94%9F%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-9-Postgres%E5%8E%9F%E7%94%9F%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">K8S离线部署笔记-9-Postgres原生部署</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-05 14:05:49" itemprop="dateCreated datePublished" datetime="2021-01-05T14:05:49+08:00">2021-01-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 初始化</span></span><br><span class="line">/usr/pgsql-9.6/bin/postgresql96-setup initdb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动服务</span></span><br><span class="line">systemctl start postgresql-9.6.service</span><br><span class="line">systemctl <span class="built_in">enable</span> postgresql-9.6.service</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改密码</span></span><br><span class="line">su postgres</span><br><span class="line">psql</span><br><span class="line">ALTER USER postgres WITH PASSWORD <span class="string">&#x27;yourpassword&#x27;</span>;</span><br><span class="line">\q</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开启远程访问</span></span><br><span class="line">vi /var/lib/pgsql/9.6/data/postgresql.conf</span><br><span class="line">修改#listen_addresses = <span class="string">&#x27;localhost&#x27;</span> 为 listen_addresses=<span class="string">&#x27;*&#x27;</span></span><br><span class="line"></span><br><span class="line">vi /var/lib/pgsql/9.6/data/pg_hba.conf</span><br><span class="line">host    all             all             0.0.0.0/0            md5</span><br></pre></td></tr></table></figure>
+
+<h2 id="初始配置"><a href="#初始配置" class="headerlink" title="初始配置"></a>初始配置</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 创建用户</span></span><br><span class="line"><span class="keyword">CREATE</span> ROLE business LOGIN PASSWORD <span class="string">&#x27;yourpassword&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建表空间</span></span><br><span class="line">su <span class="operator">-</span> postgres</span><br><span class="line">cd <span class="operator">/</span>var<span class="operator">/</span>lib<span class="operator">/</span>pgsql<span class="operator">/</span><span class="number">9.6</span><span class="operator">/</span>data<span class="operator">/</span>pg_tblspc</span><br><span class="line">mkdir ts_business</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> TABLESPACE ts_business OWNER business LOCATION <span class="string">&#x27;/var/lib/pgsql/9.6/data/pg_tblspc/ts_business&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 创建数据库</span></span><br><span class="line"><span class="keyword">CREATE</span> DATABASE yourdb <span class="keyword">WITH</span> TEMPLATE <span class="operator">=</span> template0 ENCODING <span class="operator">=</span> <span class="string">&#x27;UTF8&#x27;</span> LC_COLLATE <span class="operator">=</span> <span class="string">&#x27;en_US.UTF-8&#x27;</span> LC_CTYPE <span class="operator">=</span> <span class="string">&#x27;en_US.UTF-8&#x27;</span> TABLESPACE <span class="operator">=</span> ts_business;</span><br><span class="line"><span class="keyword">ALTER</span> DATABASE yourdb OWNER <span class="keyword">TO</span> business;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="数据导入"><a href="#数据导入" class="headerlink" title="数据导入"></a>数据导入</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 本地方式导出导入</span></span><br><span class="line">su - postgres</span><br><span class="line">pg_dump --dbname yourdb --file dump.sql</span><br><span class="line">psql --dbname yourdb --file dump.sql</span><br><span class="line"></span><br><span class="line"><span class="comment"># 远程方式导出导入</span></span><br><span class="line">pg_dump --host 10.10.71.53 --port 5432 --dbname yourdb --username postgres --file dump.sql</span><br><span class="line">psql --host 10.10.51.76 --port 5432  --dbname yourdb --username postgres  --file dump.sql</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -801,111 +873,6 @@
 <h3 id="推USB摄像头"><a href="#推USB摄像头" class="headerlink" title="推USB摄像头"></a>推USB摄像头</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># Windows列出设备</span><br><span class="line">ffplay -f dshow -i video=&quot;USB2.0 Camera&quot;</span><br><span class="line"></span><br><span class="line"># macOS列出设备</span><br><span class="line">ffmpeg -f avfoundation -list_devices true -i &quot;&quot;</span><br><span class="line"></span><br><span class="line"># 只推摄像头</span><br><span class="line">ffmpeg -f avfoundation -framerate 30 -video_size 1280x720 -i &quot;0&quot; -vcodec libx264 -acodec libfaac -f flv rtmp://10.30.22.242:1935/hls/mystream</span><br><span class="line"></span><br><span class="line"># 推摄像头+麦克风</span><br><span class="line">ffmpeg -f avfoundation -framerate 30 -video_size 1280x720 -i &quot;0:1&quot; -vcodec libx264 -preset ultrafast -acodec libmp3lame -ar 44100 -ac 1 -f flv rtmp://10.30.22.242:1935/hls/mystream</span><br></pre></td></tr></table></figure>
 
 <h3 id="推桌面录屏"><a href="#推桌面录屏" class="headerlink" title="推桌面录屏"></a>推桌面录屏</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -f avfoundation -pixel_format uyvy422 -i &quot;1&quot; -f flv rtmp://10.30.22.242:1935/hls/mystream</span><br><span class="line">ffmpeg -f avfoundation -i &quot;1&quot; -vcodec libx264 -preset ultrafast -acodec libfaac -f flv rtmp://10.30.22.242:1935/hls/mystream</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202008/SRS%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202008/SRS%E9%85%8D%E7%BD%AE%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">SRS配置笔记</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:04:05" itemprop="dateCreated datePublished" datetime="2021-01-05T14:04:05+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://ossrs.net/srs.release/releases/">http://ossrs.net/srs.release/releases/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs">https://github.com/ossrs/srs</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs/wiki/v3_CN_Home">https://github.com/ossrs/srs/wiki/v3_CN_Home</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs/wiki/v3_CN_Docs">https://github.com/ossrs/srs/wiki/v3_CN_Docs</a></li>
-</ul>
-<h2 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://gitee.com/winlinvip/srs.oschina.git srs</span><br><span class="line"><span class="built_in">cd</span> srs/trunk </span><br><span class="line">git remote set-url origin https://github.com/ossrs/srs.git</span><br><span class="line">git pull</span><br><span class="line"></span><br><span class="line">./configure --osx</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
-
-<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">./objs/srs -c conf/srs.conf</span><br><span class="line">./objs/srs -c conf/hls.conf</span><br><span class="line">./objs/srs -c conf/http.flv.live.conf</span><br><span class="line">./objs/srs -c conf/dash.conf</span><br><span class="line"></span><br><span class="line">[2020-08-19 08:35:47.917][Trace][4124][388] RTMP listen at tcp://0.0.0.0:1935, fd=7</span><br><span class="line">[2020-08-19 08:35:47.917][Trace][4124][388] HTTP-Server listen at tcp://0.0.0.0:8080, fd=8</span><br><span class="line">[2020-08-19 08:35:47.929][Trace][4124][388] signal installed, reload=1, reopen=30, fast_quit=15, grace_quit=3</span><br><span class="line">[2020-08-19 08:35:47.929][Trace][4124][388] http: api mount /console to ./objs/nginx/html/console</span><br></pre></td></tr></table></figure>
-
-<h2 id="模拟推流"><a href="#模拟推流" class="headerlink" title="模拟推流"></a>模拟推流</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>((;;)); <span class="keyword">do</span> \</span><br><span class="line">    ./objs/ffmpeg/bin/ffmpeg -re -i ./doc/source.200kbps.768x320.flv \</span><br><span class="line">    -vcodec copy -acodec copy \</span><br><span class="line">    -f flv -y rtmp://127.0.0.1/live/livestream; \</span><br><span class="line">    <span class="built_in">sleep</span> 1; \</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>RTMP流地址 rtmp:&#x2F;&#x2F;127.0.0.1:1935&#x2F;live&#x2F;livestream</li>
-<li>HLS流地址  <a target="_blank" rel="noopener" href="http://127.0.0.1:8080/live/livestream.m3u8">http://127.0.0.1:8080/live/livestream.m3u8</a></li>
-<li>HTTP FLV  <a target="_blank" rel="noopener" href="http://127.0.0.1:8080/live/livestream.flv">http://127.0.0.1:8080/live/livestream.flv</a></li>
-<li>DASH流地址 <a target="_blank" rel="noopener" href="http://192.168.1.170:8080/live/livestream.mpd">http://192.168.1.170:8080/live/livestream.mpd</a></li>
-</ul>
-<h2 id="API"><a href="#API" class="headerlink" title="API"></a>API</h2><ul>
-<li>versions	&#x2F;api&#x2F;v1&#x2F;versions	获取服务器版本信息</li>
-<li>summaries	&#x2F;api&#x2F;v1&#x2F;summaries	获取服务器的摘要信息</li>
-<li>rusages	&#x2F;api&#x2F;v1&#x2F;rusages	获取服务器资源使用信息</li>
-<li>self_proc_stats	&#x2F;api&#x2F;v1&#x2F;self_proc_stats	获取服务器进程信息</li>
-<li>system_proc_stats	&#x2F;api&#x2F;v1&#x2F;system_proc_stats	获取服务器所有进程情况</li>
-<li>meminfos	&#x2F;api&#x2F;v1&#x2F;meminfos	获取服务器内存使用情况</li>
-<li>authors	&#x2F;api&#x2F;v1&#x2F;authors	获取作者、版权和License信息</li>
-<li>features	&#x2F;api&#x2F;v1&#x2F;features	获取系统支持的功能列表</li>
-<li>requests	&#x2F;api&#x2F;v1&#x2F;requests	获取请求的信息，即当前发起的请求的详细信息</li>
-<li>vhosts	&#x2F;api&#x2F;v1&#x2F;vhosts	获取服务器上的vhosts信息</li>
-<li>streams	&#x2F;api&#x2F;v1&#x2F;streams	获取服务器的streams信息</li>
-<li>clients	&#x2F;api&#x2F;v1&#x2F;clients	获取服务器的clients信息，默认获取前10个</li>
-<li>configs	&#x2F;api&#x2F;v1&#x2F;configs	CUID配置，RAW API</li>
-</ul>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/feixiangsmile/article/details/105881467">使用SRS和Nginx配置HLS、RTMP方式视频直播</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/dd3f58392aa0">MAC 搭建RTMP服务器nginx 和 srs</a></li>
-</ul>
-
       
     </div>
 

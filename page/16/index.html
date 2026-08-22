@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">291</span>
+          <span class="site-state-item-count">292</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,592 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201709/%E5%85%B3%E4%BA%8EFeign%E7%9A%84Fallback%E5%A4%84%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201709/%E5%85%B3%E4%BA%8EFeign%E7%9A%84Fallback%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">关于Feign的Fallback处理</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="Feign的不恰当的fallback"><a href="#Feign的不恰当的fallback" class="headerlink" title="Feign的不恰当的fallback"></a>Feign的不恰当的fallback</h2><p>Feign的坑不少，特别与Hystrix集成之后。<br>在微服务引入Feign后，上线不久后便发现，对于一个简单的查询类调用，在下游返回正常的”404-资源不存在”这种业务异常时，Feign也做了fallback，最终导致circuit break，引发平台告警。</p>
+<h2 id="REST接口的设计"><a href="#REST接口的设计" class="headerlink" title="REST接口的设计"></a>REST接口的设计</h2><p>为了解释这个问题，首先还是要从REST接口开始谈起。</p>
+<p>REST的一个缺点（也有人认为是优势），它只是一种依赖于HTTP的”风格”，而没有明确的”规范”，所以客户端和服务端之间，要自行达成某种”约定”。<br>例如返回码，就要硬往HTTP STATUS上靠。</p>
+<p>关于返回码，公认的”最佳实践”大概是这样的：</p>
+<ol>
+<li>如果业务处理成功，http status返回200、204等。如果有内容，BODY中直接返回内容（对象或数组都可以），不再有RPC时代的code&#x2F;message这样的状态描述。如果没有内容，BODY直接空白，No News Is Good News。</li>
+<li>如果业务处理失败，业务逻辑导致的，则http status返回4XX，BODY中返回报错信息，报错信息的统一格式大概是这样的：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;status&quot;: 409,  // 冗余字段，把http status再重复一遍</span><br><span class="line">  &quot;code&quot;: 888,  // 自定义的错误码</span><br><span class="line">  &quot;message&quot;: &quot;foobar&quot;  // 错误描述</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>如果是其它未知错误，抛5XX，认为是服务器内部错误，而不是逻辑错误。</li>
+</ol>
+<p>所以对于APP&#x2F;WEB等客户端来说，很简单，如果发现2XX，则认为成功，直接获取数据。如果非2XX，则是失败，直接取code和message，展现到前台。</p>
+<p>但是对于微服务之间的调用，就要区分是”4XX-业务逻辑异常”，还是”5XX-服务器异常”了。。。</p>
+<h2 id="REST返回码的选择"><a href="#REST返回码的选择" class="headerlink" title="REST返回码的选择"></a>REST返回码的选择</h2><p>下面详细讲一下HTTP STATUS的选择问题。</p>
+<p>关于HTTP返回码，看了很多参考（论战），”大概”可以这样选择：</p>
+<p>成功： 2XX系列  </p>
+<ul>
+<li>200 OK  &#x2F;&#x2F; 查询、删除成功用这个</li>
+<li>201 CREATED  &#x2F;&#x2F; 新增、修改时用这个。且返回BODY中无任何信息。</li>
+</ul>
+<p>业务异常： 4XX系列  </p>
+<ul>
+<li>400 BAD_REQUEST  &#x2F;&#x2F; 现在有很多人在业务异常时抛这个错。但400要慎重使用。稍后解释。</li>
+<li>404 NOT_FOUND  &#x2F;&#x2F; 查询不到结果时用这个</li>
+<li>403 FORBIDDEN  &#x2F;&#x2F; 这个也慎重使用。</li>
+<li>409 CONFLICT   &#x2F;&#x2F; 业务异常时，可以用这个。</li>
+</ul>
+<p>主机异常：5XX系列  </p>
+<ul>
+<li>500 INTERNAL_SERVER_ERROR &#x2F;&#x2F; 对于未知异常，统一用这个了</li>
+<li>503 SERVICE_UNAVAILABLE  &#x2F;&#x2F; Hystrix异常用这个</li>
+</ul>
+<h2 id="什么时候应该Fallback"><a href="#什么时候应该Fallback" class="headerlink" title="什么时候应该Fallback"></a>什么时候应该Fallback</h2><p>2XX，成功，这个不用再讨论。<br>5XX，也相当明确，直接Fallback，这个也不用讨论。<br>4XX，可以一律认为是业务逻辑异常（或者更精确的说，可以认为4XX中的某几个是业务异常）。这时候，应该是用if&#x2F;else来处理这个异常，而不应该动用Hystrix来Fallback。  </p>
+<p>Feign在默认情况下，对于非2XX，都认为是异常。这个地方是有问题的。特别是对于404这种非常容易抛出的业务异常来说，没两下就circuit break了。</p>
+<p>Feign的Issue里已经有人提过这个问题，后面的版本中已经提供了一个参数:<code>decode404</code>。</p>
+<p>可以看一下Feign的代码，位置在：<br>~&#x2F;.m2&#x2F;repository&#x2F;io&#x2F;github&#x2F;openfeign&#x2F;feign-core&#x2F;9.5.0&#x2F;feign-core-9.5.0.jar!&#x2F;feign&#x2F;SynchronousMethodHandler.class<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/sgqvj.jpg"></p>
+<p>所以在Client上可以这样设置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@FeignClient(name = &quot;marathon-lb&quot;, fallback = FooBarClientFallback.class, decode404 = true)</span><br><span class="line">@RequestMapping(value = &quot;/foo/bar&quot;)</span><br><span class="line">public interface FooBarClient &#123;</span><br><span class="line">    ... ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>只需要加入<code>decode404 = true</code>这一个参数，Feign对于2XX和404 ，都不会走Fallback了。<br>排除404，已经基本上够用了，如果想把409、400等status也加到例外中，可以重写一下Feign的errorDecoder。</p>
+<h2 id="关于4XX错误"><a href="#关于4XX错误" class="headerlink" title="关于4XX错误"></a>关于4XX错误</h2><p>刚才提到的，如果把2XX，另外加上4XX，全部认为是正常业务逻辑，都不走Fallback，可不可行？ 我想最好不要这样很笼统的设置，要看情况。</p>
+<p>因为http status不全是服务端给出的，如果服务端与消费者之间隔着一些Nginx、HA、Kong这样的网关，那么情况可能就复杂了，网关也有可能抛出status。</p>
+<p>例如当某个微服务宕机之后，Kong网关会直接返回400，这种情况下，很明显是应当Fallback的。</p>
+<p>所以，在定义错误码时，要尽量避开400、403这种很溃常见的码，像409这样小众的，差不多可以放心使用。<br>这样，调用方就可以有针对性的对某几个4XX的status进行单独配置，配置为业务异常。  </p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Hadoop%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201803/Hadoop%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Ubuntu16.04下Hadoop3.0.0安装笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="安装JDK8"><a href="#安装JDK8" class="headerlink" title="安装JDK8"></a>安装JDK8</h2><p>PPA方式安装OracleJDK</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-add-repository ppa:webupd8team/java</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install oracle-java8-installer</span><br><span class="line">export JAVA_HOME=/usr/lib/jvm/java-8-oracle</span><br></pre></td></tr></table></figure>
+
+<p>或安装OpenJDK</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install default-jdk</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建hadoop用户"><a href="#创建hadoop用户" class="headerlink" title="创建hadoop用户"></a>创建hadoop用户</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo useradd -m hadoop -s /bin/bash</span><br><span class="line">sudo passwd hadoop</span><br><span class="line">sudo adduser hadoop sudo</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装Open-SSH-Server"><a href="#安装Open-SSH-Server" class="headerlink" title="安装Open SSH Server"></a>安装Open SSH Server</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install openssh-server</span><br></pre></td></tr></table></figure>
+
+<p>SSH授权：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.ssh/</span><br><span class="line">ssh-keygen -t rsa</span><br><span class="line">cat ./id_rsa.pub &gt;&gt; ./authorized_keys</span><br></pre></td></tr></table></figure>
+
+<h2 id="下载Hadoop"><a href="#下载Hadoop" class="headerlink" title="下载Hadoop"></a>下载Hadoop</h2><p><a target="_blank" rel="noopener" href="http://hadoop.apache.org/releases.html">http://hadoop.apache.org/releases.html</a></p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-03-22-16-08-21.png" alt="2018-03-22-16-08-21"></p>
+<p>选择3.0稳定版的binary下载，并解压</p>
+<h2 id="安装Hadoop"><a href="#安装Hadoop" class="headerlink" title="安装Hadoop"></a>安装Hadoop</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -xzvf hadoop-3.0.0.tar.gz</span><br><span class="line">sudo mv hadoop-3.0.0 /opt/hadoop</span><br></pre></td></tr></table></figure>
+
+<h2 id="PATH"><a href="#PATH" class="headerlink" title="PATH"></a>PATH</h2><p>export PATH&#x3D;$PATH:&#x2F;opt&#x2F;hadoop&#x2F;sbin:&#x2F;opt&#x2F;hadoop&#x2F;bin</p>
+<h2 id="设置JDK环境变量"><a href="#设置JDK环境变量" class="headerlink" title="设置JDK环境变量"></a>设置JDK环境变量</h2><p>readlink -f &#x2F;usr&#x2F;bin&#x2F;java | sed “s:bin&#x2F;java::”<br>&#x2F;usr&#x2F;lib&#x2F;jvm&#x2F;java-8-oracle&#x2F;jre&#x2F;</p>
+<p>sudo vi .&#x2F;etc&#x2F;hadoop&#x2F;hadoop-env.sh<br>export JAVA_HOME&#x3D;&#x2F;usr&#x2F;lib&#x2F;jvm&#x2F;java-8-oracle&#x2F;jre&#x2F;</p>
+<h2 id="运行Hadoop"><a href="#运行Hadoop" class="headerlink" title="运行Hadoop"></a>运行Hadoop</h2><p>.&#x2F;bin&#x2F;hadoop</p>
+<p>mkdir ~&#x2F;input<br>cp &#x2F;opt&#x2F;hadoop&#x2F;etc&#x2F;hadoop&#x2F;*.xml ~&#x2F;input</p>
+<p>.&#x2F;bin&#x2F;hadoop jar .&#x2F;share&#x2F;hadoop&#x2F;mapreduce&#x2F;hadoop-mapreduce-examples-3.0.0.jar grep ~&#x2F;input ~&#x2F;grep_example ‘principal[.]*’</p>
+<h2 id="伪分布式配置"><a href="#伪分布式配置" class="headerlink" title="伪分布式配置"></a>伪分布式配置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /opt/hadoop/etc/hadoop/core-site.xml</span><br></pre></td></tr></table></figure>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadoop.tmp.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/opt/hadoop/tmp<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">description</span>&gt;</span>Abase for other temporary directories.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>fs.defaultFS<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>hdfs://localhost:9000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /opt/hadoop/etc/hadoop/hdfs-site.xml</span><br></pre></td></tr></table></figure>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.replication<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.name.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/opt/hadoop/tmp/dfs/name<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.datanode.data.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/opt/hadoop/tmp/dfs/data<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>执行 NameNode 的格式化:<br>.&#x2F;bin&#x2F;hdfs namenode -format</p>
+<p>开启 NameNode 和 DataNode 守护进程:<br>.&#x2F;sbin&#x2F;start-dfs.sh<br>.&#x2F;sbin&#x2F;stop-dfs.sh </p>
+<p>可以执行jps查看进程</p>
+<p>WEB控制台界面：<br><a target="_blank" rel="noopener" href="http://localhost:9870/">http://localhost:9870</a></p>
+<h2 id="运行Hadoop伪分布式实例"><a href="#运行Hadoop伪分布式实例" class="headerlink" title="运行Hadoop伪分布式实例"></a>运行Hadoop伪分布式实例</h2><p>在 HDFS 中创建用户目录：<br>.&#x2F;bin&#x2F;hdfs dfs -mkdir -p &#x2F;user&#x2F;hadoop</p>
+<p>将示例xml文件作为输入文件复制到分布式文件系统中<br>.&#x2F;bin&#x2F;hdfs dfs -mkdir input<br>.&#x2F;bin&#x2F;hdfs dfs -put &#x2F;opt&#x2F;hadoop&#x2F;etc&#x2F;hadoop&#x2F;*.xml input</p>
+<p>查看文件列表：<br>.&#x2F;bin&#x2F;hdfs dfs -ls input</p>
+<p>伪分布式运行 MapReduce 作业：<br>.&#x2F;bin&#x2F;hadoop jar &#x2F;opt&#x2F;hadoop&#x2F;share&#x2F;hadoop&#x2F;mapreduce&#x2F;hadoop-mapreduce-examples-*.jar grep input output ‘dfs[a-z.]+’</p>
+<p>查看运行结果：<br>.&#x2F;bin&#x2F;hdfs dfs -cat output&#x2F;*</p>
+<p>将文件取回本地：<br>.&#x2F;bin&#x2F;hdfs dfs -get output &#x2F;opt&#x2F;hadoop&#x2F;output</p>
+<h2 id="启动YARN"><a href="#启动YARN" class="headerlink" title="启动YARN"></a>启动YARN</h2><p>vi mapred-site.xml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;mapreduce.framework.name&lt;/name&gt;</span><br><span class="line">             &lt;value&gt;yarn&lt;/value&gt;</span><br><span class="line">        &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<p>vi yarn-site.xml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;</span><br><span class="line">             &lt;value&gt;mapreduce_shuffle&lt;/value&gt;</span><br><span class="line">        &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<p>启动YARN：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./sbin/start-yarn.sh      # 启动YARN</span><br><span class="line">./sbin/mr-jobhistory-daemon.sh start historyserver  # 开启历史服务器，才能在Web中查看任务运行情况</span><br></pre></td></tr></table></figure>
+
+<p>停止YARN：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./sbin/stop-yarn.sh</span><br><span class="line">./sbin/mr-jobhistory-daemon.sh stop historyserver</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://www.digitalocean.com/community/tutorials/how-to-install-hadoop-in-stand-alone-mode-on-ubuntu-16-04">https://www.digitalocean.com/community/tutorials/how-to-install-hadoop-in-stand-alone-mode-on-ubuntu-16-04</a><br><a target="_blank" rel="noopener" href="http://www.powerxing.com/install-hadoop/">http://www.powerxing.com/install-hadoop/</a><br><a target="_blank" rel="noopener" href="http://www.powerxing.com/hadoop-build-project-using-eclipse/">http://www.powerxing.com/hadoop-build-project-using-eclipse/</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201710/ZipKin%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8%E9%93%BE%E8%B7%9F%E8%B8%AA%E5%B7%A5%E5%85%B7%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201710/ZipKin%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8%E9%93%BE%E8%B7%9F%E8%B8%AA%E5%B7%A5%E5%85%B7%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Zipkin微服务调用链跟踪工具配置</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Zipkin是一套Twitter开发的开源的APM工具 (Application Performance Management) ，可以用于微服务的调用链监控。</p>
+<p>类似的APM系统还有：PinPoint、Google Dapper、淘宝鹰眼等。</p>
+<p>相比起PinPoint，Zipkin的优势是语言无关性，但是对代码有一定的入侵。</p>
+<p>Zipkin包含4个组件：</p>
+<ul>
+<li>Collector 收集器</li>
+<li>Storage 存储，默认是InMemory</li>
+<li>API 查询接口</li>
+<li>UI WEB界面</li>
+</ul>
+<p>运行示意图：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/zmv23.png"></p>
+<h2 id="官网及GitHub"><a href="#官网及GitHub" class="headerlink" title="官网及GitHub"></a>官网及GitHub</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://zipkin.io/">官网: zipkin.io</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/openzipkin/zipkin">GitHub: openzipkin&#x2F;zipkin</a></li>
+</ul>
+<h2 id="服务端安装及运行"><a href="#服务端安装及运行" class="headerlink" title="服务端安装及运行"></a>服务端安装及运行</h2><p>Zipkin服务端提供了多种运行方式，都很简便。使用源码方式可以有更多的可定制性。</p>
+<h3 id="Docker方式"><a href="#Docker方式" class="headerlink" title="Docker方式"></a>Docker方式</h3><p>Docker方式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 9411:9411 openzipkin/zipkin</span><br></pre></td></tr></table></figure>
+
+<h3 id="JAR包方式"><a href="#JAR包方式" class="headerlink" title="JAR包方式"></a>JAR包方式</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget -O zipkin.jar &#x27;https://search.maven.org/remote_content?g=io.zipkin.java&amp;a=zipkin-server&amp;v=LATEST&amp;c=exec&#x27;</span><br><span class="line">java -jar zipkin.jar</span><br></pre></td></tr></table></figure>
+
+<h3 id="源码方式"><a href="#源码方式" class="headerlink" title="源码方式"></a>源码方式</h3><p>pom.xml:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependencyManagement&gt;</span><br><span class="line">  &lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">      &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">      &lt;artifactId&gt;spring-cloud-dependencies&lt;/artifactId&gt;</span><br><span class="line">      &lt;version&gt;Dalston.SR2&lt;/version&gt;</span><br><span class="line">      &lt;type&gt;pom&lt;/type&gt;</span><br><span class="line">      &lt;scope&gt;import&lt;/scope&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">  &lt;/dependencies&gt;</span><br><span class="line">&lt;/dependencyManagement&gt;</span><br><span class="line"></span><br><span class="line">&lt;dependencies&gt;</span><br><span class="line">  &lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;io.zipkin.java&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;zipkin-autoconfigure-ui&lt;/artifactId&gt;</span><br><span class="line">  &lt;/dependency&gt;</span><br><span class="line">  &lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;io.zipkin.java&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;zipkin-server&lt;/artifactId&gt;</span><br><span class="line">  &lt;/dependency&gt;</span><br><span class="line">&lt;/dependencies&gt;</span><br></pre></td></tr></table></figure>
+
+<p>application.yml:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">server.port: 9411</span><br><span class="line">spring.application.name: zen-zipkin</span><br></pre></td></tr></table></figure>
+
+<h2 id="服务端WEB界面"><a href="#服务端WEB界面" class="headerlink" title="服务端WEB界面"></a>服务端WEB界面</h2><p>服务端启动后，以在浏览器中看一下WEB界面是否正常：<br><a target="_blank" rel="noopener" href="http://localhost:9411/">http://localhost:9411</a></p>
+<h2 id="微服务端配置"><a href="#微服务端配置" class="headerlink" title="微服务端配置"></a>微服务端配置</h2><p>pom.xml:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;spring-cloud-sleuth-zipkin&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<p>application.yml:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">spring:</span><br><span class="line">  zipkin:</span><br><span class="line">    base-url: http://localhost:9411</span><br><span class="line">  sleuth:</span><br><span class="line">    sampler:</span><br><span class="line">      percentage: 1.0</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>其中percentage是采样率，默认0.1</p>
+</blockquote>
+<p>当微服务启动后，就可以在Zipkin的界面中进行调用链的监控了：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/4yzav.jpg"></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201801/gitflow%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201801/gitflow%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">gitflow笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>macOS:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install git-flow-avh</span><br></pre></td></tr></table></figure>
+
+<p>Ubuntu:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install git-flow</span><br></pre></td></tr></table></figure>
+
+<p>Windows:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -q -O - --no-check-certificate https://raw.github.com/petervanderdoes/gitflow-avh/develop/contrib/gitflow-installer.sh install stable | bash</span><br></pre></td></tr></table></figure>
+
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>在一个已有的版本库中执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow init</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>默认有master及develop两个长期分支</p>
+</blockquote>
+<h2 id="分支说明"><a href="#分支说明" class="headerlink" title="分支说明"></a>分支说明</h2><p>主要分支：</p>
+<ul>
+<li>master: 永远处在即将发布(production-ready)状态</li>
+<li>develop: 最新的开发状态</li>
+</ul>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-01-22-11-08-40.png" alt="2018-01-22-11-08-40"></p>
+<p>辅助分支：</p>
+<ul>
+<li>feature: 开发新功能的分支, 基于 develop, 完成后 merge 回 develop</li>
+<li>release: 准备要发布版本的分支, 用来修复 bug. 基于 develop, 完成后 merge 回 develop 和 master</li>
+<li>hotfix: 修复 master 上的问题, 等不及 release 版本就必须马上上线. 基于 master, 完成后 merge 回 master 和 develop</li>
+</ul>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-01-22-11-09-25.png" alt="2018-01-22-11-09-25"></p>
+<h2 id="Feature-新特性"><a href="#Feature-新特性" class="headerlink" title="Feature 新特性"></a>Feature 新特性</h2><h3 id="新特性帮助"><a href="#新特性帮助" class="headerlink" title="新特性帮助"></a>新特性帮助</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature help</span><br></pre></td></tr></table></figure>
+
+<h3 id="增加新特性"><a href="#增加新特性" class="headerlink" title="增加新特性"></a>增加新特性</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature start rss-feed</span><br></pre></td></tr></table></figure>
+
+<h3 id="完成新特性"><a href="#完成新特性" class="headerlink" title="完成新特性"></a>完成新特性</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature finish rss-feed</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="Publish-推送"><a href="#Publish-推送" class="headerlink" title="Publish 推送"></a>Publish 推送</h2><p>此部分为可选。新特性分支可以只存在于本机，不向远程仓库推送</p>
+<h3 id="推送新特性"><a href="#推送新特性" class="headerlink" title="推送新特性"></a>推送新特性</h3><p>可以使用publish命令将一个feature分支推到远程服务器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature publish rss-feed</span><br></pre></td></tr></table></figure>
+<p>或者直接：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin feature/rss-feed</span><br></pre></td></tr></table></figure>
+
+<h3 id="取得一个发布的新特性分支"><a href="#取得一个发布的新特性分支" class="headerlink" title="取得一个发布的新特性分支"></a>取得一个发布的新特性分支</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow feature pull origin rss-feed</span><br></pre></td></tr></table></figure>
+
+<h2 id="Release-发布"><a href="#Release-发布" class="headerlink" title="Release 发布"></a>Release 发布</h2><p>release分支是基于develop分支的</p>
+<h2 id="准备Release"><a href="#准备Release" class="headerlink" title="准备Release"></a>准备Release</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git flow release start 1.1.5</span><br><span class="line">Switched to a new branch &#x27;release/1.1.5&#x27;</span><br></pre></td></tr></table></figure>
+<p>现在，可以在release&#x2F;1.1.5分支，开始最后的准备工作，例如项目里的某些文件需要记录版本号</p>
+<h2 id="完成Release"><a href="#完成Release" class="headerlink" title="完成Release"></a>完成Release</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow release finish 1.1.5</span><br></pre></td></tr></table></figure>
+<p>git-flow自动做了以下事情：</p>
+<ol>
+<li>拉取远程仓库，以确保目前是最新的版本。</li>
+<li>release的内容会被合并到 master和develop两个分支中去，这样不仅产品代码为最新的版本，而且新的功能分支也将基于最新代码。</li>
+<li>为便于识别和做历史参考，release提交会被标记上这个release的名字（在我们的例子里是 1.1.5）</li>
+<li>清理操作，版本分支会被删除，并且回到develop</li>
+</ol>
+<h2 id="Hotfix-紧急修复"><a href="#Hotfix-紧急修复" class="headerlink" title="Hotfix 紧急修复"></a>Hotfix 紧急修复</h2><p>hotfix分支是基于master分支的</p>
+<h3 id="开始Hotfix"><a href="#开始Hotfix" class="headerlink" title="开始Hotfix"></a>开始Hotfix</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix start missing-link</span><br></pre></td></tr></table></figure>
+
+<h3 id="完成Hotfix"><a href="#完成Hotfix" class="headerlink" title="完成Hotfix"></a>完成Hotfix</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow hotfix finish VERSION</span><br></pre></td></tr></table></figure>
+
+<h2 id="命令汇总"><a href="#命令汇总" class="headerlink" title="命令汇总"></a>命令汇总</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-01-22-11-09-49.png" alt="2018-01-22-11-09-49"></p>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://danielkummer.github.io/git-flow-cheatsheet/index.zh_CN.html">https://danielkummer.github.io/git-flow-cheatsheet/index.zh_CN.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.git-tower.com/learn/git/ebook/cn/command-line/advanced-topics/git-flow">https://www.git-tower.com/learn/git/ebook/cn/command-line/advanced-topics/git-flow</a></li>
+<li><a target="_blank" rel="noopener" href="http://stormzhang.com/git/2014/01/29/git-flow/">http://stormzhang.com/git/2014/01/29/git-flow/</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201709/%E4%BD%BF%E7%94%A8Postman+Newman+Jenkins%E5%AE%9E%E7%8E%B0%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201709/%E4%BD%BF%E7%94%A8Postman+Newman+Jenkins%E5%AE%9E%E7%8E%B0%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="post-title-link" itemprop="url">Postman+Newman+Jenkins实现REST自动回归测试</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>本文主要介绍如何使用Postman+Newman+Jenkins，实现微服务自动化的回归测试。  </p>
+<h2 id="所需工具"><a href="#所需工具" class="headerlink" title="所需工具"></a>所需工具</h2><ul>
+<li>Postman：用于编写测试用例，导出.json格式的测试脚本</li>
+<li>Newman：命令行方式执行postman导出的测试脚本</li>
+<li>Jenkins：实现测试的自动化</li>
+</ul>
+<h2 id="Postman的下载"><a href="#Postman的下载" class="headerlink" title="Postman的下载"></a>Postman的下载</h2><p>官网：<br><a target="_blank" rel="noopener" href="https://www.getpostman.com/">https://www.getpostman.com/</a>  </p>
+<h2 id="Newman的安装"><a href="#Newman的安装" class="headerlink" title="Newman的安装"></a>Newman的安装</h2><p>Newman可以运行Postman生成的.json测试用例，生成.html格式的测试报告。  </p>
+<p>可以直接使用npm进行安装：  </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install newman --global;</span><br></pre></td></tr></table></figure>
+
+<p>更多文档，可以参考GitHub：<br><a target="_blank" rel="noopener" href="https://github.com/postmanlabs/newman">https://github.com/postmanlabs/newman</a></p>
+<h2 id="测试过程"><a href="#测试过程" class="headerlink" title="测试过程"></a>测试过程</h2><ol>
+<li>   使用Postman编写微服务接口的测试用例，并导出json文件。</li>
+<li>   Jenkins创建测试项目，使用newman来执行测试脚本，生成测试报告。</li>
+<li>   将测试项目与工程构建项目关联，使之在构建发布到测试环境后触发执行。</li>
+</ol>
+<h2 id="使用Postman编写测试用例"><a href="#使用Postman编写测试用例" class="headerlink" title="使用Postman编写测试用例"></a>使用Postman编写测试用例</h2><ol>
+<li><p>根据swagger服务契约，使用Postman工具，传入测试参数并模拟调用。  </p>
+</li>
+<li><p>调用后，可以点击左侧的文件夹图标，新建一个Collection。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/hvksa.jpg"></p>
+</li>
+<li><p>点击右侧的Save按钮，将本次测试脚本保存到刚才创建的Collection中。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2oixb.jpg"></p>
+</li>
+<li><p>继续进行其它API的调用，并保存至Collection中。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/859qm.jpg"></p>
+</li>
+<li><p>点击Collection上的省略号图标，并选择Export，将测试用例导出保存为.json文件。</p>
+</li>
+<li><p>上传到服务器相应目录下。</p>
+</li>
+</ol>
+<h2 id="配置Jenkins测试项目"><a href="#配置Jenkins测试项目" class="headerlink" title="配置Jenkins测试项目"></a>配置Jenkins测试项目</h2><p>接下来配置Jenkins，用于触发调用newman进行测试。</p>
+<ol>
+<li>创建一个自由风格的Jenkins项目  </li>
+<li>在构建一栏，输入以下脚本，用于触发newman测试<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/ktuvx.jpg"></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">newman run /home/deployer/functest/foobar/foobar.json --reporters cli,html,json,junit --reporter-html-export /home/deployer/functest_report/foobar/foobar_report.html</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>可以在主项目的构建配置中，增加构建后操作，构建完成后自动触发执行这个测试项目<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/791n9.jpg"></li>
+</ol>
+<h2 id="查看测试结果"><a href="#查看测试结果" class="headerlink" title="查看测试结果"></a>查看测试结果</h2><ol>
+<li>可以在Jenkins的日志中直接查看结果</li>
+<li>也可以用Web容器将生成的.html测试报告暴露出来，直接通过浏览器访问</li>
+</ol>
+<h2 id="自动化回归测试的必要性"><a href="#自动化回归测试的必要性" class="headerlink" title="自动化回归测试的必要性"></a>自动化回归测试的必要性</h2><p>Postman、Selenium这样的动化的回归测试真的有必要吗，它能够帮助我们发现多少问题，为了实现它我们要多付出多大的代价？<br>说到底，这是一个有关”性价比”的问题。  </p>
+<p>首先从组织结构上来看，如果项目的规模大到了有专门的测试团队，那么无疑会大大降低测试团队的工作量。<br>但如果是开发人员兼职做测试，那么多花点心思在controller层的集成测试上，可以会用更少的时间，达到差不多的效果。  </p>
+<p>有时间会再写一下关于实践中单元测试、集成测试的一些取舍，以及手工回归测试与swagger参数示例等方面的内容。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -481,7 +1067,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Hadoop%E5%AE%89%E8%A3%85/">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201907/20190731CentOS7%E4%B8%8Bnmtui%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -499,7 +1085,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/201803/Hadoop%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Ubuntu16.04下Hadoop3.0.0安装笔记</a>
+          <a href="/201907/20190731CentOS7%E4%B8%8Bnmtui%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">CentOS7下nmtui网络配置</a>
         </h2>
 
         <div class="post-meta-container">
@@ -523,353 +1109,27 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="安装JDK8"><a href="#安装JDK8" class="headerlink" title="安装JDK8"></a>安装JDK8</h2><p>PPA方式安装OracleJDK</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-add-repository ppa:webupd8team/java</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install oracle-java8-installer</span><br><span class="line">export JAVA_HOME=/usr/lib/jvm/java-8-oracle</span><br></pre></td></tr></table></figure>
+          <h2 id="nmtui文本图型界面"><a href="#nmtui文本图型界面" class="headerlink" title="nmtui文本图型界面"></a>nmtui文本图型界面</h2><p>全称： NetworkManageTextUser Iterface</p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-080110.png"></p>
+<p>推荐做为首选配置方式  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmtui</span><br></pre></td></tr></table></figure>
 
-<p>或安装OpenJDK</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install default-jdk</span><br></pre></td></tr></table></figure>
+<h2 id="nmcli纯文本界面"><a href="#nmcli纯文本界面" class="headerlink" title="nmcli纯文本界面"></a>nmcli纯文本界面</h2><p>全称： NetworkManageCommandLine Interface</p>
+<p>查看网络：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmcli d </span><br></pre></td></tr></table></figure>
 
-<h2 id="创建hadoop用户"><a href="#创建hadoop用户" class="headerlink" title="创建hadoop用户"></a>创建hadoop用户</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo useradd -m hadoop -s /bin/bash</span><br><span class="line">sudo passwd hadoop</span><br><span class="line">sudo adduser hadoop sudo</span><br></pre></td></tr></table></figure>
+<p>常用参数：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">g[eneral]       NetworkManager&#x27;s general status and operations</span><br><span class="line">n[etworking]    overall networking control</span><br><span class="line">r[adio]         NetworkManager radio switches</span><br><span class="line">c[onnection]    NetworkManager&#x27;s connections</span><br><span class="line">d[evice]        devices managed by NetworkManager</span><br><span class="line">a[gent]         NetworkManager secret agent or polkit agent</span><br><span class="line">m[onitor]       monitor NetworkManager changes</span><br></pre></td></tr></table></figure>
 
-<h2 id="安装Open-SSH-Server"><a href="#安装Open-SSH-Server" class="headerlink" title="安装Open SSH Server"></a>安装Open SSH Server</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install openssh-server</span><br></pre></td></tr></table></figure>
+<h2 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/sysconfig/network-scripts/ifcfg-eth0</span><br><span class="line"></span><br><span class="line">DEVICE=enp3s0</span><br><span class="line">ONBOOT=yes</span><br><span class="line">IPADDR=192.168.1.10</span><br><span class="line">NETMASK=255.255.255.0</span><br><span class="line">GATEWAY=192.168.1.1</span><br></pre></td></tr></table></figure>
 
-<p>SSH授权：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.ssh/</span><br><span class="line">ssh-keygen -t rsa</span><br><span class="line">cat ./id_rsa.pub &gt;&gt; ./authorized_keys</span><br></pre></td></tr></table></figure>
+<h2 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h2><p>启停网络</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ifdown enp0s3</span><br><span class="line">ifup enp0s3</span><br></pre></td></tr></table></figure>
 
-<h2 id="下载Hadoop"><a href="#下载Hadoop" class="headerlink" title="下载Hadoop"></a>下载Hadoop</h2><p><a target="_blank" rel="noopener" href="http://hadoop.apache.org/releases.html">http://hadoop.apache.org/releases.html</a></p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-03-22-16-08-21.png" alt="2018-03-22-16-08-21"></p>
-<p>选择3.0稳定版的binary下载，并解压</p>
-<h2 id="安装Hadoop"><a href="#安装Hadoop" class="headerlink" title="安装Hadoop"></a>安装Hadoop</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -xzvf hadoop-3.0.0.tar.gz</span><br><span class="line">sudo mv hadoop-3.0.0 /opt/hadoop</span><br></pre></td></tr></table></figure>
+<p>ip取代ifconfig</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip addr</span><br></pre></td></tr></table></figure>
 
-<h2 id="PATH"><a href="#PATH" class="headerlink" title="PATH"></a>PATH</h2><p>export PATH&#x3D;$PATH:&#x2F;opt&#x2F;hadoop&#x2F;sbin:&#x2F;opt&#x2F;hadoop&#x2F;bin</p>
-<h2 id="设置JDK环境变量"><a href="#设置JDK环境变量" class="headerlink" title="设置JDK环境变量"></a>设置JDK环境变量</h2><p>readlink -f &#x2F;usr&#x2F;bin&#x2F;java | sed “s:bin&#x2F;java::”<br>&#x2F;usr&#x2F;lib&#x2F;jvm&#x2F;java-8-oracle&#x2F;jre&#x2F;</p>
-<p>sudo vi .&#x2F;etc&#x2F;hadoop&#x2F;hadoop-env.sh<br>export JAVA_HOME&#x3D;&#x2F;usr&#x2F;lib&#x2F;jvm&#x2F;java-8-oracle&#x2F;jre&#x2F;</p>
-<h2 id="运行Hadoop"><a href="#运行Hadoop" class="headerlink" title="运行Hadoop"></a>运行Hadoop</h2><p>.&#x2F;bin&#x2F;hadoop</p>
-<p>mkdir ~&#x2F;input<br>cp &#x2F;opt&#x2F;hadoop&#x2F;etc&#x2F;hadoop&#x2F;*.xml ~&#x2F;input</p>
-<p>.&#x2F;bin&#x2F;hadoop jar .&#x2F;share&#x2F;hadoop&#x2F;mapreduce&#x2F;hadoop-mapreduce-examples-3.0.0.jar grep ~&#x2F;input ~&#x2F;grep_example ‘principal[.]*’</p>
-<h2 id="伪分布式配置"><a href="#伪分布式配置" class="headerlink" title="伪分布式配置"></a>伪分布式配置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /opt/hadoop/etc/hadoop/core-site.xml</span><br></pre></td></tr></table></figure>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadoop.tmp.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/opt/hadoop/tmp<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">description</span>&gt;</span>Abase for other temporary directories.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>fs.defaultFS<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>hdfs://localhost:9000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /opt/hadoop/etc/hadoop/hdfs-site.xml</span><br></pre></td></tr></table></figure>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.replication<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.name.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/opt/hadoop/tmp/dfs/name<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.datanode.data.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/opt/hadoop/tmp/dfs/data<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>执行 NameNode 的格式化:<br>.&#x2F;bin&#x2F;hdfs namenode -format</p>
-<p>开启 NameNode 和 DataNode 守护进程:<br>.&#x2F;sbin&#x2F;start-dfs.sh<br>.&#x2F;sbin&#x2F;stop-dfs.sh </p>
-<p>可以执行jps查看进程</p>
-<p>WEB控制台界面：<br><a target="_blank" rel="noopener" href="http://localhost:9870/">http://localhost:9870</a></p>
-<h2 id="运行Hadoop伪分布式实例"><a href="#运行Hadoop伪分布式实例" class="headerlink" title="运行Hadoop伪分布式实例"></a>运行Hadoop伪分布式实例</h2><p>在 HDFS 中创建用户目录：<br>.&#x2F;bin&#x2F;hdfs dfs -mkdir -p &#x2F;user&#x2F;hadoop</p>
-<p>将示例xml文件作为输入文件复制到分布式文件系统中<br>.&#x2F;bin&#x2F;hdfs dfs -mkdir input<br>.&#x2F;bin&#x2F;hdfs dfs -put &#x2F;opt&#x2F;hadoop&#x2F;etc&#x2F;hadoop&#x2F;*.xml input</p>
-<p>查看文件列表：<br>.&#x2F;bin&#x2F;hdfs dfs -ls input</p>
-<p>伪分布式运行 MapReduce 作业：<br>.&#x2F;bin&#x2F;hadoop jar &#x2F;opt&#x2F;hadoop&#x2F;share&#x2F;hadoop&#x2F;mapreduce&#x2F;hadoop-mapreduce-examples-*.jar grep input output ‘dfs[a-z.]+’</p>
-<p>查看运行结果：<br>.&#x2F;bin&#x2F;hdfs dfs -cat output&#x2F;*</p>
-<p>将文件取回本地：<br>.&#x2F;bin&#x2F;hdfs dfs -get output &#x2F;opt&#x2F;hadoop&#x2F;output</p>
-<h2 id="启动YARN"><a href="#启动YARN" class="headerlink" title="启动YARN"></a>启动YARN</h2><p>vi mapred-site.xml</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;mapreduce.framework.name&lt;/name&gt;</span><br><span class="line">             &lt;value&gt;yarn&lt;/value&gt;</span><br><span class="line">        &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<p>vi yarn-site.xml</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;</span><br><span class="line">             &lt;value&gt;mapreduce_shuffle&lt;/value&gt;</span><br><span class="line">        &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
-
-<p>启动YARN：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./sbin/start-yarn.sh      # 启动YARN</span><br><span class="line">./sbin/mr-jobhistory-daemon.sh start historyserver  # 开启历史服务器，才能在Web中查看任务运行情况</span><br></pre></td></tr></table></figure>
-
-<p>停止YARN：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./sbin/stop-yarn.sh</span><br><span class="line">./sbin/mr-jobhistory-daemon.sh stop historyserver</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://www.digitalocean.com/community/tutorials/how-to-install-hadoop-in-stand-alone-mode-on-ubuntu-16-04">https://www.digitalocean.com/community/tutorials/how-to-install-hadoop-in-stand-alone-mode-on-ubuntu-16-04</a><br><a target="_blank" rel="noopener" href="http://www.powerxing.com/install-hadoop/">http://www.powerxing.com/install-hadoop/</a><br><a target="_blank" rel="noopener" href="http://www.powerxing.com/hadoop-build-project-using-eclipse/">http://www.powerxing.com/hadoop-build-project-using-eclipse/</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201704/flask-adminlte-handler/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201704/flask-adminlte-handler/" class="post-title-link" itemprop="url">flask-adminlte-handler</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>继续接着上次的话题，上周整理出来的flask-rest脚手架，用于快速构建Restful API。虽然后端的代码量很少，但前端会变得很重，所以总体开发速度并不算太快，不太适合小型项目。<br>于是又整理了一套flask-adminlte脚手架，目标是用较传统的方式，减少整体的代码量，加快开发速度，以应对一些比较极端的需求。大体估算，开发时间可以做到SpringBoot全家桶的30%左右。  </p>
-<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><p><a target="_blank" rel="noopener" href="http://git.si-tech.com.cn/guolei/flask-adminlte-handler">http://git.si-tech.com.cn/guolei/flask-adminlte-handler</a><br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/flask-adminlte-handler">https://github.com/xiiiblue/flask-rest-sample</a>  </p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>flask-adminlte-handler是一个Python环境下的WEB后台管理系统脚手架，目标是用极少量的代码，快速构建小型WEB应用。请勿在大中型项目中进行尝试。  </p>
-<ol>
-<li>使用较传统的重后端+轻前端的方式，降低总体代码量</li>
-<li>Web框架使用Flask，默认Jinja模版</li>
-<li>ORM框架使用Peewee</li>
-<li>前端套用基于BootStrap的AdminLTE模板</li>
-</ol>
-<h2 id="系统截图"><a href="#系统截图" class="headerlink" title="系统截图"></a>系统截图</h2><ul>
-<li><p>登录页<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/0ot1s.jpg"></p>
-</li>
-<li><p>主页<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/644d6.jpg"></p>
-</li>
-<li><p>编辑界面<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/fojv1.jpg">  </p>
-</li>
-<li><p>查询界面<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/vvelb.jpg"></p>
-</li>
-</ul>
-<h2 id="第三方依赖"><a href="#第三方依赖" class="headerlink" title="第三方依赖"></a>第三方依赖</h2><ul>
-<li>peewee</li>
-<li>pymysql</li>
-<li>flask</li>
-<li>flask-script</li>
-<li>flask-wtf</li>
-<li>flask-login</li>
-</ul>
-<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><h3 id="venv虚拟环境安装配置"><a href="#venv虚拟环境安装配置" class="headerlink" title="venv虚拟环境安装配置"></a>venv虚拟环境安装配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 install virtualenv</span><br><span class="line">virtualenv venv</span><br><span class="line">. venv/bin/activate</span><br></pre></td></tr></table></figure>
-
-<h3 id="第三方依赖安装"><a href="#第三方依赖安装" class="headerlink" title="第三方依赖安装"></a>第三方依赖安装</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip3 install -r requirements.txt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h3 id="系统参数配置"><a href="#系统参数配置" class="headerlink" title="系统参数配置"></a>系统参数配置</h3><ol>
-<li>编辑<code>config.py</code>， 修改SECRET_KEY及MySQL数据库相关参数</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SECRET_KEY = os.environ.get(&#x27;SECRET_KEY&#x27;) or &#x27;your-secret&#x27;</span><br><span class="line">DB_HOST = &#x27;127.0.0.1&#x27;</span><br><span class="line">DB_USER = &#x27;foobar&#x27;</span><br><span class="line">DB_PASSWD = &#x27;foobar&#x27;</span><br><span class="line">DB_DATABASE = &#x27;foobar&#x27;</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>编辑log-app.conf，修改日志路径</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">args=(&#x27;/path/to/log/flask-rest-sample.log&#x27;,&#x27;a&#x27;,&#x27;utf8&#x27;)</span><br></pre></td></tr></table></figure>
-
-<h3 id="数据库初始化"><a href="#数据库初始化" class="headerlink" title="数据库初始化"></a>数据库初始化</h3><ol>
-<li><p>自动建表<br>直接运行<code>python3 models.py</code></p>
-</li>
-<li><p>插入管理员用户（默认admin&#x2F;admin)</p>
-</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO `user` (`id`, `username`, `password`, `fullname`, `email`, `phone`, `status`)</span><br><span class="line">VALUES</span><br><span class="line">	(1, &#x27;admin&#x27;, &#x27;pbkdf2:sha1:1000$Km1vdx3W$9aa07d3b79ab88aae53e45d26d0d4d4e097a6cd3&#x27;, &#x27;管理员&#x27;, &#x27;admin@admin.com&#x27;, &#x27;18612341234&#x27;, 1);</span><br></pre></td></tr></table></figure>
-
-<h3 id="启动应用"><a href="#启动应用" class="headerlink" title="启动应用"></a>启动应用</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nohup ./manage.py runserver 2&gt;&amp;1 &amp;</span><br><span class="line">或</span><br><span class="line">./run_app_dev.py (仅限测试)</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="项目目录结构"><a href="#项目目录结构" class="headerlink" title="项目目录结构"></a>项目目录结构</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/963uh.jpg">  </p>
-<ul>
-<li>&#x2F;app&#x2F;auth  用户认证相关代码</li>
-<li>&#x2F;app&#x2F;main  主要功能点相关代码</li>
-<li>&#x2F;app&#x2F;static  JS、CSS等静态文件</li>
-<li>&#x2F;app&#x2F;template  页面模版</li>
-<li>&#x2F;app&#x2F;models.py  Peewee模型</li>
-<li>&#x2F;app&#x2F;utils.py  工具模块</li>
-<li>&#x2F;conf  系统参数及日志配置</li>
-</ul>
-<h2 id="相关学习文档"><a href="#相关学习文档" class="headerlink" title="相关学习文档"></a>相关学习文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://flask.pocoo.org/">http://flask.pocoo.org</a></li>
-<li><a target="_blank" rel="noopener" href="https://flask-login.readthedocs.io/">https://flask-login.readthedocs.io</a></li>
-<li><a target="_blank" rel="noopener" href="https://flask-script.readthedocs.io/">https://flask-script.readthedocs.io</a></li>
-<li><a target="_blank" rel="noopener" href="https://flask-wtf.readthedocs.io/">https://flask-wtf.readthedocs.io</a></li>
-<li><a target="_blank" rel="noopener" href="http://docs.peewee-orm.com/">http://docs.peewee-orm.com</a></li>
-<li><a target="_blank" rel="noopener" href="https://almsaeedstudio.com/preview">https://almsaeedstudio.com/preview</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/" class="post-title-link" itemprop="url">Python使用cx_Oracle的几个小坑</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>cx_Oracle是Python环境下的一个（好像也是唯一的一个）用于操作Oracle的第三方模块。<br>最近在写某个对帐程序时，不得已要连接一台Oracle库，于是用到了cx_Oracle，总的来说还是比较顺利的，期间遇到几个有意思的小坑写出来分享一下。</p>
-<h2 id="RHEL-6-4下安装cx-Oracle"><a href="#RHEL-6-4下安装cx-Oracle" class="headerlink" title="RHEL 6.4下安装cx_Oracle"></a>RHEL 6.4下安装cx_Oracle</h2><p>RHEL6.4和cx_Oracle比较搭，安装时应该不会遇到什么挫折，使用RPM安装好instantclient后，直接用pip3安装cx_Oracle即可。</p>
-<p>需要注意地方：</p>
-<ol>
-<li>尽量使用RPM方式安装instantclient，安装更方便，而且比zip更好管理。  </li>
-<li>instantclient的版本选择的是11.2.0.4.0，没有选择12。对于Oracle&#x2F;WebLogic这类闭源的东西，还是选择次最新版本的比较稳妥。</li>
-</ol>
-<p>安装步骤：</p>
-<ol>
-<li><p>下载Linux版本的instantclient<br>这里是 <a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/cn/database/features/instant-client/index-097480.html">Oracle官网 instantclient下载页面</a> ，下载以下3个RPM包：<br>oracle-instantclient11.2-basic-11.2.0.4.0-1.x86_64.rpm<br>oracle-instantclient11.2-devel-11.2.0.4.0-1.x86_64.rpm<br>oracle-instantclient11.2-sqlplus-11.2.0.4.0-1.x86_64.rpm  </p>
-</li>
-<li><p>安装instantclient并设置环境变量</p>
-</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum -y install libaio bc flex</span><br><span class="line">rpm -ivh oracle-instantclient11.2-basic-11.2.0.4.0-1.x86_64.rpm</span><br><span class="line">rpm -ivh oracle-instantclient11.2-devel-11.2.0.4.0-1.x86_64.rpm</span><br><span class="line">rpm -ivh oracle-instantclient11.2-sqlplus-11.2.0.4.0-1.x86_64.rpm</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>设置环境变量</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export ORACLE_VERSION=&quot;11.2&quot;&#x27; &gt;&gt; $HOME/.bashrc</span><br><span class="line">echo &#x27;export ORACLE_HOME=&quot;/usr/lib/oracle/$ORACLE_VERSION/client64/&quot;&#x27; &gt;&gt; $HOME/.bashrc</span><br><span class="line">echo &#x27;export PATH=$PATH:&quot;$ORACLE_HOME/bin&quot;&#x27; &gt;&gt; $HOME/.bashrc</span><br><span class="line">echo &#x27;export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:&quot;$ORACLE_HOME/lib&quot;&#x27; &gt;&gt; $HOME/.bashrc</span><br><span class="line">source $HOME/.bashrc</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>使用pip安装cx_Oracle</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
-
-<h2 id="macOS-12下安装cx-Oracle"><a href="#macOS-12下安装cx-Oracle" class="headerlink" title="macOS 12下安装cx_Oracle"></a>macOS 12下安装cx_Oracle</h2><p>macOS下，安装cx_Oracle后的编译过程有可能会报错，一般是因为instantclient安装有误造成的。</p>
-<p>需要注意的地方：</p>
-<ol>
-<li>mac下的instantclient只有zip包一种安装方式，要注意手工建两个软链接。  </li>
-<li>pip安装前，注意导入LD_LIBRARY_PATH与DYLD_LIBRARY_PATH两个环境变量。</li>
-</ol>
-<p>安装过程：</p>
-<ol>
-<li><p>下载Mac版本的instantclient<br>下载以下3个zip包，并<code>unzip</code>解压至同一目录：<br>instantclient-basic-macos.x64-11.2.0.4.0.zip<br>instantclient-sdk-macos.x64-11.2.0.4.0.zip<br>instantclient-sqlplus-macos.x64-11.2.0.4.0.zip</p>
-</li>
-<li><p>建立软链接</p>
-</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /path/to/instant</span><br><span class="line">ln -s libclntsh.dylib.11.2 libclntsh.dylib</span><br><span class="line">ln -s libocci.dylib.11.2 libocci.dylib</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>设置环境变量</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export ORACLE_VERSION=&quot;11.2&quot;</span><br><span class="line">export ORACLE_HOME=&quot;/path/to/instantclient_11_2&quot;</span><br><span class="line">export PATH=$PATH:&quot;$ORACLE_HOME&quot;</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>使用pip安装cx_Oracle，注意提前导入DYLD_LIBRARY_PATH与LD_LIBRARY_PATH</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export DYLD_LIBRARY_PATH=&quot;$ORACLE_HOME&quot;</span><br><span class="line">export LD_LIBRARY_PATH=&quot;$ORACLE_HOME&quot;</span><br><span class="line">pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
-
-<h2 id="中文乱码问题"><a href="#中文乱码问题" class="headerlink" title="中文乱码问题"></a>中文乱码问题</h2><p>Oracle中文乱码问题存在已久，使用cx_Oracle时也不例外，解决方法还是设置NLS_LANG环境变量。<br>有两种方式，一是在系统中设置永久环境变量，二是直接在代码中使用<code>os.environ</code>设置环境变量，这里推荐后者。  </p>
-<ol>
-<li>方法一：在Shell中设置环境变量</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export NLS_LANG=&quot;SIMPLIFIED CHINESE_CHINA.UTF8&quot;</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>方法二：直接在代码中加入：</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import os</span><br><span class="line">os.environ[&#x27;NLS_LANG&#x27;] = &#x27;SIMPLIFIED CHINESE_CHINA.UTF8&#x27;</span><br></pre></td></tr></table></figure>
-
-
-<h3 id="PyCharm下不识别cx-Oracle问题"><a href="#PyCharm下不识别cx-Oracle问题" class="headerlink" title="PyCharm下不识别cx_Oracle问题"></a>PyCharm下不识别cx_Oracle问题</h3><p>安装安成后，在python的console中已经可以<code>import cx_Oracle</code>了，但在PyCharm中却提示找不到cx_Oracle。这是一个比较大的坑，可以详细讲一下处理过程。  </p>
-<p>首先初步定位到原因，是由于PyCharm中没有定义LD_LIBRARY_PATH与DYLD_LIBRARY_PATH两个环境变量造成的。<br>PyCharm会自动读取系统中的环境变量设置并导入，但唯独这两个没有导进来。不深究原因，先尝试手工在PyCharm中配置这两个环境变量，总共有两处可以配置：</p>
-<p>第一处：<br><code>CMD+,</code>打开Preference，找到 Build,Execution,Deployment -&gt; Console -&gt; Python Console -&gt;Enviroment Variables<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/r61vs.jpg"><br>此处的配置会修复PyCharm中的Console。</p>
-<p>第二处：<br>右上角 Run -&gt; Edit Configurations，添加两条环境变量<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/09u0q.jpg"><br>此处的配置会修复PyCharm中<code>Ctrl+Shift+R</code>运行代码时的报错。</p>
-<p>在以上两处手工添加环境变量：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DYLD_LIBRARY_PATH=/path/to/instantclient</span><br><span class="line">LD_LIBRARY_PATH/path/to/instantclient</span><br></pre></td></tr></table></figure>
-
-<p>两处的环境变量配置完成后，虽然console中可以正常使用cx_Oracle了，代码也可以正常运行了，但编辑界面中的inspection还是有问题的，提示有Error，并且不能使用自动完成功能。</p>
-<p>于是回到之前的问题，为什么明明已经定义了，但PyCharm却没有找到LD_LIBRARY_PATH与DYLD_LIBRARY_PATH？<br>同时偶然发现，在执行<code>env</code>命令查看已定义的环境变量时，也是找不到LD_LIBRARY_PATH与DYLD_LIBRARY_PATH的。<br>这貌似已经不是PyCharm自身的问题了，需要从macOS系统来着手了。  </p>
-<p>于是在stackoverflow上找到了这么一段话：  </p>
-<blockquote>
-<p>El Capitan added system integrity protection (SIP), and one side effect of that is that exporting DYLD_LIBRARY_PATH doesn’t work. That could affect running SQL*Plus from a shell script, for example. There are workarounds for the 11g instant client. The installation notes at the bottom of the download page have changed since I last did this, and it now says to hard link the library files to the user’s ~&#x2F;lib directory to avoid that issue. Fortunately it looks like you don’t need to worry about that with the 12c client - they’ve fixed the way it’s built.</p>
-</blockquote>
-<p>看来根本原因是OSX 10.11之后加入的这个SIP引发的了。  </p>
-<p>首先想到的最简单的方法，将所有的<code>.dylib</code>和<code>.h</code>都拷贝到系统默认的目录就可以了。<br>但很杯具，<code>/usr/lib</code>和<code>/user/include</code>这两个目录也被SIP保护了。因为不想强制关闭SIP，继续再想别的办法。<br>接着发现<code>/usr/local/lib</code>和<code>/user/local/include</code>目录还是可以操作的，于是拷到这两个目录：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /path/to/instantclient</span><br><span class="line">cp *.dylib /usr/local/lib</span><br><span class="line">cp ./sdk/include/*.h /usr/local/include</span><br></pre></td></tr></table></figure>
-
-<p>再将cx_Oracle卸载后重新编译安装：  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 uninstall cx_Oracle</span><br><span class="line">sudo pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
-
-<p>重启PyCharm后，问题解决。</p>
-<h2 id="cx-Oracle的简单使用"><a href="#cx-Oracle的简单使用" class="headerlink" title="cx_Oracle的简单使用"></a>cx_Oracle的简单使用</h2><p>cx_Oracle的使用上没有什么问题，一切按套路来写就可以了。贴一个简单的示例：  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">import cx_Oracle</span><br><span class="line">conn = cx_Oracle.connect(&#x27;username&#x27;, &#x27;password&#x27;,&#x27;host:port/sid&#x27;)</span><br><span class="line">cursor = conn.cursor()</span><br><span class="line">cursor.execute(&#x27;select column from table&#x27;)</span><br><span class="line">result = cursor.fetchall()</span><br><span class="line">for row in result:</span><br><span class="line">    print(row)</span><br><span class="line">cursor.close()</span><br><span class="line">conn.close()</span><br></pre></td></tr></table></figure>
-
-<p>更加详细的内容请参考官方文档：<br><a target="_blank" rel="noopener" href="https://cx-oracle.readthedocs.io/en/latest/">https://cx-oracle.readthedocs.io/en/latest/</a><br><a target="_blank" rel="noopener" href="https://oracle.github.io/python-cx_Oracle/">https://oracle.github.io/python-cx_Oracle&#x2F;</a>  </p>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://gist.github.com/thom-nic/6011715">https://gist.github.com/thom-nic/6011715</a><br><a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/37711482/how-to-install-oracle-instant-client-on-a-mac">http://stackoverflow.com/questions/37711482/how-to-install-oracle-instant-client-on-a-mac</a>  </p>
+<p>ip与ifconfig的对应关系:<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-081404.jpg"></p>
 
       
     </div>
@@ -951,246 +1211,6 @@
 <h2 id="添加Dashboard模板"><a href="#添加Dashboard模板" class="headerlink" title="添加Dashboard模板"></a>添加Dashboard模板</h2><p>Dashboard 928:<br><a target="_blank" rel="noopener" href="https://grafana.com/dashboards/928">https://grafana.com/dashboards/928</a></p>
 <p>左上加号-&gt;Import<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071448.png"></p>
 <p>Grafana.com Dashboard处，输入928编码<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071538.png"></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91RDS&DRDS%E5%88%9D%E6%8E%A2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91RDS&DRDS%E5%88%9D%E6%8E%A2/" class="post-title-link" itemprop="url">阿里云RDS&DRDS初探</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><h3 id="RDS"><a href="#RDS" class="headerlink" title="RDS"></a>RDS</h3><blockquote>
-<p>阿里云关系型数据库（Relational Database Service，简称 RDS）是一种稳定可靠、可弹性伸缩的在线数据库服务。基于阿里云分布式文件系统和高性能存储，RDS 支持 MySQL、SQL Server、PostgreSQL 和 PPAS（Postgre Plus Advanced Server，一种高度兼容 Oracle 的数据库）引擎，并且提供了容灾、备份、恢复、监控、迁移等方面的全套解决方案，彻底解决数据库运维的烦恼。</p>
-</blockquote>
-<p><strong>RDS for MySQL</strong> 可以认为是云上的MySQL。目前可选的版本有5.5&#x2F;5.6，部分区域可选择5.7。  </p>
-<h3 id="DRDS"><a href="#DRDS" class="headerlink" title="DRDS"></a>DRDS</h3><blockquote>
-<p>分布式关系型数据库服务（Distributed Relational Database Service，简称 DRDS）是阿里巴巴致力于解决单机数据库服务瓶颈问题而自主研发推出的分布式数据库产品。DRDS 高度兼容 MySQL 协议和语法，支持自动化水平拆分、在线平滑扩缩容、弹性扩展、透明读写分离，具备数据库全生命周期运维管控能力。DRDS 前身为淘宝 TDDL，是近千核心应用首选组件。</p>
-</blockquote>
-<p><strong>DRDS</strong> 可以认为是云上的TDDL中间件。DRDS必须依赖RDS。  </p>
-<h2 id="相关文档"><a href="#相关文档" class="headerlink" title="相关文档"></a>相关文档</h2><h3 id="RDS首页"><a href="#RDS首页" class="headerlink" title="RDS首页"></a>RDS首页</h3><p><a target="_blank" rel="noopener" href="https://www.aliyun.com/product/rds/mysql">https://www.aliyun.com/product/rds/mysql</a></p>
-<h3 id="RDS控制台"><a href="#RDS控制台" class="headerlink" title="RDS控制台"></a>RDS控制台</h3><p><a target="_blank" rel="noopener" href="https://rdsnew.console.aliyun.com/">https://rdsnew.console.aliyun.com</a></p>
-<h3 id="RDS文档"><a href="#RDS文档" class="headerlink" title="RDS文档"></a>RDS文档</h3><p><a target="_blank" rel="noopener" href="https://help.aliyun.com/product/26090.html">https://help.aliyun.com/product/26090.html</a></p>
-<h3 id="DRDS首页"><a href="#DRDS首页" class="headerlink" title="DRDS首页"></a>DRDS首页</h3><p><a target="_blank" rel="noopener" href="https://www.aliyun.com/product/drds">https://www.aliyun.com/product/drds</a></p>
-<h3 id="DRDS控制台"><a href="#DRDS控制台" class="headerlink" title="DRDS控制台"></a>DRDS控制台</h3><p><a target="_blank" rel="noopener" href="https://drds.console.aliyun.com/prectrl/home/index">https://drds.console.aliyun.com/prectrl/home/index</a></p>
-<blockquote>
-<p>DRDS控制台不在左侧快捷菜单中，可以直接通过链接进入</p>
-</blockquote>
-<h3 id="DRDS文档"><a href="#DRDS文档" class="headerlink" title="DRDS文档"></a>DRDS文档</h3><p><a target="_blank" rel="noopener" href="https://help.aliyun.com/product/29657.html">https://help.aliyun.com/product/29657.html</a></p>
-<h2 id="RDS初探"><a href="#RDS初探" class="headerlink" title="RDS初探"></a>RDS初探</h2><ol>
-<li><p>进入控制台，点击右侧的”创建实例”<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/98xvs.jpg">  </p>
-<blockquote>
-<p>创建RDS实例需要几分钟的时间</p>
-</blockquote>
-</li>
-<li><p>按量付费，最低配置的RDS实例，目前为0.324元&#x2F;小时<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/etmui.jpg"></p>
-<blockquote>
-<p>这里选择5.6版本，猜测在工具的支持上BUG会少一些    </p>
-</blockquote>
-</li>
-<li><p>在实例列表中可以看到已创建的实例<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/e34py.jpg"><br>点击进入详情页可以进行实例状态查看以及管理<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/d3t0z.jpg">  </p>
-</li>
-<li><p>创建数据库、创建帐号的操作比较简单，不再赘述。  </p>
-</li>
-<li><p>添加IP白名单<br>  首先，在数据安全性中，将default分组中的127.0.0.1临时改为0.0.0.0&#x2F;0，允许所有地址访问<br>  <img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/seljp.jpg"><br>  登录数据库：<br>  mysql -hrm-xxxxxxxxxxx.mysql.rds.aliyuncs.com -P3306 -utestuser -p<br>  查询当前IP：<br>  show processlist;<br>  在数据安全性中，尽快将default分组中的IP由0.0.0.0&#x2F;0改回当前的真实的IP。  </p>
-</li>
-<li><p>登录数据库<br>接下来可以用命令行或第三方工具进行登录。RDS不提供root用户。  </p>
-</li>
-<li><p>其它功能<br>另外可以添加只读实例、灾备实例，按需购买即可，猜测原理应该是基于主从复制的。<br>另外可以在WEB界面中进行数据迁移、导入等操作。<br>WEB控制台中提供了比较完善的日志查询、慢SQL分析、监控与告警功能点，有时间可以慢慢探索。</p>
-</li>
-</ol>
-<h2 id="DRDS初探"><a href="#DRDS初探" class="headerlink" title="DRDS初探"></a>DRDS初探</h2><ol>
-<li><p>进入控制台，点击右侧的”创建实例”。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/dnf0x.jpg">  </p>
-</li>
-<li><p>按量付费，共享实例的DRDS，目前价格为0.2元&#x2F;小时。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/murxc.jpg">  </p>
-<blockquote>
-<p>按量后付费的需要提前向帐户中充值  </p>
-</blockquote>
-</li>
-<li><p>购买后创建过程非常快，马上就可以在概览中看到。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2anc1.jpg">  </p>
-</li>
-<li><p>进入”详情”页面后，目前DRDS下还没有数据库，可以点击下方链接进行创建。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/pk7r3.jpg">  </p>
-<blockquote>
-<p>请注意： 此步骤依赖于RDS，需要先进行RDS的购买。<br>RDS购买时，请注意需要在同一个区域中，尽量不要跨区。  </p>
-</blockquote>
-</li>
-<li><p>如果已经购买过RDS，并创建了一个实例，就在左侧的实例清单中就可以选择到了。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/3yyc2.jpg">  </p>
-</li>
-<li><p>填写基本信息，创建类型这里选择”拆分”。设置好数据库名及密码。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/a083z.jpg">  </p>
-<blockquote>
-<p>拆分：即分库分表，将数据按照拆分规则分拆到多个库表中，由 DRDS 代理 SQL 执行。拆分涉及到数据导入导出、SQL 功能&#x2F;性能测试和改造，对应用功能和性能会有一定的影响。  </p>
-<p>非拆分：将已有的 RDS 数据库交由 DRDS 进行代理访问，实现读写分离的功能。无需进行数据导入，无需修改程序代码，修改数据库连接串和用户名密码即可。  </p>
-</blockquote>
-</li>
-<li><p>系统会自动在RDS实例上创建8个分库，直接点”下一步”创建成功。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/3aiuf.jpg">  </p>
-<blockquote>
-<p>创建数据库需要几分钟的时间  </p>
-</blockquote>
-</li>
-<li><p>创建完成后，可以在DRDS数库列表中看到<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/gfi7s.jpg"><br>在RDS控制台中也可以看到自动创建的8+1个库，绑定帐号名随机生成，密码与DRDS密码是不同的，估计也是随机生成，所以无法直接登录查看RDS库，只能在DRDS中统一管理。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/e2o0b.jpg"></p>
-</li>
-<li><p>点击”管理”，可以查看详情页面<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/b0klv.jpg"></p>
-</li>
-<li><p>WEB界面登录<br>详情页面，点击上方的”登录数据库”按钮，有一个WEB图形化控制台<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/3wmvn.jpg"><br>但点击登录后，会报错：Access denied for user ‘ xx‘@’xx.xx.xx.xx’<br>原因未知，有可能是IP限制。官方文档中也未给出示例。  </p>
-</li>
-<li><p>命令行登录<br>可以使用命令行登录<br><code>mysql -hdrdsxxxxxxxxpublic.drds.aliyuncs.com -P3306 -uyourname -p</code><br>版本显示为 5.6.29-TDDL-5.1.27-1217986  </p>
-</li>
-<li><p>第三方客户端登录<br>可以使用第三方客户端登录，如Sequel Pro，也可以正常登录。<br>（之前用过的的Cobar&#x2F;MyCat都是比较挑客户端的）<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/0n8ti.jpg">  </p>
-</li>
-<li><p>在DRDS执行一个简单的建表语句测试</p>
-</li>
-</ol>
-<p>  建一个普通表：<br>  <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> normal_table(</span><br><span class="line">id <span class="type">int</span>,</span><br><span class="line">name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line"><span class="keyword">primary key</span>(id)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8;</span><br></pre></td></tr></table></figure></p>
-<p>  建一个分库表：<br>  <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE TABLE</span> shard_table(</span><br><span class="line">id <span class="type">int</span>,</span><br><span class="line">name <span class="type">varchar</span>(<span class="number">30</span>),</span><br><span class="line"><span class="keyword">primary key</span>(id)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8 dbpartition <span class="keyword">by</span> hash(id) tbpartition <span class="keyword">by</span> hash(id) tbpartitions <span class="number">3</span>;</span><br></pre></td></tr></table></figure></p>
-<p>  在WEB控制台中可以查看表的基本信息：<br>  <img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/rbjed.jpg"></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201907/20190731CentOS7%E4%B8%8Bnmtui%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201907/20190731CentOS7%E4%B8%8Bnmtui%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">CentOS7下nmtui网络配置</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="nmtui文本图型界面"><a href="#nmtui文本图型界面" class="headerlink" title="nmtui文本图型界面"></a>nmtui文本图型界面</h2><p>全称： NetworkManageTextUser Iterface</p>
-<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-080110.png"></p>
-<p>推荐做为首选配置方式  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmtui</span><br></pre></td></tr></table></figure>
-
-<h2 id="nmcli纯文本界面"><a href="#nmcli纯文本界面" class="headerlink" title="nmcli纯文本界面"></a>nmcli纯文本界面</h2><p>全称： NetworkManageCommandLine Interface</p>
-<p>查看网络：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmcli d </span><br></pre></td></tr></table></figure>
-
-<p>常用参数：  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">g[eneral]       NetworkManager&#x27;s general status and operations</span><br><span class="line">n[etworking]    overall networking control</span><br><span class="line">r[adio]         NetworkManager radio switches</span><br><span class="line">c[onnection]    NetworkManager&#x27;s connections</span><br><span class="line">d[evice]        devices managed by NetworkManager</span><br><span class="line">a[gent]         NetworkManager secret agent or polkit agent</span><br><span class="line">m[onitor]       monitor NetworkManager changes</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/sysconfig/network-scripts/ifcfg-eth0</span><br><span class="line"></span><br><span class="line">DEVICE=enp3s0</span><br><span class="line">ONBOOT=yes</span><br><span class="line">IPADDR=192.168.1.10</span><br><span class="line">NETMASK=255.255.255.0</span><br><span class="line">GATEWAY=192.168.1.1</span><br></pre></td></tr></table></figure>
-
-<h2 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h2><p>启停网络</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ifdown enp0s3</span><br><span class="line">ifup enp0s3</span><br></pre></td></tr></table></figure>
-
-<p>ip取代ifconfig</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip addr</span><br></pre></td></tr></table></figure>
-
-<p>ip与ifconfig的对应关系:<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-081404.jpg"></p>
 
       
     </div>
@@ -1310,7 +1330,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202002/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Swagger%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201911/%E5%8D%8E%E4%B8%BAAtlas200DK%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -1328,7 +1348,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/202002/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Swagger%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/" class="post-title-link" itemprop="url">研发规约-Swagger服务契约</a>
+          <a href="/201911/%E5%8D%8E%E4%B8%BAAtlas200DK%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">华为Atlas200DK学习笔记</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1352,126 +1372,199 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="整合springfox"><a href="#整合springfox" class="headerlink" title="整合springfox"></a>整合springfox</h2><h3 id="修改父pom"><a href="#修改父pom" class="headerlink" title="修改父pom"></a>修改父pom</h3><p>添加springfox的依赖:  </p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- swagger --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.springfox<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springfox-swagger2<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.9.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.springfox<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springfox-swagger-ui<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.9.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="增加spring配置"><a href="#增加spring配置" class="headerlink" title="增加spring配置"></a>增加spring配置</h3><p>新增配置类<code>SwaggerConfiguration.java</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableSwagger2</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SwaggerConfiguration</span> &#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">Docket</span> <span class="title function_">getDocket</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Docket</span>(DocumentationType.SWAGGER_2)</span><br><span class="line">                .apiInfo(<span class="keyword">new</span> <span class="title class_">ApiInfoBuilder</span>()</span><br><span class="line">                        .title(<span class="string">&quot;swagger-demo&quot;</span>)</span><br><span class="line">                        .description(<span class="string">&quot;demo&quot;</span>)</span><br><span class="line">                        .version(<span class="string">&quot;1.0.0&quot;</span>)</span><br><span class="line">                        .build())</span><br><span class="line">                .select()</span><br><span class="line">                .apis(RequestHandlerSelectors.any())</span><br><span class="line">                .paths(PathSelectors.regex(<span class="string">&quot;/.*&quot;</span>))</span><br><span class="line">                .build();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="相关路径"><a href="#相关路径" class="headerlink" title="相关路径"></a>相关路径</h3><ul>
-<li><a target="_blank" rel="noopener" href="http://localhost:8090/zorrodemo/swagger-ui.html">swagger-ui</a></li>
-<li><a target="_blank" rel="noopener" href="http://localhost:8090/zorrodemo/v2/api-docs">api-docs</a></li>
+          <h2 id="相关资源"><a href="#相关资源" class="headerlink" title="相关资源"></a>相关资源</h2><h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://ascend.huawei.com/home">昇腾开发者社区</a></li>
+<li><a target="_blank" rel="noopener" href="https://ascend.huawei.com/Institute">昇腾学院</a></li>
+<li><a target="_blank" rel="noopener" href="https://ascend.huawei.com/doc">文档中心</a></li>
 </ul>
-<h2 id="编码示例"><a href="#编码示例" class="headerlink" title="编码示例"></a>编码示例</h2><h3 id="Domain层"><a href="#Domain层" class="headerlink" title="Domain层"></a>Domain层</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ApiModel(&quot;附件信息&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Attachment</span> &#123;</span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件ID&quot;, example = &quot;1&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">String</span> <span class="variable">id</span> <span class="operator">=</span> PublicUtils.uuid();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件名称&quot;, example = &quot;1.docx&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件类型&quot;, example = &quot;text/plain&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String genre;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件路径&quot;, example = &quot;/tmp/1.docx&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String path;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件大小&quot;, example = &quot;100&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">double</span> size;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="Controller层"><a href="#Controller层" class="headerlink" title="Controller层"></a>Controller层</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Api(&quot;附件管理&quot;)</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/attachment&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AttachmentController</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AttachmentService service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiOperation(&quot;保存附件&quot;)</span></span><br><span class="line">    <span class="meta">@PostMapping</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">RestResponse</span> <span class="title function_">save</span><span class="params">(<span class="meta">@ApiParam(&quot;附件信息&quot;)</span> <span class="meta">@RequestBody</span> Attachment attachment)</span> &#123;</span><br><span class="line">        service.save(attachment);</span><br><span class="line">        <span class="keyword">return</span> RestResponse.result(attachment);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiOperation(&quot;删除附件&quot;)</span></span><br><span class="line">    <span class="meta">@DeleteMapping(&quot;/&#123;id&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">RestResponse</span> <span class="title function_">delete</span><span class="params">(<span class="meta">@ApiParam(value = &quot;附件ID&quot;, example = &quot;1&quot;)</span> <span class="meta">@PathVariable</span> String id)</span> &#123;</span><br><span class="line">        service.delete(id);</span><br><span class="line">        <span class="keyword">return</span> RestResponse.result(id);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiOperation(&quot;查询附件&quot;)</span></span><br><span class="line">    <span class="meta">@GetMapping</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">RestResponse</span> <span class="title function_">query</span><span class="params">(<span class="meta">@ApiParam(value = &quot;附件名称&quot;, example = &quot;1.docx&quot;)</span> <span class="meta">@RequestParam(required = false)</span> String name,</span></span><br><span class="line"><span class="params">                              <span class="meta">@ApiParam(value = &quot;页数&quot;, example = &quot;1&quot;)</span> <span class="meta">@RequestParam(required = false, defaultValue = &quot;0&quot;)</span> <span class="type">int</span> pageNum,</span></span><br><span class="line"><span class="params">                              <span class="meta">@ApiParam(value = &quot;每页条数&quot;, example = &quot;10&quot;)</span> <span class="meta">@RequestParam(required = false, defaultValue = &quot;10&quot;)</span> <span class="type">int</span> pageSize)</span> &#123;</span><br><span class="line">        <span class="type">PageInfo</span>&lt;Attachment&gt; <span class="variable">page</span> <span class="operator">=</span> service.query(name, pageNum, pageSize);</span><br><span class="line">        <span class="keyword">return</span> RestResponse.result(page);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ol>
-<li>常用注解有<code>@Api</code>, <code>@ApiOperation</code>, <code>@ApiParam</code>, <code>@ApiModelProperty</code></li>
-<li><code>@Produces</code>, <code>@ApiResponses</code>受制于框架暂不使用，接口风格尽量向rest靠拢</li>
-<li>尽量在注解中添加example属性，以方便后期在swagger-ui中做手工接口测试</li>
-<li>注解在一定程度上可以替代<code>/**/</code>注释，具体看公司要求</li>
+<h3 id="PDF下载"><a href="#PDF下载" class="headerlink" title="PDF下载"></a>PDF下载</h3><p><a target="_blank" rel="noopener" href="https://support.huawei.com/enterprise/zh/ai-computing-platform/atlas-200-pid-23464086?category=installation-upgrade">软件部署指南PDF下载</a></p>
+<ul>
+<li>了解产品&#x2F;Atlas 200 用户指南.pdf</li>
+<li>了解产品&#x2F;华为服务器 安全信息.pdf</li>
+<li>安装升级&#x2F;Atlas 200 DDK安装指南(CentOSX86).pdf</li>
+<li>安装升级&#x2F;Atlas 200 DDK安装指南(UbuntuX86).pdf</li>
+<li>安装升级&#x2F;Atlas 200 源码编译安装指南.pdf</li>
+<li>安装升级&#x2F;Atlas 200 软件开发指南.pdf</li>
+<li>参考指南&#x2F;Atlas 200 IDE-daemon-client命令参考.pdf</li>
+<li>二次开发&#x2F;Atlas 200 DVPP API参考.pdf</li>
+<li>二次开发&#x2F;Atlas 200 GE API参考.pdf</li>
+<li>二次开发&#x2F;Atlas 200 Matrix API参考.pdf</li>
+<li>二次开发&#x2F;Atlas 200 TE API参考.pdf</li>
+<li>二次开发&#x2F;Atlas 200 TE自定义算子开发指导 (命令行方式).pdf</li>
+<li>二次开发&#x2F;Atlas 200 应用软件开发指导书.pdf</li>
+<li>二次开发&#x2F;Atlas 200 模型转换指导.pdf</li>
+<li>二次开发&#x2F;Atlas 200 硬件开发指南.zip</li>
+<li>二次开发&#x2F;Atlas 200 算子清单.pdf</li>
+<li>二次开发&#x2F;Atlas 200 高性能应用编程用户手册.pdf</li>
+</ul>
+<h3 id="文章收集"><a href="#文章收集" class="headerlink" title="文章收集"></a>文章收集</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://www.twoeggz.com/news/11598502.html">详解华为昇腾310 AI芯片</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.vmall.com/product/10086085080100.html?78118">Atlas200DK购买链接</a></li>
+<li><a target="_blank" rel="noopener" href="https://ascend.huawei.com/doc/softIntroduction">集成开发环境Mind Studio介绍</a></li>
+</ul>
+<h2 id="初步了解"><a href="#初步了解" class="headerlink" title="初步了解"></a>初步了解</h2><h3 id="Atlas-200-DK"><a href="#Atlas-200-DK" class="headerlink" title="Atlas 200 DK"></a>Atlas 200 DK</h3><p>华为Atlas 200 DK AI开发者套件是以昇腾310芯片为核心的一个开发者板形态产品，帮助AI应用的开发者快速熟悉开发环境。   </p>
+<p>其主要功能是将昇腾310芯片的核心功能通过该板上的外围接口开放出来，方便用户快速简捷的接入并使用昇腾310芯片强大的处理能力。    </p>
+<p>Atlas 200 DK配备一个核心部件Atlas 200 AI加速模块，通过高速连接器将昇腾310芯片的主要业务接口通过底板扩展出来。  </p>
+<p>得益于昇腾芯片的全栈全场景能力，基于Atlas 200 DK AI开发者套件开发的程序只需一次开发，即可实现端、边、云全场景部署。  </p>
+<p>可以运用于平安城市、无人机、机器人、视频服务器、闸机等众多领域的开发。  </p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/0bf3e54694f5dc0b03df3405f2957014.png" alt="2019-10-28-15-01-35"></p>
+<h3 id="昇腾310-AI芯片"><a href="#昇腾310-AI芯片" class="headerlink" title="昇腾310 AI芯片"></a>昇腾310 AI芯片</h3><p>华为在全联接大会2018上，首次宣布了华为的AI战略以及全栈解决方案。与此同时，华为发布了自研云端AI芯片“昇腾（Ascend ）”系列，基于达芬奇架构，首批推出7nm的昇腾910以及12nm的昇腾310。  </p>
+<p>昇腾310芯片的最大功耗仅为8W，主打极致高效计算低功耗AI芯片。半精度（FP16）运算能力8TFLOPS，整数精度（INT8）16TOPS，支持16通道全高清视频解码（H.264&#x2F;265）。</p>
+<h3 id="Mind-Studio"><a href="#Mind-Studio" class="headerlink" title="Mind Studio"></a>Mind Studio</h3><p>Mind Studio是一套基于华为昇腾AI处理器开发的AI全栈开发平台，提供了自定义算子的开发，网络层的网络移植、优化和分析等功能，另外在业务引擎层提供了一套可视化的AI引擎拖拽式编程服务，内置了丰富的高性能算子库，极大的降低了AI应用程序的开发门槛。</p>
+<p>Mind Studio是基于Eclipse CHE架构的集成开发环境。<br>其中：<br>DDK（Device Development Kit），为开发者提供了基于Ascend芯片的算法开发工具包，包括Host侧及Device侧开发编译时所依赖的库，开发机（UI Host）使用的工具及依赖库，以及一些公共头文件、第三方依赖库、DDK样例等</p>
+<p>其中：<br>Host指与Device相连接的X86服务器、ARM服务器或者WindowsPC，会利用Device提供的NN（Neural-Network）计算能力完成业务。</p>
+<p>Device指安装了Ascend 310处理器的硬件设备，利用PCIe接口与Host侧连接，为Host提供NN计算能力。</p>
+<p>对于Atlas 200 DK，Ascend 310处理器所在硬件设备与与之相连接的ARM服务器合设，统称为Host。</p>
+<p>开发机（UI Host）：指Mind Studio所在服务器。</p>
+<p>Mind Sutdio的IDE Plugins集成了层的各个工具模块（如模型管理工具（OMG&#x2F;OME）、调试器、性能分析工具、日志工具、性能调优工具等），为用户提供简洁、友好的图形化编码、编译、调试、性能分析平台</p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/9c3fa3636e44c56db454e8609d6dbde3.png" alt="2019-10-28-14-57-13"></p>
+<h2 id="环境搭建准备"><a href="#环境搭建准备" class="headerlink" title="环境搭建准备"></a>环境搭建准备</h2><h3 id="教程学习"><a href="#教程学习" class="headerlink" title="教程学习"></a>教程学习</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://ascend.huawei.com/Course/1/0">视频教程-全流程</a></li>
+<li><a target="_blank" rel="noopener" href="https://ascend.huawei.com/doc/Atlas200DK/1.3.0.0/zh/zh-cn_topic_0195268776.html">文本教程-制作SD卡-读卡器场景</a></li>
+</ul>
+<h3 id="整体架构"><a href="#整体架构" class="headerlink" title="整体架构"></a>整体架构</h3><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/d0345bfc058aa9951740fd5ef6f30305.png" alt="2019-10-30-09-09-59"></p>
+<h3 id="安装介质及工具下载"><a href="#安装介质及工具下载" class="headerlink" title="安装介质及工具下载"></a>安装介质及工具下载</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://ascend.huawei.com/resources">MindStudio &amp; DDK &amp; Runtime下载</a></li>
+<li><a target="_blank" rel="noopener" href="https://gitee.com/HuaweiAscend/tools">制卡脚本下载</a></li>
+<li><a target="_blank" rel="noopener" href="http://old-releases.ubuntu.com/releases/16.04.3/">Ubuntu16.04.3下载</a><blockquote>
+<p>注意，下载:   </p>
+<ol>
+<li>ubuntu-16.04.3-desktop-amd.iso  </li>
+<li>ubuntu-16.04.3-server-arm64.iso</li>
 </ol>
-<h2 id="swagge-ui"><a href="#swagge-ui" class="headerlink" title="swagge-ui"></a>swagge-ui</h2><h3 id="查看API信息"><a href="#查看API信息" class="headerlink" title="查看API信息"></a>查看API信息</h3><p>浏览器访问<a target="_blank" rel="noopener" href="http://localhost:8090/zorrodemo/swagger-ui.html%EF%BC%8C%E6%89%93%E5%BC%80swagger-ui%E7%9A%84%E7%95%8C%E9%9D%A2%EF%BC%8C%E5%8F%AF%E6%9F%A5%E7%9C%8B%E6%89%80%E6%9C%89API%E7%9A%84%E4%BF%A1%E6%81%AF">http://localhost:8090/zorrodemo/swagger-ui.html，打开swagger-ui的界面，可查看所有API的信息</a><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/ac4f0288747f4186a90270be5149b8ae.png" alt="2020-02-07-15-11-35"></p>
-<h3 id="API测试验证"><a href="#API测试验证" class="headerlink" title="API测试验证"></a>API测试验证</h3><p>点击<code>Try it out</code>按钮，可对单个接口手工进行测试<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/1e67b38f28ab18e88faea93ed475733f.png" alt="2020-02-07-15-14-22"></p>
-<h2 id="文档生成"><a href="#文档生成" class="headerlink" title="文档生成"></a>文档生成</h2><ol>
-<li>通过swagger的原始描述json，可以使用各种工具生成多种格式的API文档(asciidoc&#x2F;pdf&#x2F;html&#x2F;markdonwn)</li>
-<li>json api-docs的路径为: <a target="_blank" rel="noopener" href="http://localhost:8090/zorrodemo/v2/api-docs">http://localhost:8090/zorrodemo/v2/api-docs</a></li>
-<li>建议使用swagger-markdown工具生成markdown格式文档，方便后期格式转换、导出</li>
-</ol>
-<p>介绍页面:<br><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/swagger-markdown">https://www.npmjs.com/package/swagger-markdown</a></p>
-<p>安装及使用:  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install -g swagger-markdown</span><br><span class="line">swagger-markdown -i ./api-docs.json</span><br></pre></td></tr></table></figure>
+</blockquote>
+</li>
+</ul>
+<h2 id="MindStudio部署"><a href="#MindStudio部署" class="headerlink" title="MindStudio部署"></a>MindStudio部署</h2><h3 id="安装Ubuntu系统"><a href="#安装Ubuntu系统" class="headerlink" title="安装Ubuntu系统"></a>安装Ubuntu系统</h3><ul>
+<li>MindStudio需要安装在Ubuntu系统下</li>
+<li>版本号最好是16.04.3，且与接下来的SD卡中的Ubuntu系统版本号保持一致</li>
+<li>可以使用虚拟机方式安装，也可以直接装到PC机上</li>
+</ul>
+<h3 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install gcc g++ cmake curl libboost-all-dev libatlas-base-dev unzip haveged liblmdb-dev python-skimage python3-skimage python-pip python3-pip libhdf5-serial-dev libsnappy-dev libleveldb-dev swig python-enum python-future make graphviz autoconf libxml2-dev libxml2 libzip-dev libssl-dev sqlite3 python</span><br></pre></td></tr></table></figure>
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202002/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Sonar%E4%BB%A3%E7%A0%81%E6%A3%80%E6%B5%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202002/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Sonar%E4%BB%A3%E7%A0%81%E6%A3%80%E6%B5%8B/" class="post-title-link" itemprop="url">研发规约-Sonar代码检测</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="Sonar地址"><a href="#Sonar地址" class="headerlink" title="Sonar地址"></a>Sonar地址</h2><p><a target="_blank" rel="noopener" href="http://localhost:9000/">http://localhost:9000</a></p>
+<h3 id="安装JDK"><a href="#安装JDK" class="headerlink" title="安装JDK"></a>安装JDK</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install openjdk-8-jdk</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi ~/.bashrc</span><br><span class="line"></span><br><span class="line">export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 </span><br><span class="line">export PATH=$JAVA_HOME/bin:$PATH</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>admin&#x2F;admin<br>暂定localhost，后期根据部署情况修改</p>
+<p>注意，必须添加JAVA_HOME和PATH</p>
 </blockquote>
-<h2 id="本机Maven配置"><a href="#本机Maven配置" class="headerlink" title="本机Maven配置"></a>本机Maven配置</h2><blockquote>
-<p>配置~&#x2F;.m2&#x2F;settings.xml</p>
+<h3 id="添加sudoers权限"><a href="#添加sudoers权限" class="headerlink" title="添加sudoers权限"></a>添加sudoers权限</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">su root</span><br><span class="line">chmod u+w /etc/sudoers</span><br><span class="line">vi /etc/sudoers</span><br><span class="line"></span><br><span class="line">在`# User privilege specification`下面插入:</span><br><span class="line">yourname ALL=(ALL:ALL) NOPASSWD:SETENV:/usr/bin/apt-get</span><br><span class="line"></span><br><span class="line">chmod u-w /etc/sudoers</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装MindStudio"><a href="#安装MindStudio" class="headerlink" title="安装MindStudio"></a>安装MindStudio</h3><p>介质准备:  </p>
+<ul>
+<li>mini_mind_studio_Ubuntu.rar</li>
+<li>MSpore_DDK-1.3.T34.B891-x86_64.ubuntu16.04-aarch64.ubuntu16.04-aarch64.ubuntu16.04.tar.gz<blockquote>
+<p>注意先提前解压<code>mini_mind_studio_Ubuntu.rar</code><br>将<code>MSpore_DDK</code>放置到相同目录即可，不要解压</p>
 </blockquote>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">profile</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>sonar<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">activation</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">activeByDefault</span>&gt;</span>true<span class="tag">&lt;/<span class="name">activeByDefault</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">activation</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sonar.host.url</span>&gt;</span>http://localhost:9000<span class="tag">&lt;/<span class="name">sonar.host.url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">profile</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>执行安装脚本:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo ./add_sudo.sh yourname</span><br><span class="line">./install.sh</span><br></pre></td></tr></table></figure>
 
-<h2 id="为工程添加Jacoco插件"><a href="#为工程添加Jacoco插件" class="headerlink" title="为工程添加Jacoco插件"></a>为工程添加Jacoco插件</h2><blockquote>
-<p>配置工程的pom.xml</p>
+<h3 id="配置交叉编译环境"><a href="#配置交叉编译环境" class="headerlink" title="配置交叉编译环境"></a>配置交叉编译环境</h3><blockquote>
+<p>如果接下来制卡所用到的的Host主机和安装MindStudio的主机是同一台，则可以省略掉此步骤</p>
 </blockquote>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">project</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.jacoco<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jacoco-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.7.7.201606060606<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">id</span>&gt;</span>default-prepare-agent<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                            <span class="tag">&lt;<span class="name">goal</span>&gt;</span>prepare-agent<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<ol>
+<li>解压<code>HuaweiAscend-tools-master.zip</code></li>
+<li><code>su -</code>到root用户下</li>
+<li>安装依赖并执行<code>make_ui_cross_env.py</code>脚本 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pip3 install pexpect</span><br><span class="line"></span><br><span class="line">apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu</span><br><span class="line"></span><br><span class="line">python3 make_ui_cross_env.py</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="制卡"><a href="#制卡" class="headerlink" title="制卡"></a>制卡</h2><h3 id="硬件准备"><a href="#硬件准备" class="headerlink" title="硬件准备"></a>硬件准备</h3><p>提前采购:</p>
+<ul>
+<li>TF卡，16G以上</li>
+<li>树霉派兼容摄相头</li>
+</ul>
+<h3 id="安装依赖-1"><a href="#安装依赖-1" class="headerlink" title="安装依赖"></a>安装依赖</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install qemu-user-static binfmt-support python3-yaml gcc-aarch64-linux-gnu g++-aarch64-linux-gnu</span><br></pre></td></tr></table></figure>
 
-<p>注意将surefire插件的skipTests选项关闭:  </p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-surefire-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.10<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- &lt;configuration&gt; --&gt;</span></span><br><span class="line">       <span class="comment">&lt;!-- &lt;skipTests&gt;true&lt;/skipTests&gt; --&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- &lt;/configuration&gt; --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="介质准备"><a href="#介质准备" class="headerlink" title="介质准备"></a>介质准备</h3><ul>
+<li>ubuntu-16.04.3-server-arm64.iso</li>
+<li>mini_developerkit-1.3.T34.B891.rar</li>
+<li>HuaweiAscend-tools-master.zip<blockquote>
+<p>放到同一目录下，只解压<code>HuaweiAscend-tools-master.zip</code></p>
+</blockquote>
+</li>
+</ul>
+<h3 id="制做SD卡"><a href="#制做SD卡" class="headerlink" title="制做SD卡"></a>制做SD卡</h3><ol>
+<li>解压<code>HuaweiAscend-tools-master.zip</code>，得到<code>make_sd_card.py</code>与<code>make_ubuntu_sd.sh</code> </li>
+<li>fdisk -l命令查找SD卡所在的USB设备名称，例如&#x2F;deb&#x2F;sdb</li>
+<li>执行制卡脚本</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 make_sd_card.py local /dev/sdb`</span><br></pre></td></tr></table></figure>
 
-<h2 id="代码手工上传Sonar"><a href="#代码手工上传Sonar" class="headerlink" title="代码手工上传Sonar"></a>代码手工上传Sonar</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn clean verify sonar:sonar</span><br></pre></td></tr></table></figure>
+<h3 id="USB虚拟网卡方式连接Atlas200DK"><a href="#USB虚拟网卡方式连接Atlas200DK" class="headerlink" title="USB虚拟网卡方式连接Atlas200DK"></a>USB虚拟网卡方式连接Atlas200DK</h3><ol>
+<li>将SD卡插入AtlasDK，上电</li>
+<li>使用USB TypeC链接AtlasDK</li>
+<li>执行IP配置脚本<code>./configure_usb_ethernet.sh</code>，为虚拟网卡分配一个<code>192.168.1.166</code>的IP地址</li>
+<li><code>ping 192.168.1.2</code> 测试<blockquote>
+<p>默认的USB网卡的IP地址为192.168.1.2，NIC网卡的IP地址为192.168.0.2</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="网线方式连接Atlas200DK"><a href="#网线方式连接Atlas200DK" class="headerlink" title="网线方式连接Atlas200DK"></a>网线方式连接Atlas200DK</h3><ol>
+<li>使用网线连接Atlas DK</li>
+<li>若使用虚拟机，再添加一个虚拟网卡，类型为Bridged，桥接到物理有线网卡上。</li>
+<li>修改&#x2F;etc&#x2F;network&#x2F;interface配置，添加一个192.168.0网段的虚拟IP   <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/network/interface</span><br><span class="line"></span><br><span class="line">auto enp0s6</span><br><span class="line">iface enp0s6 inet static</span><br><span class="line">address 192.168.0.13</span><br><span class="line">netmask 255.255.255.0</span><br></pre></td></tr></table></figure></li>
+<li>修改NetworkManager.conf <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/NetworkManager/NetworkManager.conf</span><br><span class="line">managed=true</span><br></pre></td></tr></table></figure></li>
+<li>重启服务 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">service networking restart</span><br><span class="line">service NetworkManager restart</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="SSH登录开发板"><a href="#SSH登录开发板" class="headerlink" title="SSH登录开发板"></a>SSH登录开发板</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh HwHiAiUser@192.168.0.2</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>默认密码 Mind@123</p>
+</blockquote>
+<h2 id="使用Mind-Studio"><a href="#使用Mind-Studio" class="headerlink" title="使用Mind Studio"></a>使用Mind Studio</h2><h3 id="启停MindStudio"><a href="#启停MindStudio" class="headerlink" title="启停MindStudio"></a>启停MindStudio</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~/tools/bin/start.sh</span><br><span class="line">~/tools/bin/stop.sh</span><br></pre></td></tr></table></figure>
 
-<h2 id="Sonar代码检查结果"><a href="#Sonar代码检查结果" class="headerlink" title="Sonar代码检查结果"></a>Sonar代码检查结果</h2><p>上传Sonar后，会生成代码质量检查报告<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/8e18ad37a324aad18b3bb581b3703e93.png" alt="2020-02-07-19-34-54"></p>
-<p>点击链接即可查看<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/76ba1c43c9f43a36e53fe8f07bb04d1a.png" alt="2020-02-07-19-44-56"></p>
-<p>页面中会展示代码的BUG、漏洞、单元测试覆盖率、代码重复率等信息，可点击进入详情页面，Sonar会给出详细的修改建议，根据提示修改代码。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/d285ac8d436e34ef594f3dafcf58bc8d.png" alt="2020-02-07-19-36-05"></p>
+<h3 id="Mind-Studio-1"><a href="#Mind-Studio-1" class="headerlink" title="Mind Studio"></a>Mind Studio</h3><p>接下来可以在Ubuntu中直接使用Chrome浏览器打开MindStudio Web页面</p>
+<p>如果使用虚拟机方式安装的Ubuntu，也可以宿主机中打开页面</p>
+<p><a target="_blank" rel="noopener" href="https://10.211.55.13:8888/">MindStudio https://10.211.55.13:8888/</a></p>
+<p>初始用户名密码为: MindStudioAdmin&#x2F;Huawei123@ ，新密码改为: <code>yourpassword</code>  </p>
+<blockquote>
+<p>注意，需要使用Chrome浏览器，不能用FireFox访问<br>IP地址，端口在<code>～/tools/script/env.conf</code>中配置  </p>
+</blockquote>
+<h3 id="Profiling工具"><a href="#Profiling工具" class="headerlink" title="Profiling工具"></a>Profiling工具</h3><p><a target="_blank" rel="noopener" href="https://10.211.55.13:8099/">MSVP https://10.211.55.13:8099</a></p>
+<p>初始用户名密码为: msvpadmin&#x2F;Admin12#$ ，新密码改为: <code>yourpassword</code></p>
+<h2 id="简单编排案例"><a href="#简单编排案例" class="headerlink" title="简单编排案例"></a>简单编排案例</h2><ol>
+<li>新建工程，注意Target选择AtlasDK<br> <img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/b6f99b14b6a83224642af6cf31b1e8e0.png" alt="2019-10-31-14-41-39"></li>
+<li>拖拉拽<br> <img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/98da260b662b9fda20103d9e581be61c.png" alt="2019-10-31-14-40-55"></li>
+<li>Build -&gt; Run</li>
+<li>可以在最后一个节点右键查看结果</li>
+</ol>
+<h2 id="图像分类应用"><a href="#图像分类应用" class="headerlink" title="图像分类应用"></a>图像分类应用</h2><ol>
+<li><p>clone示例应用及模型到Host</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/Ascend/sample-classification</span><br><span class="line">git clone https://github.com/Ascend/models/blob/master/computer_vision/classification/alexnet/alexnet.om</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意在GitHub上下载模型时，由于是大型二进制文件，所以默认启用了Git LFS，不能直接clone</p>
+</blockquote>
+</li>
+<li><p>配置环境变量</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vi ~/.bashrc</span><br><span class="line">export DDK_HOME=/home/yourname/tools/che/ddk/ddk</span><br><span class="line">export LD_LIBRARY_PATH=$DDK_HOME/uihost/lib</span><br><span class="line"></span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure></li>
+<li><p>运行部署脚本</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./deploy.sh 192.168.0.2 internet</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>internet是指在线部署，需要全程联网</p>
+</blockquote>
+</li>
+<li><p><del>将模型<code>git/models/computer_vision/classification/alexnet/alexnet.om</code>上传到Device的<code>～/models</code>目录</del><br>将Host中的模型<code>/home/yourname/Downloads/Resnet18.om</code>上传到Device的<code>～/models</code>目录</p>
+</li>
+<li><p>准备好一张示例图片，分辨率为224*224，上传到Device的<code>～/HIAI_PROJECTS/ascend_workspace/classification/out</code>目录<br> <img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/224x224.jpg" alt="sample picture 224x224"></p>
+</li>
+<li><p>SSH到Atlas200DK，并执行示例应用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ssh HwHiAiUser@192.168.0.2</span><br><span class="line"># Mind@123</span><br><span class="line"></span><br><span class="line">cd ~/HIAI_PROJECTS/ascend_workspace/classification/out</span><br><span class="line"></span><br><span class="line">~~python3 run_classification.py -m ~/models/alexnet.om -w 227 -h 227 -i ./sonic.jpg -n 10~~</span><br><span class="line">python3 run_classification.py -m ~/models/Resnet18.om -w 224 -h 224 -i ./224x224.jpg -n 10</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="目标检测应用"><a href="#目标检测应用" class="headerlink" title="目标检测应用"></a>目标检测应用</h2><blockquote>
+<p>此示例未验证成功，第3步模型转换失败</p>
+</blockquote>
+<ol>
+<li>clone示例应用及模型到Host <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/Ascend/sample-objectdetection</span><br></pre></td></tr></table></figure></li>
+<li>下载原始网络模型文件及其对应的权重文件<br><a target="_blank" rel="noopener" href="https://github.com/Ascend/models/tree/master/computer_vision/object_detect/faster_rcnn">下载页面</a><ul>
+<li>test.prototxt</li>
+<li>faster_rcnn.caffemodel</li>
+</ul>
+</li>
+<li>模型是基于Caffe的Faster RCNN模型，需要将其转换为Davinci模型<br>在Mind Studio操作界面的顶部菜单栏中选择<code>Tool &gt; Convert Model</code><br>模型转换成功后，后缀为.om的Davinci模型放在<code>～/tools/che/model-zoo/my-model/fast_rcnn</code>  </li>
+<li>配置环境变量 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export DDK_HOME=/home/yourname/tools/che/ddk/ddk</span><br><span class="line">export LD_LIBRARY_PATH=$DDK_HOME/uihost/lib</span><br></pre></td></tr></table></figure></li>
+<li>部署脚本 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./deploy.sh 192.168.0.2 internet</span><br></pre></td></tr></table></figure></li>
+<li>上传.om模型到开发板的<code>/home/HwHiAiUser/models</code></li>
+<li>运行 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ssh HwHiAiUser@192.168.0.2</span><br><span class="line"># Mind@123</span><br><span class="line">cd ~/HIAI_PROJECTS/ascend_workspace/objectdetection/out</span><br><span class="line">python3 run_object_detection_faster_rcnn.py -m ~/models/faster_rcnn.om -w 800 -h 600 -i ./example.jpg -o ./out -c 21</span><br></pre></td></tr></table></figure></li>
+</ol>
 
       
     </div>

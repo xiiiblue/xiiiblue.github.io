@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">291</span>
+          <span class="site-state-item-count">292</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,130 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201703/crontab%E9%85%8D%E7%BD%AE%E5%8F%8A%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201703/crontab%E9%85%8D%E7%BD%AE%E5%8F%8A%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/" class="post-title-link" itemprop="url">crontab配置及简单应用</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:46:09" itemprop="dateCreated datePublished" datetime="2018-11-06T15:46:09+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="crontab"><a href="#crontab" class="headerlink" title="crontab"></a>crontab</h2><p>crontab并不陌生，在*nix的操作系统之中，使用它设置周期性被执行的指令.每个用户可以拥有自己的crontab文件；<br>同时，操作系统保存一个针对整个系统的crontab文件，该文件通常存放于&#x2F;etc或者&#x2F;etc之下的子目录中。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">pi@raspberrypi:/etc $ ls -al|grep cron</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.d</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.daily</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.hourly</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.monthly</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.weekly</span><br><span class="line">-rw-r--r--   1 root root     722 Sep  5  2015 crontab</span><br></pre></td></tr></table></figure>
+
+<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><ul>
+<li>-u user：用来设定某个用户的crontab服务；</li>
+<li>file：file是命令文件的名字,表示将file做为crontab的任务列表文件并载入crontab。如果在命令行中没有指定这个文件，crontab命令将接受标准输入（键盘）上键入的命令，并将它们载入crontab。</li>
+<li>-e：编辑某个用户的crontab文件内容。如果不指定用户，则表示编辑当前用户的crontab文件。</li>
+<li>-l：显示某个用户的crontab文件内容，如果不指定用户，则表示显示当前用户的crontab文件内容。</li>
+<li>-r：从&#x2F;var&#x2F;spool&#x2F;cron目录中删除某个用户的crontab文件，如果不指定用户，则默认删除当前用户的crontab文件。</li>
+<li>-i：在删除用户的crontab文件时给确认提示。</li>
+</ul>
+<p>最常用的参数有<code>-l 查询</code>和<code>-e 编辑</code></p>
+<h2 id="配置格式"><a href="#配置格式" class="headerlink" title="配置格式"></a>配置格式</h2><ul>
+<li>第1列分钟0～59</li>
+<li>第2列小时0～23（0表示子夜）</li>
+<li>第3列日1～31</li>
+<li>第4列月1～12</li>
+<li>第5列星期0～7（0和7表示星期天）</li>
+<li>第6列要运行的命令</li>
+</ul>
+<h2 id="配置示例"><a href="#配置示例" class="headerlink" title="配置示例"></a>配置示例</h2><p>每分钟执行一次:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* * * * * /path/to/your/app.sh</span><br></pre></td></tr></table></figure>
+
+<p>每半分钟执行一次:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*/2 * * * * /path/to/your/app.sh</span><br></pre></td></tr></table></figure>
+
+<p>每小时的第3和第15分钟执行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3,15 * * * * /path/to/your/app.sh</span><br></pre></td></tr></table></figure>
+
+<p>在上午8点到11点的第3和第15分钟执行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3,15 8-11 * * * /path/to/your/app.sh</span><br></pre></td></tr></table></figure>
+
+<p>每周六23点执行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0 23 * * 6 /etc/init.d/smb restart</span><br></pre></td></tr></table></figure>
+
+<h2 id="简单应用"><a href="#简单应用" class="headerlink" title="简单应用"></a>简单应用</h2><h3 id="检测并自动重启服务"><a href="#检测并自动重启服务" class="headerlink" title="检测并自动重启服务"></a>检测并自动重启服务</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br><span class="line">*/2 * * * * isfound=$(ps | grep &quot;redsocks&quot; | grep -v &quot;grep&quot;); if [ -z &quot;$isfound&quot; ]; then echo &quot;$(date): restart redsocks...&quot;&gt;&gt;/tmp/log/redsocks-mon.log &amp;&amp; /etc/init.d/redsocks restart; fi</span><br></pre></td></tr></table></figure>
+
+<h3 id="检测并自动重启tomcat"><a href="#检测并自动重启tomcat" class="headerlink" title="检测并自动重启tomcat"></a>检测并自动重启tomcat</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*/2 * * * * sh /path/to/tomcat_monitor.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">vi tomcat_monitor.sh</span><br><span class="line">#!/bin/sh</span><br><span class="line">source /home/user/.bash_profile</span><br><span class="line">export PATH=$PATH:.:/bin:/sbin:/usr/bin:</span><br><span class="line">pid_count=`ps aux|grep java|grep your-tomcat|grep -v grep|wc -l`</span><br><span class="line">if [ $pid_count -ne 1 ]; then</span><br><span class="line">        echo &quot;stop download-tomcat, time: `date`&quot;</span><br><span class="line">        if [ $pid_count -gt 0 ]; then</span><br><span class="line">                 ps aux|grep java|grep your-tomcat|grep -v grep|awk &#x27;&#123;print $2&#125;&#x27;|xargs kill</span><br><span class="line">        fi</span><br><span class="line">        sh /path/to/tomcat/bin/startup.sh</span><br><span class="line">        echo &quot;start download-tomcat finished, time: `date`&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<h3 id="清理30天前的tomcat日志"><a href="#清理30天前的tomcat日志" class="headerlink" title="清理30天前的tomcat日志"></a>清理30天前的tomcat日志</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br><span class="line">0 23 * * * sh /path/to/clean_log.sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi clean_log.sh</span><br><span class="line">DATE=$(date -d &quot;30 days ago&quot; +%Y-%m-%d)</span><br><span class="line">echo $DATE</span><br><span class="line">rm /path/to/tomcat/logs/*$DATE*</span><br></pre></td></tr></table></figure>
+
+<h3 id="备份并清理catalina-out"><a href="#备份并清理catalina-out" class="headerlink" title="备份并清理catalina.out"></a>备份并清理catalina.out</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br><span class="line">00 22 * * * sh /path/to/clean_catalina_out.sh</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vi clean_catalina_out.sh</span><br><span class="line">y=`date &quot;+%Y&quot;`</span><br><span class="line">m=`date &quot;+%m&quot;`</span><br><span class="line">d=`date &quot;+%d&quot;`</span><br><span class="line">cp /path/to/tomcat/logs/catalina.out /path/to/tomcat/logs/catalina.out.$y-$m-$d</span><br><span class="line">echo &gt; /path/to/tomcat/logs/catalina.out</span><br><span class="line">exit</span><br></pre></td></tr></table></figure>
+
+<h2 id="注意设置环境变量"><a href="#注意设置环境变量" class="headerlink" title="注意设置环境变量"></a>注意设置环境变量</h2><p>由于crontab执行任务时不加载任何环境变量，可以在脚本中加入必要的环境变量，甚至ulimit设置，以保证程序可以正常执行。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vi start.sh</span><br><span class="line"></span><br><span class="line">!/bin/sh</span><br><span class="line">source /etc/profile</span><br><span class="line">export YOUR_ENV=value</span><br><span class="line">ulimit -n 10240</span><br><span class="line">/path/to/your/app/run</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://www.linuxforums.org/forum/programming-scripting/21764-cron-job-not-taking-ulimits.html">http://www.linuxforums.org/forum/programming-scripting/21764-cron-job-not-taking-ulimits.html</a></li>
+<li><a target="_blank" rel="noopener" href="http://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/crontab.html">http://linuxtools-rst.readthedocs.io/zh_CN&#x2F;latest&#x2F;tool&#x2F;crontab.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Cron">https://zh.wikipedia.org/wiki/Cron</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1072,98 +1196,6 @@
 
 <p>测试，用浏览器访问一下试试：<br><a target="_blank" rel="noopener" href="http://ip:29022/mobagent-admin/">http://IP:29022/mobagent-admin/</a><br>如果在控制台中的Cookie中看到一个名为route的键，就说明基本上成功了。<br>然后多请求几次，看看后端服务的日志，最终确认一下，是不是只指向了同一台服务器。  </p>
 <h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><p>最后，请注意，因为nginx-sticky-module-ng的可靠性未经长时间验证，请勿直接用于生产系统。  </p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91OSS%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E7%A4%BA%E4%BE%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91OSS%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E7%A4%BA%E4%BE%8B/" class="post-title-link" itemprop="url">阿里云OSS对象存储示例</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:36:33" itemprop="dateCreated datePublished" datetime="2018-11-06T15:36:33+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="DEMO-GitLab"><a href="#DEMO-GitLab" class="headerlink" title="DEMO GitLab"></a>DEMO GitLab</h2><blockquote>
-<p>更多源码请移步GitHub<br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/demo-oss">https://github.com/xiiiblue/demo-oss</a></p>
-</blockquote>
-<h2 id="OSS-SDK下载"><a href="#OSS-SDK下载" class="headerlink" title="OSS SDK下载"></a>OSS SDK下载</h2><p><a target="_blank" rel="noopener" href="https://promotion.aliyun.com/ntms/act/ossdoclist.html">https://promotion.aliyun.com/ntms/act/ossdoclist.html</a></p>
-<h2 id="OSS-SDK源码"><a href="#OSS-SDK源码" class="headerlink" title="OSS SDK源码"></a>OSS SDK源码</h2><p><a target="_blank" rel="noopener" href="https://github.com/aliyun/aliyun-oss-java-sdk">https://github.com/aliyun/aliyun-oss-java-sdk</a></p>
-<h2 id="OSS-Maven依赖"><a href="#OSS-Maven依赖" class="headerlink" title="OSS Maven依赖"></a>OSS Maven依赖</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.aliyun.oss<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>aliyun-sdk-oss<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.8.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="OSS官方文档"><a href="#OSS官方文档" class="headerlink" title="OSS官方文档"></a>OSS官方文档</h2><p><a target="_blank" rel="noopener" href="https://help.aliyun.com/document_detail/32009.html">https://help.aliyun.com/document_detail&#x2F;32009.html</a></p>
-<h2 id="申请及配置OSS流程"><a href="#申请及配置OSS流程" class="headerlink" title="申请及配置OSS流程"></a>申请及配置OSS流程</h2><ol>
-<li><p>登录aliyun后，进入OSS控制台:<br><a target="_blank" rel="noopener" href="https://oss.console.aliyun.com/overview">https://oss.console.aliyun.com/overview</a></p>
-</li>
-<li><p>右侧点击”购买资源包”，选择合适的档位，付费购买。</p>
-</li>
-<li><p>右侧点击”新建Bucket”，输入一个全局唯一的bucket名，并选择所属地域，新建Bucket。</p>
-</li>
-<li><p>左侧列表中，进入新建的Bucket，可以查询到”Endpoint”</p>
-</li>
-<li><p>获取AK，可以直接访问链接：<br><a target="_blank" rel="noopener" href="https://ak-console.aliyun.com/#/accesskey">https://ak-console.aliyun.com/#/accesskey</a></p>
-</li>
-</ol>
-<h2 id="常用操作示例"><a href="#常用操作示例" class="headerlink" title="常用操作示例"></a>常用操作示例</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">Logger</span> <span class="variable">logger</span> <span class="operator">=</span> LoggerFactory.getLogger(OssComponent.class);</span><br><span class="line"><span class="meta">@Value(&quot;$&#123;aliyun.oss.endpoint&#125;&quot;)</span></span><br><span class="line"><span class="keyword">private</span> String endpoint;</span><br><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="keyword">private</span> OSSClient ossClient;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 通过bucket与fileKey获取URL</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> bucket</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> fileKey</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">String</span> <span class="title function_">urlFromFileKey</span><span class="params">(String bucket, String fileKey)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;http://&quot;</span> + bucket + <span class="string">&quot;.&quot;</span> + <span class="built_in">this</span>.endpoint + <span class="string">&quot;/&quot;</span> + fileKey;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 上传本地文件</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> bucket   Bucket</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> filePath 本地文件路径</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> fileKey  指定OSS文件名，传空时自动生成UUID</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> FileNotFoundException</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">String</span> <span class="title function_">putObject</span><span class="params">(String bucket, String filePath, String fileKey)</span> <span class="keyword">throws</span> FileNotFoundException &#123;</span><br><span class="line">    <span class="keyword">if</span> (fileKey == <span class="literal">null</span>) &#123;</span><br><span class="line">        fileKey = UUID.randomUUID().toString().replaceAll(<span class="string">&quot;-&quot;</span>, <span class="string">&quot;&quot;</span>) + filePath.substring(filePath.lastIndexOf(<span class="string">&quot;.&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ossClient.putObject(bucket, fileKey, <span class="keyword">new</span> <span class="title class_">File</span>(filePath));</span><br><span class="line"></span><br><span class="line">    logger.info(<span class="string">&quot;OSS putObject success! fileKey=&#123;&#125;&quot;</span>, fileKey);</span><br><span class="line">    <span class="keyword">return</span> fileKey;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 下载文件到本地目录</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> bucket    Bucket</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> fileKey   OSS文件名</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> localPath 本地文件目录</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">String</span> <span class="title function_">getObject</span><span class="params">(String bucket, String fileKey, String localPath)</span> &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">localFileKey</span> <span class="operator">=</span> localPath + fileKey;</span><br><span class="line">    ossClient.getObject(<span class="keyword">new</span> <span class="title class_">GetObjectRequest</span>(bucket, fileKey), <span class="keyword">new</span> <span class="title class_">File</span>(localFileKey));</span><br><span class="line"></span><br><span class="line">    logger.info(<span class="string">&quot;OSS getObject success! localFileKey=&#123;&#125;&quot;</span>, localFileKey);</span><br><span class="line">    <span class="keyword">return</span> localFileKey;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 检查文件是否存在</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> bucket  Bucket</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> fileKey OSS文件名</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">checkObject</span><span class="params">(String bucket, String fileKey)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> ossClient.doesObjectExist(bucket, fileKey);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 列出所有文件</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> bucket    Bucket</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> keyPrifix 文件名前缀</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">List</span>&lt;String&gt; <span class="title function_">listObjects</span><span class="params">(String bucket, String keyPrifix)</span> &#123;</span><br><span class="line">    <span class="type">List</span>&lt;String&gt; <span class="variable">fileList</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="type">ObjectListing</span> <span class="variable">objectListing</span> <span class="operator">=</span> ossClient.listObjects(bucket, keyPrifix);</span><br><span class="line">    <span class="type">List</span>&lt;OSSObjectSummary&gt; <span class="variable">sums</span> <span class="operator">=</span> objectListing.getObjectSummaries();</span><br><span class="line">    <span class="keyword">for</span> (OSSObjectSummary s : sums) &#123;</span><br><span class="line">        fileList.add(bucket);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> fileList;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 删除文件</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> bucket</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> fileKey</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">void</span> <span class="title function_">deleteObject</span><span class="params">(String bucket, String fileKey)</span> &#123;</span><br><span class="line">    ossClient.deleteObject(bucket, fileKey);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">Logger</span> <span class="variable">logger</span> <span class="operator">=</span> LoggerFactory.getLogger(OssComponentTest.class);</span><br><span class="line"><span class="keyword">private</span> String localPath;</span><br><span class="line"><span class="meta">@Autowired</span></span><br><span class="line">OssComponent ossComponent;</span><br><span class="line"></span><br><span class="line"><span class="type">public</span> <span class="title function_">OssComponentTest</span><span class="params">()</span> &#123;</span><br><span class="line">    localPath = System.getProperty(<span class="string">&quot;user.dir&quot;</span>) + <span class="string">&quot;/&quot;</span> + <span class="string">&quot;upload/&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">void</span> <span class="title function_">urlFromFileKey</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">bucket</span> <span class="operator">=</span> <span class="string">&quot;foobar&quot;</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">fileKey</span> <span class="operator">=</span> <span class="string">&quot;0c2eb1357a454c71b71aa20462951ac4.jpg&quot;</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> ossComponent.urlFromFileKey(bucket, fileKey);</span><br><span class="line"></span><br><span class="line">    logger.debug(url);</span><br><span class="line">    assertNotNull(url);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">void</span> <span class="title function_">putObject</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">bucket</span> <span class="operator">=</span> <span class="string">&quot;foobar&quot;</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">filePath</span> <span class="operator">=</span> localPath + <span class="string">&quot;sonic.jpg&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="type">String</span> <span class="variable">fileKey</span> <span class="operator">=</span> ossComponent.putObject(bucket, filePath, <span class="literal">null</span>);</span><br><span class="line">    logger.debug(fileKey);</span><br><span class="line">    assertNotNull(fileKey);</span><br><span class="line"></span><br><span class="line">    fileKey = ossComponent.putObject(bucket, filePath, <span class="string">&quot;sonic.jpg&quot;</span>);</span><br><span class="line">    logger.debug(fileKey);</span><br><span class="line">    assertNotNull(fileKey);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">void</span> <span class="title function_">getObject</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">bucket</span> <span class="operator">=</span> <span class="string">&quot;foobar&quot;</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">fileKey</span> <span class="operator">=</span> <span class="string">&quot;0c2eb1357a454c71b71aa20462951ac4.jpg&quot;</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">localPath</span> <span class="operator">=</span> <span class="built_in">this</span>.localPath;</span><br><span class="line"></span><br><span class="line">    <span class="type">String</span> <span class="variable">localFileKey</span> <span class="operator">=</span> ossComponent.getObject(bucket, fileKey, localPath);</span><br><span class="line"></span><br><span class="line">    logger.debug(localFileKey);</span><br><span class="line">    assertNotNull(localFileKey);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">void</span> <span class="title function_">checkObject</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">bucket</span> <span class="operator">=</span> <span class="string">&quot;foobar&quot;</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">fileKey</span> <span class="operator">=</span> <span class="string">&quot;0c2eb1357a454c71b71aa20462951ac4.jpg&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="type">boolean</span> <span class="variable">flag</span> <span class="operator">=</span> ossComponent.checkObject(bucket, fileKey);</span><br><span class="line"></span><br><span class="line">    assertTrue(flag);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">void</span> <span class="title function_">listObjects</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">bucket</span> <span class="operator">=</span> <span class="string">&quot;foobar&quot;</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">keyPrifix</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="type">List</span>&lt;String&gt; <span class="variable">list</span> <span class="operator">=</span> ossComponent.listObjects(bucket, keyPrifix);</span><br><span class="line"></span><br><span class="line">    logger.debug(list.toString());</span><br><span class="line">    assertTrue(list.size() &gt; <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="type">void</span> <span class="title function_">deleteObject</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">String</span> <span class="variable">bucket</span> <span class="operator">=</span> <span class="string">&quot;foobar&quot;</span>;</span><br><span class="line">    <span class="type">String</span> <span class="variable">fileKey</span> <span class="operator">=</span> <span class="string">&quot;sonic.jpg&quot;</span>;</span><br><span class="line"></span><br><span class="line">    ossComponent.deleteObject(bucket, fileKey);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
