@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="ACDL研发流程系列第8篇，共15篇。 上一篇：ACDL研发流程07：把设计拆成可以独立验证的任务 下一篇：ACDL研发流程09：完成代码、验证并更新环境  多Agent不等于把同一个任务切成多份Agent可以很快地读取代码和生成实现，所以多个Agent同时工作看上去是最直接的加速方式。但如果它们正在等待同一个未定稿接口，修改同一批文件，或者各自理解了不同的产品结果，并行只会把返工也同时放大。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ACDL研发流程08：让多个Agent在不同worktree工作">
+<meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="ACDL研发流程系列第8篇，共15篇。 上一篇：ACDL研发流程07：把设计拆成可以独立验证的任务 下一篇：ACDL研发流程09：完成代码、验证并更新环境  多Agent不等于把同一个任务切成多份Agent可以很快地读取代码和生成实现，所以多个Agent同时工作看上去是最直接的加速方式。但如果它们正在等待同一个未定稿接口，修改同一批文件，或者各自理解了不同的产品结果，并行只会把返工也同时放大。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-08-17T08:53:44.000Z">
+<meta property="article:modified_time" content="2026-08-17T08:53:44.000Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/","path":"202608/ACDL研发流程08-让多个Agent在不同worktree工作/","title":"ACDL研发流程08：让多个Agent在不同worktree工作"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>ACDL研发流程08：让多个Agent在不同worktree工作 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BlueXIII's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9AAgent%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%8A%8A%E5%90%8C%E4%B8%80%E4%B8%AA%E4%BB%BB%E5%8A%A1%E5%88%87%E6%88%90%E5%A4%9A%E4%BB%BD"><span class="nav-number">1.</span> <span class="nav-text">多Agent不等于把同一个任务切成多份</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%85%88%E7%A1%AE%E8%AE%A4%E8%BF%99%E4%BA%9B%E4%BB%BB%E5%8A%A1%E8%83%BD%E5%90%A6%E5%B9%B6%E8%A1%8C"><span class="nav-number">2.</span> <span class="nav-text">第一步：先确认这些任务能否并行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E9%9C%80%E8%A6%81%E6%96%87%E4%BB%B6%E9%9A%94%E7%A6%BB%E6%97%B6%EF%BC%8C%E4%B8%80%E9%A1%B9%E4%BB%BB%E5%8A%A1%E4%BD%BF%E7%94%A8%E4%B8%80%E4%B8%AAworktree"><span class="nav-number">3.</span> <span class="nav-text">第二步：需要文件隔离时，一项任务使用一个worktree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8C%E4%B8%80%E4%BB%BB%E5%8A%A1%E9%9C%80%E8%A6%81%E5%A4%9A%E4%B8%AAAgent%E6%97%B6%EF%BC%8C%E5%8F%AF%E4%BB%A5%E4%B8%B2%E8%A1%8C%E6%8E%A5%E6%A3%92"><span class="nav-number">4.</span> <span class="nav-text">同一任务需要多个Agent时，可以串行接棒</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E6%8A%8A%E4%BB%A3%E7%A0%81%E4%B9%8B%E5%A4%96%E7%9A%84%E8%B5%84%E6%BA%90%E4%B9%9F%E5%88%86%E5%BC%80"><span class="nav-number">5.</span> <span class="nav-text">第三步：把代码之外的资源也分开</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E6%AD%A5%EF%BC%9A%E4%B8%BA%E6%AF%8F%E4%B8%AAAgent%E5%87%86%E5%A4%87%E7%8B%AC%E7%AB%8B%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="nav-number">6.</span> <span class="nav-text">第四步：为每个Agent准备独立上下文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E6%AD%A5%EF%BC%9A%E8%AE%A9%E6%AF%8F%E4%B8%AAAgent%E4%BA%A4%E4%BB%98%E4%B8%80%E4%B8%AA%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E5%AE%8C%E6%95%B4%E7%BB%93%E6%9E%9C"><span class="nav-number">7.</span> <span class="nav-text">第五步：让每个Agent交付一个可以独立验证的完整结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%85%AD%E6%AD%A5%EF%BC%9A%E4%B8%BB%E7%BA%BF%E4%BE%9D%E6%AC%A1%E6%8E%A5%E6%94%B6%E5%B9%B6%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">8.</span> <span class="nav-text">第六步：主线依次接收并行结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%83%E6%AD%A5%EF%BC%9A%E5%AE%8C%E6%88%90%E4%BA%A4%E4%BB%98%E5%90%8E%E5%86%8D%E6%B8%85%E7%90%86worktree"><span class="nav-number">9.</span> <span class="nav-text">第七步：完成交付后再清理worktree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%B6%E8%A1%8C%E6%95%B0%E9%87%8F%E5%8F%96%E5%86%B3%E4%BA%8EDirector%E8%83%BD%E5%A4%9F%E8%AF%84%E5%AE%A1%E5%92%8C%E5%90%88%E5%B9%B6%E5%A4%9A%E5%B0%91%E7%BB%93%E6%9E%9C"><span class="nav-number">10.</span> <span class="nav-text">并行数量取决于Director能够评审和合并多少结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E5%A4%B4%E6%A3%80%E6%9F%A5%E8%BF%99%E6%9D%A1%E8%B7%AF%E5%BE%84"><span class="nav-number">11.</span> <span class="nav-text">回头检查这条路径</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">306</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="ACDL研发流程08：让多个Agent在不同worktree工作 | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ACDL研发流程08：让多个Agent在不同worktree工作
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+<blockquote>
+<p>ACDL研发流程系列第8篇，共15篇。</p>
+<p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/">ACDL研发流程07：把设计拆成可以独立验证的任务</a></p>
+<p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B09-%E5%AE%8C%E6%88%90%E4%BB%A3%E7%A0%81%E3%80%81%E9%AA%8C%E8%AF%81%E5%B9%B6%E6%9B%B4%E6%96%B0%E7%8E%AF%E5%A2%83/">ACDL研发流程09：完成代码、验证并更新环境</a></p>
+</blockquote>
+<h2 id="多Agent不等于把同一个任务切成多份"><a href="#多Agent不等于把同一个任务切成多份" class="headerlink" title="多Agent不等于把同一个任务切成多份"></a>多Agent不等于把同一个任务切成多份</h2><p>Agent可以很快地读取代码和生成实现，所以多个Agent同时工作看上去是最直接的加速方式。但如果它们正在等待同一个未定稿接口，修改同一批文件，或者各自理解了不同的产品结果，并行只会把返工也同时放大。</p>
+<p>当前项目并行的基本单位不是Agent，而是第7章已经拆好的独立任务。每项任务有自己的工作来源、ACL、目标、非目标、起点和验证结果，然后再交给一个主要Agent。不把数据库、接口、页面和测试分给几个Agent，让它们在同一项尚未定稿的改变中相互等待。</p>
+<p>如果当前只有一项端到端任务，一个Agent保持完整上下文通常更快。只有出现两项或更多能够真正独立推进的工作时，才需要组织并行开发。</p>
+<h2 id="第一步：先确认这些任务能否并行"><a href="#第一步：先确认这些任务能否并行" class="headerlink" title="第一步：先确认这些任务能否并行"></a>第一步：先确认这些任务能否并行</h2><p>可以独立验证是并行的第一个条件，但还不够。Director和Agent还要看任务之间的依赖、文件交叉和外部资源。</p>
+<p>两项任务通常适合并行，需要同时满足以下条件：</p>
+<ul>
+<li>它们不需要等待对方的未定稿结论，已知依赖要么已经完成，要么已经确认接口和数据格式在并行期间不会变化；</li>
+<li>它们的主要修改范围能够分开，少量共同文件也能预先说明谁先改、谁在集成时适配；</li>
+<li>它们可以使用不同的测试数据库、端口、容器、账号或证据目录，不会互相改写外部状态；</li>
+<li>需要隔离文件修改时，每项工作都能在自己的worktree中实施、测试、提交和记录；</li>
+<li>Director已经知道谁负责最终集成，以及几项结果以什么顺序进入主线。</li>
+</ul>
+<p>上一章把收藏会话拆成“保存收藏状态”和“筛选收藏内容”两个结果，但第二项依赖第一项，它们仍然需要串行。假如当前还有一项Runtime恢复缺陷和一项文档检查工具优化，而它们分别有自己的工作来源和验证方法，就可以与收藏会话同时开展：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">同一个已确认起点</span><br><span class="line">  ├─收藏会话ACL→worktree A→Agent A</span><br><span class="line">  ├─Runtime恢复ACL→worktree B→Agent B</span><br><span class="line">  └─文档工具ACL→worktree C→Agent C</span><br></pre></td></tr></table></figure>
+
+<p>这里同时推进的是三项工作，不是三个Agent共同完成收藏会话。</p>
+<p>如果两项工作同时改动一个核心契约，共用一个无法分离的真实环境，或者第二项的验证结果完全取决于第一项的实现，就先保持串行。不需要为了让Agent都有事做而制造并行任务。</p>
+<h2 id="第二步：需要文件隔离时，一项任务使用一个worktree"><a href="#第二步：需要文件隔离时，一项任务使用一个worktree" class="headerlink" title="第二步：需要文件隔离时，一项任务使用一个worktree"></a>第二步：需要文件隔离时，一项任务使用一个worktree</h2><p>worktree是Git在同一个仓库上同时保留多个工作目录的方式。每个worktree检出自己的分支，Agent可以在其中查看、修改和测试文件，不会把未提交差异混到其它任务的目录里。</p>
+<p>存在文件冲突风险时，推荐使用以下对应关系：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">一项独立任务</span><br><span class="line">  →一轮ACL</span><br><span class="line">    →一个短期分支</span><br><span class="line">      →一个worktree</span><br><span class="line">        →一个主要Agent</span><br></pre></td></tr></table></figure>
+
+<p>分支、worktree和Pull Request都按实际需要使用。只做只读调查、修改范围完全不相交，或者当前Harness已经提供其它可靠隔离时，不为了形式机械创建。需要隔离文件差异时，主工作树保留共同起点，每个并行任务在独立worktree中开展。</p>
+<p>分支名称可以由小写ACL编号和简短主题组成，例如<code>acl-000039-conversation-favorites</code>。分支跟踪的是工作而不是Agent身份，不要使用模型名或Agent名命名。</p>
+<p>建立worktree前，先根据当前运行时确认是哪一种Harness。Orca、Codex或其它Harness已经提供原生worktree能力时，优先使用它的创建和交付入口；原生能力不可用或不适合当前任务时，才用Git命令作为后备，并选择稳定、可识别的非临时目录。无论由哪种工具创建，都先记下完整起点提交、分支和目录。</p>
+<p>不同任务可以从同一个已确认提交开始，也可以根据已知依赖从不同提交开始。无论怎样选择，每轮ACL的启动方案都保存自己的分支、明确的起点提交和worktree路径，不用“从最新代码开始”这种无法复现的说法。</p>
+<h2 id="同一任务需要多个Agent时，可以串行接棒"><a href="#同一任务需要多个Agent时，可以串行接棒" class="headerlink" title="同一任务需要多个Agent时，可以串行接棒"></a>同一任务需要多个Agent时，可以串行接棒</h2><p>并行规则解决的是多项独立任务怎样同时推进。另一种常见情况是，同一项任务先由ChatGPT整理需求或设计候选，再由本地Agent实施和验证，最后交给ChatGPT或其它Agent评审。它们处理的是同一轮工作，不需要为了参与者不同而拆成多个ACL，适合按阶段串行接棒。</p>
+<p>本机Agent通常使用worktree取得完整文件、依赖和验证反馈；通过GitHub参与的远端Agent通常使用远端分支、提交和Draft Pull Request取得隔离空间。远端Agent是否能够写入，取决于连接器和仓库权限：能够写入时可以直接准备候选，只有读取能力时则提交分析或评审意见，由当前写入者落地。工具能力不同，不改变仓库事实源和Director确认边界。</p>
+<p>同一分支由多个Agent接力时，推荐采用以下约定：</p>
+<p>1.任一时刻只指定一个当前写入者，其他Agent只读或评审；<br>2.交接前提交并推送候选变化，记录完整HEAD提交；<br>3.接棒者先核对远端分支仍指向交接提交，再开始修改；<br>4.已经交接的共享分支不强制推送、不改写交接历史；<br>5.两个Agent要探索不同方案时使用不同分支，不在同一分支互相覆盖；<br>6.共同决定写回REQ、设计、ADR或Loop记录，Pull Request只保存差异讨论和交接摘要。</p>
+<p>这些约定用于降低远端与本机协作中的竞态，不表示每项工作都必须创建Pull Request。只有一名Agent、没有远端评审或无需隔离时，继续使用原来的短路径即可。</p>
+<p>需要反复交接时，可以在Draft Pull Request顶部维护一段简短的当前状态：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">## 协作状态</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> 当前阶段：需求、设计、实现、验证、评审或待确认</span><br><span class="line"><span class="bullet">-</span> 当前写入者：当前负责修改分支的人或Agent</span><br><span class="line"><span class="bullet">-</span> 当前候选：完整HEAD提交</span><br><span class="line"><span class="bullet">-</span> 下一接棒者：下一位参与者</span><br><span class="line"><span class="bullet">-</span> 下一步：一句话说明要完成的动作</span><br></pre></td></tr></table></figure>
+
+<p>每次正式交接再用Pull Request评论保留固定快照，至少说明基线、当前候选、正式依据、本轮目标和非目标、实际修改、已运行与未运行的验证、剩余风险和下一步。新会话先读取这段交接、正式文档和固定提交，不依赖上一段聊天记录恢复现场。</p>
+<h2 id="第三步：把代码之外的资源也分开"><a href="#第三步：把代码之外的资源也分开" class="headerlink" title="第三步：把代码之外的资源也分开"></a>第三步：把代码之外的资源也分开</h2><p>worktree隔离了文件目录、当前分支和未提交差异，但它们仍然属于同一个Git仓库，也仍然在同一台机器或同一套基础设施上工作。它不会自动分开：</p>
+<ul>
+<li>Git的共享引用和对象；</li>
+<li>测试数据库及其中的数据；</li>
+<li>本机端口、进程、容器、网络和数据卷；</li>
+<li>开发或真实环境；</li>
+<li>测试账号、外部系统和限额；</li>
+<li>日志、截图、检查结果和其它证据目录。</li>
+</ul>
+<p>因此，Director在启动并行任务时，为每轮ACL分配不会冲突的外部资源。例如，每项数据库测试使用独立的专用测试库，每个本地服务使用不同端口，每轮验证写入自己的证据目录。只有一套的真实环境默认串行更新，不让两个Agent同时发布并相互覆盖结果。</p>
+<p>这些分配写入各自启动方案。如果无法把一项关键外部资源分配成互不影响的独立资源，就把需要它的步骤排成明确的串行顺序，不用“小心一点”代替隔离。</p>
+<h2 id="第四步：为每个Agent准备独立上下文"><a href="#第四步：为每个Agent准备独立上下文" class="headerlink" title="第四步：为每个Agent准备独立上下文"></a>第四步：为每个Agent准备独立上下文</h2><p>每个主要Agent只需要读取完成自己任务所需的上下文，不需要理解所有并行任务的实施细节。交付一个worktree时，至少让Agent知道：</p>
+<ul>
+<li>它负责的ACL编号、工作来源和启动方案；</li>
+<li>需要遵守的REQ、Accepted设计和ADR；</li>
+<li>worktree路径、当前分支和明确的起点提交；</li>
+<li>可以修改的范围、已经分配的外部资源和不可执行的高风险动作；</li>
+<li>任务与其它ACL的已知依赖、预计集成顺序和交付方式；</li>
+<li>完成前需要运行的定点验证和需要保留的证据。</li>
+</ul>
+<p>不需要把Director与其它Agent的全部聊天记录同步到每个worktree。共同决定写回REQ、设计或启动方案，当前进展写入各自实施记录的“当前摘要”。任务在新会话中继续时，Agent重新读取这些内容并核对当前Git差异，不从记忆中猜测上一次做到了哪里。</p>
+<h2 id="第五步：让每个Agent交付一个可以独立验证的完整结果"><a href="#第五步：让每个Agent交付一个可以独立验证的完整结果" class="headerlink" title="第五步：让每个Agent交付一个可以独立验证的完整结果"></a>第五步：让每个Agent交付一个可以独立验证的完整结果</h2><p>并行开始以后，每个Agent在自己的worktree中推进完整任务。它可以修改前端、接口、领域逻辑、数据和测试中真正受影响的部分，不被“你只是前端Agent”之类的职能划分限制。完成时留下的是一个能被验证的结果，不是一批等别人收尾的文件。</p>
+<p>并行开发不需要让Agent之间持续互相播报每个实施细节。他们只需要告知会影响其它任务的变化：稳定契约改变、共享资源冲突、起点被修正，或者原定依赖不再成立。Director根据这些事实决定调整集成顺序、暂停某项工作，或者回到设计重新确认。</p>
+<p>如果一个Agent发现需要改动另一项ACL的范围，它不直接进入对方worktree修改。它先记录新事实和影响，由Director判断这是可以在集成时处理的局部适配，还是原来的任务拆分已经不再成立。如果会改变已确认的产品行为或技术边界，就暂停受影响的实施并回到设计。</p>
+<h2 id="第六步：主线依次接收并行结果"><a href="#第六步：主线依次接收并行结果" class="headerlink" title="第六步：主线依次接收并行结果"></a>第六步：主线依次接收并行结果</h2><p>多项任务可以同时开发，但不能同时改写主线。每个Agent先在自己的分支上完成范围内的代码、文档、定点验证和实施记录，并把修改整理成容易理解、目的单一的提交。Director或当次指定的集成Agent根据依赖和风险决定接收顺序。</p>
+<p>第一项结果进入主线以后，下一项先取得最新的main，处理它与当前main的差异，再重新运行受影响的定点验证。希望保持线性历史时，任务分支可以先同步当前主线：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rebase main</span><br></pre></td></tr></table></figure>
+
+<p>确认冲突已经解决且相关验证仍然通过后，再在主工作树中接收该分支：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge --ff-only acl-000039-conversation-favorites</span><br></pre></td></tr></table></figure>
+
+<p>代码冲突有两种。一种只是同一文件不同位置的机械冲突，集成Agent根据两边已确认的结果处理并重新测试。另一种暴露了两项任务对对象、状态、接口或权限的理解不同，这不是选择哪边代码更好合并的问题，而是设计矛盾。Director与Agent需要先回到相关设计统一答案。</p>
+<p>每项结果进入主线时做受影响的验证，全部接收后再做跨任务的整体验证。分支能够合并只证明Git接受了这些差异，不证明几项工作组合后的系统能够工作。</p>
+<h2 id="第七步：完成交付后再清理worktree"><a href="#第七步：完成交付后再清理worktree" class="headerlink" title="第七步：完成交付后再清理worktree"></a>第七步：完成交付后再清理worktree</h2><p>一项分支进入主线，不表示它的ACL已经结束。实际修改、验证、失败和跳过项、剩余问题、Director的结论确认以及实际合入提交仍要完整保留。ACL只有在这些事实齐全后才能进入<code>Completed</code>。</p>
+<p>确认分支结果已进入主线、所有需要的记录和证据已经交付，而且没有Agent继续使用该目录后，才移除worktree和对应短期分支。未合并结果、失败现场、待复核差异和其它Agent仍在使用的worktree都需要保留，不为了目录整洁而提前删除。</p>
+<h2 id="并行数量取决于Director能够评审和合并多少结果"><a href="#并行数量取决于Director能够评审和合并多少结果" class="headerlink" title="并行数量取决于Director能够评审和合并多少结果"></a>并行数量取决于Director能够评审和合并多少结果</h2><p>可用Agent数量不是并行数量的上限判断。Director还要看有多少真正独立的任务，外部资源能分成几份，以及自己能否及时处理歧义、评审结果和组织集成。</p>
+<p>如果五个Agent同时完成五个分支，但主线一次只能安全接收一个，其它分支就会迅速过期，后续时间都用在重新同步、解决冲突和补做验证上。少量稳定的并行通常比一次启动尽可能多的Agent更快。</p>
+<h2 id="回头检查这条路径"><a href="#回头检查这条路径" class="headerlink" title="回头检查这条路径"></a>回头检查这条路径</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">多项已启动的独立ACL</span><br><span class="line">  →检查依赖、修改范围和外部资源</span><br><span class="line">    →按冲突风险决定是否建立分支和worktree</span><br><span class="line">      →为每个主要Agent交付独立上下文</span><br><span class="line">        →各自完成可以独立验证的完整结果和定点验证</span><br><span class="line">          →按已定顺序依次进入主线</span><br><span class="line">            →运行整体验证并保留各轮记录</span><br></pre></td></tr></table></figure>
+
+<p>并行开发的目标是同时推进多项独立结果，不是让更多Agent出现在同一项任务中。worktree把各项任务的文件和未提交修改分开，启动方案和实施记录把上下文分开，外部资源分配和主线集成则让这些结果能够安全重新组合。</p>
+<p>同一任务的多Agent协作采用另一条按需路径：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">一项已启动的ACL</span><br><span class="line">  →当前写入者在隔离空间完成一个固定候选</span><br><span class="line">    →提交、推送并记录完整HEAD</span><br><span class="line">      →下一位Agent核对基线后接棒或评审</span><br><span class="line">        →共同结论写回正式事实源</span><br><span class="line">          →本地完成必要验证并由Director确认结果</span><br></pre></td></tr></table></figure>
+
+<p>两条路径可以同时存在：不同任务之间并行，同一任务内部串行。关键是每个时刻都能回答谁在写、正在修改哪个固定候选、下一步由谁接棒，以及哪些结论已经写回仓库。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95A-%E6%9C%AF%E8%AF%AD%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB/" rel="prev" title="ACDL研发流程附录A：术语和对象关系">
+                  <i class="fa fa-angle-left"></i> ACDL研发流程附录A：术语和对象关系
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B12-%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BB%8E%E5%93%AA%E9%87%8C%E5%BC%80%E5%A7%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F/" rel="next" title="ACDL研发流程12：不同工作从哪里开始、在哪里结束">
+                  ACDL研发流程12：不同工作从哪里开始、在哪里结束 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

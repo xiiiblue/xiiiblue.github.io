@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">292</span>
+          <span class="site-state-item-count">306</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -167,7 +167,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201706/spring-boot%E4%BD%BF%E7%94%A8slf4j+log4j/">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201804/Ubuntu%E5%AE%89%E8%A3%85OracleExpress/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -185,7 +185,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/201706/spring-boot%E4%BD%BF%E7%94%A8slf4j+log4j/" class="post-title-link" itemprop="url">spring-boot使用slf4j+log4j</a>
+          <a href="/201804/Ubuntu%E5%AE%89%E8%A3%85OracleExpress/" class="post-title-link" itemprop="url">Ubuntu安装OracleExpress</a>
         </h2>
 
         <div class="post-meta-container">
@@ -196,7 +196,7 @@
       </span>
       <span class="post-meta-item-text">Posted on</span>
 
-      <time title="Created: 2017-06-08 15:39:41" itemprop="dateCreated datePublished" datetime="2017-06-08T15:39:41+08:00">2017-06-08</time>
+      <time title="Created: 2018-11-06 15:29:28" itemprop="dateCreated datePublished" datetime="2018-11-06T15:29:28+08:00">2018-11-06</time>
     </span>
 
   
@@ -209,28 +209,48 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="spring-boot中使用slf4j-log4j"><a href="#spring-boot中使用slf4j-log4j" class="headerlink" title="spring-boot中使用slf4j+log4j"></a>spring-boot中使用slf4j+log4j</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><blockquote>
-<p>spring-boot默认是使用slf4j+logback做日志输出的， 本文主要演示如何切换为slf4j+log4j。<br>正常情况下，建议直接使用logback。</p>
-</blockquote>
-<p>在某SpringBoot项目中，因为要使用ELK做日志采集，局方要求使用log4j并给出了一组日志格式规范:  </p>
-<ol>
-<li>日志分为xxx-info和xxx-error两个文件，分开打印  </li>
-<li>日志格式要求为</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%d&#123;yyyy-MM-dd HH:mm:ss&#125; [%-5p](%-30c&#123;1&#125;) [TxId : %X&#123;PtxId&#125; , SpanId : %X&#123;PspanId&#125;] [ET:%X&#123;ENV_TYPE&#125;,AN:%X&#123;APP_NAME&#125;,SN:%X&#123;SERVICE_NAME&#125;,CN:%X&#123;CONTAINER_NAME&#125;,CI:%X&#123;CONTAINER_IP&#125;] %m%n</span><br></pre></td></tr></table></figure>
-
-<p>所以只能有两种方案可供选择：  </p>
-<ol>
-<li>配置logback，并保证与之前的log4j的行为一致  </li>
-<li>将logback切换为log4j</li>
-</ol>
-<p>由于面对日志格式中的一大堆%比较头大，于是选择了不怎么优雅的方案2，切换为log4j。</p>
-<h2 id="配置Maven依赖"><a href="#配置Maven依赖" class="headerlink" title="配置Maven依赖"></a>配置Maven依赖</h2><p>首先要显式的引入spring-boot-starter，并将其中的spring-boot-starter-logging排除掉<br>然后新增一个spring-boot-starter-log4j的依赖  </p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-logging<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-log4j<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.5.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-
-<h2 id="配置log4j"><a href="#配置log4j" class="headerlink" title="配置log4j"></a>配置log4j</h2><p>新建src&#x2F;resource&#x2F;log4j.properties，按正常方式配置即可<br>下面是一个双日志输出的样例：  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">log4j.rootCategory=info,file_info,file_error,stdout</span><br><span class="line">log4j.logger.org.springframework.web.filter.CommonsRequestLoggingFilter=debug,file_info,stdout</span><br><span class="line">log4j.additivity.org.springframework.web.filter.CommonsRequestLoggingFilter=false</span><br><span class="line"></span><br><span class="line">log4j.appender.stdout=org.apache.log4j.ConsoleAppender</span><br><span class="line">log4j.appender.stdout.Target=System.out</span><br><span class="line">log4j.appender.stdout.layout=org.apache.log4j.PatternLayout</span><br><span class="line">log4j.appender.stdout.layout.ConversionPattern=%d&#123;yyyy-MM-dd HH:mm:ss&#125; %-5p %c&#123;1&#125;:%L - %m%n</span><br><span class="line"></span><br><span class="line">log4j.appender.file_info=org.apache.log4j.RollingFileAppender</span><br><span class="line">log4j.appender.file_info.layout=org.apache.log4j.PatternLayout</span><br><span class="line">log4j.appender.file_info.MaxFileSize=100MB</span><br><span class="line">log4j.appender.file_info.MaxBackupIndex=10</span><br><span class="line">log4j.appender.file_info.layout.ConversionPattern=%d&#123;yyyy-MM-dd HH:mm:ss&#125; [%-5p](%-30c&#123;1&#125;) [TxId : %X&#123;PtxId&#125; , SpanId : %X&#123;PspanId&#125;] [ET:%X&#123;ENV_TYPE&#125;,AN:%X&#123;APP_NAME&#125;,SN:%X&#123;SERVICE_NAME&#125;,CN:%X&#123;CONTAINER_NAME&#125;,CI:%X&#123;CONTAINER_IP&#125;] %m%n</span><br><span class="line">log4j.appender.file_info.Threshold=DEBUG</span><br><span class="line">log4j.appender.file_info.append=true</span><br><span class="line">log4j.appender.file_info.File=/opt/logs/busi/crm_sdtools-info.log</span><br><span class="line"></span><br><span class="line">log4j.appender.file_error=org.apache.log4j.RollingFileAppender</span><br><span class="line">log4j.appender.file_error.layout=org.apache.log4j.PatternLayout</span><br><span class="line">log4j.appender.file_error.MaxFileSize=100MB</span><br><span class="line">log4j.appender.file_error.MaxBackupIndex=10</span><br><span class="line">log4j.appender.file_error.layout.ConversionPattern=%d&#123;yyyy-MM-dd HH:mm:ss&#125; [%-5p](%-30c&#123;1&#125;) [TxId : %X&#123;PtxId&#125; , SpanId : %X&#123;PspanId&#125;] [ET:%X&#123;ENV_TYPE&#125;,AN:%X&#123;APP_NAME&#125;,SN:%X&#123;SERVICE_NAME&#125;,CN:%X&#123;CONTAINER_NAME&#125;,CI:%X&#123;CONTAINER_IP&#125;] %m%n</span><br><span class="line">log4j.appender.file_error.Threshold=ERROR</span><br><span class="line">log4j.appender.file_error.append=true</span><br><span class="line">log4j.appender.file_error.File=/opt/logs/busi/crm_sdtools-error.log</span><br></pre></td></tr></table></figure>
+          <h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p><a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/database/database-technologies/express-edition/downloads/index.html">http://www.oracle.com/technetwork/database/database-technologies/express-edition/downloads/index.html</a></p>
+<p>Download	<br>Oracle Database Express Edition 11g Release 2 for Linux x64</p>
+<p>Copy the downloaded file and paste it in home directory.</p>
+<p>Unzip using the command:</p>
+<p>unzip oracle-xe-11.2.0-1.0.x86_64.rpm.zip<br>Install required packages using the command:</p>
+<p>sudo apt-get install alien libaio1 unixodbc<br>Enter into the Disk1 folder using command:</p>
+<p>cd Disk1&#x2F;<br>Convert RPM package format to DEB package format (that is used by Ubuntu) using the command:</p>
+<p>sudo alien –scripts -d oracle-xe-11.2.0-1.0.x86_64.rpm<br>Create the required chkconfig script using the command:</p>
+<p>sudo pico &#x2F;sbin&#x2F;chkconfig<br>The pico text editor is started and the commands are shown at the bottom of the screen. Now copy and paste the following into the file and save:</p>
+<p>#!&#x2F;bin&#x2F;bash</p>
+<h1 id="Oracle-11gR2-XE-installer-chkconfig-hack-for-Ubuntu"><a href="#Oracle-11gR2-XE-installer-chkconfig-hack-for-Ubuntu" class="headerlink" title="Oracle 11gR2 XE installer chkconfig hack for Ubuntu"></a>Oracle 11gR2 XE installer chkconfig hack for Ubuntu</h1><p>file&#x3D;&#x2F;etc&#x2F;init.d&#x2F;oracle-xe<br>if [[ ! <code>tail -n1 $file | grep INIT</code> ]]; then<br>    echo &gt;&gt; $file<br>    echo ‘### BEGIN INIT INFO’ &gt;&gt; $file<br>    echo ‘# Provides: OracleXE’ &gt;&gt; $file<br>    echo ‘# Required-Start: $remote_fs $syslog’ &gt;&gt; $file<br>    echo ‘# Required-Stop: $remote_fs $syslog’ &gt;&gt; $file<br>    echo ‘# Default-Start: 2 3 4 5’ &gt;&gt; $file<br>    echo ‘# Default-Stop: 0 1 6’ &gt;&gt; $file<br>    echo ‘# Short-Description: Oracle 11g Express Edition’ &gt;&gt; $file<br>    echo ‘### END INIT INFO’ &gt;&gt; $file<br>fi<br>update-rc.d oracle-xe defaults 80 01<br>Change the permission of the chkconfig file using the command:</p>
+<p>sudo chmod 755 &#x2F;sbin&#x2F;chkconfig<br>Set kernel parameters. Oracle 11gR2 XE requires additional kernel parameters which you need to set using the command:</p>
+<p>sudo pico &#x2F;etc&#x2F;sysctl.d&#x2F;60-oracle.conf<br>Copy the following into the file and save:</p>
+<h1 id="Oracle-11g-XE-kernel-parameters"><a href="#Oracle-11g-XE-kernel-parameters" class="headerlink" title="Oracle 11g XE kernel parameters"></a>Oracle 11g XE kernel parameters</h1><p>fs.file-max&#x3D;6815744<br>net.ipv4.ip_local_port_range&#x3D;9000 65000<br>kernel.sem&#x3D;250 32000 100 128<br>kernel.shmmax&#x3D;536870912<br>Verify the change using the command:</p>
+<p>sudo cat &#x2F;etc&#x2F;sysctl.d&#x2F;60-oracle.conf<br>You should see what you entered earlier. Now load the kernel parameters:</p>
+<p>sudo service procps start<br>Verify the new parameters are loaded using:</p>
+<p>sudo sysctl -q fs.file-max<br>You should see the file-max value that you entered earlier.</p>
+<p>Set up &#x2F;dev&#x2F;shm mount point for Oracle. Create the following file using the command:</p>
+<p>sudo pico &#x2F;etc&#x2F;rc2.d&#x2F;S01shm_load<br>Copy the following into the file and save.</p>
+<p>#!&#x2F;bin&#x2F;sh<br>case “$1” in<br>start)<br>    mkdir &#x2F;var&#x2F;lock&#x2F;subsys 2&gt;&#x2F;dev&#x2F;null<br>    touch &#x2F;var&#x2F;lock&#x2F;subsys&#x2F;listener<br>    rm &#x2F;dev&#x2F;shm 2&gt;&#x2F;dev&#x2F;null<br>    mkdir &#x2F;dev&#x2F;shm 2&gt;&#x2F;dev&#x2F;null<br>*)<br>    echo error<br>    exit 1<br>    ;;</p>
+<p>esac<br>Change the permissions of the file using the command:</p>
+<p>sudo chmod 755 &#x2F;etc&#x2F;rc2.d&#x2F;S01shm_load<br>Now execute the following commands:</p>
+<p>sudo ln -s &#x2F;usr&#x2F;bin&#x2F;awk &#x2F;bin&#x2F;awk<br>sudo mkdir &#x2F;var&#x2F;lock&#x2F;subsys<br>sudo touch &#x2F;var&#x2F;lock&#x2F;subsys&#x2F;listener<br>Now, Reboot Your System</p>
+<p>Step 3: Install Oracle<br>Install the oracle DBMS using the command:</p>
+<p>sudo dpkg –install oracle-xe_11.2.0-2_amd64.deb<br>Configure Oracle using the command:</p>
+<p>sudo &#x2F;etc&#x2F;init.d&#x2F;oracle-xe configure<br>Setup environment variables by editting your .bashrc file:</p>
+<p>pico ~&#x2F;.bashrc<br>Add the following lines to the end of the file:</p>
+<p>export ORACLE_HOME&#x3D;&#x2F;u01&#x2F;app&#x2F;oracle&#x2F;product&#x2F;11.2.0&#x2F;xe<br>export ORACLE_SID&#x3D;XE<br>export NLS_LANG&#x3D;<code>$ORACLE_HOME/bin/nls_lang.sh</code><br>export ORACLE_BASE&#x3D;&#x2F;u01&#x2F;app&#x2F;oracle<br>export LD_LIBRARY_PATH&#x3D;$ORACLE_HOME&#x2F;lib:$LD_LIBRARY_PATH<br>export PATH&#x3D;$ORACLE_HOME&#x2F;bin:$PATH<br>Load the changes by executing your profile:</p>
+<p>. ~&#x2F;.bashrc<br>Start the Oracle 11gR2 XE:</p>
+<p>sudo service oracle-xe start<br>Add user YOURUSERNAME to group dba using the command:</p>
+<p>sudo usermod -a -G dba YOURUSERNAME<br>Step 4: Using the Oracle XE Command Shell<br>Start the Oracle XE 11gR2 server using the command:</p>
+<p>sudo service oracle-xe start<br>Start command line shell as the system admin using the command:</p>
+<p>sqlplus sys as sysdba<br>Enter the password that you gave while configuring Oracle earlier. You will now be placed in a SQL environment that only understands SQL commands.</p>
+<p>Create a regular user account in Oracle using the SQL command:</p>
+<p>create user USERNAME identified by PASSWORD;<br>Replace USERNAME and PASSWORD with the username and password of your choice. Please remember this username and password. If you had error executing the above with a message about resetlogs, then execute the following SQL command and try again:</p>
+<p>alter database open resetlogs;<br>Grant privileges to the user account using the SQL command:</p>
+<p>grant connect, resource to USERNAME;<br>Replace USERNAME and PASSWORD with the username and password of your choice. Please remember this username and password.</p>
+<p>Exit the sys admin shell using the SQL command:</p>
+<p>exit;<br>Start the commandline shell as a regular user using the command:</p>
+<p>sqlplus<br>Now, you can run sql commands…</p>
+<p>Installing Oracle XE by hand<br>Installing Oracle XE with Vagrant and Puppet<br>Installing Oracle XE with Docker</p>
+<h2 id="docker方式"><a href="#docker方式" class="headerlink" title="docker方式"></a>docker方式</h2><p><a target="_blank" rel="noopener" href="https://tuhrig.de/3-ways-of-installing-oracle-xe-11g-on-ubuntu/">https://tuhrig.de/3-ways-of-installing-oracle-xe-11g-on-ubuntu/</a><br><a target="_blank" rel="noopener" href="https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce-1">https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-docker-ce-1</a><br><a target="_blank" rel="noopener" href="https://hub.docker.com/r/alexeiled/docker-oracle-xe-11g/">https://hub.docker.com/r/alexeiled/docker-oracle-xe-11g/</a></p>
 
       
     </div>
@@ -257,7 +277,7 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201611/%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BA%E7%AC%94%E8%AE%B0/">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201805/%E6%B8%85%E7%90%86.DS_Store%E8%84%9A%E6%9C%AC/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -275,7 +295,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/201611/%E6%A0%91%E9%9C%89%E6%B4%BE%E6%90%AD%E5%BB%BA%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">树霉派搭建笔记</a>
+          <a href="/201805/%E6%B8%85%E7%90%86.DS_Store%E8%84%9A%E6%9C%AC/" class="post-title-link" itemprop="url">Windows下清理.DS_Store文件</a>
         </h2>
 
         <div class="post-meta-container">
@@ -286,7 +306,7 @@
       </span>
       <span class="post-meta-item-text">Posted on</span>
 
-      <time title="Created: 2017-03-03 14:26:25" itemprop="dateCreated datePublished" datetime="2017-03-03T14:26:25+08:00">2017-03-03</time>
+      <time title="Created: 2018-11-06 15:29:07" itemprop="dateCreated datePublished" datetime="2018-11-06T15:29:07+08:00">2018-11-06</time>
     </span>
 
   
@@ -299,27 +319,775 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h2 id="系统设置工具"><a href="#系统设置工具" class="headerlink" title="系统设置工具"></a>系统设置工具</h2><p>raspi-config</p>
-<h2 id="设置root密码"><a href="#设置root密码" class="headerlink" title="设置root密码"></a>设置root密码</h2><p>sudo passwd root</p>
-<h2 id="修复ping权限"><a href="#修复ping权限" class="headerlink" title="修复ping权限"></a>修复ping权限</h2><p>ls -lsa &#x2F;bin&#x2F;ping<br>sudo chmod 4711 &#x2F;bin&#x2F;ping</p>
-<h2 id="网络设置"><a href="#网络设置" class="headerlink" title="网络设置"></a>网络设置</h2><p>vi &#x2F;etc&#x2F;network&#x2F;interfaces<br>auto eth0<br>iface eth0 inet static<br>address xxx.xxx.xxx.xxx<br>netmask 255.255.248.0<br>gateway xxx.xxx.xxx.xxx<br>dns-nameservers xxx.xxx.xxx.xxx</p>
-<h2 id="启动网卡"><a href="#启动网卡" class="headerlink" title="启动网卡"></a>启动网卡</h2><p>sudo ifup eth0<br>sudo &#x2F;etc&#x2F;init.d&#x2F;networking restart</p>
-<h2 id="代理设置"><a href="#代理设置" class="headerlink" title="代理设置"></a>代理设置</h2><p>sudo vi &#x2F;etc&#x2F;environment<br>export http_proxy&#x3D;”<a target="_blank" rel="noopener" href="http://134.32.87.142:1080/">http://134.32.87.142:1080</a>“<br>export http_proxy&#x3D;”<a target="_blank" rel="noopener" href="http://134.32.32.13:31315/">http://134.32.32.13:31315</a>“</p>
-<p>export http_proxy&#x3D;”<a target="_blank" rel="noopener" href="http://134.32.32.13:31081/">http://134.32.32.13:31081</a>“</p>
-<p>sudo vi &#x2F;etc&#x2F;apt&#x2F;apt.conf.d&#x2F;10proxy<br>Acquire::http::Proxy “<a target="_blank" rel="noopener" href="http://134.32.87.142:8080/">http://134.32.87.142:8080/</a>“;<br>Acquire::http::Proxy “<a target="_blank" rel="noopener" href="http://134.32.32.13:31315/">http://134.32.32.13:31315/</a>“;</p>
-<h2 id="apt-get使用阿里云镜像"><a href="#apt-get使用阿里云镜像" class="headerlink" title="apt-get使用阿里云镜像"></a>apt-get使用阿里云镜像</h2><p>sudo vi &#x2F;etc&#x2F;apt&#x2F;sources.list<br>deb <a target="_blank" rel="noopener" href="http://mirrors.aliyun.com/raspbian/raspbian/">http://mirrors.aliyun.com/raspbian/raspbian/</a> wheezy main non-free contrib<br>deb-src <a target="_blank" rel="noopener" href="http://mirrors.aliyun.com/raspbian/raspbian/">http://mirrors.aliyun.com/raspbian/raspbian/</a> wheezy main non-free contrib</p>
-<h2 id="redsocks透明代理网关"><a href="#redsocks透明代理网关" class="headerlink" title="redsocks透明代理网关"></a>redsocks透明代理网关</h2><p>开启IPV4转发：<br>sudo vi &#x2F;etc&#x2F;sysctl.conf<br>net.ipv4.ip_forward&#x3D;1<br>sysctl -p &#x2F;etc&#x2F;sysctl.conf</p>
-<p>源码编译Redsocks：<br>sudo apt install libevent-dev<br>make</p>
-<p>redsocks配置文件：<br>sudo vi &#x2F;etc&#x2F;redsocks.conf</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">base &#123;</span><br><span class="line">	log_debug = off;</span><br><span class="line">	log_info = on;</span><br><span class="line">	log = &quot;file:/home/pi/redsocks/logs/redsocks.log&quot;;</span><br><span class="line">	daemon = off;</span><br><span class="line">	redirector = iptables;</span><br><span class="line">&#125;</span><br><span class="line">redsocks &#123;</span><br><span class="line">	local_ip = xxx.xxx.xxx.xxx;</span><br><span class="line">	local_port = 3128;</span><br><span class="line">	ip = xxx.xxx.xxx.xxx;</span><br><span class="line">	port = 31080;</span><br><span class="line">	type = socks5;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <p>如果涉及macOS与Windows交换文件的话，在Windows会有一些无用的.DS_Store文件需要清理。</p>
+<p>可以在gitbash&#x2F;cygwin&#x2F;cmder下执行如下命令清理：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -name &#x27;*.DS_Store&#x27; -type f -delete</span><br></pre></td></tr></table></figure>
+      
+    </div>
 
-<p>iptables配置：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">iptables -F</span><br><span class="line">iptables -X</span><br><span class="line">iptables -Z</span><br><span class="line"></span><br><span class="line">iptables -P INPUT DROP</span><br><span class="line">iptables -P OUTPUT ACCEPT</span><br><span class="line">iptables -P FORWARD ACCEPT</span><br><span class="line"></span><br><span class="line">iptables -A INPUT -m state --state NEW,ESTABLISHED -j ACCEPT</span><br><span class="line">iptables -A INPUT -p icmp -j ACCEPT</span><br><span class="line">iptables -A INPUT -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT</span><br><span class="line">iptables -A INPUT -p tcp --dport 3128 -m state --state NEW,ESTABLISHED -j ACCEPT</span><br><span class="line"></span><br><span class="line">iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -j MASQUERADE</span><br><span class="line">iptables -t nat -N REDSOCKS</span><br><span class="line"></span><br><span class="line">iptables -t nat -A REDSOCKS -d 127.0.0.1 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 10.0.0.0/8 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 172.0.0.0/8 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 192.168.0.0/16 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 132.0.0.0/8 -j RETURN</span><br><span class="line">iptables -t nat -A REDSOCKS -d 134.0.0.0/8 -j RETURN</span><br><span class="line"></span><br><span class="line">iptables -t nat -A SS -p tcp -j REDIRECT --to-port 3128</span><br><span class="line"></span><br><span class="line">iptables -t nat -A PREROUTING -p tcp -j SS</span><br><span class="line">iptables -t nat -A OUTPUT -p tcp -j SS</span><br></pre></td></tr></table></figure>
+    
+    
+    
 
-<h2 id="dnsmasq架设DNS服务器"><a href="#dnsmasq架设DNS服务器" class="headerlink" title="dnsmasq架设DNS服务器"></a>dnsmasq架设DNS服务器</h2><p>sudo apt install dnsmasq</p>
-<h2 id="shadowsocks"><a href="#shadowsocks" class="headerlink" title="shadowsocks"></a>shadowsocks</h2><p>apt-get install python-pip<br>pip install shadowsocks</p>
-<h2 id="nginx配置端口"><a href="#nginx配置端口" class="headerlink" title="nginx配置端口"></a>nginx配置端口</h2><p>sudo vi  &#x2F;etc&#x2F;nginx&#x2F;sites-available&#x2F;default<br>listen 30080;</p>
-<h2 id="设置时间"><a href="#设置时间" class="headerlink" title="设置时间"></a>设置时间</h2><p>sudo raspi-config<br>ntpd -q -g<br>sudo date -s “2016-11-8 14:20:00”</p>
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201805/Windows%E4%B8%8Bgit%E6%8D%A2%E8%A1%8C%E7%AC%A6%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201805/Windows%E4%B8%8Bgit%E6%8D%A2%E8%A1%8C%E7%AC%A6%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">Windows下git换行符配置</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:28:51" itemprop="dateCreated datePublished" datetime="2018-11-06T15:28:51+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="最优配置"><a href="#最优配置" class="headerlink" title="最优配置"></a>最优配置</h2><p>为了最大限度兼容macOS以及Linux，需要：  </p>
+<ol>
+<li>提交时转换为LF，检出时不转换  </li>
+<li>拒绝提交包含混合换行符的文件</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global core.autocrlf input</span><br><span class="line">git config --global core.safecrlf true</span><br></pre></td></tr></table></figure>
+
+<h2 id="批量将CRLF转换成LF"><a href="#批量将CRLF转换成LF" class="headerlink" title="批量将CRLF转换成LF"></a>批量将CRLF转换成LF</h2><p>如果在Windows下不慎将部分文本的换行符写为CRLF，可以使用dos2unix工具修复回LF</p>
+<p>在Cmder或Cywin下执行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find . -type f|xargs dos2unix</span><br></pre></td></tr></table></figure>
+
+<h2 id="IDE配置"><a href="#IDE配置" class="headerlink" title="IDE配置"></a>IDE配置</h2><p>注意及时将VS Code、IntelliJ IDEA等编辑器默认配置修改，将换行符置为LF！</p>
+<h2 id="附：autocrlf参数说明"><a href="#附：autocrlf参数说明" class="headerlink" title="附：autocrlf参数说明"></a>附：autocrlf参数说明</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 提交时转换为LF，检出时转换为CRLF</span><br><span class="line">git config --global core.autocrlf true</span><br><span class="line"></span><br><span class="line"># 提交时转换为LF，检出时不转换</span><br><span class="line">git config --global core.autocrlf input</span><br><span class="line"></span><br><span class="line"># 提交检出均不转换</span><br><span class="line">git config --global core.autocrlf false</span><br></pre></td></tr></table></figure>
+
+<h2 id="附：safecrlf参数说明"><a href="#附：safecrlf参数说明" class="headerlink" title="附：safecrlf参数说明"></a>附：safecrlf参数说明</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 拒绝提交包含混合换行符的文件</span><br><span class="line">git config --global core.safecrlf true</span><br><span class="line"></span><br><span class="line"># 允许提交包含混合换行符的文件</span><br><span class="line">git config --global core.safecrlf false</span><br><span class="line"></span><br><span class="line"># 提交包含混合换行符的文件时给出警告</span><br><span class="line">git config --global core.safecrlf warn</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201805/macOS%E4%B8%8B%E4%BD%BF%E7%94%A8brew%E5%BF%AB%E9%80%9F%E5%AE%89%E8%A3%85Kafka/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201805/macOS%E4%B8%8B%E4%BD%BF%E7%94%A8brew%E5%BF%AB%E9%80%9F%E5%AE%89%E8%A3%85Kafka/" class="post-title-link" itemprop="url">macOS下使用brew快速安装Kafka</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:28:39" itemprop="dateCreated datePublished" datetime="2018-11-06T15:28:39+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install kafka</span><br></pre></td></tr></table></figure>
+
+<p>如果缺少JDK8依赖，或安装了JDK10，则需要先通过<code>brew cask</code>插件安装JDK8：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew cask install java8</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装位置"><a href="#安装位置" class="headerlink" title="安装位置"></a>安装位置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/Cellar/zookeeper</span><br><span class="line">/usr/local/Cellar/kafka</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置文件位置"><a href="#配置文件位置" class="headerlink" title="配置文件位置"></a>配置文件位置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/etc/kafka/server.properties</span><br><span class="line">/usr/local/etc/kafka/zookeeper.properties</span><br></pre></td></tr></table></figure>
+
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p>直接启动：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zookeeper-server-start /usr/local/etc/kafka/zookeeper.properties &amp;</span><br><span class="line">kafka-server-start /usr/local/etc/kafka/server.properties &amp;</span><br></pre></td></tr></table></figure>
+<p>或通过<code>brew services</code>插件启动</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew services start zookeeper</span><br><span class="line">brew services start kafka</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建topic"><a href="#创建topic" class="headerlink" title="创建topic"></a>创建topic</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test</span><br></pre></td></tr></table></figure>
+<h2 id="查看创建的topic"><a href="#查看创建的topic" class="headerlink" title="查看创建的topic"></a>查看创建的topic</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-topics.sh --list --zookeeper localhost:2181</span><br></pre></td></tr></table></figure>
+
+<h2 id="发送一些消息"><a href="#发送一些消息" class="headerlink" title="发送一些消息"></a>发送一些消息</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-console-producer.sh --broker-list localhost:9092 --topic test </span><br></pre></td></tr></table></figure>
+
+<h2 id="消费消息"><a href="#消费消息" class="headerlink" title="消费消息"></a>消费消息</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning</span><br></pre></td></tr></table></figure>
+
+<h2 id="附：brew-services说明"><a href="#附：brew-services说明" class="headerlink" title="附：brew services说明"></a>附：brew services说明</h2><p><a target="_blank" rel="noopener" href="https://github.com/Homebrew/homebrew-services">https://github.com/Homebrew/homebrew-services</a></p>
+<h2 id="附：brew-cask说明"><a href="#附：brew-cask说明" class="headerlink" title="附：brew cask说明"></a>附：brew cask说明</h2><p><a target="_blank" rel="noopener" href="https://caskroom.github.io/">https://caskroom.github.io</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201805/Docker%E5%AE%89%E8%A3%85oracle1Express/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201805/Docker%E5%AE%89%E8%A3%85oracle1Express/" class="post-title-link" itemprop="url">Docker安装OracleExpress</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:28:26" itemprop="dateCreated datePublished" datetime="2018-11-06T15:28:26+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="GitHub地址"><a href="#GitHub地址" class="headerlink" title="GitHub地址"></a>GitHub地址</h2><p><a target="_blank" rel="noopener" href="https://github.com/wnameless/docker-oracle-xe-11g">https://github.com/wnameless/docker-oracle-xe-11g</a></p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>Ubuntu 16.04环境:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull wnameless/oracle-xe-11g:16.04</span><br></pre></td></tr></table></figure>
+
+<p>Ubuntu 18.04环境:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull wnameless/oracle-xe-11g</span><br></pre></td></tr></table></figure>
+
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 10022:22 -p 1521:1521 -e ORACLE_ALLOW_REMOTE=true wnameless/oracle-xe-11g:16.04</span><br><span class="line">docker run -d -p 10022:22 -p 1521:1521 -e ORACLE_ALLOW_REMOTE=true myoracle</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>开放22和1521端口</p>
+</blockquote>
+<h2 id="查看启动日志"><a href="#查看启动日志" class="headerlink" title="查看启动日志"></a>查看启动日志</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs -f c154cf832b7a1c77092b2cbe47457153bf853d223d861d0f1cac6af4f73e3ea1</span><br></pre></td></tr></table></figure>
+
+<h2 id="sqlplus测试"><a href="#sqlplus测试" class="headerlink" title="sqlplus测试"></a>sqlplus测试</h2><p>Oracle默认连接参数： </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hostname: localhost</span><br><span class="line">port: 1521</span><br><span class="line">sid: xe</span><br><span class="line">username: system</span><br><span class="line">password: oracle</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">本地连接</span><br><span class="line">su - oracle</span><br><span class="line">cd $ORACLE_HOME</span><br><span class="line">bin/sqlplus / as sysdba</span><br><span class="line"></span><br><span class="line">或远程连接</span><br><span class="line">sqlplus system/oracle@127.0.0.1:1521/xe</span><br></pre></td></tr></table></figure>
+
+<h2 id="SSH连接"><a href="#SSH连接" class="headerlink" title="SSH连接"></a>SSH连接</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh-copy-id -i -p10022 root@127.0.0.1   #admin</span><br><span class="line">ssh root@127.0.0.1 -p 10022</span><br></pre></td></tr></table></figure>
+
+<h2 id="docker-exec连接"><a href="#docker-exec连接" class="headerlink" title="docker exec连接"></a>docker exec连接</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it 5d9430198388 bash</span><br></pre></td></tr></table></figure>
+
+<h2 id="挂载宿主磁盘"><a href="#挂载宿主磁盘" class="headerlink" title="挂载宿主磁盘"></a>挂载宿主磁盘</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -v /Users/bluexiii/extra/dump:/dump -p 10022:22 -p 1521:1521 -e ORACLE_ALLOW_REMOTE=true wnameless/oracle-xe-11g:16.04</span><br><span class="line"></span><br><span class="line">docker run -d -v /Users/bluexiii/extra/dump:/dump -p 10022:22 -p 1521:1521 -e ORACLE_ALLOW_REMOTE=true myoracle</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>之后就可以impdp了</p>
+</blockquote>
+<h2 id="保存变更"><a href="#保存变更" class="headerlink" title="保存变更"></a>保存变更</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker diff 5d9430198388</span><br><span class="line">docker commit 5d9430198388 myoracle</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://my.oschina.net/Cleverdada/blog/801124">https://my.oschina.net/Cleverdada/blog/801124</a><br><a target="_blank" rel="noopener" href="https://hacpai.com/article/1492914187689">https://hacpai.com/article/1492914187689</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201806/Kettle%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201806/Kettle%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Kettle学习笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:27:08" itemprop="dateCreated datePublished" datetime="2018-11-06T15:27:08+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>本文简要整理一下Kettle学习过程中的相关文档</p>
+</blockquote>
+<h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://community.hitachivantara.com/docs/DOC-1009855-data-integration-kettle">https://community.hitachivantara.com/docs/DOC-1009855-data-integration-kettle</a><br><a target="_blank" rel="noopener" href="https://github.com/pentaho/pentaho-kettle">https://github.com/pentaho/pentaho-kettle</a></p>
+<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p><a target="_blank" rel="noopener" href="https://sourceforge.net/projects/pentaho/files/Data%20Integration/">https://sourceforge.net/projects/pentaho/files/Data%20Integration/</a></p>
+<blockquote>
+<p>JDK10下启动报错，需切至低版本JDK</p>
+</blockquote>
+<h2 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h2><p><a target="_blank" rel="noopener" href="https://wiki.pentaho.com/display/EAI/Pan+User+Documentation">https://wiki.pentaho.com/display/EAI/Pan+User+Documentation</a></p>
+<h2 id="中文教程"><a href="#中文教程" class="headerlink" title="中文教程"></a>中文教程</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/4d8171150faf">https://www.jianshu.com/p/4d8171150faf</a><br><a target="_blank" rel="noopener" href="https://juejin.im/entry/590c215ca22b9d0058e8e56b">https://juejin.im/entry/590c215ca22b9d0058e8e56b</a><br><a target="_blank" rel="noopener" href="https://ask.hellobi.com/blog/yuguiyang1990/category/1532">https://ask.hellobi.com/blog/yuguiyang1990/category/1532</a></p>
+<h2 id="ktr执行"><a href="#ktr执行" class="headerlink" title="ktr执行"></a>ktr执行</h2><p>.&#x2F;pan.sh -file&#x3D;”.&#x2F;scripts&#x2F;APP_CODE.ktr”<br>.&#x2F;pan.sh -file&#x3D;”.&#x2F;scripts&#x2F;APP_ZHIJI_CORRESPONDING.ktr”<br>.&#x2F;pan.sh -file&#x3D;”.&#x2F;scripts&#x2F;USER_BASIC_INFO.ktr”</p>
+<h2 id="kjb执行"><a href="#kjb执行" class="headerlink" title="kjb执行"></a>kjb执行</h2><p>.&#x2F;kitchen.sh -file&#x3D;”.&#x2F;scripts&#x2F;heimdall.kjb”</p>
+<h2 id="命令行输出乱码"><a href="#命令行输出乱码" class="headerlink" title="命令行输出乱码"></a>命令行输出乱码</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export LANG=zh_CN.UTF-8</span><br></pre></td></tr></table></figure>
+
+<h2 id="MySQL插表乱码"><a href="#MySQL插表乱码" class="headerlink" title="MySQL插表乱码"></a>MySQL插表乱码</h2><p>数据源选项中<br>Advanced，添加:<br><code>set names utf8;</code></p>
+<p>Options，添加：<br><code>characterEncoding = utf8</code></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201806/InfluxDB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201806/InfluxDB/" class="post-title-link" itemprop="url">InfluxDB学习笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:27:04" itemprop="dateCreated datePublished" datetime="2018-11-06T15:27:04+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://www.influxdata.com/time-series-platform/influxdb/">https://www.influxdata.com/time-series-platform/influxdb/</a></p>
+<p>InfluxDB是InfluxData的核心产品。InfluxDB是一个开源分布式时序、时间和指标数据库，使用Go语言编写，无需外部依赖。其设计目标是实现分布式和水平伸缩扩展。</p>
+<h2 id="教程"><a href="#教程" class="headerlink" title="教程"></a>教程</h2><p><a target="_blank" rel="noopener" href="https://jasper-zhang1.gitbooks.io/influxdb/content/Concepts/key_concepts.html">https://jasper-zhang1.gitbooks.io/influxdb/content/Concepts/key_concepts.html</a><br><a target="_blank" rel="noopener" href="https://docs.influxdata.com/influxdb/v1.5/">https://docs.influxdata.com/influxdb/v1.5/</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/48104975d60a">https://www.jianshu.com/p/48104975d60a</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a373784c0bf9">https://www.jianshu.com/p/a373784c0bf9</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/b51ba7f88fb0">https://www.jianshu.com/p/b51ba7f88fb0</a><br><a target="_blank" rel="noopener" href="https://jkzhao.github.io/2017/12/15/%E6%97%B6%E5%BA%8F%E6%95%B0%E6%8D%AE%E5%BA%93InfluxDB/">https://jkzhao.github.io/2017/12/15/时序数据库InfluxDB/</a><br><a target="_blank" rel="noopener" href="http://www.ywnds.com/?p=10763">http://www.ywnds.com/?p=10763</a><br><a target="_blank" rel="noopener" href="https://anyof.me/articles/390">https://anyof.me/articles/390</a><br><a target="_blank" rel="noopener" href="https://xtutu.gitbooks.io/influxdb-handbook/content/an_zhuang_shi_yong.html">https://xtutu.gitbooks.io/influxdb-handbook/content/an_zhuang_shi_yong.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/a1344ca86e9b">https://www.jianshu.com/p/a1344ca86e9b</a><br><a target="_blank" rel="noopener" href="https://code-examples.net/zh-CN/docs/influxdata/influxdb/v1.3/troubleshooting/frequently-asked-questions/index">https://code-examples.net/zh-CN/docs/influxdata/influxdb/v1.3/troubleshooting/frequently-asked-questions/index</a></p>
+<h2 id="安装方式"><a href="#安装方式" class="headerlink" title="安装方式"></a>安装方式</h2><p><a target="_blank" rel="noopener" href="https://influxdata.com/downloads/">https://influxdata.com/downloads/</a></p>
+<h3 id="macOS"><a href="#macOS" class="headerlink" title="macOS"></a>macOS</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">brew update</span><br><span class="line">brew install influxdb</span><br></pre></td></tr></table></figure>
+<p>或</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://dl.influxdata.com/influxdb/releases/influxdb-1.5.4_darwin_amd64.tar.gz</span><br><span class="line">tar zxvf influxdb-1.5.4_darwin_amd64.tar.gz</span><br></pre></td></tr></table></figure>
+
+<h3 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull influxdb</span><br></pre></td></tr></table></figure>
+
+<h3 id="Ubuntu"><a href="#Ubuntu" class="headerlink" title="Ubuntu"></a>Ubuntu</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.influxdata.com/influxdb/releases/influxdb_1.5.4_amd64.deb</span><br><span class="line">sudo dpkg -i influxdb_1.5.4_amd64.deb</span><br></pre></td></tr></table></figure>
+
+<h3 id="CentOS"><a href="#CentOS" class="headerlink" title="CentOS"></a>CentOS</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.influxdata.com/influxdb/releases/influxdb-1.5.4.x86_64.rpm</span><br><span class="line">sudo yum localinstall influxdb-1.5.4.x86_64.rpm</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><h3 id="配置文件路径"><a href="#配置文件路径" class="headerlink" title="配置文件路径"></a>配置文件路径</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/etc/influxdb.conf</span><br><span class="line">或</span><br><span class="line">/etc/influxdb/influxdb.conf</span><br></pre></td></tr></table></figure>
+
+<h3 id="生成默认配置"><a href="#生成默认配置" class="headerlink" title="生成默认配置"></a>生成默认配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">influxd config &gt; /etc/influxdb/influxdb.generated.conf</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="名词"><a href="#名词" class="headerlink" title="名词"></a>名词</h2><table>
+<thead>
+<tr>
+<th>name</th>
+<th>desc</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>database</td>
+<td>数据库</td>
+</tr>
+<tr>
+<td>measurement</td>
+<td>数据库中的表</td>
+</tr>
+<tr>
+<td>points</td>
+<td>表里面的一行数据</td>
+</tr>
+<tr>
+<td>time</td>
+<td>每个数据记录时间，是数据库中的主索引(会自动生成)</td>
+</tr>
+<tr>
+<td>fields</td>
+<td>各种记录值（没有索引的属性）也就是记录的值：温度， 湿度</td>
+</tr>
+<tr>
+<td>tags</td>
+<td>各种有索引的属性：地区，海拔</td>
+</tr>
+<tr>
+<td>series</td>
+<td>tags的组合，类似复合索引</td>
+</tr>
+</tbody></table>
+<h2 id="命令行方式登入"><a href="#命令行方式登入" class="headerlink" title="命令行方式登入"></a>命令行方式登入</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">influx</span><br><span class="line">influx -precision rfc3339  # 显示标准时间</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">show databases</span><br><span class="line">create database mydb</span><br><span class="line">use mydb</span><br></pre></td></tr></table></figure>
+
+<h2 id="显示所有表"><a href="#显示所有表" class="headerlink" title="显示所有表"></a>显示所有表</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show measurements</span><br></pre></td></tr></table></figure>
+
+<h2 id="新建表-插入数据"><a href="#新建表-插入数据" class="headerlink" title="新建表&#x2F;插入数据"></a>新建表&#x2F;插入数据</h2><p>无建表语句，第一次insert后自动创建 p</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">INSERT cpu,host=serverA,region=us_west value=0.64</span><br><span class="line">INSERT temperature,machine=unit42,type=assembly external=25,internal=37</span><br><span class="line"></span><br><span class="line">其中:  </span><br><span class="line">cpu  # 表名</span><br><span class="line">host=serverA,region=us_west  # tag</span><br><span class="line">value=0.64  # field</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="删除表"><a href="#删除表" class="headerlink" title="删除表"></a>删除表</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">drop measurement weather </span><br></pre></td></tr></table></figure>
+
+<h2 id="series操作"><a href="#series操作" class="headerlink" title="series操作"></a>series操作</h2><p>series表示这个表里面的数据，可以在图表上画成几条线，series主要通过tags排列组合算出来。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show series from weather</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="查询数据"><a href="#查询数据" class="headerlink" title="查询数据"></a>查询数据</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM /.*/ LIMIT 1</span><br><span class="line">SELECT * FROM cpu_load_short</span><br><span class="line">SELECT * FROM cpu_load_short WHERE value &gt; 0.9</span><br></pre></td></tr></table></figure>
+
+<h2 id="查询-修改RETENTION"><a href="#查询-修改RETENTION" class="headerlink" title="查询&#x2F;修改RETENTION"></a>查询&#x2F;修改RETENTION</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SHOW RETENTION POLICIES ON &quot;mydb&quot;</span><br><span class="line">单位有 w/d/h/s</span><br><span class="line">ALTER RETENTION POLICY &quot;autogen&quot; ON &quot;mydb&quot; DURATION 100d DEFAULT</span><br><span class="line">ALTER RETENTION POLICY &quot;autogen&quot; ON &quot;mydb&quot; DURATION 0s DEFAULT</span><br></pre></td></tr></table></figure>
+
+<h2 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">显示用户</span><br><span class="line">SHOW USERS</span><br><span class="line">创建用户</span><br><span class="line">CREATE USER &quot;username&quot; WITH PASSWORD &#x27;password&#x27;</span><br><span class="line">创建管理员权限的用户</span><br><span class="line">CREATE USER &quot;username&quot; WITH PASSWORD &#x27;password&#x27; WITH ALL PRIVILEGES</span><br><span class="line">删除用户</span><br><span class="line">DROP USER &quot;username&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="HTTP创建和删除数据库"><a href="#HTTP创建和删除数据库" class="headerlink" title="HTTP创建和删除数据库"></a>HTTP创建和删除数据库</h2><p>curl -i -XPOST <a target="_blank" rel="noopener" href="http://localhost:8086/query">http://localhost:8086/query</a> –data-urlencode “q&#x3D;CREATE DATABASE mydb”<br>curl -POST <a target="_blank" rel="noopener" href="http://localhost:8086/query">http://localhost:8086/query</a> –data-urlencode “q&#x3D;DROP DATABASE mydb”</p>
+<h2 id="HTTP添加数据"><a href="#HTTP添加数据" class="headerlink" title="HTTP添加数据"></a>HTTP添加数据</h2><p>单条</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -i -XPOST &#x27;http://localhost:8086/write?db=mydb&#x27; --data-binary &#x27;cpu_load_short,host=server01,region=us-west value=0.64 1434055562000000000&#x27;</span><br></pre></td></tr></table></figure>
+<p>多条</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -i -XPOST &#x27;http://localhost:8086/write?db=mydb&#x27; --data-binary &#x27;cpu_load_short,host=server02 value=0.67</span><br><span class="line">cpu_load_short,host=server02,region=us-west value=0.55 1422568543702900257</span><br><span class="line">cpu_load_short,direction=in,host=server01,region=us-west value=2.0 1422568543702900257&#x27;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="使用HTTP查询数据"><a href="#使用HTTP查询数据" class="headerlink" title="使用HTTP查询数据"></a>使用HTTP查询数据</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -GET &#x27;http://localhost:8086/query?pretty=true&#x27; --data-urlencode &quot;db=mydb&quot; --data-urlencode &quot;q=show measurements&quot;</span><br></pre></td></tr></table></figure>
+<p>或直接在浏览器中:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:8086/query?pretty=true&amp;db=mydb&amp;q=show%20measurements</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -G &#x27;http://localhost:8086/query?pretty=true&#x27; --data-urlencode &quot;db=mydb&quot; --data-urlencode &quot;q=SELECT \&quot;value\&quot; FROM \&quot;cpu_load_short\&quot; WHERE \&quot;region\&quot;=&#x27;us-west&#x27;&quot;</span><br></pre></td></tr></table></figure>
+
+<p>查询多条用分号分割：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -GET &#x27;http://localhost:8086/query?db=_internal&#x27; --data-urlencode &quot;q=show databases;show measurements&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="时间格式"><a href="#时间格式" class="headerlink" title="时间格式"></a>时间格式</h3><p>epoch&#x3D;[h,m,s,ms,u,ns]</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -G &#x27;http://localhost:8086/query&#x27; --data-urlencode &quot;db=mydb&quot; --data-urlencode &quot;epoch=s&quot; --data-urlencode &quot;q=SELECT value FROM cpu_load_short WHERE region=&#x27;us-west&#x27;&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="指定每次查询数据大小"><a href="#指定每次查询数据大小" class="headerlink" title="指定每次查询数据大小"></a>指定每次查询数据大小</h3><p>chunk_size</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -G &#x27;http://localhost:8086/query&#x27; --data-urlencode &quot;db=mydb&quot; --data-urlencode &quot;chunk_size=200&quot; --data-urlencode &quot;q=SELECT value FROM cpu_load_short WHERE region=&#x27;us-west&#x27;&quot;</span><br></pre></td></tr></table></figure>
+
+<h2 id="WEB控制台"><a href="#WEB控制台" class="headerlink" title="WEB控制台"></a>WEB控制台</h2><p>1.3内置8086WEB管理已经移除，需要使用TICK工具栈中的Chronograf来进行管理。</p>
+<p>下载安装说明：<br><a target="_blank" rel="noopener" href="https://portal.influxdata.com/downloads">https://portal.influxdata.com/downloads</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install chronograf</span><br></pre></td></tr></table></figure>
+
+<p>使用:<br><a target="_blank" rel="noopener" href="http://localhost:8888/">http://localhost:8888</a></p>
+<h2 id="测试数据导入"><a href="#测试数据导入" class="headerlink" title="测试数据导入"></a>测试数据导入</h2><p><a target="_blank" rel="noopener" href="https://docs.influxdata.com/influxdb/v1.6/query_language/data_download/">https://docs.influxdata.com/influxdb/v1.6/query_language/data_download/</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE DATABASE NOAA_water_database</span><br><span class="line"></span><br><span class="line">curl https://s3.amazonaws.com/noaa.water-database/NOAA_data.txt -o NOAA_data.txt</span><br><span class="line">influx -import -path=NOAA_data.txt -precision=s -database=NOAA_water_database</span><br><span class="line"></span><br><span class="line">influx -precision rfc3339 -database NOAA_water_database</span><br></pre></td></tr></table></figure>
+
+<h2 id="数据查询详细语法"><a href="#数据查询详细语法" class="headerlink" title="数据查询详细语法"></a>数据查询详细语法</h2><p><a target="_blank" rel="noopener" href="https://jasper-zhang1.gitbooks.io/influxdb/content/Query_language/data_exploration.html">https://jasper-zhang1.gitbooks.io/influxdb/content/Query_language/data_exploration.html</a></p>
+<h2 id="备份"><a href="#备份" class="headerlink" title="备份"></a>备份</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 全量</span></span><br><span class="line">influxd backup -portable /mnt/disk/bak/influxdb/total</span><br><span class="line"><span class="comment"># 指定库</span></span><br><span class="line">influxd backup -portable -database heimdall /mnt/disk/bak/influxdb/heimdall</span><br><span class="line"><span class="comment"># 指定时间</span></span><br><span class="line">influxd backup -portable -database heimdall -start 2018-09-01T00:00:00Z -end 2018-09-30T23:59:59Z  /mnt/disk/bak/influxdb/heimdall</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="恢复"><a href="#恢复" class="headerlink" title="恢复"></a>恢复</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 恢复到名为heimdall_bak的库</span></span><br><span class="line">influxd restore -portable -db heimdall -newdb heimdall_bak /mnt/disk/bak/influxdb/heimdall</span><br><span class="line"></span><br><span class="line"><span class="comment"># 移动库</span></span><br><span class="line">create database heimdall_new </span><br><span class="line">use heimdall_bak</span><br><span class="line">SELECT * INTO heimdall_new..:MEASUREMENT FROM /.*/ GROUP BY *</span><br><span class="line">drop heimdall_bak</span><br></pre></td></tr></table></figure>
+
+<h2 id="连续查询"><a href="#连续查询" class="headerlink" title="连续查询"></a>连续查询</h2><p>自动缩小取样存储到新的measurement中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CREATE CONTINUOUS QUERY &quot;cq_basic&quot; ON &quot;transportation&quot;</span><br><span class="line">BEGIN</span><br><span class="line">  SELECT mean(&quot;passengers&quot;) INTO &quot;average_passengers&quot; FROM &quot;bus_data&quot; GROUP BY time(1h)</span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201806/BrewServices/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201806/BrewServices/" class="post-title-link" itemprop="url">使用brew services管理服务</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:24:37" itemprop="dateCreated datePublished" datetime="2018-11-06T15:24:37+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>官网：<br><a target="_blank" rel="noopener" href="https://github.com/Homebrew/homebrew-services">https://github.com/Homebrew/homebrew-services</a></p>
+<p>macOS使用<code>launchctl</code>命令加载开机自动运行的服务，<code>brew service</code>可以简化lauchctl的操作。</p>
+<p>以MySQL为例，使用launchctl启动:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln -sfv /usr/local/opt/mysql/*.plist ~/Library/LaunchAgents</span><br><span class="line">launchctl load ~/Library/LaunchAgents/homebrew.mxcl.mysql.plist</span><br></pre></td></tr></table></figure>
+
+<p>如使用brew service可以简化为:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew services start mysql</span><br></pre></td></tr></table></figure>
+
+<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">brew services list  # 查看使用brew安装的服务列表</span><br><span class="line">brew services run formula|--all  # 启动服务（仅启动不注册）</span><br><span class="line">brew services start formula|--all  # 启动服务，并注册</span><br><span class="line">brew services stop formula|--all   # 停止服务，并取消注册</span><br><span class="line">brew services restart formula|--all  # 重启服务，并注册</span><br><span class="line">brew services cleanup  # 清除已卸载应用的无用的配置</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置文件目录"><a href="#配置文件目录" class="headerlink" title="配置文件目录"></a>配置文件目录</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/Library/LaunchDaemons # 开机自启，需要sudo</span><br><span class="line">~/Library/LaunchAgents # 用户登录后自启</span><br></pre></td></tr></table></figure>
+
+<p>以homebrew.mxcl.kafka.plist为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;!DOCTYPE plist PUBLIC &quot;-//Apple//DTD PLIST 1.0//EN&quot; &quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;&gt;</span><br><span class="line">&lt;plist version=&quot;1.0&quot;&gt;</span><br><span class="line">&lt;dict&gt;</span><br><span class="line">    &lt;key&gt;Label&lt;/key&gt;</span><br><span class="line">    &lt;string&gt;homebrew.mxcl.kafka&lt;/string&gt;</span><br><span class="line">    &lt;key&gt;WorkingDirectory&lt;/key&gt;</span><br><span class="line">    &lt;string&gt;/usr/local&lt;/string&gt;</span><br><span class="line">    &lt;key&gt;ProgramArguments&lt;/key&gt;</span><br><span class="line">    &lt;array&gt;</span><br><span class="line">        &lt;string&gt;/usr/local/opt/kafka/bin/kafka-server-start&lt;/string&gt;</span><br><span class="line">        &lt;string&gt;/usr/local/etc/kafka/server.properties&lt;/string&gt;</span><br><span class="line">    &lt;/array&gt;</span><br><span class="line">    &lt;key&gt;RunAtLoad&lt;/key&gt;</span><br><span class="line">    &lt;true/&gt;</span><br><span class="line">    &lt;key&gt;KeepAlive&lt;/key&gt;</span><br><span class="line">    &lt;true/&gt;</span><br><span class="line">    &lt;key&gt;StandardErrorPath&lt;/key&gt;</span><br><span class="line">    &lt;string&gt;/usr/local/var/log/kafka/kafka_output.log&lt;/string&gt;</span><br><span class="line">    &lt;key&gt;StandardOutPath&lt;/key&gt;</span><br><span class="line">    &lt;string&gt;/usr/local/var/log/kafka/kafka_output.log&lt;/string&gt;</span><br><span class="line">&lt;/dict&gt;</span><br><span class="line">&lt;/plist&gt;</span><br></pre></td></tr></table></figure>
+<p>在这里可以找到服务路径、启动参数、日志路径等</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201806/macOS%E4%B8%8B%E5%AE%89%E8%A3%85%E5%A4%9A%E4%B8%AAJDK%E5%B9%B6%E5%88%87%E6%8D%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201806/macOS%E4%B8%8B%E5%AE%89%E8%A3%85%E5%A4%9A%E4%B8%AAJDK%E5%B9%B6%E5%88%87%E6%8D%A2/" class="post-title-link" itemprop="url">macOS下安装多个JDK并切换</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:24:24" itemprop="dateCreated datePublished" datetime="2018-11-06T15:24:24+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="一些废话"><a href="#一些废话" class="headerlink" title="一些废话"></a>一些废话</h2><p>起因是macOS下安装Oracle官方的JDK10后，kettle启动报错，需要切至JDK8。<br>于是需要借助brew cask来安装不同版本的JDK，并自已写脚本切换。  </p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>使用<code>brew cask</code>安装JDK</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">brew tap caskroom/versions</span><br><span class="line">brew cask install java6  #JDK6</span><br><span class="line">brew cask install java8  #JDK8</span><br><span class="line">brew cask install java   #JDK10</span><br></pre></td></tr></table></figure>
+
+<h2 id="切换脚本"><a href="#切换脚本" class="headerlink" title="切换脚本"></a>切换脚本</h2><p>vi .zshrc</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># Switch JDK</span><br><span class="line">export JAVA_6_HOME=&quot;/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home&quot;</span><br><span class="line">export JAVA_8_HOME=&quot;/Library/Java/JavaVirtualMachines/jdk1.8.0_172.jdk/Contents/Home&quot;</span><br><span class="line">export JAVA_10_HOME=&quot;/Library/Java/JavaVirtualMachines/jdk-10.0.1.jdk/Contents/Home&quot;</span><br><span class="line">export JAVA_HOME=$JAVA_8_HOME  # Default JDK8</span><br><span class="line">alias jdk6=&quot;export JAVA_HOME=$JAVA_6_HOME;java -version&quot;  # to JDK6 </span><br><span class="line">alias jdk8=&quot;export JAVA_HOME=$JAVA_8_HOME;java -version&quot;  # to JDK8</span><br><span class="line">alias jdk10=&quot;export JAVA_HOME=$JAVA_8_HOME;java -version&quot; # to JDK10</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201807/brew%E6%8D%A2%E6%BA%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201807/brew%E6%8D%A2%E6%BA%90/" class="post-title-link" itemprop="url">brew换源</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:23:30" itemprop="dateCreated datePublished" datetime="2018-11-06T15:23:30+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="替换"><a href="#替换" class="headerlink" title="替换"></a>替换</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">替换brew.git:</span><br><span class="line">cd &quot;$(brew --repo)&quot;</span><br><span class="line">git remote set-url origin https://mirrors.ustc.edu.cn/brew.git</span><br><span class="line"></span><br><span class="line">替换homebrew-core.git:</span><br><span class="line">cd &quot;$(brew --repo)/Library/Taps/homebrew/homebrew-core&quot;</span><br><span class="line">git remote set-url origin https://mirrors.ustc.edu.cn/homebrew-core.git</span><br></pre></td></tr></table></figure>
+
+<h2 id="重置"><a href="#重置" class="headerlink" title="重置"></a>重置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">重置brew.git:</span><br><span class="line">cd &quot;$(brew --repo)&quot;</span><br><span class="line">git remote set-url origin https://github.com/Homebrew/brew.git</span><br><span class="line"></span><br><span class="line">重置homebrew-core.git:</span><br><span class="line">cd &quot;$(brew --repo)/Library/Taps/homebrew/homebrew-core&quot;</span><br><span class="line">git remote set-url origin https://github.com/Homebrew/homebrew-core.git</span><br></pre></td></tr></table></figure>
+
+<h2 id="ss-curl方式"><a href="#ss-curl方式" class="headerlink" title="ss+curl方式"></a>ss+curl方式</h2><p>export ALL_PROXY&#x3D;socks5:&#x2F;&#x2F;127.0.0.1:1086</p>
 
       
     </div>
@@ -339,7 +1107,7 @@
 
 
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/29/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><span class="page-number current">30</span>
+    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/29/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><span class="page-number current">30</span><a class="page-number" href="/page/31/">31</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/31/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
