@@ -20,15 +20,15 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="下载地址 NVIDIA驱动 CUDAToolkit归档 cuDNN下载 cuDNN归档  先核对版本驱动、CUDA和GCC的对应关系会变化，直接查当前版本的ReleaseNotes比保存一张静态大表可靠：  CUDAToolkitReleaseNotes CUDACompatibility  先看机器上的现状： 123nvidia-smicommand -v nvcc &amp;&amp; nvc">
+    <meta name="description" content="我在Ubuntu22.04上既要使用CUDA进行本机开发，也要让Docker容器调用GPU。整套环境除了Toolkit，还涉及驱动、cuDNN和NVIDIAContainerToolkit，其中最容易出问题的是几组版本之间的兼容关系。 下载地址 NVIDIA驱动 CUDAToolkit归档 cuDNN下载 cuDNN归档  先核对版本驱动、CUDA和GCC的对应关系会变化，直接查当前版本的Rele">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Ubuntu下搭建CUDA与容器GPU工具链">
 <meta property="og:url" content="https://www.bluexiii.com/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/index.html">
 <meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="下载地址 NVIDIA驱动 CUDAToolkit归档 cuDNN下载 cuDNN归档  先核对版本驱动、CUDA和GCC的对应关系会变化，直接查当前版本的ReleaseNotes比保存一张静态大表可靠：  CUDAToolkitReleaseNotes CUDACompatibility  先看机器上的现状： 123nvidia-smicommand -v nvcc &amp;&amp; nvc">
+<meta property="og:description" content="我在Ubuntu22.04上既要使用CUDA进行本机开发，也要让Docker容器调用GPU。整套环境除了Toolkit，还涉及驱动、cuDNN和NVIDIAContainerToolkit，其中最容易出问题的是几组版本之间的兼容关系。 下载地址 NVIDIA驱动 CUDAToolkit归档 cuDNN下载 cuDNN归档  先核对版本驱动、CUDA和GCC的对应关系会变化，直接查当前版本的Rele">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2024-09-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-22T11:07:08.000Z">
+<meta property="article:modified_time" content="2026-08-22T12:20:10.000Z">
 <meta property="article:author" content="BlueXIII">
 <meta name="twitter:card" content="summary">
 
@@ -135,7 +135,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">275</span>
+          <span class="site-state-item-count">282</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -207,7 +207,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 19:07:08" itemprop="dateModified" datetime="2026-08-22T19:07:08+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
     </span>
 
   
@@ -227,6 +227,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
+<p>我在Ubuntu22.04上既要使用CUDA进行本机开发，也要让Docker容器调用GPU。整套环境除了Toolkit，还涉及驱动、cuDNN和NVIDIAContainerToolkit，其中最容易出问题的是几组版本之间的兼容关系。</p>
 <h2 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://www.nvidia.com/Download/index.aspx?lang=en-us">NVIDIA驱动</a></li>
 <li><a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-toolkit-archive">CUDAToolkit归档</a></li>
@@ -300,11 +301,14 @@
 
           <div class="post-nav">
             <div class="post-nav-item">
-                <a href="/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/" rel="prev" title="Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用">
-                  <i class="fa fa-angle-left"></i> Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用
+                <a href="/202409/Git%E5%AD%90%E6%A8%A1%E5%9D%97%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" rel="prev" title="Git子模块常用操作">
+                  <i class="fa fa-angle-left"></i> Git子模块常用操作
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" rel="next" title="Qdrant的Docker启动与RESTAPI常用操作">
+                  Qdrant的Docker启动与RESTAPI常用操作 <i class="fa fa-angle-right"></i>
+                </a>
             </div>
           </div>
     </footer>

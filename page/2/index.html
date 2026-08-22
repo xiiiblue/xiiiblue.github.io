@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">275</span>
+          <span class="site-state-item-count">282</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,785 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202403/%E7%89%A9%E8%81%94%E7%BD%91%E5%B9%B3%E5%8F%B0%E5%8E%8B%E6%B5%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202403/%E7%89%A9%E8%81%94%E7%BD%91%E5%B9%B3%E5%8F%B0%E5%8E%8B%E6%B5%8B/" class="post-title-link" itemprop="url">物联网平台压测报告</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-03-01 14:15:15" itemprop="dateCreated datePublished" datetime="2024-03-01T14:15:15+08:00">2024-03-01</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="压测目的"><a href="#压测目的" class="headerlink" title="压测目的"></a>压测目的</h2><p>本次压测意在寻找性能拐点，评估最大处理能力，并不断摸索操作系统与应用的调优参数</p>
+<h2 id="压测方案"><a href="#压测方案" class="headerlink" title="压测方案"></a>压测方案</h2><h3 id="压测场景"><a href="#压测场景" class="headerlink" title="压测场景"></a>压测场景</h3><p>模拟单灯控制器，建立TCP链接，发送登录报文。登录成功后，不间断的发送属性上报消息。</p>
+<h3 id="创建虚拟设备"><a href="#创建虚拟设备" class="headerlink" title="创建虚拟设备"></a>创建虚拟设备</h3><p>编写简易的JUnit脚本，以便于批量创建删除设备</p>
+<p>录入10万个设备，设备ID为: 000000000001~000000100000</p>
+<h3 id="编写设备模拟器"><a href="#编写设备模拟器" class="headerlink" title="编写设备模拟器"></a>编写设备模拟器</h3><p>由于单灯控制器通过TCP私有协议与平台进行通信，且上报消息的内容不固定，所以很难使用JMeter等常规压测工具进行测试。</p>
+<p>需要自行编写单灯控制器模拟器，做为压测客户端，使用VertX异步框架开发以提高并发性能。</p>
+<h3 id="服务器指标监控"><a href="#服务器指标监控" class="headerlink" title="服务器指标监控"></a>服务器指标监控</h3><p>部署<code>Prometheus</code>+<code>Grafana</code>，进行图形化监控，方便查询历史指标并找出瓶颈点</p>
+<h3 id="消息样例"><a href="#消息样例" class="headerlink" title="消息样例"></a>消息样例</h3><ul>
+<li>登录(42字节): <code>68230068000000002000002226130007500100020802034C4F43373930302D4331454C36313000A35116</code></li>
+<li>属性上报(58字节): <code>68330068010000001300000e0000002001011003112700010fce590000003b400000dd242a426400000000000000000000000014000000f01216</code></li>
+</ul>
+<h2 id="压测环境搭建"><a href="#压测环境搭建" class="headerlink" title="压测环境搭建"></a>压测环境搭建</h2><h3 id="服务端配置"><a href="#服务端配置" class="headerlink" title="服务端配置"></a>服务端配置</h3><ul>
+<li>1台普通台式机，配置为i7-7700 4核8线程&#x2F;16G&#x2F;256G&#x2F;千兆LAN</li>
+<li>最小化部署，应用及中间件混合部署在同一台服务器</li>
+</ul>
+<h3 id="服务端组件清单"><a href="#服务端组件清单" class="headerlink" title="服务端组件清单"></a>服务端组件清单</h3><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>名称</th>
+<th>版本号</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>应用</td>
+<td>bifrost-ui</td>
+<td>1.0.0</td>
+</tr>
+<tr>
+<td>应用</td>
+<td>bifrost-app</td>
+<td>1.0.0</td>
+</tr>
+<tr>
+<td>中间件</td>
+<td>redis</td>
+<td>5.0.4</td>
+</tr>
+<tr>
+<td>中间件</td>
+<td>elasticsearch</td>
+<td>6.8.11</td>
+</tr>
+<tr>
+<td>中间件</td>
+<td>kibana</td>
+<td>6.8.11</td>
+</tr>
+<tr>
+<td>中间件</td>
+<td>postgres</td>
+<td>11-alpine</td>
+</tr>
+<tr>
+<td>JDK</td>
+<td>openjdk</td>
+<td>1.8.0_382</td>
+</tr>
+<tr>
+<td>监控</td>
+<td>grafana</td>
+<td>10.3.3</td>
+</tr>
+<tr>
+<td>监控</td>
+<td>prometheus</td>
+<td>2.50.1</td>
+</tr>
+<tr>
+<td>监控</td>
+<td>nodeExporter</td>
+<td>1.7.0</td>
+</tr>
+</tbody></table>
+<h3 id="服务端地址信息"><a href="#服务端地址信息" class="headerlink" title="服务端地址信息"></a>服务端地址信息</h3><table>
+<thead>
+<tr>
+<th>类别</th>
+<th>地址</th>
+<th>帐密</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单灯TCP端口</td>
+<td>10.90.22.200:1886</td>
+<td></td>
+</tr>
+<tr>
+<td>UI</td>
+<td><a target="_blank" rel="noopener" href="http://10.90.22.200:9000/">http://10.90.22.200:9000</a></td>
+<td>admin&#x2F;1qaz@WSX</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>10.90.22.200:6379</td>
+<td>仅密码:bifrost!23</td>
+</tr>
+<tr>
+<td>ES6</td>
+<td><a target="_blank" rel="noopener" href="http://10.90.22.200:9200/">http://10.90.22.200:9200</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Kibana</td>
+<td><a target="_blank" rel="noopener" href="http://10.90.22.200:5601/">http://10.90.22.200:5601</a></td>
+<td></td>
+</tr>
+<tr>
+<td>Postgres</td>
+<td>postgres:&#x2F;&#x2F;10.90.22.200:5432&#x2F;bifrost</td>
+<td>postgres&#x2F;bifrost!23</td>
+</tr>
+<tr>
+<td>Grafana</td>
+<td><a target="_blank" rel="noopener" href="http://10.90.22.200:3000/">http://10.90.22.200:3000</a></td>
+<td>admin&#x2F;1qaz@WSX</td>
+</tr>
+</tbody></table>
+<h3 id="压测客户端"><a href="#压测客户端" class="headerlink" title="压测客户端"></a>压测客户端</h3><ul>
+<li>4台Ubuntu虚拟机，配置为:8C&#x2F;16G&#x2F;500G&#x2F;千兆LAN(实际只用到2台)</li>
+<li>Ulimit与内核参数的优化，与服务端保持一致</li>
+<li>部署自行编写的单灯控制器模拟器</li>
+</ul>
+<p>启动参数(以1万并发，120秒为例):</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar catonelight-simulator-1.0.0-SNAPSHOT.jar --host=10.90.22.200 --port=1886 --start=1 --parallels=10000 --duration=120</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="压测详细记录"><a href="#压测详细记录" class="headerlink" title="压测详细记录"></a>压测详细记录</h2><p>请参考11～12轮的结果即可，点击跳转至语雀在线表格:<br><a target="_blank" rel="noopener" href="https://tc-aiot.yuque.com/org-wiki-tc-aiot-ms6e4o/tabv3n/zug68i5yymut8vlg#CyG5">https://tc-aiot.yuque.com/org-wiki-tc-aiot-ms6e4o/tabv3n/zug68i5yymut8vlg#CyG5</a></p>
+<h2 id="结果分析"><a href="#结果分析" class="headerlink" title="结果分析"></a>结果分析</h2><ul>
+<li>8核16G的单机配置下，极限吞吐量为95502 TPS，极限并发数约为80000个设备</li>
+<li>随着并发数的不断提升，TPS保待不变，响应时间成比例的增加。系统并未出现明显拐点。</li>
+<li>内存占用量平稳，6-8G，基本无变化，上下文切换保持在60K左右</li>
+<li>系统负载稳定保持在15左右(处理器为8核心)，以上都是Reactor带来的收益</li>
+<li>日志IO对性能的影响比预想中大很多，需要最先调优，同时需要兼顾实用性，不能完全关闭。优化后的性能提升约15倍。</li>
+<li>Docker方式和原生JDK方式，在参数相同的情况下，TPS会有较大差异，各有胜负，原因不明</li>
+<li>关闭TCP粘拆包处理，可获得约30%的性能提升</li>
+<li>关闭Reactor的DebugAgent后，可获得约40%的性能提升</li>
+</ul>
+<h2 id="参数调优"><a href="#参数调优" class="headerlink" title="参数调优"></a>参数调优</h2><h3 id="操作系统Ulimit"><a href="#操作系统Ulimit" class="headerlink" title="操作系统Ulimit"></a>操作系统Ulimit</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Ulimit设置</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">EOF &gt;&gt; /etc/security/limits.conf</span></span><br><span class="line"><span class="string">root        soft        nofile        1048576</span></span><br><span class="line"><span class="string">root        hard        nofile        1048576</span></span><br><span class="line"><span class="string">root        soft        stack         1048576</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">sysctl --system</span><br></pre></td></tr></table></figure>
+
+<h3 id="操作系统内核参数-修改前"><a href="#操作系统内核参数-修改前" class="headerlink" title="操作系统内核参数(修改前)"></a>操作系统内核参数(修改前)</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">EOF &gt;&gt; /etc/sysctl.conf</span></span><br><span class="line"><span class="string">net.core.rmem_max=16777216</span></span><br><span class="line"><span class="string">net.core.wmem_max=16777216</span></span><br><span class="line"><span class="string">net.core.netdev_max_backlog = 30000</span></span><br><span class="line"><span class="string">net.core.somaxconn = 262144</span></span><br><span class="line"><span class="string">net.ipv4.neigh.default.gc_stale_time=120</span></span><br><span class="line"><span class="string">net.ipv4.conf.all.rp_filter=0</span></span><br><span class="line"><span class="string">net.ipv4.conf.default.rp_filter=0</span></span><br><span class="line"><span class="string">net.ipv4.conf.default.arp_announce = 2</span></span><br><span class="line"><span class="string">net.ipv4.conf.lo.arp_announce=2</span></span><br><span class="line"><span class="string">net.ipv4.conf.all.arp_announce=2</span></span><br><span class="line"><span class="string">net.ipv4.ip_local_port_range = 1024 65535</span></span><br><span class="line"><span class="string">net.ipv4.tcp_rmem=4096 87380 16777216</span></span><br><span class="line"><span class="string">net.ipv4.tcp_wmem=4096 65535 16777216</span></span><br><span class="line"><span class="string">net.ipv4.tcp_fin_timeout = 10</span></span><br><span class="line"><span class="string">net.ipv4.tcp_tw_recycle = 1</span></span><br><span class="line"><span class="string">net.ipv4.tcp_timestamps = 0</span></span><br><span class="line"><span class="string">net.ipv4.tcp_window_scaling = 0</span></span><br><span class="line"><span class="string">net.ipv4.tcp_sack = 0</span></span><br><span class="line"><span class="string">net.ipv4.tcp_syncookies = 0</span></span><br><span class="line"><span class="string">net.ipv4.tcp_max_orphans = 262144</span></span><br><span class="line"><span class="string">net.ipv4.tcp_max_syn_backlog = 262144</span></span><br><span class="line"><span class="string">net.ipv4.tcp_max_tw_buckets = 5000</span></span><br><span class="line"><span class="string">net.ipv4.tcp_synack_retries = 2</span></span><br><span class="line"><span class="string">net.ipv4.tcp_syn_retries = 2</span></span><br><span class="line"><span class="string">net.ipv4.tcp_no_metrics_save=1</span></span><br><span class="line"><span class="string">net.ipv6.conf.all.disable_ipv6 = 1</span></span><br><span class="line"><span class="string">net.ipv6.conf.default.disable_ipv6 = 1</span></span><br><span class="line"><span class="string">net.ipv6.conf.lo.disable_ipv6 = 1</span></span><br><span class="line"><span class="string">vm.swappiness = 0</span></span><br><span class="line"><span class="string">kernel.sysrq=1</span></span><br><span class="line"><span class="string">fs.file-max=1000000</span></span><br><span class="line"><span class="string">#fs.file-nr=1000000</span></span><br><span class="line"><span class="string">vm.overcommit_memory = 1</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">sysctl -p</span><br></pre></td></tr></table></figure>
+<h3 id="操作系统内核参数-修改后"><a href="#操作系统内核参数-修改后" class="headerlink" title="操作系统内核参数(修改后)"></a>操作系统内核参数(修改后)</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">net.ipv4.tcp_max_tw_buckets=50000</span><br><span class="line">net.ipv4.tcp_max_syn_backlog=262144</span><br><span class="line">net.core.somaxconn=262144</span><br><span class="line">net.ipv4.tcp_tw_reuse=1</span><br><span class="line">net.ipv4.tcp_tw_recycle=1</span><br><span class="line">net.ipv4.tcp_rmem=4096 87380 16777216</span><br><span class="line">net.ipv4.tcp_wmem=4096 65535 16777216</span><br><span class="line">net.ipv4.tcp_mem=786432 2097152 3145728</span><br><span class="line">net.ipv4.ip_local_port_range=1024 65535</span><br><span class="line">vm.swappiness=0</span><br><span class="line">kernel.sysrq=1</span><br><span class="line"><span class="comment">#fs.file-nr=100096 0 1531742</span></span><br><span class="line">fs.file-max=1048576</span><br><span class="line">vm.overcommit_memory=1</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="TCP粘拆包脚本"><a href="#TCP粘拆包脚本" class="headerlink" title="TCP粘拆包脚本"></a>TCP粘拆包脚本</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">parser.<span class="title function_">fixed</span>(<span class="number">4</span>)</span><br><span class="line">  .<span class="title function_">handler</span>(<span class="keyword">function</span> (<span class="params">buffer, parser</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> len = buffer.<span class="title function_">getShortLE</span>(<span class="number">1</span>);</span><br><span class="line">    parser.<span class="title function_">fixed</span>(len + <span class="number">3</span>).<span class="title function_">result</span>(buffer);</span><br><span class="line">  &#125;)</span><br><span class="line">  .<span class="title function_">handler</span>(<span class="keyword">function</span> (<span class="params">buffer, parser</span>) &#123;</span><br><span class="line">    parser.<span class="title function_">result</span>(buffer).<span class="title function_">complete</span>();</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>默认情况下，可以不启用粘拆包，以获得30%以上的性能提升</p>
+<h3 id="日志优化"><a href="#日志优化" class="headerlink" title="日志优化"></a>日志优化</h3><ul>
+<li>开启Console日志+文件日志+设备ES日志</li>
+<li>并逐行调整日志级别，大部分置为INFO级，兼顾实用</li>
+<li>关闭Logback的ES日志(怀疑这部分程序有问题会产生阻塞，关闭后TPS提升20倍)</li>
+</ul>
+<h3 id="应用优化"><a href="#应用优化" class="headerlink" title="应用优化"></a>应用优化</h3><ul>
+<li>关闭Reactor调试模式 spring.reactor.debug-agent.enabled&#x3D;false，可获得约40%的性能提升</li>
+<li>关闭平台链路跟踪 trace.enabled&#x3D;false</li>
+<li>后续如有必要时，将单个TCP连接的接收队列长度由默认256调高到65535，以应对单一设备连续上报的场景。需要修改VertX代码。</li>
+</ul>
+<h3 id="JVM优化"><a href="#JVM优化" class="headerlink" title="JVM优化"></a>JVM优化</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">java -Duser.language=zh -XX:+UseG1GC -server \</span><br><span class="line">-XX:+UnlockExperimentalVMOptions \</span><br><span class="line">-XX:+UseCGroupMemoryLimitForHeap \</span><br><span class="line">-XX:-OmitStackTraceInFastThrow \</span><br><span class="line">-Djava.security.egd=file:/dev/./urandom \</span><br><span class="line">-jar bifrost-standalone.jar</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202312/JetLinks%E4%BE%9D%E8%B5%96%E6%A2%B3%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202312/JetLinks%E4%BE%9D%E8%B5%96%E6%A2%B3%E7%90%86/" class="post-title-link" itemprop="url">JetLinks依赖梳理</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-01-21 13:54:23" itemprop="dateCreated datePublished" datetime="2024-01-21T13:54:23+08:00">2024-01-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="hsweb-easy-orm"><a href="#hsweb-easy-orm" class="headerlink" title="hsweb-easy-orm"></a>hsweb-easy-orm</h2><p><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-easy-orm">https://github.com/hs-web/hsweb-easy-orm</a><br>org.hswebframework:hsweb-easy-orm:4.1.2-SNAPSHOT</p>
+<h2 id="hsweb-framework"><a href="#hsweb-framework" class="headerlink" title="hsweb-framework"></a>hsweb-framework</h2><p><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-framework">https://github.com/hs-web/hsweb-framework</a><br>org.hswebframework.web:4.0.17-SNAPSHOT</p>
+<h2 id="reactor-excel"><a href="#reactor-excel" class="headerlink" title="reactor-excel"></a>reactor-excel</h2><p><a target="_blank" rel="noopener" href="https://github.com/hs-web/reactor-excel">https://github.com/hs-web/reactor-excel</a><br>org.hswebframework:reactor-excel:1.0.6-SNAPSHOT</p>
+<h2 id="jetlinks-core"><a href="#jetlinks-core" class="headerlink" title="jetlinks-core"></a>jetlinks-core</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-core">https://github.com/jetlinks/jetlinks-core</a><br>org.jetlinks:jetlinks-core:1.2.2-SNAPSHOT</p>
+<h2 id="jetlinks-supports"><a href="#jetlinks-supports" class="headerlink" title="jetlinks-supports"></a>jetlinks-supports</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-supports">https://github.com/jetlinks/jetlinks-supports</a><br>org.jetlinks:jetlinks-supports:1.2.2-SNAPSHOT</p>
+<h2 id="rule-engine"><a href="#rule-engine" class="headerlink" title="rule-engine"></a>rule-engine</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/rule-engine">https://github.com/jetlinks/rule-engine</a><br>org.jetlinks:rule-engine:1.2.2-SNAPSHOT</p>
+<h2 id="reactor-ql"><a href="#reactor-ql" class="headerlink" title="reactor-ql"></a>reactor-ql</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/reactor-ql">https://github.com/jetlinks/reactor-ql</a><br>org.jetlinks:reactor-ql:1.0.17-SNAPSHOT</p>
+<h2 id="jetlinks-plugin"><a href="#jetlinks-plugin" class="headerlink" title="jetlinks-plugin"></a>jetlinks-plugin</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-plugin">https://github.com/jetlinks/jetlinks-plugin</a><br>org.jetlinks.plugin:jetlinks-plugin:1.0.2-SNAPSHOT</p>
+<h2 id="jetlinks-community"><a href="#jetlinks-community" class="headerlink" title="jetlinks-community"></a>jetlinks-community</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-community">https://github.com/jetlinks/jetlinks-community</a><br>org.jetlinks.community:jetlinks-community:2.2.0-SNAPSHOT</p>
+<h2 id="jetlinks-ui-vue"><a href="#jetlinks-ui-vue" class="headerlink" title="jetlinks-ui-vue"></a>jetlinks-ui-vue</h2><p><a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-ui-vue">https://github.com/jetlinks/jetlinks-ui-vue</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202401/RocketMQ%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202401/RocketMQ%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">RocketMQ部署</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-01-10 16:16:14" itemprop="dateCreated datePublished" datetime="2024-01-10T16:16:14+08:00">2024-01-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq">https://github.com/apache/rocketmq</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq-docker">https://github.com/apache/rocketmq-docker</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://github.com/apache/rocketmq-clients/blob/master/java/README-CN.md">https://github.com/apache/rocketmq-clients/blob/master/java/README-CN.md</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://rocketmq.apache.org/">https://rocketmq.apache.org/</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://rocketmq.apache.org/zh/docs/">https://rocketmq.apache.org/zh/docs/</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://hub.docker.com/r/apache/rocketmq/tags">https://hub.docker.com/r/apache/rocketmq/tags</a></p>
+</li>
+</ul>
+<h2 id="异步转Reactor"><a href="#异步转Reactor" class="headerlink" title="异步转Reactor"></a>异步转Reactor</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://medium.com/javarevisited/converting-async-client-to-reactive-69a506f80d34">https://medium.com/javarevisited/converting-async-client-to-reactive-69a506f80d34</a></li>
+<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/50363612/convert-a-callback-into-a-reactive-publisher-flux">https://stackoverflow.com/questions/50363612/convert-a-callback-into-a-reactive-publisher-flux</a></li>
+</ul>
+<h2 id="原生方式部署"><a href="#原生方式部署" class="headerlink" title="原生方式部署"></a>原生方式部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 版本 5.1.4</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line"><span class="built_in">nohup</span> sh bin/mqnamesrv &amp;</span><br><span class="line"><span class="built_in">nohup</span> sh bin/mqbroker -n localhost:9876 &amp;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭</span></span><br><span class="line">sh bin/mqshutdown broker</span><br><span class="line">sh bin/mqshutdown namesrv</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证</span></span><br><span class="line"><span class="built_in">export</span> NAMESRV_ADDR=10.10.51.4:9876</span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Producer</span><br><span class="line">sh bin/tools.sh org.apache.rocketmq.example.quickstart.Consumer</span><br><span class="line"></span><br><span class="line"><span class="comment"># dashboard</span></span><br><span class="line">docker run -d --name rocketmq-dashboard -e <span class="string">&quot;JAVA_OPTS=-Drocketmq.namesrv.addr=10.10.51.4:9876&quot;</span> -p 38080:8080 -t apacherocketmq/rocketmq-dashboard:latest</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="控制台"><a href="#控制台" class="headerlink" title="控制台"></a>控制台</h2><p>10.10.51.4:9876<br><a target="_blank" rel="noopener" href="http://10.10.51.4:38080/">http://10.10.51.4:38080</a></p>
+<h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh bin/mqadmin updateTopic -c DefaultCluster -t TopicTest2 -n 10.10.51.4:9876</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202401/Jaeger%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202401/Jaeger%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Jaeger学习笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2024-01-03 11:38:05" itemprop="dateCreated datePublished" datetime="2024-01-03T11:38:05+08:00">2024-01-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p><a target="_blank" rel="noopener" href="https://www.jaegertracing.io/">https://www.jaegertracing.io/</a><br><a target="_blank" rel="noopener" href="https://www.jaegertracing.io/docs/1.52/getting-started/">https://www.jaegertracing.io/docs/1.52/getting-started/</a></p>
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> --name jaeger \</span><br><span class="line">  -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 \</span><br><span class="line">  -e COLLECTOR_OTLP_ENABLED=<span class="literal">true</span> \</span><br><span class="line">  -p 6831:6831/udp \</span><br><span class="line">  -p 6832:6832/udp \</span><br><span class="line">  -p 5778:5778 \</span><br><span class="line">  -p 16686:16686 \</span><br><span class="line">  -p 4317:4317 \</span><br><span class="line">  -p 4318:4318 \</span><br><span class="line">  -p 14250:14250 \</span><br><span class="line">  -p 14268:14268 \</span><br><span class="line">  -p 14269:14269 \</span><br><span class="line">  -p 9411:9411 \</span><br><span class="line">  jaegertracing/all-in-one:1.45</span><br><span class="line"></span><br><span class="line">docker run --<span class="built_in">rm</span> --name jaeger \</span><br><span class="line">  -e COLLECTOR_ZIPKIN_HOST_PORT=:9411 \</span><br><span class="line">  -e COLLECTOR_OTLP_ENABLED=<span class="literal">true</span> \</span><br><span class="line">  -p 6831:6831/udp \</span><br><span class="line">  -p 6832:6832/udp \</span><br><span class="line">  -p 5778:5778 \</span><br><span class="line">  -p 16686:16686 \</span><br><span class="line">  -p 4317:4317 \</span><br><span class="line">  -p 4318:4318 \</span><br><span class="line">  -p 14250:14250 \</span><br><span class="line">  -p 14268:14268 \</span><br><span class="line">  -p 14269:14269 \</span><br><span class="line">  -p 9411:9411 \</span><br><span class="line">  jaegertracing/all-in-one:1.52</span><br></pre></td></tr></table></figure>
+
+<h2 id="endpoint"><a href="#endpoint" class="headerlink" title="endpoint"></a>endpoint</h2><p><a target="_blank" rel="noopener" href="http://10.10.51.4:14250/">http://10.10.51.4:14250</a></p>
+<h2 id="Console"><a href="#Console" class="headerlink" title="Console"></a>Console</h2><p><a target="_blank" rel="noopener" href="http://10.10.51.4:16686/">http://10.10.51.4:16686</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202312/SRS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202312/SRS%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">SRS学习笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-12-20 17:09:25" itemprop="dateCreated datePublished" datetime="2023-12-20T17:09:25+08:00">2023-12-20</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://ossrs.net/lts/zh-cn/">https://ossrs.net/lts/zh-cn/</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/356937898">https://zhuanlan.zhihu.com/p/356937898</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/606839253">https://zhuanlan.zhihu.com/p/606839253</a></li>
+</ul>
+<h2 id="ffmpeg"><a href="#ffmpeg" class="headerlink" title="ffmpeg"></a>ffmpeg</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.osxexperts.net/?utm_source=ld246.com">https://www.osxexperts.net/?utm_source=ld246.com</a></li>
+<li><a target="_blank" rel="noopener" href="https://evermeet.cx/ffmpeg/">https://evermeet.cx/ffmpeg/</a></li>
+</ul>
+<h2 id="gb28181-client"><a href="#gb28181-client" class="headerlink" title="gb28181-client"></a>gb28181-client</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.happytimesoft.com/products/gb28181-device/index.html">https://www.happytimesoft.com/products/gb28181-device/index.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/dute7liang/gb28181-client">https://github.com/dute7liang/gb28181-client</a></li>
+</ul>
+<h2 id="开发环境SRS"><a href="#开发环境SRS" class="headerlink" title="开发环境SRS"></a>开发环境SRS</h2><p><a target="_blank" rel="noopener" href="http://10.10.51.4:8180/">http://10.10.51.4:8180</a></p>
+<p>rtmp:&#x2F;&#x2F;10.10.51.4&#x2F;live&#x2F;livestream</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">docker run --name bifrost-srs \</span><br><span class="line">-e TZ=Asia/Shanghai \</span><br><span class="line">-e CANDIDATE=10.10.51.4 \</span><br><span class="line">-p 1935:1935 \</span><br><span class="line">-p 1985:1985 \</span><br><span class="line">-p 8080:8080 \</span><br><span class="line">-p 9000:9000 \</span><br><span class="line">-p 9000:9000/udp \</span><br><span class="line">-p 8000:8000/udp \</span><br><span class="line">-p 58300:58300  \</span><br><span class="line">-p 58300:58300/udp \</span><br><span class="line">-p 5060:5060/udp \</span><br><span class="line">-v ./srs.conf:/usr/local/srs/conf/srs.conf \</span><br><span class="line">registry.cn-shenzhen.aliyuncs.com/jetlinks/srs:v4.0.56</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="SRS"><a href="#SRS" class="headerlink" title="SRS"></a>SRS</h2><p><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs">https://github.com/ossrs/srs</a><br><a target="_blank" rel="noopener" href="https://ossrs.net/lts/zh-cn/docs/v5/doc/getting-started">https://ossrs.net/lts/zh-cn/docs/v5/doc/getting-started</a><br><a target="_blank" rel="noopener" href="https://ossrs.net/lts/zh-cn/docs/v6/doc/gb28181">https://ossrs.net/lts/zh-cn/docs/v6/doc/gb28181</a><br><a target="_blank" rel="noopener" href="https://github.com/ossrs/srs/blob/develop/trunk/conf/gb28181.conf">https://github.com/ossrs/srs/blob/develop/trunk/conf/gb28181.conf</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">docker run --<span class="built_in">rm</span> --name srs \</span><br><span class="line">-e CANDIDATE=10.10.51.3 \</span><br><span class="line">--network host \</span><br><span class="line">registry.cn-hangzhou.aliyuncs.com/ossrs/srs:5 ./objs/srs -c conf/gb28181.conf</span><br><span class="line"></span><br><span class="line"><span class="comment"># -v ./srs.conf:/usr/local/srs/conf/srs.conf \</span></span><br><span class="line"></span><br><span class="line">http://10.10.51.3:8080</span><br><span class="line"></span><br><span class="line">rtmp://10.10.51.3/live/obs</span><br><span class="line">http://10.10.51.3:8080/live/obs.flv</span><br></pre></td></tr></table></figure>
+
+<h2 id="zlmediakit"><a href="#zlmediakit" class="headerlink" title="zlmediakit"></a>zlmediakit</h2><p><a target="_blank" rel="noopener" href="https://docs.zlmediakit.com/">https://docs.zlmediakit.com/</a><br><a target="_blank" rel="noopener" href="https://github.com/ZLMediaKit/ZLMediaKit">https://github.com/ZLMediaKit/ZLMediaKit</a><br><a target="_blank" rel="noopener" href="https://github.com/ZLMediaKit/ZLMediaKit/wiki/%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B">https://github.com/ZLMediaKit/ZLMediaKit/wiki/%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B</a><br><a target="_blank" rel="noopener" href="https://github.com/ZLMediaKit/ZLMediaKit/wiki/GB28181%E6%8E%A8%E6%B5%81">https://github.com/ZLMediaKit/ZLMediaKit/wiki/GB28181%E6%8E%A8%E6%B5%81</a><br><a target="_blank" rel="noopener" href="https://notemi.cn/wvp---zlmedia-kit---mediaserverui-to-realize-streaming-playback-and-recording-of-camera-gb28181.html">https://notemi.cn/wvp---zlmedia-kit---mediaserverui-to-realize-streaming-playback-and-recording-of-camera-gb28181.html</a><br><a target="_blank" rel="noopener" href="http://dlgcy.com/gb28181-solution-zlmediakit-mediaserverui/">http://dlgcy.com/gb28181-solution-zlmediakit-mediaserverui/</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -<span class="built_in">id</span> -p 1935:1935 -p 8080:80 -p 8443:443 -p 8554:554 -p 10000:10000 -p 10000:10000/udp -p 8000:8000/udp -p 9000:9000/udp zlmediakit/zlmediakit:master</span><br><span class="line"></span><br><span class="line">https://10.10.51.3:8080</span><br><span class="line">https://10.10.51.3:8080/webassist/</span><br></pre></td></tr></table></figure>
+
+<h2 id="livegbs"><a href="#livegbs" class="headerlink" title="livegbs"></a>livegbs</h2><p><a target="_blank" rel="noopener" href="https://www.liveqing.com/docs/products/LiveGBS.html">https://www.liveqing.com/docs/products/LiveGBS.html</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202310/Reactor%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202310/Reactor%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Reactor学习笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-10-11 15:06:02" itemprop="dateCreated datePublished" datetime="2023-10-11T15:06:02+08:00">2023-10-11</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="学习路径"><a href="#学习路径" class="headerlink" title="学习路径"></a>学习路径</h2><ul>
+<li>响应式: Java8 -&gt; Netty -&gt; VertX -&gt; Reactor -&gt; WebFlux</li>
+<li>周边组件: r2dbc</li>
+<li>后端框架: hs-web、easy-orm</li>
+<li>其它: NIO&#x2F;AIO&#x2F;Reactor、IO多路复用</li>
+</ul>
+<h2 id="Java8"><a href="#Java8" class="headerlink" title="Java8"></a>Java8</h2><ul>
+<li>Java8 in Action</li>
+</ul>
+<h2 id="Netty"><a href="#Netty" class="headerlink" title="Netty"></a>Netty</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://dongzl.github.io/netty-handbook/#/_content/chapter01">https://dongzl.github.io/netty-handbook/#/_content/chapter01</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/dongzl/netty-handbook">https://github.com/dongzl/netty-handbook</a></li>
+</ul>
+<h2 id="VertX"><a href="#VertX" class="headerlink" title="VertX"></a>VertX</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://start.vertx.io/">https://start.vertx.io/</a>  脚手架</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/vert-x3/vertx-examples">https://github.com/vert-x3/vertx-examples</a>  示例</li>
+<li><a target="_blank" rel="noopener" href="https://vertx-china.github.io/docs/">https://vertx-china.github.io/docs/</a>  中文文档</li>
+<li><a target="_blank" rel="noopener" href="https://lang-yu.gitbook.io/vert.x/01-index/01-1-functional-programming">https://lang-yu.gitbook.io/vert.x/01-index/01-1-functional-programming</a></li>
+</ul>
+<h2 id="Reactor"><a href="#Reactor" class="headerlink" title="Reactor"></a>Reactor</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://projectreactor.io/learn">https://projectreactor.io/learn</a>  Reactor官网</li>
+<li><a target="_blank" rel="noopener" href="https://projectreactor.io/docs/core/release/reference/#which-operator">https://projectreactor.io/docs/core/release/reference/#which-operator</a>  Reactor3官网教程</li>
+<li><a target="_blank" rel="noopener" href="https://easywheelsoft.github.io/reactor-core-zh/index.html">https://easywheelsoft.github.io/reactor-core-zh/index.html</a>  Reactor3教程中文翻译</li>
+<li><a target="_blank" rel="noopener" href="https://potoyang.gitbook.io/spring-in-action-v5/di-10-zhang-reactor-jie-shao/10.3-tong-yong-xiang-ying-shi-cao-zuo-shi-zhan/10.3.3-zhuan-huan-he-guo-lv-xiang-ying-shi-liu">https://potoyang.gitbook.io/spring-in-action-v5/di-10-zhang-reactor-jie-shao/10.3-tong-yong-xiang-ying-shi-cao-zuo-shi-zhan/10.3.3-zhuan-huan-he-guo-lv-xiang-ying-shi-liu</a>  Spring实战电子书</li>
+<li><a target="_blank" rel="noopener" href="https://tech.io/playgrounds/929/reactive-programming-with-reactor-3/Intro">https://tech.io/playgrounds/929/reactive-programming-with-reactor-3/Intro</a>  互动练习</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/HikariShine/LearnReactive/blob/master/src/main/java/com/hikarishine/learn/reactive/handon/Part02Mono.java">https://github.com/HikariShine/LearnReactive/blob/master/src/main/java/com/hikarishine/learn/reactive/handon/Part02Mono.java</a>  互动练习答案</li>
+<li><a target="_blank" rel="noopener" href="https://skyao.io/learning-reactor/docs.html">https://skyao.io/learning-reactor/docs.html</a>  Reactor学习笔记</li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000024499748">https://segmentfault.com/a/1190000024499748</a>  Java反应式框架Reactor中的Mono和Flux</li>
+<li><a target="_blank" rel="noopener" href="https://www.cnkirito.moe/comparing-rxjava/">https://www.cnkirito.moe/comparing-rxjava/</a>  八个层面比较 Java 8, RxJava, Reactor</li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7ee89f70dfe5">https://www.jianshu.com/p/7ee89f70dfe5</a>  Spring Reactor 入门与实践</li>
+<li><a target="_blank" rel="noopener" href="https://www.infoq.cn/article/reactor-by-example">https://www.infoq.cn/article/reactor-by-example</a>  Reactor 实例解析</li>
+<li><a target="_blank" rel="noopener" href="https://mercyblitz.github.io/2018/07/25/Reactive-Programming-%E4%B8%80%E7%A7%8D%E6%8A%80%E6%9C%AF-%E5%90%84%E8%87%AA%E8%A1%A8%E8%BF%B0/">https://mercyblitz.github.io/2018/07/25/Reactive-Programming-一种技术-各自表述/</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/luo15242208310/article/details/112060578">https://blog.csdn.net/luo15242208310/article/details/112060578</a>  reactor merge vs concat、flatMap vs concatMap</li>
+</ul>
+<h2 id="WebFlux"><a href="#WebFlux" class="headerlink" title="WebFlux"></a>WebFlux</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.spring.io/spring-framework/reference/web/webflux.html">https://docs.spring.io/spring-framework/reference/web/webflux.html</a>  官网教程</li>
+<li><a target="_blank" rel="noopener" href="https://www.baeldung.com/spring-webflux">https://www.baeldung.com/spring-webflux</a>  教程</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/piomin/sample-spring-cloud-webflux">https://github.com/piomin/sample-spring-cloud-webflux</a>  示例</li>
+</ul>
+<h2 id="HsWeb"><a href="#HsWeb" class="headerlink" title="HsWeb"></a>HsWeb</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-framework">https://github.com/hs-web/hsweb-framework</a>   GitHub hsweb</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/hs-web/hsweb-easy-orm">https://github.com/hs-web/hsweb-easy-orm</a>    GitHub easy-orm</li>
+<li><a target="_blank" rel="noopener" href="https://docs.hsweb.io/framework/">https://docs.hsweb.io/framework/</a>           用户手册</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/zhou-hao/hsweb4-examples">https://github.com/zhou-hao/hsweb4-examples</a>   示例</li>
+</ul>
+<h2 id="r2dbc"><a href="#r2dbc" class="headerlink" title="r2dbc"></a>r2dbc</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://r2dbc.io/">https://r2dbc.io/</a></li>
+<li><a target="_blank" rel="noopener" href="https://spring.io/projects/spring-data-r2dbc">https://spring.io/projects/spring-data-r2dbc</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/spring-projects/spring-data-examples/tree/main/r2dbc/example">https://github.com/spring-projects/spring-data-examples/tree/main/r2dbc/example</a>  示例代码</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/r2dbc/r2dbc-pool">https://github.com/r2dbc/r2dbc-pool</a> 连接池</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/asyncer-io/r2dbc-mysql">https://github.com/asyncer-io/r2dbc-mysql</a>  驱动</li>
+</ul>
+<h2 id="其它工具"><a href="#其它工具" class="headerlink" title="其它工具"></a>其它工具</h2><h3 id="BlockHound"><a href="#BlockHound" class="headerlink" title="BlockHound"></a>BlockHound</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/reactor/BlockHound">https://github.com/reactor/BlockHound</a></li>
+</ul>
+<h3 id="reactor-ql"><a href="#reactor-ql" class="headerlink" title="reactor-ql"></a>reactor-ql</h3><ul>
+<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/reactor-ql.html#device-properties-latest">http://doc.jetlinks.cn/dev-guide/reactor-ql.html#device-properties-latest</a></li>
+</ul>
+<h2 id="其它参考文档"><a href="#其它参考文档" class="headerlink" title="其它参考文档"></a>其它参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://hanta.yuque.com/px7kg1/nn1gdr/yq1czn3c5qkrpv4g">https://hanta.yuque.com/px7kg1/nn1gdr/yq1czn3c5qkrpv4g</a>  JetLinks响应式编程说明</li>
+<li><a target="_blank" rel="noopener" href="http://doc.jetlinks.cn/dev-guide/reactor.html#null%E5%A4%84%E7%90%86">http://doc.jetlinks.cn/dev-guide/reactor.html#null%E5%A4%84%E7%90%86</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/flydean/p/13935084.html">https://www.cnblogs.com/flydean/p/13935084.html</a> 响应式编程简介之:Reactor </li>
+<li><a target="_blank" rel="noopener" href="https://xwjie.github.io/webflux/webflux-study-path.html">https://xwjie.github.io/webflux/webflux-study-path.html</a>  webflux学习路径</li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903631133622285">https://juejin.cn/post/6844903631133622285</a>  聊聊Spring Reactor反应式编程</li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/7011463863602249741">https://juejin.cn/post/7011463863602249741</a>  反应式编程教程</li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000042359463">https://segmentfault.com/a/1190000042359463</a>  Reactor 之 onErrorContinue 和 onErrorResume</li>
+<li><a target="_blank" rel="noopener" href="https://www.jdon.com/53431.html">https://www.jdon.com/53431.html</a>  Spring响应式Reactive编程的10个陷阱</li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/flydean/p/13957083.html">https://www.cnblogs.com/flydean/p/13957083.html</a> Reactor中的Thread和Scheduler </li>
+<li><a target="_blank" rel="noopener" href="https://www.cnkirito.moe/comparing-rxjava/">https://www.cnkirito.moe/comparing-rxjava/</a>  八个层面比较 Java 8, RxJava, Reactor</li>
+<li><a target="_blank" rel="noopener" href="https://cheng-dp.github.io/2018/08/11/nio-aio-reactor-proactor/">https://cheng-dp.github.io/2018/08/11/nio-aio-reactor-proactor/</a>   NIO、AIO和Reactor、Proactor模式</li>
+<li><a target="_blank" rel="noopener" href="https://www.xiaolincoding.com/os/8_network_system/selete_poll_epoll.html">https://www.xiaolincoding.com/os/8_network_system/selete_poll_epoll.html</a>   IO多路复用Select，poll和epoll</li>
+</ul>
+<h2 id="编程范式"><a href="#编程范式" class="headerlink" title="编程范式"></a>编程范式</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/7008369009628282894">https://juejin.cn/post/7008369009628282894</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.freecodecamp.org/chinese/news/an-introduction-to-programming-paradigms/">https://www.freecodecamp.org/chinese/news/an-introduction-to-programming-paradigms/</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/282291911">https://zhuanlan.zhihu.com/p/282291911</a></li>
+<li><a target="_blank" rel="noopener" href="https://wx-chevalier.github.io/books/designpattern-notes/01.%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/">https://wx-chevalier.github.io/books/designpattern-notes/01.%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F/</a></li>
+<li><a target="_blank" rel="noopener" href="https://seekplum.github.io/programming-paradigm/">https://seekplum.github.io/programming-paradigm/</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Programming_paradigm">https://en.wikipedia.org/wiki/Programming_paradigm</a></li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Stream_processing">https://en.wikipedia.org/wiki/Stream_processing</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202309/ThingsBoard%E5%88%9D%E6%8E%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202309/ThingsBoard%E5%88%9D%E6%8E%A2/" class="post-title-link" itemprop="url">ThingsBoard初探</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-09-18 17:13:02" itemprop="dateCreated datePublished" datetime="2023-09-18T17:13:02+08:00">2023-09-18</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/thingsboard/thingsboard">https://github.com/thingsboard/thingsboard</a></li>
+<li><a target="_blank" rel="noopener" href="https://thingsboard.io/docs/getting-started-guides/helloworld/">https://thingsboard.io/docs/getting-started-guides/helloworld/</a></li>
+</ul>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p ~/.mytb-data &amp;&amp; <span class="built_in">sudo</span> <span class="built_in">chown</span> -R 799:799 ~/.mytb-data</span><br><span class="line"><span class="built_in">mkdir</span> -p ~/.mytb-logs &amp;&amp; <span class="built_in">sudo</span> <span class="built_in">chown</span> -R 799:799 ~/.mytb-logs</span><br><span class="line"></span><br><span class="line">docker run -itd -p 8080:9090 -p 7070:7070 -p 1883:1883 -p 5683-5688:5683-5688/udp -v ~/.mytb-data:/data \</span><br><span class="line">-v ~/.mytb-logs:/var/log/thingsboard --name mytb --restart always thingsboard/tb-postgres</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -451,591 +1230,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202309/%E7%89%A9%E8%81%94%E7%BD%91%E5%B9%B3%E5%8F%B0%E9%80%89%E5%9E%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202309/%E7%89%A9%E8%81%94%E7%BD%91%E5%B9%B3%E5%8F%B0%E9%80%89%E5%9E%8B/" class="post-title-link" itemprop="url">物联网平台选型</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-09-11 16:40:05" itemprop="dateCreated datePublished" datetime="2023-09-11T16:40:05+08:00">2023-09-11</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="MQTT中间件"><a href="#MQTT中间件" class="headerlink" title="MQTT中间件"></a>MQTT中间件</h2><ul>
-<li>emqx  Erlang <a target="_blank" rel="noopener" href="https://github.com/emqx/emqx">https://github.com/emqx/emqx</a></li>
-<li>mosquitto C <a target="_blank" rel="noopener" href="https://github.com/eclipse/mosquitto">https://github.com/eclipse/mosquitto</a></li>
-<li>gmqtt Golang <a target="_blank" rel="noopener" href="https://github.com/DrmagicE/gmqtt">https://github.com/DrmagicE/gmqtt</a></li>
-<li>pulsar Java <a target="_blank" rel="noopener" href="https://github.com/apache/pulsar">https://github.com/apache/pulsar</a></li>
-</ul>
-<h3 id="开源平台"><a href="#开源平台" class="headerlink" title="开源平台"></a>开源平台</h3><ul>
-<li>jetlinks Java  <a target="_blank" rel="noopener" href="https://github.com/jetlinks/jetlinks-community">https://github.com/jetlinks/jetlinks-community</a></li>
-<li>thingsboard Java  <a target="_blank" rel="noopener" href="https://github.com/thingsboard/thingsboard">https://github.com/thingsboard/thingsboard</a></li>
-<li>ThingsPanel  Go <a target="_blank" rel="noopener" href="https://github.com/ThingsPanel/">https://github.com/ThingsPanel/</a></li>
-</ul>
-<h2 id="云平台"><a href="#云平台" class="headerlink" title="云平台"></a>云平台</h2><ul>
-<li>涂鸦      <a target="_blank" rel="noopener" href="https://www.tuya.com/cn/">https://www.tuya.com/cn/</a></li>
-<li>阿里云IoT   <a target="_blank" rel="noopener" href="https://iot.aliyun.com/">https://iot.aliyun.com/</a></li>
-<li>thingscloud    <a target="_blank" rel="noopener" href="https://www.thingscloud.xyz/">https://www.thingscloud.xyz/</a></li>
-</ul>
-<h2 id="其它商业化平台"><a href="#其它商业化平台" class="headerlink" title="其它商业化平台"></a>其它商业化平台</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">资方背景 平台分类 本部城市</span><br><span class="line">华为智慧家庭 Openlife 泛 ICT 系 系统平台｜软硬件全连接平台 深圳</span><br><span class="line">谷歌 Brillo 泛 ICT 系 系统平台 美国</span><br><span class="line">高通 AllJoyn 泛 ICT 系 系统平台｜软硬件平台 美国</span><br><span class="line">ARM 基金会 mbed 泛 ICT 系 系统平台｜软硬件平台 英国</span><br><span class="line">微软 Windows 10 for IoT 泛 ICT 系 系统平台 美国</span><br><span class="line">三星 SmartThings 泛 ICT 系 软硬件平台 美国</span><br><span class="line">苹果 Home 泛 ICT 系 系统平台 美国</span><br><span class="line"></span><br><span class="line">科大讯飞 AIUI 方案商系 语音交互软硬件平台 合肥</span><br><span class="line">云知声 hivoice 方案商系 语音交互软硬件平台 北京</span><br><span class="line">思必驰 AIOS 方案商系 语音交互软硬件平台 苏州</span><br><span class="line">庆科 MiCO 方案商系 系统平台｜连接软硬件平台 上海</span><br><span class="line">和而泰 C-Life 方案商系 连接软硬件平台 深圳</span><br><span class="line">硬蛋 Link 方案商系 硬件模块供应链平台 深圳</span><br><span class="line">博联 DNA system 方案商系 连接软硬件平台 杭州</span><br><span class="line">涂鸦 Tuya 方案商系 连接软硬件平台 杭州</span><br><span class="line">酷宅科技 coolkit 方案商系 连接软硬件平台 深圳</span><br><span class="line">氦氪 Hekr 方案商系 连接软硬件平台 杭州</span><br><span class="line">乐鑫 IOT 方案商系 连接软硬件平台 上海</span><br><span class="line">爱悠 everyoo 方案商系 连接软硬件平台 青岛</span><br><span class="line">亿联客 yeelink 方案商系 连接软硬件平台 青岛</span><br><span class="line"></span><br><span class="line">机智云 云计算系 云计算｜连接软硬件平台 广州</span><br><span class="line">云智易 云计算系 云计算｜连接软硬件平台 广州</span><br><span class="line">深智云 DT Kit 云计算系 云计算｜连接软硬件平台 深圳</span><br><span class="line">智云奇点 AbleCloud 云计算系 云计算｜连接软硬件平台 北京</span><br><span class="line">方研矩行科技青莲云 云计算系 云计算｜连接软硬件不详 北京</span><br><span class="line">乐为物联 LEWEI50 云计算系 云计算｜连接软硬件不详 北京</span><br><span class="line">艾拉物联 AylaAgile IoT 云计算系 云计算｜连接软硬件平台 美国</span><br><span class="line"></span><br><span class="line">京东智能云 JD Smart 互联网系 云计算｜连接软硬件平台 北京</span><br><span class="line">阿里智能云 Smart Living 互联网系 云计算｜连接软硬件平台 杭州</span><br><span class="line">腾讯 QQ 物联 互联网系 云计算｜连接软硬件平台 深圳</span><br><span class="line">腾讯智能开放平台 互联网系 云计算｜连接软硬件平台 深圳</span><br><span class="line">百度天工智能物联平台 互联网系 云计算｜连接软硬件平台 北京</span><br><span class="line">小米开放平台 互联网系 云计算｜连接软硬件平台 北京</span><br><span class="line">360 智能云开发者平台 互联网系 云计算｜连接软硬件平台 北京</span><br><span class="line"></span><br><span class="line">大华乐橙 LeChange 设备商系 连接软硬件平台 杭州</span><br><span class="line">海尔 U+ 设备商系 连接软硬件平台 青岛</span><br><span class="line">美的 M-Smart 设备商系 连接软硬件平台 佛山</span><br><span class="line">博西 Home Connect 设备商系 连接软硬件平台 德国</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202308/Prometheus%E6%94%B9%E9%80%A0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202308/Prometheus%E6%94%B9%E9%80%A0/" class="post-title-link" itemprop="url">Prometheus改造</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-08-17 10:45:54" itemprop="dateCreated datePublished" datetime="2023-08-17T10:45:54+08:00">2023-08-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/prometheus-community/helm-charts">https://github.com/prometheus-community/helm-charts</a></li>
-<li><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/prometheus-community/prometheus">https://artifacthub.io/packages/helm/prometheus-community/prometheus</a></li>
-</ul>
-<h2 id="helm方式安装"><a href="#helm方式安装" class="headerlink" title="helm方式安装"></a>helm方式安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">helm repo add prometheus-community https://prometheus-community.github.io/helm-charts</span><br><span class="line">helm repo update</span><br><span class="line">helm install prometheus prometheus-community/prometheus  --namespace prometheus --create-namespace</span><br><span class="line"></span><br><span class="line"><span class="comment"># UI</span></span><br><span class="line">http://prometheus-server.prometheus:80  <span class="comment"># DNS</span></span><br><span class="line">http://10.193.36.41:30022   <span class="comment"># NodePort</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">prometheus-prometheus-node-exporter.prometheus</span><br><span class="line">node-exporter.kubesphere-monitoring-system</span><br><span class="line">prometheus-k8s.kubesphere-monitoring-system</span><br><span class="line"></span><br><span class="line"><span class="comment"># 打开prometheus</span></span><br><span class="line">kubectl port-forward --namespace kubesphere-monitoring-system service/prometheus-k8s 9090:9090</span><br><span class="line">open http://localhost:9090</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="pom-xml配置"><a href="#pom-xml配置" class="headerlink" title="pom.xml配置"></a>pom.xml配置</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.micrometer<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>micrometer-registry-prometheus<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.3.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="Nacos配置"><a href="#Nacos配置" class="headerlink" title="Nacos配置"></a>Nacos配置</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">management:</span></span><br><span class="line">  <span class="attr">endpoints:</span></span><br><span class="line">    <span class="attr">web:</span></span><br><span class="line">      <span class="attr">exposure:</span></span><br><span class="line">        <span class="attr">include:</span> <span class="string">&#x27;health,prometheus&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="临时测试"><a href="#临时测试" class="headerlink" title="临时测试"></a>临时测试</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 本机测试</span></span><br><span class="line"><span class="built_in">cd</span> /Users/bluexiii/Documents/code/devops/dubhe-app/dubhe-metadata/dubhe-metadata-biz/target</span><br><span class="line"><span class="built_in">export</span> NACOS_HOST=10.193.36.41</span><br><span class="line"><span class="built_in">export</span> NACOS_PORT=30101</span><br><span class="line"><span class="built_in">export</span> NACOS_USERNAME=nacos</span><br><span class="line"><span class="built_in">export</span> NACOS_PASSWORD=nacos</span><br><span class="line">java -jar dubhe-metadata-biz.jar</span><br><span class="line">open http://localhost:8600/actuator/prometheus</span><br><span class="line"></span><br><span class="line"><span class="comment"># K8S测试 dubhe-metadata.dubhe-dev</span></span><br><span class="line">kubectl port-forward --namespace dubhe-dev service/dubhe-metadata 8600:8600</span><br><span class="line">open http://localhost:8600/actuator/prometheus</span><br></pre></td></tr></table></figure>
-
-<h2 id="prometheus配置"><a href="#prometheus配置" class="headerlink" title="prometheus配置"></a>prometheus配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">- job_name: <span class="string">&quot;应用详细指标&quot;</span></span><br><span class="line">  metrics_path: <span class="string">&quot;/actuator/prometheus&quot;</span></span><br><span class="line">  static_configs:</span><br><span class="line">    - targets:</span><br><span class="line">        [</span><br><span class="line">          <span class="string">&quot;dubhe-metadata.dubhe-dev:8600&quot;</span>,</span><br><span class="line">          <span class="string">&quot;dubhe-quality.dubhe-dev:8604&quot;</span></span><br><span class="line">        ]</span><br><span class="line">      labels:</span><br><span class="line">        application: <span class="string">&quot;开发环境&quot;</span></span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="Grafana-配置"><a href="#Grafana-配置" class="headerlink" title="Grafana 配置"></a>Grafana 配置</h2><p>复用Loki的Grafana:<br><a target="_blank" rel="noopener" href="http://10.193.36.41:30016/">http://10.193.36.41:30016</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202308/SkyWalking%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202308/SkyWalking%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">SkyWalking部署</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-08-11 14:56:05" itemprop="dateCreated datePublished" datetime="2023-08-11T14:56:05+08:00">2023-08-11</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://skywalking.apache.org/">https://skywalking.apache.org/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/apache/skywalking-kubernetes">https://github.com/apache/skywalking-kubernetes</a></li>
-<li><a target="_blank" rel="noopener" href="https://skyapm.github.io/document-cn-translation-of-skywalking/zh/8.0.0/setup/">https://skyapm.github.io/document-cn-translation-of-skywalking/zh/8.0.0/setup/</a></li>
-<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000042094994">https://segmentfault.com/a/1190000042094994</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/2be063bd9e67">https://www.jianshu.com/p/2be063bd9e67</a></li>
-<li><a target="_blank" rel="noopener" href="https://skywalking.apache.org/docs/skywalking-java/next/en/setup/service-agent/java-agent/application-toolkit-logback-1.x/">https://skywalking.apache.org/docs/skywalking-java/next/en/setup/service-agent/java-agent/application-toolkit-logback-1.x/</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/596247594">https://zhuanlan.zhihu.com/p/596247594</a></li>
-</ul>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导入环境变量</span></span><br><span class="line"><span class="built_in">export</span> SKYWALKING_RELEASE_VERSION=4.5.0</span><br><span class="line"><span class="built_in">export</span> SKYWALKING_RELEASE_NAME=skywalking</span><br><span class="line"><span class="built_in">export</span> SKYWALKING_RELEASE_NAMESPACE=skywalking</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">helm install <span class="string">&quot;<span class="variable">$&#123;SKYWALKING_RELEASE_NAME&#125;</span>&quot;</span> \</span><br><span class="line">  oci://registry-1.docker.io/apache/skywalking-helm \</span><br><span class="line">  --version <span class="string">&quot;<span class="variable">$&#123;SKYWALKING_RELEASE_VERSION&#125;</span>&quot;</span> \</span><br><span class="line">  -n <span class="string">&quot;<span class="variable">$&#123;SKYWALKING_RELEASE_NAMESPACE&#125;</span>&quot;</span> \</span><br><span class="line">  --<span class="built_in">set</span> oap.image.tag=9.2.0 \</span><br><span class="line">  --<span class="built_in">set</span> oap.storageType=elasticsearch \</span><br><span class="line">  --<span class="built_in">set</span> ui.image.tag=9.2.0</span><br><span class="line"></span><br><span class="line"><span class="comment"># UI NodePort</span></span><br><span class="line">http://10.193.36.41:30017</span><br><span class="line"></span><br><span class="line"><span class="comment"># OAP</span></span><br><span class="line">skywalking-skywalking-helm-oap.skywalking:11800</span><br><span class="line">10.193.36.41:30018</span><br></pre></td></tr></table></figure>
-
-<h2 id="应用改造"><a href="#应用改造" class="headerlink" title="应用改造"></a>应用改造</h2><h3 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">FROM harbor.dubhe:30002/dubhe-base/amazoncorretto:8u372</span><br><span class="line"></span><br><span class="line">MAINTAINER dubhe</span><br><span class="line"></span><br><span class="line">ENV TZ=Asia/Shanghai</span><br><span class="line"></span><br><span class="line">RUN <span class="built_in">ln</span> -sf /usr/share/zoneinfo/<span class="variable">$TZ</span> /etc/localtime &amp;&amp; \</span><br><span class="line">    <span class="built_in">echo</span> <span class="variable">$TZ</span> &gt; /etc/timezone &amp;&amp; \</span><br><span class="line">    <span class="built_in">mkdir</span> -p /app</span><br><span class="line"></span><br><span class="line">WORKDIR /app</span><br><span class="line"></span><br><span class="line">EXPOSE 8600</span><br><span class="line"></span><br><span class="line">ADD ./dubhe-metadata/dubhe-metadata-biz/target/dubhe-metadata-biz.jar ./</span><br><span class="line"></span><br><span class="line">ADD ./deploy/apache-skywalking-java-agent-8.16.0.tgz /</span><br><span class="line"></span><br><span class="line">CMD java -Xms2048m -Xmx2048m -javaagent:/skywalking-agent/skywalking-agent.jar -jar dubhe-metadata-biz.jar</span><br></pre></td></tr></table></figure>
-
-<h3 id="HelmChart"><a href="#HelmChart" class="headerlink" title="HelmChart"></a>HelmChart</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">env:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SW_AGENT_NAME</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">dubhe-metadata</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">SW_AGENT_COLLECTOR_BACKEND_SERVICES</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">skywalking-skywalking-helm-oap.skywalking:11800</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="忽略部分路径"><a href="#忽略部分路径" class="headerlink" title="忽略部分路径"></a>忽略部分路径</h3><ol>
-<li>拷贝skywalking-agent&#x2F;optional-plugins目录中的apm-trace-ignore-plugin-8.13.0.jar到pulgins</li>
-<li>在config目录中新建apm-trace-ignore-plugin.config文件存放忽略端点配置</li>
-</ol>
-<p>apm-trace-ignore-plugin.config:  </p>
-<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">trace.ignore_path</span>=<span class="variable">$&#123;SW_AGENT_TRACE_IGNORE_PATH:GET:/actuator,GET:/actuator/**,/actuator/**,/eureka/**,Druid/**,Mysql/**,Lettuce/**,Gson/**&#125;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="日志改造"><a href="#日志改造" class="headerlink" title="日志改造"></a>日志改造</h2><h3 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>net.logstash.logback<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>logstash-logback-encoder<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>7.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.skywalking<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>apm-toolkit-trace<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>8.16.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.skywalking<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>apm-toolkit-logback-1.x<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>8.16.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="logback-springboot-xml"><a href="#logback-springboot-xml" class="headerlink" title="logback-springboot.xml"></a>logback-springboot.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- SkyWalking转换器--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">conversionRule</span> <span class="attr">conversionWord</span>=<span class="string">&quot;tid&quot;</span> <span class="attr">converterClass</span>=<span class="string">&quot;org.apache.skywalking.apm.toolkit.log.logback.v1.x.LogbackPatternConverter&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">conversionRule</span> <span class="attr">conversionWord</span>=<span class="string">&quot;sw_ctx&quot;</span> <span class="attr">converterClass</span>=<span class="string">&quot;org.apache.skywalking.apm.toolkit.log.logback.v1.x.LogbackSkyWalkingContextPatternConverter&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- SkyWalkingGRPC输出 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">appender</span> <span class="attr">name</span>=<span class="string">&quot;grpc-log&quot;</span> <span class="attr">class</span>=<span class="string">&quot;org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">encoder</span> <span class="attr">class</span>=<span class="string">&quot;ch.qos.logback.core.encoder.LayoutWrappingEncoder&quot;</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">layout</span> <span class="attr">class</span>=<span class="string">&quot;org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout&quot;</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">Pattern</span>&gt;</span>%d&#123;yyyy-MM-dd HH:mm:ss.SSS&#125; [%tid] [%thread] %-5level %logger&#123;36&#125; -%msg%n<span class="tag">&lt;/<span class="name">Pattern</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">layout</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">encoder</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">appender</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- STDOUT输出 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">appender</span> <span class="attr">name</span>=<span class="string">&quot;console&quot;</span> <span class="attr">class</span>=<span class="string">&quot;ch.qos.logback.core.ConsoleAppender&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">encoder</span> <span class="attr">class</span>=<span class="string">&quot;net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder&quot;</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">providers</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">timestamp</span>&gt;</span></span><br><span class="line">				<span class="tag">&lt;<span class="name">timeZone</span>&gt;</span>UTC<span class="tag">&lt;/<span class="name">timeZone</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;/<span class="name">timestamp</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">pattern</span>&gt;</span></span><br><span class="line">				<span class="tag">&lt;<span class="name">pattern</span>&gt;</span></span><br><span class="line">					&#123;</span><br><span class="line">					&quot;level&quot;: &quot;%level&quot;,</span><br><span class="line">					&quot;tid&quot;: &quot;%tid&quot;,</span><br><span class="line">					&quot;skyWalkingContext&quot;: &quot;%sw_ctx&quot;,</span><br><span class="line">					&quot;thread&quot;: &quot;%thread&quot;,</span><br><span class="line">					&quot;class&quot;: &quot;%logger&#123;1.&#125;:%L&quot;,</span><br><span class="line">					&quot;message&quot;: &quot;%message&quot;,</span><br><span class="line">					&quot;stackTrace&quot;: &quot;%exception&#123;10&#125;&quot;</span><br><span class="line">					&#125;</span><br><span class="line">				<span class="tag">&lt;/<span class="name">pattern</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;/<span class="name">pattern</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">providers</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">encoder</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">appender</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="本机临时测试"><a href="#本机临时测试" class="headerlink" title="本机临时测试"></a>本机临时测试</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /Users/bluexiii/Documents/code/devops/dubhe-app/dubhe-metadata/dubhe-metadata-biz/target</span><br><span class="line"><span class="built_in">export</span> NACOS_HOST=10.193.36.41</span><br><span class="line"><span class="built_in">export</span> NACOS_PORT=30101</span><br><span class="line"><span class="built_in">export</span> NACOS_USERNAME=nacos</span><br><span class="line"><span class="built_in">export</span> NACOS_PASSWORD=nacos</span><br><span class="line"><span class="built_in">export</span> SW_AGENT_NAME=dubhe-metadata</span><br><span class="line"><span class="built_in">export</span> SW_AGENT_COLLECTOR_BACKEND_SERVICES=10.193.36.41:30018</span><br><span class="line"><span class="built_in">export</span> SW_AGENT_TRACE_IGNORE_PATH=<span class="string">&quot;GET:/actuator/**,Lettuce/**,Druid/**&quot;</span></span><br><span class="line">java -javaagent:/Users/bluexiii/opt/skywalking-agent/skywalking-agent.jar -jar dubhe-metadata-biz.jar</span><br><span class="line"></span><br><span class="line">CMD java -Xms2048m -Xmx2048m \</span><br><span class="line">    -Dskywalking.trace.ignore_path=\*/actuator/health,\*/actuator \</span><br><span class="line">    -javaagent:/Users/bluexiii/opt/skywalking-agent/skywalking-agent.jar \</span><br><span class="line">    -jar dubhe-metadata-biz.jar</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202308/Loki%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202308/Loki%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">Loki部署</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-08-07 14:53:19" itemprop="dateCreated datePublished" datetime="2023-08-07T14:53:19+08:00">2023-08-07</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://grafana.com/oss/loki/">https://grafana.com/oss/loki/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/grafana/loki">https://github.com/grafana/loki</a></li>
-<li><a target="_blank" rel="noopener" href="https://grafana.com/docs/loki/latest/installation/helm/">https://grafana.com/docs/loki/latest/installation/helm/</a></li>
-</ul>
-<h3 id="入门教程"><a href="#入门教程" class="headerlink" title="入门教程"></a>入门教程</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6878188974645444621">https://juejin.cn/post/6878188974645444621</a></li>
-<li><a target="_blank" rel="noopener" href="https://grafana.com/docs/loki/latest/best-practices/">https://grafana.com/docs/loki/latest/best-practices/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.qikqiak.com/post/grafana-loki-usage/">https://www.qikqiak.com/post/grafana-loki-usage/</a></li>
-</ul>
-<h3 id="动态标签"><a href="#动态标签" class="headerlink" title="动态标签"></a>动态标签</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://grafana.com/blog/2020/08/27/the-concise-guide-to-labels-in-loki/">https://grafana.com/blog/2020/08/27/the-concise-guide-to-labels-in-loki/</a></li>
-<li><a target="_blank" rel="noopener" href="https://grafana.com/blog/2020/04/21/how-labels-in-loki-can-make-log-queries-faster-and-easier/">https://grafana.com/blog/2020/04/21/how-labels-in-loki-can-make-log-queries-faster-and-easier/</a></li>
-</ul>
-<h3 id="日志改造"><a href="#日志改造" class="headerlink" title="日志改造"></a>日志改造</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/u014163312/article/details/126713959">https://blog.csdn.net/u014163312/article/details/126713959</a></li>
-</ul>
-<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://www.feiyiblog.com/2021/09/16/%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E4%B8%ADLoki%E7%9A%84%E4%BC%98%E5%8C%96/">https://www.feiyiblog.com/2021/09/16/%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E4%B8%ADLoki%E7%9A%84%E4%BC%98%E5%8C%96/</a></li>
-</ul>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加chart库</span></span><br><span class="line">helm repo add grafana https://grafana.github.io/helm-charts</span><br><span class="line"></span><br><span class="line"><span class="comment"># 单体模式部署</span></span><br><span class="line">helm upgrade --install loki \</span><br><span class="line">--namespace=loki-stack grafana/loki-stack --create-namespace \</span><br><span class="line">--<span class="built_in">set</span> grafana.enabled=<span class="literal">true</span> \</span><br><span class="line">--<span class="built_in">set</span> grafana.image.tag=<span class="string">&quot;9.3.2&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 单体模式+指定PVC</span></span><br><span class="line">vi pvc-values.yaml</span><br><span class="line">loki:</span><br><span class="line">  persistence:</span><br><span class="line">    enabled: <span class="literal">true</span></span><br><span class="line">    size: 500Gi</span><br><span class="line"></span><br><span class="line">helm upgrade --install loki --namespace=loki-stack grafana/loki-stack --create-namespace \</span><br><span class="line">--<span class="built_in">set</span> grafana.enabled=<span class="literal">true</span> \</span><br><span class="line">--<span class="built_in">set</span> grafana.image.tag=<span class="string">&quot;9.3.2&quot;</span> \</span><br><span class="line">-f pvc-values.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看Grafana密码</span></span><br><span class="line">kubectl get secret --namespace loki-stack loki-grafana -o jsonpath=<span class="string">&quot;&#123;.data.admin-password&#125;&quot;</span> | <span class="built_in">base64</span> --decode ; <span class="built_in">echo</span></span><br><span class="line">blwUDUjqhl997xofek3dp06w8Xmc4ZhvwucQnMXw</span><br><span class="line"></span><br><span class="line"><span class="comment"># 打开Grafana</span></span><br><span class="line">kubectl port-forward --namespace loki-stack service/loki-grafana 3000:80</span><br><span class="line">open http://localhost:3000</span><br><span class="line">open http://10.193.36.41:30016  <span class="comment"># nodeport</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 部署示例应用</span></span><br><span class="line">kubectl apply -f https://ghproxy.com/https://raw.githubusercontent.com/lyzhang1999/kubernetes-example/main/loki/deployment.yaml</span><br><span class="line">kubectl logs -l app=log-example</span><br></pre></td></tr></table></figure>
-
-<h2 id="Query"><a href="#Query" class="headerlink" title="Query"></a>Query</h2><blockquote>
-<p>Grafana 9.X支持图形化查询，TIDB自带的Grafana版本为7.5.11</p>
-</blockquote>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Label查询</span></span><br><span class="line">&#123;<span class="string">app=&quot;log-example&quot;</span>&#125; <span class="string">|=</span> <span class="string">``</span></span><br><span class="line"><span class="comment"># 使用logfmt解析器</span></span><br><span class="line">&#123;<span class="string">app=&quot;log-example&quot;</span>&#125; <span class="string">|</span> <span class="string">logfmt</span> <span class="string">|</span> <span class="string">status</span> <span class="string">=</span> <span class="string">`200`</span></span><br><span class="line"><span class="comment"># 使用JSON解析器</span></span><br><span class="line">&#123;<span class="string">app=&quot;log-example&quot;</span>&#125; <span class="string">|</span> <span class="string">json</span> <span class="string">|</span> <span class="string">status</span> <span class="string">=</span> <span class="string">`200`</span></span><br><span class="line"><span class="comment"># 查询状态码不等于200的日志</span></span><br><span class="line">&#123;<span class="string">app=&quot;log-example&quot;</span>&#125; <span class="string">|=</span> <span class="string">`status=`</span> <span class="string">|</span> <span class="string">logfmt</span> <span class="string">|</span> <span class="string">status</span> <span class="type">!=</span> <span class="string">`200`</span></span><br><span class="line"><span class="comment"># 查询状态码在400和500区间的日志</span></span><br><span class="line">&#123;<span class="string">app=&quot;log-example&quot;</span>&#125; <span class="string">|=</span> <span class="string">`status=`</span> <span class="string">|</span> <span class="string">logfmt</span> <span class="string">|</span> <span class="string">status</span> <span class="string">&gt;=</span> <span class="number">400</span> <span class="string">|</span> <span class="string">status</span> <span class="string">&lt;=</span> <span class="number">500</span></span><br><span class="line"><span class="comment"># 查询接口返回时间超过3us的日志</span></span><br><span class="line">&#123;<span class="string">app=&quot;log-example&quot;</span>&#125; <span class="string">|=</span> <span class="string">`status=`</span> <span class="string">|</span> <span class="string">logfmt</span> <span class="string">|</span> <span class="string">duration</span> <span class="string">&gt;</span> <span class="string">3us</span></span><br><span class="line"><span class="comment"># 重新格式化输出日志</span></span><br><span class="line">&#123;<span class="string">app=&quot;log-example&quot;</span>&#125; <span class="string">|=</span> <span class="string">`status=`</span> <span class="string">|</span> <span class="string">logfmt</span> <span class="string">|</span> <span class="string">line_format</span> <span class="string">`&#123;&#123;</span> <span class="string">.duration</span> <span class="string">&#125;&#125;</span> &#123;&#123; <span class="string">.uri</span> &#125;&#125;<span class="string">`</span></span><br><span class="line"><span class="comment"># 分组统计 10s 内 Pod 的日志数量</span></span><br><span class="line"><span class="string">sum</span> <span class="string">by</span> <span class="string">(pod)</span> <span class="string">(count_over_time(&#123;app=&quot;log-example&quot;&#125;</span> <span class="string">|=</span> <span class="string">`status=`</span> <span class="string">|</span> <span class="string">logfmt</span> <span class="string">|</span> <span class="string">duration</span> <span class="string">&gt;</span> <span class="string">4us</span> [<span class="string">10s</span>]<span class="string">))</span></span><br><span class="line"><span class="comment"># 分组统计 1 分钟内的请求状态码数量</span></span><br><span class="line"><span class="string">sum</span> <span class="string">by</span> <span class="string">(status)</span> <span class="string">(</span></span><br><span class="line"><span class="string">count_over_time(&#123;app=&quot;log-example&quot;&#125;</span> <span class="string">|=</span> <span class="string">`status=`</span> <span class="string">|</span> <span class="string">logfmt</span> <span class="string">|</span> <span class="string">__error__=&quot;&quot;[1m])</span></span><br><span class="line"><span class="string">)</span></span><br><span class="line"></span><br><span class="line">&#123;<span class="string">app=&quot;dubhe-metadata&quot;</span>&#125; <span class="string">|</span> <span class="string">json</span> <span class="string">|</span> <span class="string">level</span> <span class="string">=</span> <span class="string">`INFO`</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="JSON日志改造"><a href="#JSON日志改造" class="headerlink" title="JSON日志改造"></a>JSON日志改造</h2><h3 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>net.logstash.logback<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>logstash-logback-encoder<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">version</span>&gt;</span>7.0.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="logback-spring-xml"><a href="#logback-spring-xml" class="headerlink" title="logback-spring.xml"></a>logback-spring.xml</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">appender</span> <span class="attr">name</span>=<span class="string">&quot;console&quot;</span> <span class="attr">class</span>=<span class="string">&quot;ch.qos.logback.core.ConsoleAppender&quot;</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">encoder</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span> <span class="attr">class</span>=<span class="string">&quot;net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder&quot;</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">providers</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">pattern</span>&gt;</span></span><br><span class="line">				<span class="tag">&lt;<span class="name">pattern</span>&gt;</span></span><br><span class="line">					&#123;</span><br><span class="line">					&quot;timestamp&quot;: &quot;%date&#123;\&quot;yyyy-MM-dd HH:mm:ss.SSS\&quot;&#125;&quot;,</span><br><span class="line">					&quot;level&quot;: &quot;%level&quot;,</span><br><span class="line">					&quot;pid&quot;: &quot;$&#123;PID:-&#125;&quot;,</span><br><span class="line">					&quot;thread&quot;: &quot;%thread&quot;,</span><br><span class="line">					&quot;class&quot;: &quot;%logger&quot;,</span><br><span class="line">					&quot;method&quot;: &quot;%method&quot;,</span><br><span class="line">					&quot;line&quot;: &quot;%line&quot;,</span><br><span class="line">					&quot;message&quot;: &quot;%message&quot;</span><br><span class="line">					&#125;</span><br><span class="line">				<span class="tag">&lt;/<span class="name">pattern</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;/<span class="name">pattern</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">providers</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">encoder</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">appender</span>&gt;</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202307/Nexus%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202307/Nexus%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">Nexus部署</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-07-07 09:08:41" itemprop="dateCreated datePublished" datetime="2023-07-07T09:08:41+08:00">2023-07-07</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="镜像"><a href="#镜像" class="headerlink" title="镜像"></a>镜像</h2><p><a target="_blank" rel="noopener" href="https://hub.docker.com/r/sonatype/nexus3">https://hub.docker.com/r/sonatype/nexus3</a></p>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启动</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /dubhe/nexus-data &amp;&amp; <span class="built_in">chown</span> -R 200 /dubhe/nexus-data</span><br><span class="line">docker run -d -p 8081:8081 --name nexus -v /dubhe/nexus-data:/nexus-data sonatype/nexus3</span><br><span class="line">docker run -d --network host --name nexus -v /dubhe/nexus-data:/nexus-data sonatype/nexus3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 停止</span></span><br><span class="line">docker stop --<span class="keyword">time</span>=120 nexus</span><br><span class="line"></span><br><span class="line"><span class="comment"># 登录</span></span><br><span class="line">http://10.193.36.33:8081/</span><br><span class="line">admin/yourpass</span><br></pre></td></tr></table></figure>
-
-<h2 id="pom-xml"><a href="#pom-xml" class="headerlink" title="pom.xml"></a>pom.xml</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">		<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.sun<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>tools<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">scope</span>&gt;</span>system<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">systemPath</span>&gt;</span>$&#123;java.home&#125;/../lib/tools.jar<span class="tag">&lt;/<span class="name">systemPath</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.sun<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jconsole<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">version</span>&gt;</span>1.6.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">scope</span>&gt;</span>system<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">			<span class="tag">&lt;<span class="name">systemPath</span>&gt;</span>$&#123;java.home&#125;/../lib/jconsole.jar<span class="tag">&lt;/<span class="name">systemPath</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">distributionManagement</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">id</span>&gt;</span>releases<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">name</span>&gt;</span>Internal Releases<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">url</span>&gt;</span>http://10.193.36.33:8081/repository/maven-releases/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">id</span>&gt;</span>releases<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">name</span>&gt;</span>Internal Releases<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">		<span class="tag">&lt;<span class="name">url</span>&gt;</span>http://10.193.36.33:8081/repository/maven-snapshots/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;/<span class="name">snapshotRepository</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">distributionManagement</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="settings-xml"><a href="#settings-xml" class="headerlink" title="settings.xml"></a>settings.xml</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">settings</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/SETTINGS/1.0.0&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span> <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">pluginGroups</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">pluginGroups</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">proxies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">proxies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servers</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>releases<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">username</span>&gt;</span>admin<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">password</span>&gt;</span>yourpass<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servers</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">mirrors</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- &lt;mirror&gt;</span></span><br><span class="line"><span class="comment">            &lt;id&gt;nexus-aliyun&lt;/id&gt;</span></span><br><span class="line"><span class="comment">            &lt;mirrorOf&gt;*,!jitpack.io,!elasticsearch-releases,!dtstack-github,!nexus-public,!elastic.co&lt;/mirrorOf&gt;</span></span><br><span class="line"><span class="comment">            &lt;name&gt;Nexus aliyun&lt;/name&gt;</span></span><br><span class="line"><span class="comment">            &lt;url&gt;http://maven.aliyun.com/nexus/content/groups/public&lt;/url&gt;</span></span><br><span class="line"><span class="comment">        &lt;/mirror&gt; --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">mirror</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>aliyun-central<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">mirrorOf</span>&gt;</span>central<span class="tag">&lt;/<span class="name">mirrorOf</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">name</span>&gt;</span>aliyun-central<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://maven.aliyun.com/repository/central<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">mirror</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">mirror</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>aliyun-jcenter<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">mirrorOf</span>&gt;</span>jcenter,public<span class="tag">&lt;/<span class="name">mirrorOf</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">name</span>&gt;</span>aliyun-jcenter<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://maven.aliyun.com/repository/public<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">mirror</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">mirror</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>aliyun-google<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">mirrorOf</span>&gt;</span>google<span class="tag">&lt;/<span class="name">mirrorOf</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">name</span>&gt;</span>aliyun-google<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://maven.aliyun.com/repository/google<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">mirror</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">mirror</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>aliyun-spring<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">mirrorOf</span>&gt;</span>spring<span class="tag">&lt;/<span class="name">mirrorOf</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">name</span>&gt;</span>aliyun-spring<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://maven.aliyun.com/repository/spring<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">mirror</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">mirror</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>aliyun-spring-plugin<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">mirrorOf</span>&gt;</span>spring-plugin<span class="tag">&lt;/<span class="name">mirrorOf</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">name</span>&gt;</span>aliyun-spring-plugin<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">url</span>&gt;</span>https://maven.aliyun.com/repository/spring-plugin<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">mirror</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">mirrors</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">settings</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-
-<h2 id="build"><a href="#build" class="headerlink" title="build"></a>build</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">mvn  -Dmaven.test.skip=<span class="literal">true</span> clean install</span><br><span class="line"></span><br><span class="line">mvn clean package -U -pl efpx-register</span><br><span class="line">mvn clean package -U -pl efpx-gateway</span><br><span class="line">mvn clean package -U -pl efpx-auth</span><br><span class="line">mvn clean package -U -pl efpx-upms/efpx-upms-biz</span><br><span class="line">mvn clean package -U -pl dubhe-metadata/dubhe-metadata-biz</span><br><span class="line">mvn clean package -U -pl dubhe-scheduler/dubhe-scheduler-biz</span><br><span class="line">mvn clean package -U -pl dubhe-data-integration</span><br><span class="line">mvn clean package -U -pl dubhe-alert/dubhe-alert-biz</span><br><span class="line">mvn clean package -U -pl dubhe-api-generation</span><br><span class="line">mvn clean package -U -pl dubhe-quality/dubhe-quality-biz</span><br><span class="line">mvn clean package -U -pl dubhe-encryption/dubhe-encryption-biz</span><br><span class="line">mvn clean package -U -pl dubhe-executor/dubhe-executor-biz</span><br><span class="line">mvn clean package -U -pl efpx-visual/efpx-monitor</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202307/Nocalhost%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202307/Nocalhost%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Nocalhost笔记</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-07-06 14:02:51" itemprop="dateCreated datePublished" datetime="2023-07-06T14:02:51+08:00">2023-07-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="配置参数"><a href="#配置参数" class="headerlink" title="配置参数"></a>配置参数</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 镜像名</span></span><br><span class="line">harbor.dubhe:30002/dubhe-base/amazoncorretto:8u372</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动命令</span></span><br><span class="line">mvn install &amp;&amp; mvn spring-boot:run -pl ./dubhe-alert/dubhe-alert-biz</span><br><span class="line">mvn clean package -U -pl dubhe-executor/dubhe-executor-biz</span><br><span class="line"></span><br><span class="line">mvn spring-boot:run -pl dubhe-executor-biz</span><br></pre></td></tr></table></figure>
-
-<h2 id="本机调试"><a href="#本机调试" class="headerlink" title="本机调试"></a>本机调试</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> NACOS_HOST=10.193.36.41</span><br><span class="line"><span class="built_in">export</span> NACOS_PORT=30101</span><br><span class="line"><span class="built_in">export</span> NACOS_USERNAME=nacos</span><br><span class="line"><span class="built_in">export</span> NACOS_PASSWORD=nacos</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202306/%E5%9F%BA%E7%A1%80%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202306/%E5%9F%BA%E7%A1%80%E9%95%9C%E5%83%8F%E5%88%B6%E4%BD%9C/" class="post-title-link" itemprop="url">基础镜像制作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-07-01 14:58:04" itemprop="dateCreated datePublished" datetime="2023-07-01T14:58:04+08:00">2023-07-01</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="docker-manifest用法"><a href="#docker-manifest用法" class="headerlink" title="docker-manifest用法"></a>docker-manifest用法</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">docker manifest create --insecure harbor.dubhe:30002/dubhe-base/nginx:1.25.1 \</span><br><span class="line">harbor.dubhe:30002/dubhe-base/nginx:1.25.1-arm \</span><br><span class="line">harbor.dubhe:30002/dubhe-base/nginx:1.25.1-x86</span><br><span class="line"></span><br><span class="line">docker manifest push --insecure harbor.dubhe:30002/dubhe-base/nginx:1.25.1</span><br></pre></td></tr></table></figure>
-
-<h2 id="manifest-tool用法"><a href="#manifest-tool用法" class="headerlink" title="manifest-tool用法"></a>manifest-tool用法</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/GoogleContainerTools/kaniko#merging-the-container-manifests">https://github.com/GoogleContainerTools/kaniko#merging-the-container-manifests</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/estesp/manifest-tool/releases">https://github.com/estesp/manifest-tool/releases</a></li>
-</ul>
-<h2 id="基础镜像制作脚本"><a href="#基础镜像制作脚本" class="headerlink" title="基础镜像制作脚本"></a>基础镜像制作脚本</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">IMAGE=amazoncorretto:8u372</span><br><span class="line"></span><br><span class="line">docker pull --platform linux/arm64 <span class="variable">$&#123;IMAGE&#125;</span></span><br><span class="line">docker tag <span class="variable">$&#123;IMAGE&#125;</span> harbor.dubhe:30002/dubhe-base/<span class="variable">$&#123;IMAGE&#125;</span>-arm64</span><br><span class="line">docker push harbor.dubhe:30002/dubhe-base/<span class="variable">$&#123;IMAGE&#125;</span>-arm64</span><br><span class="line"></span><br><span class="line">docker pull --platform linux/amd64 <span class="variable">$&#123;IMAGE&#125;</span></span><br><span class="line">docker tag <span class="variable">$&#123;IMAGE&#125;</span> harbor.dubhe:30002/dubhe-base/<span class="variable">$&#123;IMAGE&#125;</span>-amd64</span><br><span class="line">docker push harbor.dubhe:30002/dubhe-base/<span class="variable">$&#123;IMAGE&#125;</span>-amd64</span><br><span class="line"></span><br><span class="line">manifest-tool --plain-http --username=admin --password=yourpass push from-args \</span><br><span class="line">--platforms linux/amd64,linux/arm64 \</span><br><span class="line">--template harbor.dubhe:30002/dubhe-base/<span class="variable">$&#123;IMAGE&#125;</span>-ARCH \</span><br><span class="line">--target harbor.dubhe:30002/dubhe-base/<span class="variable">$&#123;IMAGE&#125;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="基础镜像清单"><a href="#基础镜像清单" class="headerlink" title="基础镜像清单"></a>基础镜像清单</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># oracle-jdk8(X86 Only)</span></span><br><span class="line">harbor.dubhe:30002/dubhe-base/java:8u111</span><br><span class="line"></span><br><span class="line"><span class="comment"># dragonwell自制(ARM Only)</span></span><br><span class="line">harbor.dubhe:30002/dubhe-base/dragonwell:8.15.16-arm</span><br><span class="line"></span><br><span class="line"><span class="comment"># openjdk8(双架构)</span></span><br><span class="line">harbor.dubhe:30002/dubhe-base/openjdk:8-jre-slim-buster</span><br><span class="line"></span><br><span class="line"><span class="comment"># correttojdk8(双架构)</span></span><br><span class="line">harbor.dubhe:30002/dubhe-base/amazoncorretto:8u372</span><br><span class="line"></span><br><span class="line"><span class="comment"># 官方镜像</span></span><br><span class="line">harbor.dubhe:30002/dubhe-base/busybox:1.36.0</span><br><span class="line">harbor.dubhe:30002/dubhe-base/nginx:1.25.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 自制镜像</span></span><br><span class="line">harbor.dubhe:30002/dubhe-base/alpine:3.16.3</span><br><span class="line">harbor.dubhe:30002/dubhe-base/ubuntu:22.04</span><br><span class="line"></span><br><span class="line"><span class="comment"># 自制镜像(TektonTask X86 Only)</span></span><br><span class="line">harbor.dubhe:30002/dubhe-base/chart-update:latest</span><br><span class="line">harbor.dubhe:30002/dubhe-base/dubhe-buildkit:1.2.0</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>

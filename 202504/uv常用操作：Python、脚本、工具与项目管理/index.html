@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Python版本、虚拟环境、项目依赖和临时命令行工具原本分散在不同工具中，uv把它们收进了一套命令。日常开发基本可以围绕uv python、uv run、uv tool和项目命令完成，使用的uv版本为0.12.5。 参考 uv文档 Python版本管理 项目依赖与同步 命令行工具  安装uvmacOS和Linux可以使用官方安装脚本： 12curl -LsSf https:&#x2F;&#x2F;astral.sh&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="uv常用操作：Python、脚本、工具与项目管理">
+<meta property="og:url" content="https://www.bluexiii.com/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="Python版本、虚拟环境、项目依赖和临时命令行工具原本分散在不同工具中，uv把它们收进了一套命令。日常开发基本可以围绕uv python、uv run、uv tool和项目命令完成，使用的uv版本为0.12.5。 参考 uv文档 Python版本管理 项目依赖与同步 命令行工具  安装uvmacOS和Linux可以使用官方安装脚本： 12curl -LsSf https:&#x2F;&#x2F;astral.sh&#x2F;">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-04-02T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-22T12:20:10.000Z">
+<meta property="article:author" content="BlueXIII">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.bluexiii.com/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/","path":"202504/uv常用操作：Python、脚本、工具与项目管理/","title":"uv常用操作：Python、脚本、工具与项目管理"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>uv常用操作：Python、脚本、工具与项目管理 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BlueXIII's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85uv"><span class="nav-number">2.</span> <span class="nav-text">安装uv</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%A1%E7%90%86Python%E7%89%88%E6%9C%AC"><span class="nav-number">3.</span> <span class="nav-text">管理Python版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%8C%85%E7%B4%A2%E5%BC%95"><span class="nav-number">4.</span> <span class="nav-text">配置包索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E5%8D%95%E6%96%87%E4%BB%B6%E8%84%9A%E6%9C%AC"><span class="nav-number">5.</span> <span class="nav-text">运行单文件脚本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E5%92%8C%E5%AE%89%E8%A3%85%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7"><span class="nav-number">6.</span> <span class="nav-text">运行和安装命令行工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%A1%E7%90%86%E9%A1%B9%E7%9B%AE"><span class="nav-number">7.</span> <span class="nav-text">管理项目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E5%92%8C%E5%8F%91%E5%B8%83"><span class="nav-number">8.</span> <span class="nav-text">构建和发布</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">282</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="uv常用操作：Python、脚本、工具与项目管理 | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          uv常用操作：Python、脚本、工具与项目管理
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2025-04-03 00:00:00" itemprop="dateCreated datePublished" datetime="2025-04-03T00:00:00+08:00">2025-04-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+<p>Python版本、虚拟环境、项目依赖和临时命令行工具原本分散在不同工具中，uv把它们收进了一套命令。日常开发基本可以围绕<code>uv python</code>、<code>uv run</code>、<code>uv tool</code>和项目命令完成，使用的uv版本为0.12.5。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/">uv文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/guides/install-python/">Python版本管理</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/concepts/projects/sync/">项目依赖与同步</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.astral.sh/uv/guides/tools/">命令行工具</a></li>
+</ul>
+<h2 id="安装uv"><a href="#安装uv" class="headerlink" title="安装uv"></a>安装uv</h2><p>macOS和Linux可以使用官方安装脚本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -LsSf https://astral.sh/uv/install.sh | sh</span><br><span class="line">uv --version</span><br></pre></td></tr></table></figure>
+
+<p>通过Homebrew安装：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install uv</span><br></pre></td></tr></table></figure>
+
+<h2 id="管理Python版本"><a href="#管理Python版本" class="headerlink" title="管理Python版本"></a>管理Python版本</h2><p>uv可以安装多个Python版本，也能直接使用系统中已有的Python：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv python install 3.10 3.11 3.12</span><br><span class="line">uv python list</span><br></pre></td></tr></table></figure>
+
+<p>在项目中固定Python版本，会生成<code>.python-version</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uv python pin 3.11</span><br></pre></td></tr></table></figure>
+
+<p>创建指定版本的虚拟环境：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv venv --python 3.12</span><br><span class="line"><span class="built_in">source</span> .venv/bin/activate</span><br></pre></td></tr></table></figure>
+
+<p>只指定<code>3.12</code>比固定到某个补丁版本更省事，uv会选择满足条件的版本。</p>
+<h2 id="配置包索引"><a href="#配置包索引" class="headerlink" title="配置包索引"></a>配置包索引</h2><p>临时指定默认索引：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv add \</span><br><span class="line">  --default-index https://pypi.tuna.tsinghua.edu.cn/simple \</span><br><span class="line">  requests</span><br></pre></td></tr></table></figure>
+
+<p>也可以使用环境变量：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> UV_DEFAULT_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple</span><br></pre></td></tr></table></figure>
+
+<p>项目的<code>pyproject.toml</code>使用<code>[[tool.uv.index]]</code>：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[[tool.uv.index]]</span></span><br><span class="line"><span class="attr">name</span> = <span class="string">&quot;mirror&quot;</span></span><br><span class="line"><span class="attr">url</span> = <span class="string">&quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;</span></span><br><span class="line"><span class="attr">default</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>独立的<code>uv.toml</code>没有<code>tool.uv</code>前缀：</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[[index]]</span></span><br><span class="line"><span class="attr">name</span> = <span class="string">&quot;mirror&quot;</span></span><br><span class="line"><span class="attr">url</span> = <span class="string">&quot;https://pypi.tuna.tsinghua.edu.cn/simple&quot;</span></span><br><span class="line"><span class="attr">default</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>用户级配置可以放在<code>~/.config/uv/uv.toml</code>。<code>uv tool</code>属于用户级操作，不读取项目中的索引配置，需要使用用户级配置、环境变量或命令行参数。</p>
+<h2 id="运行单文件脚本"><a href="#运行单文件脚本" class="headerlink" title="运行单文件脚本"></a>运行单文件脚本</h2><p>临时给脚本增加依赖，不会修改当前项目：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv run --with rich example.py</span><br><span class="line">uv run --with <span class="string">&#x27;rich&gt;12,&lt;13&#x27;</span> example.py</span><br><span class="line">uv run --python 3.10 example.py</span><br></pre></td></tr></table></figure>
+
+<p>需要长期保留依赖时，可以把PEP723元数据写进脚本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv init --script example.py --python 3.12</span><br><span class="line">uv add --script example.py <span class="string">&#x27;requests&lt;3&#x27;</span> rich</span><br><span class="line">uv run example.py</span><br></pre></td></tr></table></figure>
+
+<p>脚本默认不会自动生成锁文件。需要固定依赖时单独锁定：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uv lock --script example.py</span><br></pre></td></tr></table></figure>
+
+<p>锁文件会写到脚本旁边，例如<code>example.py.lock</code>。</p>
+<h2 id="运行和安装命令行工具"><a href="#运行和安装命令行工具" class="headerlink" title="运行和安装命令行工具"></a>运行和安装命令行工具</h2><p>偶尔使用的工具直接通过<code>uvx</code>运行。它是<code>uv tool run</code>的简写，每个工具使用独立的临时环境：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uvx ruff check .</span><br><span class="line">uv tool run ruff check .</span><br><span class="line"></span><br><span class="line">uvx --from httpie http --version</span><br><span class="line">uvx ruff@0.3.0 check .</span><br><span class="line">uvx --with mkdocs-material mkdocs --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+
+<p>经常使用的工具可以持久安装：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uv tool install <span class="string">&#x27;ruff&gt;=0.4&#x27;</span></span><br><span class="line">uv tool update-shell</span><br><span class="line">ruff --version</span><br></pre></td></tr></table></figure>
+
+<p>版本范围要加引号，否则Shell可能把<code>&gt;</code>识别成输出重定向。</p>
+<p>查看、升级和删除工具：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uv tool list</span><br><span class="line">uv tool upgrade ruff</span><br><span class="line">uv tool upgrade --all</span><br><span class="line">uv tool uninstall ruff</span><br></pre></td></tr></table></figure>
+
+<p>工具需要特定Python版本时显式指定：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">uvx --python 3.10 ruff</span><br><span class="line">uv tool install --python 3.10 ruff</span><br><span class="line">uv tool upgrade --python 3.10 ruff</span><br></pre></td></tr></table></figure>
+
+<h2 id="管理项目"><a href="#管理项目" class="headerlink" title="管理项目"></a>管理项目</h2><p>创建项目并添加依赖：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uv init hello-world</span><br><span class="line"><span class="built_in">cd</span> hello-world</span><br><span class="line"></span><br><span class="line">uv add requests</span><br><span class="line">uv add <span class="string">&#x27;requests==2.31.0&#x27;</span></span><br><span class="line">uv add git+https://github.com/psf/requests</span><br></pre></td></tr></table></figure>
+
+<p>从现有依赖文件迁移：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uv add -r requirements.txt -c constraints.txt</span><br></pre></td></tr></table></figure>
+
+<p>删除或升级单个依赖：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv remove requests</span><br><span class="line">uv lock --upgrade-package requests</span><br></pre></td></tr></table></figure>
+
+<p><code>uv.lock</code>记录完整的解析结果，<code>uv sync</code>将项目环境同步到锁文件：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv lock</span><br><span class="line">uv <span class="built_in">sync</span></span><br></pre></td></tr></table></figure>
+
+<p><code>uv run</code>会在运行前自动检查锁文件并同步环境，通常不需要手工激活<code>.venv</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uv run python main.py</span><br><span class="line"></span><br><span class="line">uv add flask</span><br><span class="line">uv run flask run -p 3000</span><br></pre></td></tr></table></figure>
+
+<p>CI中不希望命令悄悄修改锁文件时，可以使用<code>--locked</code>：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv <span class="built_in">sync</span> --locked</span><br><span class="line">uv run --locked python main.py</span><br></pre></td></tr></table></figure>
+
+<h2 id="构建和发布"><a href="#构建和发布" class="headerlink" title="构建和发布"></a>构建和发布</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv build</span><br><span class="line">uv publish</span><br></pre></td></tr></table></figure>
+
+<p>构建产物位于<code>dist/</code>。发布前需要在目标包索引中配置认证；如果项目配置了多个索引，使用<code>uv publish --index &lt;name&gt;</code>明确指定发布目标。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" rel="prev" title="Qdrant的Docker启动与RESTAPI常用操作">
+                  <i class="fa fa-angle-left"></i> Qdrant的Docker启动与RESTAPI常用操作
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/" rel="next" title="从PyTorch到ONNX和TensorRT的YOLO部署">
+                  从PyTorch到ONNX和TensorRT的YOLO部署 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

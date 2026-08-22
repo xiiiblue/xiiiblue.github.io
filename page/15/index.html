@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">275</span>
+          <span class="site-state-item-count">282</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,994 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201702/WEB%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%96%E4%B8%8D%E5%88%B0%E7%94%A8%E6%88%B7%E7%9A%84MAC%E5%9C%B0%E5%9D%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201702/WEB%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%96%E4%B8%8D%E5%88%B0%E7%94%A8%E6%88%B7%E7%9A%84MAC%E5%9C%B0%E5%9D%80/" class="post-title-link" itemprop="url">WEB服务器为什么取不到用户的MAC地址</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>起因是某个同事接到了领导安排下来的一个需求，要在一个Web应用（Java+Tomcat）中，记录用户登录时的IP地址和MAC地址，用于安全审计，于是咨询我如何实现。  </p>
+<p>第一反应是，这个需求本身是不成立的，根据以往的了解，MAC地址应该是过不了路由器的才对。<br>以往做开发，都是用engineer的思维：先动手做，遇到问题再解决问题。但这个需求，应当用scientist的思维去思考：首先确定能不能做，然后才是怎么做。  </p>
+<p>翻查了一些资料，想来证实”<strong>为什么WEB服务器，可以获取到客户端的IP地址，但获取不到MAC地址</strong>“，看着看着才发现，这是个挺大的命题，够写一篇BLOG了。   </p>
+<p>PS：由于个人对这块内容了解的不够彻底，<strong>本文很可能会有谬误</strong>，请读者先不要太当真，另外希望平台组的同事给予指证。  </p>
+<h2 id="先说结论"><a href="#先说结论" class="headerlink" title="先说结论"></a>先说结论</h2><p>我所认为的结论应该是这样的：  </p>
+<ol>
+<li>获取远程主机的IP地址是可行的（先不讨论使用代理的情况）  </li>
+<li>本地网络下，当我们已知一个IPv4地址后，可以通过ARP请求，获取对应的MAC地址。换句话说，MAC地址，只在本地网络下才有意义。  </li>
+<li>但我们无法透过路由器，获取其它网络下的IPv4节点的MAC地址。</li>
+</ol>
+<p>下面一步步解释一下。  </p>
+<h2 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h2><p>先从HTTP说起。<br>HTTP是一个应用层的协议，它建立在TCP协议之上。<br>HTTP请求就是用来发送一段文本。关于这段文本如何组织，第一行写什么，第二行写什么，哪里加一个空行，就是HTTP协议所要规范的内容。<br>举个直接的例子，下面是一个简单的HTTP GET请求，有兴趣可以用telnet模拟一下。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GET http://www.fiddler2.com/UpdateCheck.aspx?isBeta=False HTTP/1.1</span><br><span class="line">User-Agent: Fiddler/4.6.3.50306 (.NET 4.0; WinNT 5.1.2600 SP3; zh-CN; 2xx86; Auto Update; Full Instance; Extensions: Geoedge, AutoSaveExt, HostsFile, SAZClipboardFactory, EventLog, SimpleFilter, Timeline, APITesting)</span><br><span class="line">Pragma: no-cache</span><br><span class="line">Host: www.fiddler2.com</span><br><span class="line">Accept-Language: zh-CN</span><br><span class="line">Referer: http://fiddler2.com/client/4.6.3.50306</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Connection: close</span><br></pre></td></tr></table></figure>
+
+<p>我们可以看到，HTTP的这段请求中，完全找不到客户端的MAC地址，甚至连IP地址都没有描述。<br>那IP地址是从哪里取到的呢？接下来我们再深入一点，看下一个内容：Socket  </p>
+<h2 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h2><p>HTTP的客户端和服务端，是通过Socket进行连接的。  </p>
+<p>Socket是什么呢？<strong>Socket是对OSI模型第4层-传输层中的TCP&#x2F;IP协议的封装</strong>。Socket本身并不是协议，而<strong>是一个调用接口</strong>(API)。Socket和TCP&#x2F;IP协议没有必然的联系。但通过Socket，我们才能使用TCP&#x2F;IP协议。应用层不必了解TCP&#x2F;IP协议细节，直接通过对Socket接口函数的调用完成数据在IP网络的传输。  </p>
+<p>Socket包含了网络通信必须的五种信息：<strong>连接使用的协议，本地主机的IP地址，本地进程的协议端口，远地主机的IP地址，远地进程的协议端口</strong>。</p>
+<p>所以，因为有了Socket，客户端和服务端完全不需要了解底层细节，直接通过调用Socket来实现就可以了。</p>
+<p>这也就是为什么服务器端<strong>可以获取到客户端的IP地址</strong>的原因，因为Socket中包含了远地主机的IP地址。（当然，通过代理服务器进行访问的除外，这种要依靠HTTP协议的X-Forwarded-For头来确认IP，不在本次的讨论范围中）  </p>
+<p>那为什么<strong>无法获取到客户端的MAC地址</strong>呢？很简单，同理，因为Socket中无法取到MAC地址。。。</p>
+<p>如果继续发问，为什么Socket中都既然都包含IP地址了，为什么偏偏不包含MAC地址信息呢？看来我们还要更深入一点，看一下OSI模型吧。  </p>
+<h2 id="OSI七层模型"><a href="#OSI七层模型" class="headerlink" title="OSI七层模型"></a>OSI七层模型</h2><p>首先祭出这张经典的OSI七层模型图，计算机网络的基石，请先盯着看一会儿，认真复习一下<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/um3vu.gif"></p>
+<p>这里还有一张OSI七层模型与TCP&#x2F;IP四层模型的对照图<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/9kstc.jpg"></p>
+<p>为了方便理解，再放上一张更直观的，每一层对应的数据型式和主要协议的示意图<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/xifqu.jpg">  </p>
+<p>通过上图大体可以知道：  </p>
+<ul>
+<li>MAC地址是记录在第2层-数据链路层的  </li>
+<li>IP地址是记录在第3层-网络层的  </li>
+<li>端口号（TCP&#x2F;UDP）是位于于第4层-传输层的  </li>
+<li>HTTP请求报文是记录在第7层-应用层的</li>
+</ul>
+<h2 id="当打开一个URL时，究竟发生了什么"><a href="#当打开一个URL时，究竟发生了什么" class="headerlink" title="当打开一个URL时，究竟发生了什么"></a>当打开一个URL时，究竟发生了什么</h2><p>下面举个栗子，当我们在浏览器中打开一个链接后，看看OSI各层倒底发生了什么：<br>这里撇开DNS解析之类东西，只说一下HTTP报文的发送  </p>
+<h3 id="1、发送端"><a href="#1、发送端" class="headerlink" title="1、发送端"></a>1、发送端</h3><p>首先来看一下发送端（浏览器所在的主机）。参照第一张OSI模型图，按照从上向下的顺序来看。应用层数据其实只有那么几行文本，然后往下，每过一层，都要被加上首部&#x2F;尾部。<strong>这个过程就像是一层一层的穿衣服</strong>。   </p>
+<p>HTTP请求文本：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/48yqg.jpg"><br>最后到了数据链路层之后，数据就变成了这个肥肥的样子，最后转换成0和1的电信号发出：  </p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/w3bim.jpg"><br>下面看看，现实中，每一层都做了些什么（现实中的分层和OSI模型还是有区别的）：  </p>
+<ul>
+<li><p>第7,6,5层，也就是OSI中的应用层,表示层,会话层（也是TCP&#x2F;IP分层中的应用层），它创建了一个HTTP请求(例如 GET &#x2F; HTTP&#x2F;1.1)，并交给下一层。一个普通的HTTP GET请求就是几行纯文本。<br>处理这三层，是<strong>浏览器</strong>和<strong>WEB服务器</strong>所要做的工作，浏览器发出请求，WEB服务器做出响应。  </p>
+</li>
+<li><p>第4,3层，也就是传输层&#x2F;网络层。TCP&#x2F;IP栈将上层的数据分成包（packets），并将它送往下一层-数据链路层。<br><strong>IP地址、端口号记录在这两层中</strong>。<br>处理这两层，是<strong>操作系统</strong>要做的工作，操作系统将这两层封装为了Socket，方便调用。  </p>
+</li>
+<li><p>第2层，数据链路层，将包（package）封装成帧（frame），并将它送到下一层物理层。<br><strong>MAC地址记录在这一层中</strong>。<br>这一层的工作，交由<strong>网卡</strong>来处理。  </p>
+</li>
+<li><p>第1层，物理层，使用电信号来传送0和1。<br>最后这一层就是<strong>传输介质</strong>的工作了，例如双绞线、光纤、同轴电缆。</p>
+</li>
+</ul>
+<h3 id="2、数据流转"><a href="#2、数据流转" class="headerlink" title="2、数据流转"></a>2、数据流转</h3><p>数据发出去后，再看一下数据在网络上的流转。<br>数据一般要经过交换机、路由器等网络设备，层层转发，这些设备所做的事情就像是： <strong>脱掉一件或几件衣服，做一些修修补补，然后再重新穿回去</strong>。  </p>
+<ul>
+<li>这里先以L2交换机为例看一下，因为L2交换机会认别到帧这一层，记录&#x2F;学习MAC地址，并将帧发送到目的地。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/5ad0a.jpg"></li>
+</ul>
+<p>通过上面这张图，我们就可以理解，MAC地址在本地网络下的重要作用了。也理解了，本地网络下，是可以查出每个节点的MAC地址的。  </p>
+<ul>
+<li>下面，再来看一下路由器。当一个LAN希望连接到另一个LAN时，就必须使用路由器设备了。当然，可以通过构建超大型的LAN，来避免使用路由器，但这时，交换机就需要管理大量的MAC地址，同时进行大量的广播通信，设备的负担就会相当大。路由器会进行路由选择，让数据达到下一跳。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/18783.jpg"></li>
+</ul>
+<p>经过路由器后，为了能到达下一跳，数据链路层中的MAC地址就被篡改了，下面这张图很能说明问题：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/js6ab.jpg">  </p>
+<h3 id="3、接收端"><a href="#3、接收端" class="headerlink" title="3、接收端"></a>3、接收端</h3><p>最后看一下接收端（WEB服务器所在的主机）。参照第一张OSI模型图，按照从下至上的顺序来看，它要做的事情是： <strong>将衣服一件一件全部脱掉</strong> ，最后WEB服务器就取到了最初的应用层数据。  </p>
+<h3 id="4、结论"><a href="#4、结论" class="headerlink" title="4、结论"></a>4、结论</h3><p>所以，当一个以太网帧到达目的主机后，其中的MAC地址早已经不是原来客户端的MAC了，操作系统的Socket自然也无法获取原始的MAC地址了。  </p>
+<h2 id="可不可以通过其它方式获取MAC地址"><a href="#可不可以通过其它方式获取MAC地址" class="headerlink" title="可不可以通过其它方式获取MAC地址"></a>可不可以通过其它方式获取MAC地址</h2><p>上面已经证明了，WEB服务端，是无法获取客户端的MAC地址的。<br>那么，能不能通过一些trick来绕道实现呢？<br>想了想，大概可以有如下的思路：</p>
+<ol>
+<li>通过JavaScrip获取客户端的某块网卡的MAC地址，最好还要同时获取路由表，挑选出走默认路由的那块网卡。  </li>
+<li>将MAC地址，偷偷写入应用层的HTTP协议的Header中（类似Content-Type和User-Agent）</li>
+<li>服务端直接读Header，就可以取到Mac地址了</li>
+</ol>
+<p>那么这个思路可不可行呢？  </p>
+<ul>
+<li>如果客户端是浏览器的话，首先第一步就会被打脸，我想也没有哪个浏览器会允许这种不安全的操作的。但如果硬要通过IE下的ActiveX来取的话，貌似也不是不可以。。。  </li>
+<li>但如果客户端是APP的话，通过WebView+JS Bridge方式调用私有的API，应该也是可行的。。。</li>
+</ul>
+<h2 id="记录MAC地址的意义"><a href="#记录MAC地址的意义" class="headerlink" title="记录MAC地址的意义"></a>记录MAC地址的意义</h2><p>最后的最后，不禁思考，获取MAC的意义在哪里呢？<br>如果单纯是为了取证和审计，我想意义是不大的，甚至不如直接记录IP地址。<br>因为：    </p>
+<ul>
+<li>对于普通的正常用户而言，通过IP地址，是可以直接定位操作人的，即使IP是动态的。  </li>
+<li>对于初级以上Hacker来说，伪造MAC地址和伪造IP地址一样简单，甚至更简单。</li>
+</ul>
+<p>所以，一般的安全管控要求下，还是只记录IP吧。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.amazon.cn/%E5%9B%BE%E8%A7%A3%E7%BD%91%E7%BB%9C%E7%A1%AC%E4%BB%B6-%E6%97%A5-%E4%B8%89%E8%BD%AE%E8%B4%A4%E4%B8%80/dp/B01531731E/ref=sr_1_1?s=digital-text&ie=UTF8&qid=1488177601&sr=1-1&keywords=%E5%9B%BE%E8%A7%A3%E7%BD%91%E7%BB%9C%E7%A1%AC%E4%BB%B6">https://www.amazon.cn/图解网络硬件-日-三轮贤一/dp/B01531731E/ref=sr_1_1?s&#x3D;digital-text&amp;ie&#x3D;UTF8&amp;qid&#x3D;1488177601&amp;sr&#x3D;1-1&amp;keywords&#x3D;图解网络硬件</a>  </li>
+<li><a target="_blank" rel="noopener" href="https://www.amazon.cn/TCP-IP%E5%85%A5%E9%97%A8%E7%BB%8F%E5%85%B8-%E7%BE%8E-Joe-Casad/dp/B00L0WLUGA/ref=sr_1_1?s=digital-text&ie=UTF8&qid=1488177636&sr=1-1&keywords=tcp/ip%E5%85%A5%E9%97%A8">https://www.amazon.cn/图解网络硬件-日-三轮贤一/dp/B01531731E/ref=sr_1_1?s&#x3D;digital-text&amp;ie&#x3D;UTF8&amp;qid&#x3D;1488177601&amp;sr&#x3D;1-1&amp;keywords&#x3D;图解网络硬件</a>  </li>
+<li><a target="_blank" rel="noopener" href="https://www.amazon.cn/HTTP%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97-%E7%BE%8E-David-Gourley-Brian-Totty-Marjorie-Sayer-Sailu-Reddy-Aushu-Aggarwal/dp/B00M2DKYRC/ref=sr_1_1?s=digital-text&ie=UTF8&qid=1488178503&sr=1-1&keywords=HTTP%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97">https://www.amazon.cn/HTTP权威指南-美-David-Gourley-Brian-Totty-Marjorie-Sayer-Sailu-Reddy-Aushu-Aggarwal/dp/B00M2DKYRC/ref=sr_1_1?s&#x3D;digital-text&amp;ie&#x3D;UTF8&amp;qid&#x3D;1488178503&amp;sr&#x3D;1-1&amp;keywords&#x3D;HTTP权威指南</a>  </li>
+<li><a target="_blank" rel="noopener" href="http://superuser.com/questions/801788/role-of-osi-layers-when-we-open-a-url-in-browser">http://superuser.com/questions/801788/role-of-osi-layers-when-we-open-a-url-in-browser</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201702/%E4%BD%BF%E7%94%A8Python3%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AA%E7%88%AC%E8%99%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201702/%E4%BD%BF%E7%94%A8Python3%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AA%E7%88%AC%E8%99%AB/" class="post-title-link" itemprop="url">使用Python3编写一个爬虫</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="需求简介"><a href="#需求简介" class="headerlink" title="需求简介"></a>需求简介</h2><p>最近厂里有一个新闻采集类的需求，细节大体如下：</p>
+<ol>
+<li>模拟登录一个内网网站（SSO）</li>
+<li>抓取新闻（支持代理服务器的方式访问）</li>
+<li>加工内容样式，以适配手机屏幕</li>
+<li>将正文中的图片转存到自已的服务器，并替换<img>标签中的url</li>
+<li>图片存储服务器需要复用已有的FastDFS分布式文件系统</li>
+<li>采集结果导入生产库</li>
+<li>支持日志打印</li>
+</ol>
+<p>初学Python3，正好用这个需求练练手，最后很惊讶的是只用200多行代码就实现了，如果换成Java的话大概需要1200行吧。果然应了那句老话：<strong>人生苦短，我用Python</strong>  </p>
+<h2 id="登录页面抓包"><a href="#登录页面抓包" class="headerlink" title="登录页面抓包"></a>登录页面抓包</h2><p>第一步当然是抓包，然后再根据抓到的内容，模拟进行HTTP请求。  </p>
+<p>常用的抓包工具，有Mac下的Charles和Windows下的Fiddler。<br>它们的原理都是在本机开一个HTTP或SOCKS代理服务器端口，然后将浏览器的代理服务器设置成这个端口，这样浏览器中所有的HTTP请求都会先经过抓包工具记录下来了。  </p>
+<ul>
+<li><p>Chrales<br><a target="_blank" rel="noopener" href="https://www.charlesproxy.com/">https://www.charlesproxy.com</a><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/p74nq.jpg"></p>
+</li>
+<li><p>Fiddler<br><a target="_blank" rel="noopener" href="http://www.telerik.com/fiddler">http://www.telerik.com/fiddler</a><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/o552x.jpg"></p>
+</li>
+</ul>
+<p>这里推荐尽量使用Fiddler，原因是Charles对于cookie的展示是有bug的，举个例子，真实情况：请求A返回了LtpaToken这个cookie，请求B中返回了sid这个cookie。但在Charles中的展示是：请求A中已经同时返回了LtpaToken和sid两个cookie，这就很容易误导人了。<br>另外Fiddler现在已经有了Linux的Beta版本，貌似是用类似wine的方式实现的。  </p>
+<p>如果网站使用了单点登录，可能会涉及到手工生成cookie。所以不仅需要分析每一条HTTP请求的request和response，以及带回来的cookie，还要对页面中的javascript进行分析，看一下是如何生成cookie的。  </p>
+<h2 id="模拟登录"><a href="#模拟登录" class="headerlink" title="模拟登录"></a>模拟登录</h2><p>将页面分析完毕之后，就可以进行模拟HTTP请求了。<br>这里有两个非常好用的第三方库， <strong>request</strong> 和 <strong>BeautifulSoup</strong></p>
+<p><strong>requests</strong> 库是用来代替urllib的，可以非常人性化的的生成HTTP请求，模拟session以及伪造cookie更是方便。<br><strong>BeautifulSoup</strong> 用来代替re模块，进行HTML内容解析，可以用tag, class, id来定位想要提取的内容，也支持正则表达式等。  </p>
+<p>具体的使用方式直接看官方文档就可以了，写的非常详细，这里直接给出地址：<br><a target="_blank" rel="noopener" href="http://cn.python-requests.org/zh_CN/latest/">requests官方文档</a><br><a target="_blank" rel="noopener" href="https://www.crummy.com/software/BeautifulSoup/bs4/doc.zh/">BeautifulSoup官方文档</a>  </p>
+<p>通过pip3来安装这两个模块:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install python3-pip</span><br><span class="line">sudo pip3 install requests</span><br><span class="line">sudo pip3 install beautifulsoup4</span><br></pre></td></tr></table></figure>
+
+<p>导入模块：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import requests</span><br><span class="line">from bs4 import BeautifulSoup</span><br></pre></td></tr></table></figure>
+
+
+<p>模拟登录：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">def sso_login():</span><br><span class="line">    # 调用单点登录工号认证页面</span><br><span class="line">    response = session.post(const.SSO_URL,</span><br><span class="line">                            data=&#123;&#x27;login&#x27;: const.LOGIN_USERNAME, &#x27;password&#x27;: const.LOGIN_PASSWORD, &#x27;appid&#x27;: &#x27;np000&#x27;&#125;)</span><br><span class="line"></span><br><span class="line">    # 分析页面，取token及ltpa</span><br><span class="line">    soup = BeautifulSoup(response.text, &#x27;html.parser&#x27;)</span><br><span class="line">    token = soup.form.input.get(&#x27;value&#x27;)</span><br><span class="line">    ltpa = soup.form.input.input.input.get(&#x27;value&#x27;)</span><br><span class="line">    ltpa_value = ltpa.split(&#x27;;&#x27;)[0].split(&#x27;=&#x27;, 1)[1]</span><br><span class="line"></span><br><span class="line">    # 手工设置Cookie</span><br><span class="line">    session.cookies.set(&#x27;LtpaToken&#x27;, ltpa_value, domain=&#x27;unicom.local&#x27;, path=&#x27;/&#x27;)</span><br><span class="line"></span><br><span class="line">    # 调用云门户登录页面(2次）</span><br><span class="line">    payload = &#123;&#x27;token&#x27;: token&#125;</span><br><span class="line">    session.post(const.LOGIN_URL, data=payload, proxies=const.PROXIES)</span><br><span class="line">    response = session.post(const.LOGIN_URL, data=payload, proxies=const.PROXIES)</span><br><span class="line">    if response.text == &quot;success&quot;:</span><br><span class="line">        logging.info(&quot;登录成功&quot;)</span><br><span class="line">        return True</span><br><span class="line">    else:</span><br><span class="line">        logging.info(&quot;登录失败&quot;)</span><br><span class="line">        return False</span><br></pre></td></tr></table></figure>
+<p>这里用到了BeautifulSoup进行HTML解析，取出页面中的token、ltpa等字段。<br>然后使用session.cookies.set伪造了一个cookie，注意其中的domain参数，设置成1级域名。<br>然后用这个session，去调用网站页面，换回sid这个token。并可以根据页面的返回信息，来简单判断一下成功还是失败。</p>
+<h2 id="列表页面抓取"><a href="#列表页面抓取" class="headerlink" title="列表页面抓取"></a>列表页面抓取</h2><p>登录成功之后，接下来的列表页面抓取就要简单的多了，不考虑分页的话，直接取一个list出来遍历即可。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">def capture_list(list_url):</span><br><span class="line">    response = session.get(list_url, proxies=const.PROXIES)</span><br><span class="line">    response.encoding = &quot;UTF-8&quot;</span><br><span class="line">    soup = BeautifulSoup(response.text, &#x27;html.parser&#x27;)</span><br><span class="line">    news_list = soup.find(&#x27;div&#x27;, &#x27;xinwen_list&#x27;).find_all(&#x27;a&#x27;)</span><br><span class="line">    news_list.reverse()</span><br><span class="line">    logging.info(&quot;开始采集&quot;)</span><br><span class="line">    for news_archor in news_list:</span><br><span class="line">        news_cid = news_archor.attrs[&#x27;href&#x27;].split(&#x27;=&#x27;)[1]</span><br><span class="line">        capture_content(news_cid)</span><br><span class="line">    logging.info(&quot;结束采集&quot;)</span><br></pre></td></tr></table></figure>
+<p>这里使用了<code>response.encoding = &quot;UTF-8&quot;</code>来手工解决乱码问题。  </p>
+<h2 id="新联页面抓取"><a href="#新联页面抓取" class="headerlink" title="新联页面抓取"></a>新联页面抓取</h2><p>新闻页面抓取，涉及到插临时表，这里没有使用每三方库，直接用SQL方式插入。<br>其中涉及到样式处理与图片转存，另写一个模块<code>pconvert</code>来实现。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">def capture_content(news_cid):</span><br><span class="line">    # 建立DB连接</span><br><span class="line">    conn = mysql.connector.connect(user=const.DB_USERNAME, password=const.DB_PASSWORD, host=const.DB_HOST,</span><br><span class="line">                                   port=const.DB_PORT, database=const.DB_DATABASE)</span><br><span class="line">    cursor = conn.cursor()</span><br><span class="line"></span><br><span class="line">    # 判断是否已存在</span><br><span class="line">    cursor.execute(&#x27;select count(*) from material_prepare where news_cid = %s&#x27;, (news_cid,))</span><br><span class="line">    news_count = cursor.fetchone()[0]</span><br><span class="line">    if news_count &gt; 0:</span><br><span class="line">        logging.info(&quot;采集&quot; + news_cid + &#x27;:已存在&#x27;)</span><br><span class="line">    else:</span><br><span class="line">        logging.info(&quot;采集&quot; + news_cid + &#x27;:新增&#x27;)</span><br><span class="line">        news_url = const.NEWS_BASE_URL + news_cid</span><br><span class="line">        response = session.post(news_url, proxies=const.PROXIES)</span><br><span class="line">        response.encoding = &quot;UTF-8&quot;</span><br><span class="line">        soup = BeautifulSoup(response.text, &#x27;html.parser&#x27;)</span><br><span class="line">        # logging.info(soup)</span><br><span class="line">        news_title = soup.h3.text.strip()[:64]</span><br><span class="line">        news_brief = soup.find(&#x27;div&#x27;, &#x27;brief&#x27;).p.text.strip()[:100]</span><br><span class="line">        news_author = soup.h5.span.a.text.strip()[:100]</span><br><span class="line">        news_content = soup.find(&#x27;table&#x27;, &#x27;unis_detail_content&#x27;).tr.td.prettify()[66:-7].strip()</span><br><span class="line">        # 样式处理</span><br><span class="line">        news_content = pconvert.convert_style(news_content)</span><br><span class="line">        # 将图片转存至DFS并替换URL</span><br><span class="line">        news_content = pconvert.convert_img(news_content)</span><br><span class="line">        # 入表</span><br><span class="line">        cursor.execute(</span><br><span class="line">            &#x27;INSERT INTO material_prepare (news_cid, title, author, summary, content, add_time, status)  VALUES  (%s, %s, %s, %s, %s, now(), &quot;0&quot;)&#x27;</span><br><span class="line">            , [news_cid, news_title, news_author, news_brief, news_content])</span><br><span class="line">    # 提交</span><br><span class="line">    conn.commit()</span><br><span class="line">    cursor.close()</span><br></pre></td></tr></table></figure>
+
+<h2 id="样式处理"><a href="#样式处理" class="headerlink" title="样式处理"></a>样式处理</h2><p>文本样式处理，还是要用到BeautifulSoup，因为原始站点上的新闻内容样式是五花八门的，根据实际情况，一边写一个test函数来生成文本，一边在浏览器上慢慢调试。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def convert_style(rawtext):</span><br><span class="line">    newtext = &#x27;&lt;div style=&quot;margin-left: 0px; margin-right:0px; letter-spacing: 1px; word-spacing:2px;line-height: 1.7em; font-size:18px;text-align:justify; text-justify:inter-ideograph&quot;&gt;&#x27; \</span><br><span class="line">              + rawtext + &#x27;&lt;/div&gt;&#x27;</span><br><span class="line">    newtext = newtext.replace(&#x27; align=&quot;center&quot;&#x27;, &#x27;&#x27;)</span><br><span class="line">    soup = BeautifulSoup(newtext, &#x27;html.parser&#x27;)</span><br><span class="line">    img_tags = soup.find_all(&quot;img&quot;)</span><br><span class="line">    for img_tag in img_tags:</span><br><span class="line">        del img_tag.parent[&#x27;style&#x27;]</span><br><span class="line">    return soup.prettify()</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="图片转存至DFS"><a href="#图片转存至DFS" class="headerlink" title="图片转存至DFS"></a>图片转存至DFS</h2><p>因为原始站点是在内网中的，采集下来的HTML中，<img>标签的地址是内网地址，所以在公网中是展现不出来的，需要将图片转存，并用新的URL替换原有的URL。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def convert_img(rawtext):</span><br><span class="line">    soup = BeautifulSoup(rawtext, &#x27;html.parser&#x27;)</span><br><span class="line">    img_tags = soup.find_all(&quot;img&quot;)</span><br><span class="line">    for img_tag in img_tags:</span><br><span class="line">        raw_img_url = img_tag[&#x27;src&#x27;]</span><br><span class="line">        dfs_img_url = convert_url(raw_img_url)</span><br><span class="line">        img_tag[&#x27;src&#x27;] = dfs_img_url</span><br><span class="line">        del img_tag[&#x27;style&#x27;]</span><br><span class="line">    return soup.prettify()</span><br></pre></td></tr></table></figure>
+
+<p>图片转存最简单的方式是保存成本地的文件，然后再通过nginx或httpd服务将图片开放出去：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pic_name = raw_img_url.split(&#x27;/&#x27;)[-1]</span><br><span class="line">pic_path = TMP_PATH + &#x27;/&#x27; + pic_name</span><br><span class="line">with open(pic_path, &#x27;wb&#x27;) as pic_file:</span><br><span class="line">   pic_file.write(pic_content)</span><br></pre></td></tr></table></figure>
+
+<p>但这里我们需要复用已有的FastDFS分布式文件系统，要用到它的一个客户端的库<code>fdfs_client-py</code><br>fdfs_client-py不能直接使用pip3安装，需要直接使用一个python3版的源码，并手工修改其中代码。操作过程如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/jefforeilly/fdfs_client-py.git</span><br><span class="line">cd dfs_client-py</span><br><span class="line">vi ./fdfs_client/storage_client.py</span><br><span class="line">将第12行 from fdfs_client.sendfile import * 注释掉</span><br><span class="line">python3 setup.py install</span><br><span class="line"></span><br><span class="line">sudo pip3 install mutagen</span><br></pre></td></tr></table></figure>
+
+<p>客户端的使用上没有什么特别的，直接调用<code>upload_by_buffer</code>，传一个图片的buffer进去就可以了，成功后会返回自动生成的文件名。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">from fdfs_client.client import *</span><br><span class="line">dfs_client = Fdfs_client(&#x27;conf/dfs.conf&#x27;)</span><br><span class="line">def convert_url(raw_img_url):</span><br><span class="line">    response = requests.get(raw_img_url, proxies=const.PROXIES)</span><br><span class="line">    pic_buffer = response.content</span><br><span class="line">    pic_ext = raw_img_url.split(&#x27;.&#x27;)[-1]</span><br><span class="line">    response = dfs_client.upload_by_buffer(pic_buffer, pic_ext)</span><br><span class="line">    dfs_img_url = const.DFS_BASE_URL + &#x27;/&#x27; + response[&#x27;Remote file_id&#x27;]</span><br><span class="line">    return dfs_img_url</span><br></pre></td></tr></table></figure>
+<p>其中dfs.conf文件中，主要就是配置一下 <strong>tracker_server</strong></p>
+<h2 id="日志处理"><a href="#日志处理" class="headerlink" title="日志处理"></a>日志处理</h2><p>这里使用配置文件的方式处理日志，类似JAVA中的log4j吧，首先新建一个<code>log.conf</code>：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[loggers]</span><br><span class="line">keys=root</span><br><span class="line"></span><br><span class="line">[handlers]</span><br><span class="line">keys=stream_handler,file_handler</span><br><span class="line"></span><br><span class="line">[formatters]</span><br><span class="line">keys=formatter</span><br><span class="line"></span><br><span class="line">[logger_root]</span><br><span class="line">level=DEBUG</span><br><span class="line">handlers=stream_handler,file_handler</span><br><span class="line"></span><br><span class="line">[handler_stream_handler]</span><br><span class="line">class=StreamHandler</span><br><span class="line">level=DEBUG</span><br><span class="line">formatter=formatter</span><br><span class="line">args=(sys.stderr,)</span><br><span class="line"></span><br><span class="line">[handler_file_handler]</span><br><span class="line">class=FileHandler</span><br><span class="line">level=DEBUG</span><br><span class="line">formatter=formatter</span><br><span class="line">args=(&#x27;logs/pspider.log&#x27;,&#x27;a&#x27;,&#x27;utf8&#x27;)</span><br><span class="line"></span><br><span class="line">[formatter_formatter]</span><br><span class="line">format=%(asctime)s %(name)-12s %(levelname)-8s %(message)s</span><br></pre></td></tr></table></figure>
+<p>这里通过配置handlers，可以同时将日志打印到stderr和文件。<br>注意<code>args=(&#39;logs/pspider.log&#39;,&#39;a&#39;,&#39;utf8&#39;)</code> 这一行，用来解决文本文件中的中文乱码问题。  </p>
+<p>日志初始化：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">import logging</span><br><span class="line">from logging.config import fileConfig</span><br><span class="line"></span><br><span class="line">fileConfig(&#x27;conf/log.conf&#x27;)</span><br></pre></td></tr></table></figure>
+
+<p>日志打印：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">logging.info(&quot;test&quot;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="完整源码"><a href="#完整源码" class="headerlink" title="完整源码"></a>完整源码</h2><p>到此为止，就是如何用Python3写一个爬虫的全部过程了。<br>采集不同的站点，肯定是要有不同的处理，但方法都是大同小异。<br>最后，将源码做了部分裁剪，分享在了GitHub上。<br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/pspider">https://github.com/xiiiblue/pspider</a><br>最后，将源码做了部分裁剪，分享在了GitLab上。<br><a target="_blank" rel="noopener" href="http://git.si-tech.com.cn/guolei/pspider">http://git.si-tech.com.cn/guolei/pspider</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201702/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7Redmine%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201702/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7Redmine%E6%93%8D%E4%BD%9C%E6%89%8B%E5%86%8C/" class="post-title-link" itemprop="url">项目管理工具Redmine操作手册</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="什么是Redmine"><a href="#什么是Redmine" class="headerlink" title="什么是Redmine"></a>什么是Redmine</h2><p>Redmine是用Ruby On Rails开发的一款基于WEB的项目管理软件。<br>它集成了项目管理所需的各项功能，可以同时处理多个项目。<br>请重点关注 <strong>问题</strong>、<strong>甘特图</strong>、<strong>日历</strong> 三个功能模块。  </p>
+<h2 id="我的工作台"><a href="#我的工作台" class="headerlink" title="我的工作台"></a>我的工作台</h2><p>点击左上角 <strong>我的工作台</strong> 按钮</p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/exphn.jpg"></p>
+<ul>
+<li><strong>指派给我的问题</strong><br>提供一个跨项目的指派给当前用户的问题列表，显示问题的ID，项目，跟踪标类型签和主题。</li>
+<li><strong>已报告的问题</strong><br>提供一个跨项目的由当前用户报告的问题列表，显示问题的ID，项目，跟踪标签类型和主题。 每一个用户可以通过点击”个性化定制本页”的链接个性化我的工作台。 然后用户可以选择哪些可用的模块被显示:</li>
+<li><strong>日历</strong><br>提供一个跨项目的每周日历概述</li>
+<li><strong>文档</strong><br>提供一个跨项目的最近文档概述</li>
+<li><strong>最近的新闻</strong><br>提供一个跨项目的最近新闻概述</li>
+<li><strong>耗时</strong><br>提供一个跨项目的关于当前用户最近7天工时的概述</li>
+<li><strong>跟踪的问题</strong><br>提供一个跨项目的由当前用户跟踪的问题列表</li>
+</ul>
+<h2 id="项目概述"><a href="#项目概述" class="headerlink" title="项目概述"></a>项目概述</h2><p>点击左上角 <strong>项目</strong> 按钮，再点击 <strong>渠道移动营销</strong> 项目</p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/zdths.jpg"></p>
+<p>即可查看 <strong>项目概述</strong> 页面<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/6hcy3.jpg"></p>
+<h2 id="项目活动"><a href="#项目活动" class="headerlink" title="项目活动"></a>项目活动</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/qryvj.jpg"><br>该页面列出了该项目所有活动的历史记录, 这些活动包括:</p>
+<ul>
+<li>问题</li>
+<li>变更</li>
+<li>新闻</li>
+<li>文档</li>
+<li>文件</li>
+<li>Wiki编辑记录</li>
+<li>帖子</li>
+<li>耗时</li>
+</ul>
+<p>该页面的右边栏允许你选择具体显示哪类活动</p>
+<h2 id="问题跟踪"><a href="#问题跟踪" class="headerlink" title="问题跟踪"></a>问题跟踪</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/0qe5i.jpg"></p>
+<p>问题是Redmine的核心业务。 一个问题绑定到一个项目, 由某一用于创建, 可以关联到某一版本, 等等。</p>
+<ul>
+<li><p><strong>查看某一问题</strong><br>在问题列表页面点击某一问题的链接, 可以查看该问题的具体描述。</p>
+</li>
+<li><p><strong>过滤器的应用</strong><br>默认情况下, 问题列表显示了所有处于打开状态的问题。 你可以添加过滤器, 点击”应用”链接刷新问题列表, 点击”清除”链接删除设置的滤器。<br>可以通过点击”+”号按钮, 为过滤器字段选择多个值。 这时会出现一个选择列表, 按住”ctrl”后, 可选择多个值。</p>
+</li>
+<li><p><strong>自定义查询</strong><br>当刷新页面后, 刚设置的过滤器就会消失, 可以通过点击”保存”链接保存你设置的过滤器, 从而建立自定义查询。<br>在新建自定义查询的界面输入自定义查询的名称, 以及过滤器和其他属性的设置。<br>点击保存之后, 新建的自定义查询将会出现在问题列表界面的右边栏中。</p>
+</li>
+<li><p><strong>快捷菜单</strong><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/7z5vr.jpg"><br>在问题列表的某一个问题上, 点击鼠标右键, 将弹出一个快捷菜单, 用于便捷编辑问题。<br>通过快捷菜单可以快修改问题的进度。  </p>
+</li>
+<li><p><strong>新建问题</strong><br>要创建新的问题, 需要有新建问题的权限。<br>创建问题时, 最重要的字段是跟踪标签字段, 它决定了问题的类型。<br>默认情况下, Redmine有三种跟踪标签:<br>功能 feature<br>缺陷 bug<br>支持 support</p>
+</li>
+</ul>
+<h2 id="日历"><a href="#日历" class="headerlink" title="日历"></a>日历</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/16h73.jpg">  </p>
+<p>在问题列表页面, 点击右边栏的”日历”链接, 即可进入日历界面。<br>日历提供了一个按月份显示的项目预览。 在这里你可以看到一个任务状态的起止日期。<br>像Redmine提供的其他视图一样, 可以通过设置过滤器从而决定日历图上显示的内容。</p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/10hlp.jpg"><br>注意3种图标的含义</p>
+<h2 id="甘特图"><a href="#甘特图" class="headerlink" title="甘特图"></a>甘特图</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/6gsd0.jpg"></p>
+<p>在问题列表页面, 点击右边栏的”甘特图”链接, 即可进入甘特图界面。<br>甘特图显示问题的起止日期以及版本的截至日期</p>
+<h2 id="新闻"><a href="#新闻" class="headerlink" title="新闻"></a>新闻</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/3kvy8.jpg"></p>
+<p>在”新闻”选项卡下, 你可以发布关于项目的新闻条目, 甚至任何你喜欢的新闻条目。</p>
+<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/qjsf1.jpg"></p>
+<p>在这里可以书写不同类型的文档, 默认有两种文档类型:</p>
+<ul>
+<li>用户文档</li>
+<li>技术文档</li>
+</ul>
+<p>管理员可以添加文档类型</p>
+<h2 id="Wiki"><a href="#Wiki" class="headerlink" title="Wiki"></a>Wiki</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/my2co.jpg"></p>
+<p>在这里可以查看或编辑WIKI页面</p>
+<h2 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/x21ds.jpg"></p>
+<p>在这里可以共享项目需要用到的其他资源</p>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://www.oschina.net/question/84514_9314#id49">Redmine 用户手册</a>  </p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201702/%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8SSH/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201702/%E5%A6%82%E4%BD%95%E4%BC%98%E9%9B%85%E7%9A%84%E4%BD%BF%E7%94%A8SSH/" class="post-title-link" itemprop="url">如何优(zhe)雅(teng)的使用SSH</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="引子"><a href="#引子" class="headerlink" title="引子"></a>引子</h2><p>SSH连接是我们与服务器交互的主要手段，每个程序员每天都会用到，就像喝白开水一样普通。<br>就是这样一个简单而又高频的动作，如果配置得当，或许能极大的提高我们工作的幸福感吧。  </p>
+<p>前不久一个同事刚从Windows切换到macOS平台，问我SecureCRT有没有mac下的版本，我说即然都用上了基于BSD的mac了，应该不再需要SecureCRT这样的东西了才对，SSH如果配置好了，体验应该完爆Windows。于是就有了写下这篇文章的念头，填一下之前的坑。  </p>
+<h2 id="选择终端GUI工具"><a href="#选择终端GUI工具" class="headerlink" title="选择终端GUI工具"></a>选择终端GUI工具</h2><p>首先第一步是选择一个好用的GUI工具，毕竟大多数人都是在DE下工作，极少人会喜欢工作在tty1这样的文字介面下。  </p>
+<h3 id="Windows平台"><a href="#Windows平台" class="headerlink" title="Windows平台"></a>Windows平台</h3><p>Windows平台下的工具比较多，下面捡几个主要的来说一说优缺点：  </p>
+<ul>
+<li>SecureCRT - 老牌的商业软件，同时也提供Mac和Linux版本，功能强大，费用昂贵，但貌似身边所有人都在用盗版，PASS  </li>
+<li>Xshell - 有免费的License，但只允许非商业场景下使用，这个也PASS  </li>
+<li>Putty - 好吧，只能是它了，免费，功能简单，但是也足够用了  </li>
+<li>Cygwin - 差点把这个忘了，严格来说它并不仅仅是一个SSH工具，也值得推荐</li>
+</ul>
+<h3 id="macOS平台"><a href="#macOS平台" class="headerlink" title="macOS平台"></a>macOS平台</h3><p>macOS平台的终端工具比较好选，公认的只有iTerm2一个：  </p>
+<ul>
+<li>原生Terminal - 开箱即用，功能上也不过不失，但抛弃它，只是因为有更好的iTerm2。。。  </li>
+<li>iTerm2 - 免费，支持众多的自定义选项，可以完全替代原生Terminal，没得选，就是它了</li>
+</ul>
+<h3 id="Ubuntu平台"><a href="#Ubuntu平台" class="headerlink" title="Ubuntu平台"></a>Ubuntu平台</h3><p>Ubuntu默认自带一个gnome-terminal，虽然不像iTerm2那样讨喜，但胜在简洁，个人认为是最优的选择吧：  </p>
+<ul>
+<li>Terminator - 支持窗口拆分，但界面丑，不能忍，PASS  </li>
+<li>Guake - 支持下拉式的呼出，但界面更丑，PASS  </li>
+<li>原生Terminal - 界面简洁，功能够用，最终还是用回了它</li>
+</ul>
+<h2 id="iTerm2使用简介"><a href="#iTerm2使用简介" class="headerlink" title="iTerm2使用简介"></a>iTerm2使用简介</h2><p>Putty和gnome-terminal的配置都比较简单，记住几个快捷键就可以了，macOS下的iTerm2配置和使用都要麻烦些，这里单独拿出来写一下。   </p>
+<h3 id="配置呼出快捷键"><a href="#配置呼出快捷键" class="headerlink" title="配置呼出快捷键"></a>配置呼出快捷键</h3><p>使用<code>Cmd+,</code>打开设置界面，切换到<code>Keys</code>一栏<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/dtu48.jpg"><br>在左下方可以设置 <strong>呼出&#x2F;隐藏</strong> iTerm2的快捷键，这里我设置成了<code>Cmd+ESC</code>，瞬间呼出，比Alfred&#x2F;Spotlight还要方便。<br>另外还可以在Profile一栏中修改窗口为全屏+半透明，完美。  </p>
+<h3 id="选中即复制"><a href="#选中即复制" class="headerlink" title="选中即复制"></a>选中即复制</h3><p>使用鼠标选中一段文字后，默认就已经复制到剪贴板了，直接用<code>Cmd+V</code>粘帖即可。  </p>
+<h3 id="Profile设置"><a href="#Profile设置" class="headerlink" title="Profile设置"></a>Profile设置</h3><p>使用<code>Cmd+,</code>打开设置界面，切换到<code>Profile</code>一栏<br>在这里可以配置远程服务器的连接参数<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/6rl7i.jpg"></p>
+<p>配合sshpass这个命令，可以实现类似SecureCRT的Session管理的功能。<br>注意，sshpass直接使用明文保存密码（SecureCRT是加密后存在本地），已经不推荐使用，下面会介绍一个更好的方式。  </p>
+<h3 id="分屏"><a href="#分屏" class="headerlink" title="分屏"></a>分屏</h3><p>分屏功能相当好用，例如我们可以在屏幕左侧查看日志，右侧进行常规操作<br><code>Cmd+D</code> 垂直分割<br><code>Cmd+Shift+D </code>水平分割<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/a4e4b.jpg">  </p>
+<h3 id="自动完成"><a href="#自动完成" class="headerlink" title="自动完成"></a>自动完成</h3><p>输入前几个关键字后，按<code>Cmd+;</code>，会有一个自动补全功能<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/cl4f4.jpg"></p>
+<h3 id="命令历史记录"><a href="#命令历史记录" class="headerlink" title="命令历史记录"></a>命令历史记录</h3><p>使用<code>Cmd+shift+H</code>可以打开命令历史记录<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/7t5al.jpg"></p>
+<h2 id="使用Tmux窗口管理工具"><a href="#使用Tmux窗口管理工具" class="headerlink" title="使用Tmux窗口管理工具"></a>使用Tmux窗口管理工具</h2><p>GUI工具有了，我们还缺一个通用的窗口管理工具–<strong>Tmux</strong>。  </p>
+<p>Tmux是一个终端复用器，它可以激活多个终端或窗口, 还可以将屏幕水平或纵向切分成多个窗口。<br>类似于screen，它可以关闭窗口将程序放在后台运行，需要的时候再重新连接。  </p>
+<p>其实iTerm2等GUI工具也可以实现类似的功能，但Tmux的好处是:  </p>
+<ol>
+<li>它是一个字符终端软件，不需要任何GUI的支持，通用性更好  </li>
+<li>tmux可以 <strong>保持多个会话</strong> ，只要不关机，就可以随时恢复Session</li>
+</ol>
+<p>macOS下的安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install tmux</span><br></pre></td></tr></table></figure>
+
+<p>Ubuntu下的安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install tmux</span><br></pre></td></tr></table></figure>
+
+<p>tmux的主要元素分为三层：</p>
+<ul>
+<li>Session 一组窗口的集合，通常用来概括同一个任务</li>
+<li>Window 单个可见窗口，和ITerm2中的Tab类似</li>
+<li>Pane 窗格，被划分成小块的窗口</li>
+</ul>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/uf00l.jpg"></p>
+<p>tmux默认的前置操作是<code>CTRL+b</code>。例如，我们想要新建一个窗体，就需要先在键盘上摁下CTRL+b，松开后再摁下n键。<br>下面所有的<code>prefix</code>均代表<code>CTRL+b</code></p>
+<ul>
+<li><p>查看&#x2F;切换session	<code>prefix s</code>  </p>
+</li>
+<li><p>离开Session	<code>prefix d</code>  </p>
+</li>
+<li><p>重命名当前Session	<code>prefix $</code>  </p>
+</li>
+<li><p>新建窗口	<code>prefix c</code>  </p>
+</li>
+<li><p>切换到上一个活动的窗口	 <code>prefix space</code>  </p>
+</li>
+<li><p>关闭一个窗口	<code>prefix &amp;</code>  </p>
+</li>
+<li><p>使用窗口号切换	<code>prefix 窗口号</code>  </p>
+</li>
+<li><p>切换到下一个窗格	<code>prefix o</code></p>
+</li>
+<li><p>查看所有窗格的编号	<code>prefix q</code></p>
+</li>
+<li><p>垂直拆分出一个新窗格	<code>prefix “</code></p>
+</li>
+<li><p>水平拆分出一个新窗格	<code>prefix %</code></p>
+</li>
+<li><p>暂时把一个窗体放到最大	<code>prefix z</code></p>
+</li>
+</ul>
+<h2 id="使用oh-my-zsh"><a href="#使用oh-my-zsh" class="headerlink" title="使用oh my zsh"></a>使用oh my zsh</h2><p>工具已经齐全，但攘外必先安内，在连接远程服务器之前，我们先优化一下本机的Shell。  </p>
+<p>Linux系统中已经内置了几种shell，一般默认的是bash<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/akhn0.jpg">  </p>
+<p>zsh比bash更加好用，且完全兼容bash，但它配置繁琐。幸亏有了oh-my-zsh，让zsh的配置难度大大降低。  </p>
+<p>首先安装一下zsh，mac系统无需安装，Ubuntu可以通过apt安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install zsh</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="http://ohmyz.sh/">这里是oh my zsh官网</a></p>
+<p>根据官网的介绍，安装相当的简单，只需要一行命令即可</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sh -c &quot;$(curl -fsSL https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh)&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>zsh的配置文件是<code>~/.zshrc</code>，各项配置都有对应的注释，非常清晰，在这里可以修改主题，其实默认的已经很好看了<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/70dnw.jpg"></p>
+<p>以下是zsh的一些使用技巧，请尽量记住，因为都很常用：</p>
+<ul>
+<li>连按两次Tab会列出所有的补全列表并直接开始选择，补全项可以使用 ctrl+n&#x2F;p&#x2F;f&#x2F;b上下左右切换</li>
+<li>命令选项补全。在zsh中只需要键入 tar -<tab> 就会列出所有的选项和帮助说明</li>
+<li>命令参数补全。键入 kill <tab> 就会列出所有的进程名和对应的进程号</li>
+<li>更智能的历史命令。在用或者方向上键查找历史命令时，zsh支持限制查找。比如，输入ls,然后再按方向上键，则只会查找用过的ls命令。而此时使用则会仍然按之前的方式查找，忽略 ls</li>
+<li>智能跳转，安装了 autojump 之后，zsh 会自动记录你访问过的目录，通过 <code>j 目录名</code> 可以直接进行目录跳转，而且目录名支持模糊匹配和自动补全，例如你访问过 hadoop-1.0.0 目录，输入<code>j hado</code> 即可正确跳转。<code>j --stat</code> 可以看你的历史路径库。</li>
+<li>目录浏览和跳转：输入 <code>d</code>，即可列出你在这个会话里访问的目录列表，输入列表前的序号，即可直接跳转。</li>
+<li>在当前目录下输入 <code>..</code> 或 <code>...</code> ，或直接输入当前目录名都可以跳转，你甚至不再需要输入 <code>cd</code> 命令了。在你知道路径的情况下，比如 &#x2F;usr&#x2F;local&#x2F;bin 你可以输入 <code>cd /u/l/b</code> 然后按进行补全快速输入</li>
+<li>通配符搜索：<code>ls -l **/*.sh</code>，可以递归显示当前目录下的 shell 文件，文件少时可以代替 find。使用 <code>**/</code> 来递归搜索</li>
+<li>扩展环境变量，输入环境变量然后按 就可以转换成表达的值</li>
+</ul>
+<h2 id="使用config记录远程连接"><a href="#使用config记录远程连接" class="headerlink" title="使用config记录远程连接"></a>使用config记录远程连接</h2><p>现在开始，我们再看一下如何连接远程服务器。</p>
+<p>如果要管理几十台至上百台的主机，那么有没有什么方法能实现类似SecureCRT中Session管理那样的功能呢？  </p>
+<p>最简单的是使用iTerm2中的profile功能，它可以配置多台主机的连接，并可以使用tag进行归类。<br>但这种方式首先太依赖于GUI工具，离开了iTerm2就完全用不了。<br>其次是通用性不够好，配置文件不能跨平台，我们辛辛苦苦在Mac上配好了一份主机清单，但回家扔到Ubuntu下就没法用了。  </p>
+<p>有没有一种更为通用的方法呢？答案是直接使用openssh自带的config功能</p>
+<p>配置文件的路径是：<code>~/.ssh/config</code>，如果不存在，可以新建一个</p>
+<p>内容非常简单</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host demohost</span><br><span class="line">  HostName 192.168.1.1</span><br><span class="line">  User username</span><br><span class="line">  Port 10022</span><br></pre></td></tr></table></figure>
+<p>第一行<code>Host</code>后面，可以为这个连接起一个简单的名字<br>后面几行记得缩进，<code>HostName</code>后面是IP地址，<code>User</code>后面是用户名，这两项是必填的。如果端口不是标准的22，还可以用<code>Port</code>指定端口。</p>
+<p>配置好后，我们只需要输入<code>ssh demohost</code>，即可快速打开SSH连接了。</p>
+<p>如果记不清连接名也没有关系，利用zsh的自动补全功能，输入<code>ssh 关键字</code>，再按一下<code>TAB</code>键，会列出所有包含关键字的连接，使用方向键选择后，回车确认即可。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/swlk8.jpg">  </p>
+<h2 id="使用ssh-copy-id免密码登录"><a href="#使用ssh-copy-id免密码登录" class="headerlink" title="使用ssh-copy-id免密码登录"></a>使用ssh-copy-id免密码登录</h2><p>接着再看一下，如何实现免密码登录远程主机。</p>
+<p>之前我们提到过使用sshpass这个工具，可以直接将密码写进命令行中，从而实现非交互式的免密码登录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sshpass -p password ssh demouser@92.168.1.1</span><br></pre></td></tr></table></figure>
+<p>但这种方式使用明文保存密码，非常不安全，不建议使用。</p>
+<p>其实还有一种更好更直接的方式，那就是使用<code>ssh-copy-id</code>建立ssh信任关系，从而免密码登录。</p>
+<ol>
+<li>首先，在本地机器上使用ssh-keygen产生公钥私钥对</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen</span><br></pre></td></tr></table></figure>
+<p>一路回车即可，会在<code>~/.ssh</code>目录下生成公钥私钥对。此命令只需执行一次即可。  </p>
+<ol start="2">
+<li>然后，用ssh-copy-id将公钥复制到远程机器中</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-copy-id -i demouser@192.168.1.1</span><br></pre></td></tr></table></figure>
+<p>按提示输入一次密码，ssh-copy-id就会自动将刚才生成的公钥<code>id_rsa.pub</code>追加到远程主机的<code>~/.ssh/authorized_keys</code>后面了，以后的 <strong>ssh</strong> 以及 <strong>sftp</strong> 连接，都不用输入密码了。  </p>
+<p>至此，我们只要输入<code>ssh demouser</code>或<code>sftp demouser</code>，回车，就可以直接登录远程主机了。  </p>
+<h2 id="安利一个小工具"><a href="#安利一个小工具" class="headerlink" title="安利一个小工具"></a>安利一个小工具</h2><p>最后的最后，再介绍一个很恶搞，但相当有用的小工具，<strong>thefuck</strong>  <a target="_blank" rel="noopener" href="https://github.com/nvbn/thefuck">GitHub页面</a>  </p>
+<p>当我们敲错了命令，比如忘记加<code>sudo</code>时，只需要输入<code>fuck</code>并大力敲下回车，它就会非常智能的帮助我们更正了，非常有趣。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">➜ apt-get install vim</span><br><span class="line">E: Could not open lock file /var/lib/dpkg/lock - open (13: Permission denied)</span><br><span class="line">E: Unable to lock the administration directory (/var/lib/dpkg/), are you root?</span><br><span class="line"></span><br><span class="line">➜ fuck</span><br><span class="line">sudo apt-get install vim [enter/↑/↓/ctrl+c]</span><br><span class="line">[sudo] password for nvbn:</span><br><span class="line">Reading package lists... Done</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="http://cenalulu.github.io/linux/tmux/">http://cenalulu.github.io/linux/tmux/</a><br><a target="_blank" rel="noopener" href="http://harttle.com/2015/11/06/tmux-startup.html">http://harttle.com/2015/11/06/tmux-startup.html</a><br><a target="_blank" rel="noopener" href="http://wulfric.me/2015/08/iterm2/">http://wulfric.me/2015/08/iterm2/</a><br><a target="_blank" rel="noopener" href="http://yijiebuyi.com/blog/e310fc437f32006eb6aa42cad1783587.html">http://yijiebuyi.com/blog/e310fc437f32006eb6aa42cad1783587.html</a><br><a target="_blank" rel="noopener" href="http://wdxtub.com/2016/02/18/oh-my-zsh/">http://wdxtub.com/2016/02/18/oh-my-zsh/</a>  </p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201702/%E4%BD%BF%E7%94%A8IntelliJIDEA%E6%9B%BF%E4%BB%A3Eclipse/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201702/%E4%BD%BF%E7%94%A8IntelliJIDEA%E6%9B%BF%E4%BB%A3Eclipse/" class="post-title-link" itemprop="url">使用IntelliJ IDEA替代Eclipse</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="什么是IntelliJ-IDEA"><a href="#什么是IntelliJ-IDEA" class="headerlink" title="什么是IntelliJ IDEA"></a>什么是IntelliJ IDEA</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/8lug3.jpg"><br>简单来说，IntelliJ Idea是目前最好的Java集成开发环境，没有之一。  </p>
+<h2 id="为什么要迁移到Intellij-IDEA"><a href="#为什么要迁移到Intellij-IDEA" class="headerlink" title="为什么要迁移到Intellij IDEA"></a>为什么要迁移到Intellij IDEA</h2><p>Java应该是非常依赖IDE的一门语言了，恐怕也没有几个大牛能够直接用Vim&#x2F;Emacs愉快的手撸代码，Java程序员离开了IDE基本上生活不能自理，IDE的重要性不言而喻。<br>最近在推行、部署各种自动化工具，但个人认为，相比于各种工具，一个好的IDE更是能 <strong>极大的提升</strong> 工作效率以及编码的爽快感。<br>目前团队中使用的开发工具主要还是Eclipse和NetBeans，所以就想借这篇文章安利一下，希望团队中更多的人能开始尝试并喜欢上IntelliJ IDEA。  </p>
+<p>目前常用的IDE主要有3个：  </p>
+<ul>
+<li>Eclipse  </li>
+<li>NetBeans  </li>
+<li>IntelliJ IDEA</li>
+</ul>
+<p>其中，Eclipse及其衍生品是最为我们所熟知的，Eclipse开源，历史悠久，插件丰富，对一些老项目兼容性也比较好，另外有很多基于Eclipse的项目也很流行，比如STS、MyEclipse。  </p>
+<p>NetBeans使用的人稍微少一些，但它有很多比Eclipse更为优秀的地方，例如免费、Oracle自家出品，对于新标准的支持非常好、有中文语言包、界面布局更合理等。</p>
+<p>但从目前的统计数据来看，IntelliJ Idea的市场份额已经超过了Eclipse。    </p>
+<p>IntelliJ IDEA作为一个商业化的IDE，而且是一个非常昂贵的商业化IDE（499刀&#x2F;年），能够被如此多的开发人员认可，肯定有它非凡之处，简单罗列几点：    </p>
+<ul>
+<li>黑色的Darcula主题，我想应该把这个放在第一位</li>
+<li>智能化的代码提示、自动补全、重复代码检查、快速修复</li>
+<li>更加智能的重构工具，支持跨语言的重构</li>
+<li>人性化的调试工具</li>
+<li>包含大量的内建工具，开箱即用的，无须配置大量的插件</li>
+<li>默认支持git&#x2F;svn等多种版本控制工具</li>
+<li>默认支持Maven, Gradle, Ant等多种构建工具</li>
+<li>内建反编译工具，方便查看没有源码的老旧jar包</li>
+<li>内建数据库管理工具，可以抛弃toad&#x2F;Navicat这些东西了</li>
+<li>内建REST API测试工具，可以抛弃Postman之类的测试工具了</li>
+<li>支持Tomcat、JBoss、WebLogic等主流应用服务器</li>
+<li>Google的助攻，Android开发环境由最初基于Eclipse的ADT，迁移到了基于IDEA的Android Studio</li>
+</ul>
+<h2 id="导入一个工程"><a href="#导入一个工程" class="headerlink" title="导入一个工程"></a>导入一个工程</h2><p>要想开始体验IntelliJ IDEA，首先要新建一个工程(Project)或导入已有的工程。这里我们选择从版本库中导入一个已有的工程。  </p>
+<p>在欢迎界面中点击最下方的 <strong>Check out from Version Control</strong><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/k0u3n.jpg"><br>可以看到，IntelliJ IDEA支持GitHub、CVS、Git、Svn等多种版本库。  </p>
+<p>这里我们尝试导入一个GitHub中的工程，填写自已的GitHub用户名、密码<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/w7b49.jpg"></p>
+<p>在下拉列表中选择好一个工程后，点击 <strong>Clone</strong><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/0gpr1.jpg"></p>
+<p>如果项目是用Gradle&#x2F;Maven构建的，还会弹出一个构建工具配置界面<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/mc3b9.jpg"></p>
+<p>导入完成后，可以看到主界面了<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/w4xvz.jpg"></p>
+<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><p>IntelliJ IDEA中的项目结构和Eclipse有很大的不同。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/aebzo.jpg">  </p>
+<ul>
+<li>Eclipse中有workspace的概念，可以向workspace中添加多个工程。  </li>
+<li>IDEA没有workspace，一个窗口中只能打开一个工程（Project），但一个工程中可以包含多个模块（module)，这种方式更符合多模块应用开发的需求。</li>
+</ul>
+<p>界面左侧的Project栏，可以查看项目中的文件结构，通过<code>Cmd+1</code>快捷键调出&#x2F;关闭。</p>
+<p>使用<code>Cmd+;</code> 快捷键，可以打开项目设置界面，在这里配置模块、库、Facets、Artifacts等。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/t1zho.jpg"></p>
+<h2 id="Facets"><a href="#Facets" class="headerlink" title="Facets"></a>Facets</h2><p>Facets可以认为是项目支持的特性，例如JPA、Spring、Hibernate等，当一个项目被IDEA扫描完毕之后，它会自动为每个模块添加相应用Facets，当然也可以手工进行添加<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/l2oj8.jpg">  </p>
+<h2 id="Artifacts"><a href="#Artifacts" class="headerlink" title="Artifacts"></a>Artifacts</h2><p>Artifacts是项目的打包部署设置。<br>例如，对于WEB工程而言，IDEA通过配置Artifacts，将编译输出的class文件，与jsp&#x2F;html&#x2F;css页面等静态文件，以特定的目录结构合并到一起。  </p>
+<h2 id="目录图标"><a href="#目录图标" class="headerlink" title="目录图标"></a>目录图标</h2><ul>
+<li>蓝色 - 源码根目录</li>
+<li>绿色 - 测试代码目录</li>
+<li>红色 - 需要排除的目录，例如class&#x2F;build等包含二进制文件的目录</li>
+<li>黄色 - 资源目录，application.yml等会放在这里面</li>
+</ul>
+<p>点击Project栏中右上角齿轮图标，可以调整目录的展示方式，比如合并中间空目录等：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/hvfzs.jpg">  </p>
+<h2 id="快捷键对比"><a href="#快捷键对比" class="headerlink" title="快捷键对比"></a>快捷键对比</h2><p>下面是一份Eclipse与IntelliJ IDEA的快捷键比对表：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/fqy52.jpg"><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/yhy8c.jpg">  </p>
+<p>如果不想使用IDEA的默认快捷键，想沿用之前的一些习惯，IDEA也提供了几套其它的配置，使用 <strong>Ctrl+&#96;</strong> 调出菜单<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/wjgg6.jpg">   </p>
+<p>选择 <strong>3-Keymap</strong> 即可切换配置<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2h8se.jpg">  </p>
+<p>但建议还是尽量适应IntelliJ IDEA的默认快捷键配置吧。  </p>
+<p>下面有几个有趣的与其它IDE的区别：  </p>
+<ul>
+<li><code>Cmd+D</code><br>在Eclipse中，<code>Cmd+D</code>是删除一行，但在IntelliJ IDEA中，D是指duplicate，复制一行。  </li>
+<li><code>Cmd+S</code><br>在其它编辑器中，我们通常会频繁使用Cmd+S进行保存，但在IDEA中，完全不需要这么做。IntelliJ IDEA的自动保存功能做的非常好，不用担心会丢失进度，<code>Cmd+S</code>只能给我们带来一些心理上的”安全感”。</li>
+</ul>
+<h2 id="界面布局"><a href="#界面布局" class="headerlink" title="界面布局"></a>界面布局</h2><p>IntelliJ IDEA的默认布局非常的简洁，几乎只有一个编辑器界面，甚至还可以通过<code>Ctrl+Cmd+F</code>全屏显示，以获得更加沉浸式的体验。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/0g472.jpg">  </p>
+<p>点击界面最左下角的显示器形状的图标，可以用来切换布局模式，调出或隐藏周边的工具栏<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/q36cu.jpg">  </p>
+<p>在使用精简布局时，如果要进行文件定位、打开某个侧边栏等操作，就需要使用一些快捷建进行操作了。</p>
+<p>一般是使用<code>Cmd+数字</code>来显示侧边栏，例如<code>Cmd+1</code>显示Project栏，<code>Cmd+9</code>显示版本控制栏，具体数字界面上会有提示。  </p>
+<p>另外，<code>Cmd+E</code>不但可以显示最近使用过的文件，还可以在左侧选择打开各个侧边栏，非常好用。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/5rvef.jpg">  </p>
+<p>同样的，<code>Ctrl+Tab</code>快捷键可以实现类似的功能，并且效率更高<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/u2888.jpg"></p>
+<h2 id="快速查找"><a href="#快速查找" class="headerlink" title="快速查找"></a>快速查找</h2><p>使用<code>Cmd+O</code>可以弹出快速 <strong>查找类名</strong> 窗口，输入类名关键字筛选，可以快速打开类所在的源文件<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/hjtxb.jpg">  </p>
+<p>使用<code>Cmd+Shift+O</code>可以弹出快速 <strong>查找文件名</strong> 窗口，输入文件名关键字，可以打开任意文件<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/4tx7p.jpg">  </p>
+<p>还有一个更方便的方式，如果不确定要找什么，双击<code>shift</code>键，可以弹出”Search Everywhere”窗口，输入关键词搜索一切吧。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/59lka.jpg"></p>
+<p>当然，还可以使用之前提到过的<code>Cmd+E</code>，查看曾经打开过的文件。  </p>
+<h2 id="常用设置"><a href="#常用设置" class="headerlink" title="常用设置"></a>常用设置</h2><h3 id="缩进方式配置"><a href="#缩进方式配置" class="headerlink" title="缩进方式配置"></a>缩进方式配置</h3><p>使用空格与TAB键缩进，在码农界争论至今还没有定论，那就不妨根据自已的喜好手工设置一下吧。  </p>
+<p>首先使用<code>Cmd+,</code>打开全局设置界面，在<code>Editor → Editor Tabs</code>中可以找到相应的选项：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/mjl9m.jpg">  </p>
+<h3 id="界面主题配置"><a href="#界面主题配置" class="headerlink" title="界面主题配置"></a>界面主题配置</h3><p>在<code>Appearance &amp; Behavior → Appearance</code>中，可以设置喜欢的主题，字体、字号等<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/u49aw.jpg"></p>
+<p>这里当然是首推Darcula主题。</p>
+<h2 id="代码编辑"><a href="#代码编辑" class="headerlink" title="代码编辑"></a>代码编辑</h2><p>首先要记忆的一个快捷键是<code>Cmd+F12</code>，可以打开 <strong>class outline</strong> 窗口，查看文件中的各个方法。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/qtrp5.jpg"></p>
+<p>类似的也可以通过<code>Ctrl+H</code>打开 <strong>type hierarchy</strong> 侧边栏<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/p878n.jpg"></p>
+<p>另外，还可以使用<code>Alt+F7</code>，打开 <strong>Find Usages</strong> 底边栏，显示方法的使用者。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/f0ckp.jpg"></p>
+<h2 id="自动补全"><a href="#自动补全" class="headerlink" title="自动补全"></a>自动补全</h2><p>使用<code>Ctrl+Space</code>，可以进行代码自动补全。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/jr58p.jpg"></p>
+<p><code>Ctrl+Shift+Space</code>，是更加智能的代码补全，它会猜测你的意图，只展示最有用的结果  </p>
+<p>另外<code>Alt+Enter</code>也十分有用，当使用了一个类，但它还没有被导入时，可以用它来快速导入<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/x39ry.jpg"></p>
+<h2 id="代码生成"><a href="#代码生成" class="headerlink" title="代码生成"></a>代码生成</h2><p>使用<code>Cmd+N</code>可以自动生成代码，比如Getter&#x2F;Setter&#x2F;toString()等等<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/uwj87.jpg"></p>
+<h2 id="代码重构"><a href="#代码重构" class="headerlink" title="代码重构"></a>代码重构</h2><p>最简单的，可以通过右键菜单或<code>Shift+F6</code>进行重命名，可以是文件，也可以是类名、方法名、变量名等，点击确认后IntelliJ IDEA会跨语言检索全部代码（包括.html&#x2F;.js)，找到所有相关的地方一起修改。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/ppq6d.jpg">  </p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/b1h1o.jpg">  </p>
+<h2 id="插入模版"><a href="#插入模版" class="headerlink" title="插入模版"></a>插入模版</h2><p>输入特定的关键字，按TAB后，可以直接在光标处插入模板代码。  </p>
+<p>例如，首先输入psvm<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/k0a32.jpg">  </p>
+<p>然后按下<code>TAB</code>键，就会自动插入一个main方法的模版，相当快捷<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/6ki6h.jpg">  </p>
+<h2 id="其它重要的快捷键"><a href="#其它重要的快捷键" class="headerlink" title="其它重要的快捷键"></a>其它重要的快捷键</h2><ul>
+<li>格式化代码 - <code>Cmd+Alt+L</code></li>
+<li>编译 - <code>Cmd+F9</code></li>
+<li>关闭某个侧边栏 - <code>Shift+ESC</code></li>
+</ul>
+<h2 id="查找快捷键的快捷键"><a href="#查找快捷键的快捷键" class="headerlink" title="查找快捷键的快捷键"></a>查找快捷键的快捷键</h2><p>到现在为止，已经接触了IntelliJ IDEA的不少快捷键了。<br>其实对于学习一个文本编辑器也好、IDE也好，要想用的得心应手，记忆大量的快捷键都是少不了的步骤。  </p>
+<p>但如果记不清快捷键怎么办，去哪里查呢？幸好IntelliJ IDEA为我们提供了一个终级快捷键 <code>Cmd+Shift+A</code>，这是一个用来 <strong>查找快捷键的快捷键</strong> ！其它所有的快捷键都忘了也没有关系，只要记得这一个。。。  </p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/ulfq5.jpg"></p>
+<h2 id="配置Tomcat"><a href="#配置Tomcat" class="headerlink" title="配置Tomcat"></a>配置Tomcat</h2><p>对于Web应用，如果想在本机直接运行测试，除了使用Maven等构建工具内嵌的Application Server之外，还可以选择直接在IntelliJ中配置一个。  </p>
+<p>注意请提前配置好Artifacts，然后点击顶部右侧的 <strong>Run Configuration</strong> 按钮，在新窗口中点击左上角加号，选择Tomcat即可：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/ktr71.jpg"></p>
+<h2 id="代码检查"><a href="#代码检查" class="headerlink" title="代码检查"></a>代码检查</h2><p>在向版本库中提交时，可以在右侧选择进行一些提交前的处理，如代码检查、格式化等：<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/dhiou.jpg"></p>
+<h2 id="收藏夹"><a href="#收藏夹" class="headerlink" title="收藏夹"></a>收藏夹</h2><p>在Tab页上点击右键，可以选择<code>Add to Favorites</code><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/i2jlu.jpg"></p>
+<p>然后在左下方的Favorites栏中就可以看到了<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/skk0i.jpg"></p>
+<h2 id="版本控制"><a href="#版本控制" class="headerlink" title="版本控制"></a>版本控制</h2><p>在窗口左下方的 <strong>Version Control</strong> 栏中，可以查看到做过变更的文件<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/19xe1.jpg"></p>
+<p>在文件上右键，可以进行代码差异比对，回滚等操作<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/1qu43.jpg"></p>
+<p>在窗口右上方的工具栏中，可以快速Update&#x2F;Commit<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/r3yuf.jpg"></p>
+<p>在窗口右下方的工具栏中，可以查看&#x2F;新建&#x2F;切换Git分支<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/af6q8.jpg"></p>
+<h2 id="内嵌工具"><a href="#内嵌工具" class="headerlink" title="内嵌工具"></a>内嵌工具</h2><p>菜单栏中，Tools一项中，可以找到很多内嵌的工具，比如很常用的Rest测试工具<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/3ujan.jpg">  </p>
+<h2 id="数据源配置"><a href="#数据源配置" class="headerlink" title="数据源配置"></a>数据源配置</h2><p>在右侧的Database工具栏中，可以配置常用的数据源<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/gfeqz.jpg"></p>
+<p>配置好之后，就可以使用内嵌的数据库查询管理工具了，另外在编写配置文件或SQL&#x2F;JPQL时，也会有对应用智能提示<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/eumg4.jpg"></p>
+<h2 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h2><p>以上介绍的，只是IntelliJ IDEA众多功能中的冰山一角，想要了解更多，请进一步参考官方文档：  </p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.jetbrains.com/idea/documentation/">https://www.jetbrains.com/idea/documentation/</a>  </li>
+<li><a target="_blank" rel="noopener" href="https://www.jetbrains.com/idea/help/intellij-idea-quick-start-guide.html">https://www.jetbrains.com/idea/help/intellij-idea-quick-start-guide.html</a></li>
+</ul>
+<p>另外官网上也提供了很多的视频教程，其中有不少小技巧。  </p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/Hadoop%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201803/Hadoop%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Ubuntu16.04下Hadoop3.0.0安装笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="安装JDK8"><a href="#安装JDK8" class="headerlink" title="安装JDK8"></a>安装JDK8</h2><p>PPA方式安装OracleJDK</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-add-repository ppa:webupd8team/java</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install oracle-java8-installer</span><br><span class="line">export JAVA_HOME=/usr/lib/jvm/java-8-oracle</span><br></pre></td></tr></table></figure>
+
+<p>或安装OpenJDK</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install default-jdk</span><br></pre></td></tr></table></figure>
+
+<h2 id="创建hadoop用户"><a href="#创建hadoop用户" class="headerlink" title="创建hadoop用户"></a>创建hadoop用户</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo useradd -m hadoop -s /bin/bash</span><br><span class="line">sudo passwd hadoop</span><br><span class="line">sudo adduser hadoop sudo</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装Open-SSH-Server"><a href="#安装Open-SSH-Server" class="headerlink" title="安装Open SSH Server"></a>安装Open SSH Server</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install openssh-server</span><br></pre></td></tr></table></figure>
+
+<p>SSH授权：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.ssh/</span><br><span class="line">ssh-keygen -t rsa</span><br><span class="line">cat ./id_rsa.pub &gt;&gt; ./authorized_keys</span><br></pre></td></tr></table></figure>
+
+<h2 id="下载Hadoop"><a href="#下载Hadoop" class="headerlink" title="下载Hadoop"></a>下载Hadoop</h2><p><a target="_blank" rel="noopener" href="http://hadoop.apache.org/releases.html">http://hadoop.apache.org/releases.html</a></p>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-03-22-16-08-21.png" alt="2018-03-22-16-08-21"></p>
+<p>选择3.0稳定版的binary下载，并解压</p>
+<h2 id="安装Hadoop"><a href="#安装Hadoop" class="headerlink" title="安装Hadoop"></a>安装Hadoop</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -xzvf hadoop-3.0.0.tar.gz</span><br><span class="line">sudo mv hadoop-3.0.0 /opt/hadoop</span><br></pre></td></tr></table></figure>
+
+<h2 id="PATH"><a href="#PATH" class="headerlink" title="PATH"></a>PATH</h2><p>export PATH&#x3D;$PATH:&#x2F;opt&#x2F;hadoop&#x2F;sbin:&#x2F;opt&#x2F;hadoop&#x2F;bin</p>
+<h2 id="设置JDK环境变量"><a href="#设置JDK环境变量" class="headerlink" title="设置JDK环境变量"></a>设置JDK环境变量</h2><p>readlink -f &#x2F;usr&#x2F;bin&#x2F;java | sed “s:bin&#x2F;java::”<br>&#x2F;usr&#x2F;lib&#x2F;jvm&#x2F;java-8-oracle&#x2F;jre&#x2F;</p>
+<p>sudo vi .&#x2F;etc&#x2F;hadoop&#x2F;hadoop-env.sh<br>export JAVA_HOME&#x3D;&#x2F;usr&#x2F;lib&#x2F;jvm&#x2F;java-8-oracle&#x2F;jre&#x2F;</p>
+<h2 id="运行Hadoop"><a href="#运行Hadoop" class="headerlink" title="运行Hadoop"></a>运行Hadoop</h2><p>.&#x2F;bin&#x2F;hadoop</p>
+<p>mkdir ~&#x2F;input<br>cp &#x2F;opt&#x2F;hadoop&#x2F;etc&#x2F;hadoop&#x2F;*.xml ~&#x2F;input</p>
+<p>.&#x2F;bin&#x2F;hadoop jar .&#x2F;share&#x2F;hadoop&#x2F;mapreduce&#x2F;hadoop-mapreduce-examples-3.0.0.jar grep ~&#x2F;input ~&#x2F;grep_example ‘principal[.]*’</p>
+<h2 id="伪分布式配置"><a href="#伪分布式配置" class="headerlink" title="伪分布式配置"></a>伪分布式配置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /opt/hadoop/etc/hadoop/core-site.xml</span><br></pre></td></tr></table></figure>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadoop.tmp.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/opt/hadoop/tmp<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">description</span>&gt;</span>Abase for other temporary directories.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>fs.defaultFS<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>hdfs://localhost:9000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /opt/hadoop/etc/hadoop/hdfs-site.xml</span><br></pre></td></tr></table></figure>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.replication<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.name.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/opt/hadoop/tmp/dfs/name<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.datanode.data.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">             <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/opt/hadoop/tmp/dfs/data<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>执行 NameNode 的格式化:<br>.&#x2F;bin&#x2F;hdfs namenode -format</p>
+<p>开启 NameNode 和 DataNode 守护进程:<br>.&#x2F;sbin&#x2F;start-dfs.sh<br>.&#x2F;sbin&#x2F;stop-dfs.sh </p>
+<p>可以执行jps查看进程</p>
+<p>WEB控制台界面：<br><a target="_blank" rel="noopener" href="http://localhost:9870/">http://localhost:9870</a></p>
+<h2 id="运行Hadoop伪分布式实例"><a href="#运行Hadoop伪分布式实例" class="headerlink" title="运行Hadoop伪分布式实例"></a>运行Hadoop伪分布式实例</h2><p>在 HDFS 中创建用户目录：<br>.&#x2F;bin&#x2F;hdfs dfs -mkdir -p &#x2F;user&#x2F;hadoop</p>
+<p>将示例xml文件作为输入文件复制到分布式文件系统中<br>.&#x2F;bin&#x2F;hdfs dfs -mkdir input<br>.&#x2F;bin&#x2F;hdfs dfs -put &#x2F;opt&#x2F;hadoop&#x2F;etc&#x2F;hadoop&#x2F;*.xml input</p>
+<p>查看文件列表：<br>.&#x2F;bin&#x2F;hdfs dfs -ls input</p>
+<p>伪分布式运行 MapReduce 作业：<br>.&#x2F;bin&#x2F;hadoop jar &#x2F;opt&#x2F;hadoop&#x2F;share&#x2F;hadoop&#x2F;mapreduce&#x2F;hadoop-mapreduce-examples-*.jar grep input output ‘dfs[a-z.]+’</p>
+<p>查看运行结果：<br>.&#x2F;bin&#x2F;hdfs dfs -cat output&#x2F;*</p>
+<p>将文件取回本地：<br>.&#x2F;bin&#x2F;hdfs dfs -get output &#x2F;opt&#x2F;hadoop&#x2F;output</p>
+<h2 id="启动YARN"><a href="#启动YARN" class="headerlink" title="启动YARN"></a>启动YARN</h2><p>vi mapred-site.xml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;mapreduce.framework.name&lt;/name&gt;</span><br><span class="line">             &lt;value&gt;yarn&lt;/value&gt;</span><br><span class="line">        &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<p>vi yarn-site.xml</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">        &lt;property&gt;</span><br><span class="line">             &lt;name&gt;yarn.nodemanager.aux-services&lt;/name&gt;</span><br><span class="line">             &lt;value&gt;mapreduce_shuffle&lt;/value&gt;</span><br><span class="line">        &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
+
+<p>启动YARN：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./sbin/start-yarn.sh      # 启动YARN</span><br><span class="line">./sbin/mr-jobhistory-daemon.sh start historyserver  # 开启历史服务器，才能在Web中查看任务运行情况</span><br></pre></td></tr></table></figure>
+
+<p>停止YARN：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./sbin/stop-yarn.sh</span><br><span class="line">./sbin/mr-jobhistory-daemon.sh stop historyserver</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://www.digitalocean.com/community/tutorials/how-to-install-hadoop-in-stand-alone-mode-on-ubuntu-16-04">https://www.digitalocean.com/community/tutorials/how-to-install-hadoop-in-stand-alone-mode-on-ubuntu-16-04</a><br><a target="_blank" rel="noopener" href="http://www.powerxing.com/install-hadoop/">http://www.powerxing.com/install-hadoop/</a><br><a target="_blank" rel="noopener" href="http://www.powerxing.com/hadoop-build-project-using-eclipse/">http://www.powerxing.com/hadoop-build-project-using-eclipse/</a></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">Telegraf学习笔记</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="官网文档"><a href="#官网文档" class="headerlink" title="官网文档"></a>官网文档</h2><p><a target="_blank" rel="noopener" href="https://www.influxdata.com/time-series-platform/telegraf/">https://www.influxdata.com/time-series-platform/telegraf/</a><br><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf">https://github.com/influxdata/telegraf</a><br><a target="_blank" rel="noopener" href="https://docs.influxdata.com/telegraf/v1.7/concepts/data_formats_input/">https://docs.influxdata.com/telegraf/v1.7/concepts/data_formats_input/</a></p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="macOS"><a href="#macOS" class="headerlink" title="macOS"></a>macOS</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install telegraf</span><br></pre></td></tr></table></figure>
+
+<h3 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.influxdata.com/telegraf/releases/telegraf-1.7.1_linux_amd64.tar.gz</span><br><span class="line">tar xf telegraf-1.7.1_linux_amd64.tar.gz</span><br></pre></td></tr></table></figure>
+
+<h2 id="修改机器名"><a href="#修改机器名" class="headerlink" title="修改机器名"></a>修改机器名</h2><p>hostnamectl set-hostname smrz133</p>
+<h2 id="安装InfluxDB"><a href="#安装InfluxDB" class="headerlink" title="安装InfluxDB"></a>安装InfluxDB</h2><p>不再赘述</p>
+<h2 id="修改配置"><a href="#修改配置" class="headerlink" title="修改配置"></a>修改配置</h2><p>vi &#x2F;etc&#x2F;telegraf&#x2F;telegraf.conf</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Global tags can be specified here in key=&quot;value&quot; format.</span></span><br><span class="line">[global_tags]</span><br><span class="line">  <span class="comment"># dc = &quot;us-east-1&quot; # will tag all metrics with dc=us-east-1</span></span><br><span class="line">  <span class="comment"># rack = &quot;1a&quot;</span></span><br><span class="line">  <span class="comment">## Environment variables can be used as tags, and throughout the config file</span></span><br><span class="line">  <span class="comment"># user = &quot;$USER&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Configuration for telegraf agent</span></span><br><span class="line">[agent]</span><br><span class="line">  interval = <span class="string">&quot;10s&quot;</span></span><br><span class="line">  round_interval = <span class="literal">true</span></span><br><span class="line">  metric_batch_size = 1000</span><br><span class="line">  metric_buffer_limit = 10000</span><br><span class="line">  collection_jitter = <span class="string">&quot;0s&quot;</span></span><br><span class="line">  flush_interval = <span class="string">&quot;10s&quot;</span></span><br><span class="line">  flush_jitter = <span class="string">&quot;0s&quot;</span></span><br><span class="line">  precision = <span class="string">&quot;&quot;</span></span><br><span class="line">  debug = <span class="literal">false</span></span><br><span class="line">  quiet = <span class="literal">false</span></span><br><span class="line">  hostname = <span class="string">&quot;&quot;</span></span><br><span class="line">  omit_hostname = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">### OUTPUT</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Configuration for influxdb server to send metrics to</span></span><br><span class="line">[[outputs.influxdb]]</span><br><span class="line">  urls = [<span class="string">&quot;http://172.172.172.96:8086&quot;</span>]</span><br><span class="line">  database = <span class="string">&quot;telegraf_metrics&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">## Retention policy to write to. Empty string writes to the default rp.</span></span><br><span class="line">  retention_policy = <span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="comment">## Write consistency (clusters only), can be: &quot;any&quot;, &quot;one&quot;, &quot;quorum&quot;, &quot;all&quot;</span></span><br><span class="line">  write_consistency = <span class="string">&quot;any&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">## Write timeout (for the InfluxDB client), formatted as a string.</span></span><br><span class="line">  <span class="comment">## If not provided, will default to 5s. 0s means no timeout (not recommended).</span></span><br><span class="line">  <span class="built_in">timeout</span> = <span class="string">&quot;5s&quot;</span></span><br><span class="line">  <span class="comment"># username = &quot;telegraf&quot;</span></span><br><span class="line">  <span class="comment"># password = &quot;2bmpiIeSWd63a7ew&quot;</span></span><br><span class="line">  <span class="comment">## Set the user agent for HTTP POSTs (can be useful for log differentiation)</span></span><br><span class="line">  <span class="comment"># user_agent = &quot;telegraf&quot;</span></span><br><span class="line">  <span class="comment">## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)</span></span><br><span class="line">  <span class="comment"># udp_payload = 512</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about cpu usage</span></span><br><span class="line">[[inputs.cpu]]</span><br><span class="line">  <span class="comment">## Whether to report per-cpu stats or not</span></span><br><span class="line">  percpu = <span class="literal">true</span></span><br><span class="line">  <span class="comment">## Whether to report total system cpu stats or not</span></span><br><span class="line">  totalcpu = <span class="literal">true</span></span><br><span class="line">  <span class="comment">## Comment this line if you want the raw CPU time metrics</span></span><br><span class="line">  fielddrop = [<span class="string">&quot;time_*&quot;</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about disk usage by mount point</span></span><br><span class="line">[[inputs.disk]]</span><br><span class="line">  <span class="comment">## By default, telegraf gather stats for all mountpoints.</span></span><br><span class="line">  <span class="comment">## Setting mountpoints will restrict the stats to the specified mountpoints.</span></span><br><span class="line">  <span class="comment"># mount_points = [&quot;/&quot;]</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">## Ignore some mountpoints by filesystem type. For example (dev)tmpfs (usually</span></span><br><span class="line">  <span class="comment">## present on /run, /var/run, /dev/shm or /dev).</span></span><br><span class="line">  ignore_fs = [<span class="string">&quot;tmpfs&quot;</span>, <span class="string">&quot;devtmpfs&quot;</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about disk IO by device</span></span><br><span class="line">[[inputs.diskio]]</span><br><span class="line">  <span class="comment">## By default, telegraf will gather stats for all devices including</span></span><br><span class="line">  <span class="comment">## disk partitions.</span></span><br><span class="line">  <span class="comment">## Setting devices will restrict the stats to the specified devices.</span></span><br><span class="line">  <span class="comment"># devices = [&quot;sda&quot;, &quot;sdb&quot;]</span></span><br><span class="line">  <span class="comment">## Uncomment the following line if you need disk serial numbers.</span></span><br><span class="line">  <span class="comment"># skip_serial_number = false</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get kernel statistics from /proc/stat</span></span><br><span class="line">[[inputs.kernel]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about memory usage</span></span><br><span class="line">[[inputs.mem]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get the number of processes and group them by status</span></span><br><span class="line">[[inputs.processes]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about swap memory usage</span></span><br><span class="line">[[inputs.swap]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about system load &amp; uptime</span></span><br><span class="line">[[inputs.system]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about network interface usage</span></span><br><span class="line">[[inputs.net]]</span><br><span class="line">  <span class="comment"># collect data only about specific interfaces</span></span><br><span class="line">  interfaces = [<span class="string">&quot;ens192&quot;</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[[inputs.netstat]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line">[[inputs.interrupts]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line">[[inputs.linux_sysctl_fs]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="添加Dashboard模板"><a href="#添加Dashboard模板" class="headerlink" title="添加Dashboard模板"></a>添加Dashboard模板</h2><p>Dashboard 928:<br><a target="_blank" rel="noopener" href="https://grafana.com/dashboards/928">https://grafana.com/dashboards/928</a></p>
+<p>左上加号-&gt;Import<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071448.png"></p>
+<p>Grafana.com Dashboard处，输入928编码<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071538.png"></p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -602,582 +1590,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202002/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Sonar%E4%BB%A3%E7%A0%81%E6%A3%80%E6%B5%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202002/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Sonar%E4%BB%A3%E7%A0%81%E6%A3%80%E6%B5%8B/" class="post-title-link" itemprop="url">研发规约-Sonar代码检测</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="Sonar地址"><a href="#Sonar地址" class="headerlink" title="Sonar地址"></a>Sonar地址</h2><p><a target="_blank" rel="noopener" href="http://localhost:9000/">http://localhost:9000</a></p>
-<blockquote>
-<p>admin&#x2F;admin<br>暂定localhost，后期根据部署情况修改</p>
-</blockquote>
-<h2 id="本机Maven配置"><a href="#本机Maven配置" class="headerlink" title="本机Maven配置"></a>本机Maven配置</h2><blockquote>
-<p>配置~&#x2F;.m2&#x2F;settings.xml</p>
-</blockquote>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">profile</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>sonar<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">activation</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">activeByDefault</span>&gt;</span>true<span class="tag">&lt;/<span class="name">activeByDefault</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">activation</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">sonar.host.url</span>&gt;</span>http://localhost:9000<span class="tag">&lt;/<span class="name">sonar.host.url</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">profile</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="为工程添加Jacoco插件"><a href="#为工程添加Jacoco插件" class="headerlink" title="为工程添加Jacoco插件"></a>为工程添加Jacoco插件</h2><blockquote>
-<p>配置工程的pom.xml</p>
-</blockquote>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">project</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.jacoco<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jacoco-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.7.7.201606060606<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">id</span>&gt;</span>default-prepare-agent<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                            <span class="tag">&lt;<span class="name">goal</span>&gt;</span>prepare-agent<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>注意将surefire插件的skipTests选项关闭:  </p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-surefire-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.10<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- &lt;configuration&gt; --&gt;</span></span><br><span class="line">       <span class="comment">&lt;!-- &lt;skipTests&gt;true&lt;/skipTests&gt; --&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- &lt;/configuration&gt; --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="代码手工上传Sonar"><a href="#代码手工上传Sonar" class="headerlink" title="代码手工上传Sonar"></a>代码手工上传Sonar</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn clean verify sonar:sonar</span><br></pre></td></tr></table></figure>
-
-<h2 id="Sonar代码检查结果"><a href="#Sonar代码检查结果" class="headerlink" title="Sonar代码检查结果"></a>Sonar代码检查结果</h2><p>上传Sonar后，会生成代码质量检查报告<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/8e18ad37a324aad18b3bb581b3703e93.png" alt="2020-02-07-19-34-54"></p>
-<p>点击链接即可查看<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/76ba1c43c9f43a36e53fe8f07bb04d1a.png" alt="2020-02-07-19-44-56"></p>
-<p>页面中会展示代码的BUG、漏洞、单元测试覆盖率、代码重复率等信息，可点击进入详情页面，Sonar会给出详细的修改建议，根据提示修改代码。<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/d285ac8d436e34ef594f3dafcf58bc8d.png" alt="2020-02-07-19-36-05"></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202002/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Swagger%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202002/%E7%A0%94%E5%8F%91%E8%A7%84%E7%BA%A6-Swagger%E6%9C%8D%E5%8A%A1%E5%A5%91%E7%BA%A6/" class="post-title-link" itemprop="url">研发规约-Swagger服务契约</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="整合springfox"><a href="#整合springfox" class="headerlink" title="整合springfox"></a>整合springfox</h2><h3 id="修改父pom"><a href="#修改父pom" class="headerlink" title="修改父pom"></a>修改父pom</h3><p>添加springfox的依赖:  </p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- swagger --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.springfox<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springfox-swagger2<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.9.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>io.springfox<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>springfox-swagger-ui<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.9.2<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="增加spring配置"><a href="#增加spring配置" class="headerlink" title="增加spring配置"></a>增加spring配置</h3><p>新增配置类<code>SwaggerConfiguration.java</code></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableSwagger2</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SwaggerConfiguration</span> &#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">Docket</span> <span class="title function_">getDocket</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">Docket</span>(DocumentationType.SWAGGER_2)</span><br><span class="line">                .apiInfo(<span class="keyword">new</span> <span class="title class_">ApiInfoBuilder</span>()</span><br><span class="line">                        .title(<span class="string">&quot;swagger-demo&quot;</span>)</span><br><span class="line">                        .description(<span class="string">&quot;demo&quot;</span>)</span><br><span class="line">                        .version(<span class="string">&quot;1.0.0&quot;</span>)</span><br><span class="line">                        .build())</span><br><span class="line">                .select()</span><br><span class="line">                .apis(RequestHandlerSelectors.any())</span><br><span class="line">                .paths(PathSelectors.regex(<span class="string">&quot;/.*&quot;</span>))</span><br><span class="line">                .build();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="相关路径"><a href="#相关路径" class="headerlink" title="相关路径"></a>相关路径</h3><ul>
-<li><a target="_blank" rel="noopener" href="http://localhost:8090/zorrodemo/swagger-ui.html">swagger-ui</a></li>
-<li><a target="_blank" rel="noopener" href="http://localhost:8090/zorrodemo/v2/api-docs">api-docs</a></li>
-</ul>
-<h2 id="编码示例"><a href="#编码示例" class="headerlink" title="编码示例"></a>编码示例</h2><h3 id="Domain层"><a href="#Domain层" class="headerlink" title="Domain层"></a>Domain层</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@ApiModel(&quot;附件信息&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Attachment</span> &#123;</span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件ID&quot;, example = &quot;1&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">String</span> <span class="variable">id</span> <span class="operator">=</span> PublicUtils.uuid();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件名称&quot;, example = &quot;1.docx&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件类型&quot;, example = &quot;text/plain&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String genre;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件路径&quot;, example = &quot;/tmp/1.docx&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> String path;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiModelProperty(value = &quot;附件大小&quot;, example = &quot;100&quot;)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">double</span> size;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="Controller层"><a href="#Controller层" class="headerlink" title="Controller层"></a>Controller层</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Api(&quot;附件管理&quot;)</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@RequestMapping(&quot;/attachment&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">AttachmentController</span> &#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AttachmentService service;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiOperation(&quot;保存附件&quot;)</span></span><br><span class="line">    <span class="meta">@PostMapping</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">RestResponse</span> <span class="title function_">save</span><span class="params">(<span class="meta">@ApiParam(&quot;附件信息&quot;)</span> <span class="meta">@RequestBody</span> Attachment attachment)</span> &#123;</span><br><span class="line">        service.save(attachment);</span><br><span class="line">        <span class="keyword">return</span> RestResponse.result(attachment);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiOperation(&quot;删除附件&quot;)</span></span><br><span class="line">    <span class="meta">@DeleteMapping(&quot;/&#123;id&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">RestResponse</span> <span class="title function_">delete</span><span class="params">(<span class="meta">@ApiParam(value = &quot;附件ID&quot;, example = &quot;1&quot;)</span> <span class="meta">@PathVariable</span> String id)</span> &#123;</span><br><span class="line">        service.delete(id);</span><br><span class="line">        <span class="keyword">return</span> RestResponse.result(id);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@ApiOperation(&quot;查询附件&quot;)</span></span><br><span class="line">    <span class="meta">@GetMapping</span></span><br><span class="line">    <span class="keyword">public</span> <span class="type">RestResponse</span> <span class="title function_">query</span><span class="params">(<span class="meta">@ApiParam(value = &quot;附件名称&quot;, example = &quot;1.docx&quot;)</span> <span class="meta">@RequestParam(required = false)</span> String name,</span></span><br><span class="line"><span class="params">                              <span class="meta">@ApiParam(value = &quot;页数&quot;, example = &quot;1&quot;)</span> <span class="meta">@RequestParam(required = false, defaultValue = &quot;0&quot;)</span> <span class="type">int</span> pageNum,</span></span><br><span class="line"><span class="params">                              <span class="meta">@ApiParam(value = &quot;每页条数&quot;, example = &quot;10&quot;)</span> <span class="meta">@RequestParam(required = false, defaultValue = &quot;10&quot;)</span> <span class="type">int</span> pageSize)</span> &#123;</span><br><span class="line">        <span class="type">PageInfo</span>&lt;Attachment&gt; <span class="variable">page</span> <span class="operator">=</span> service.query(name, pageNum, pageSize);</span><br><span class="line">        <span class="keyword">return</span> RestResponse.result(page);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ol>
-<li>常用注解有<code>@Api</code>, <code>@ApiOperation</code>, <code>@ApiParam</code>, <code>@ApiModelProperty</code></li>
-<li><code>@Produces</code>, <code>@ApiResponses</code>受制于框架暂不使用，接口风格尽量向rest靠拢</li>
-<li>尽量在注解中添加example属性，以方便后期在swagger-ui中做手工接口测试</li>
-<li>注解在一定程度上可以替代<code>/**/</code>注释，具体看公司要求</li>
-</ol>
-<h2 id="swagge-ui"><a href="#swagge-ui" class="headerlink" title="swagge-ui"></a>swagge-ui</h2><h3 id="查看API信息"><a href="#查看API信息" class="headerlink" title="查看API信息"></a>查看API信息</h3><p>浏览器访问<a target="_blank" rel="noopener" href="http://localhost:8090/zorrodemo/swagger-ui.html%EF%BC%8C%E6%89%93%E5%BC%80swagger-ui%E7%9A%84%E7%95%8C%E9%9D%A2%EF%BC%8C%E5%8F%AF%E6%9F%A5%E7%9C%8B%E6%89%80%E6%9C%89API%E7%9A%84%E4%BF%A1%E6%81%AF">http://localhost:8090/zorrodemo/swagger-ui.html，打开swagger-ui的界面，可查看所有API的信息</a><br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/ac4f0288747f4186a90270be5149b8ae.png" alt="2020-02-07-15-11-35"></p>
-<h3 id="API测试验证"><a href="#API测试验证" class="headerlink" title="API测试验证"></a>API测试验证</h3><p>点击<code>Try it out</code>按钮，可对单个接口手工进行测试<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/1e67b38f28ab18e88faea93ed475733f.png" alt="2020-02-07-15-14-22"></p>
-<h2 id="文档生成"><a href="#文档生成" class="headerlink" title="文档生成"></a>文档生成</h2><ol>
-<li>通过swagger的原始描述json，可以使用各种工具生成多种格式的API文档(asciidoc&#x2F;pdf&#x2F;html&#x2F;markdonwn)</li>
-<li>json api-docs的路径为: <a target="_blank" rel="noopener" href="http://localhost:8090/zorrodemo/v2/api-docs">http://localhost:8090/zorrodemo/v2/api-docs</a></li>
-<li>建议使用swagger-markdown工具生成markdown格式文档，方便后期格式转换、导出</li>
-</ol>
-<p>介绍页面:<br><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/swagger-markdown">https://www.npmjs.com/package/swagger-markdown</a></p>
-<p>安装及使用:  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install -g swagger-markdown</span><br><span class="line">swagger-markdown -i ./api-docs.json</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-15-kubectl%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-15-kubectl%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">K8S离线部署笔记-15-kubectl部署</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:08:32" itemprop="dateCreated datePublished" datetime="2021-01-05T14:08:32+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="主机"><a href="#主机" class="headerlink" title="主机"></a>主机</h2><p>uat-master01.yourcompany.com  10.10.51.78  K8S主节点</p>
-<h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建命名空间</span></span><br><span class="line">kubectl create namespace cale</span><br><span class="line"></span><br><span class="line"><span class="comment"># 部署应用</span></span><br><span class="line">kubectl delete -k .</span><br><span class="line">kubectl apply -k .</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看pod状态</span></span><br><span class="line">kubectl get pods -n cale -o wide</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="yml配置"><a href="#yml配置" class="headerlink" title="yml配置"></a>yml配置</h2><p>配置文件详见FTP install目录</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202101/Linux%E4%B8%8BUEFI%E5%BC%95%E5%AF%BC%E4%BF%AE%E5%A4%8D/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202101/Linux%E4%B8%8BUEFI%E5%BC%95%E5%AF%BC%E4%BF%AE%E5%A4%8D/" class="post-title-link" itemprop="url">Linux下UEFI引导修复</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:07:25" itemprop="dateCreated datePublished" datetime="2021-01-05T14:07:25+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>某曙光服务器，在主板CMOS电池掉电后，NVRAM信息丢失。重新开机后，无法自动从SATA0硬盘的EFI分区的&#x2F;EFI&#x2F;boot&#x2F;bootx64.efi进行引导。需要用启动盘进入恢复模式，将引导项重新写入NVRAM。</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 挂EFI分区，已经进入系统时则不需要</span></span><br><span class="line">fdisk -l /dev/sda</span><br><span class="line">mount /dev/sda1 /boot/efi/</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看引导项</span></span><br><span class="line">efibootmgr -v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除引导项</span></span><br><span class="line">efibootmgr -b 0001 -B</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加引导项</span></span><br><span class="line">efibootmgr -c -d /dev/sda -p 1 -l <span class="string">&#x27;\EFI\centos\grubx64.efi&#x27;</span> -L CentOS</span><br><span class="line">efibootmgr -c -d /dev/sda -p 1 -l <span class="string">&#x27;\EFI\debian\grubx64.efi&#x27;</span> -L Debian</span><br><span class="line">-c 创建引导项</span><br><span class="line">-d 选择硬盘</span><br><span class="line">–p 选择分区</span><br><span class="line">-l efi文件路径</span><br><span class="line">-L 引导项标签</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://i-m.dev/posts/20200808-135558.html">https://i-m.dev/posts/20200808-135558.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.woodelf.org/2014/05/28/uefi-boot-how-it-works">https://blog.woodelf.org/2014/05/28/uefi-boot-how-it-works</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/icycolawater/article/details/51245306">https://blog.csdn.net/icycolawater/article/details/51245306</a></li>
-<li><a target="_blank" rel="noopener" href="https://lensual.space/archives/781.html">https://lensual.space/archives/781.html</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202010/20201029UnixODBC%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202010/20201029UnixODBC%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">UnixODBC安装</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:07:07" itemprop="dateCreated datePublished" datetime="2021-01-05T14:07:07+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <ul>
-<li><h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2></li>
-<li><a target="_blank" rel="noopener" href="http://www.unixodbc.org/">http://www.unixodbc.org/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.nelsontang.com/odbc-in-OSX/">https://www.nelsontang.com/odbc-in-OSX/</a></li>
-<li><a target="_blank" rel="noopener" href="http://www.odbcmanager.net/">http://www.odbcmanager.net/</a></li>
-</ul>
-<h2 id="macOS下brew方式安装"><a href="#macOS下brew方式安装" class="headerlink" title="macOS下brew方式安装"></a>macOS下brew方式安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装unixodbc</span></span><br><span class="line">brew install unixodbc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看配置文件位置</span></span><br><span class="line">odbcinst -j</span><br><span class="line">unixODBC 2.3.7</span><br><span class="line">DRIVERS............: /usr/local/etc/odbcinst.ini</span><br><span class="line">SYSTEM DATA SOURCES: /usr/local/etc/odbc.ini</span><br><span class="line">FILE DATA SOURCES..: /usr/local/etc/ODBCDataSources</span><br><span class="line">USER DATA SOURCES..: /Users/yourname/.odbc.ini</span><br></pre></td></tr></table></figure>
-
-<h2 id="OdbcManager图形界面"><a href="#OdbcManager图形界面" class="headerlink" title="OdbcManager图形界面"></a>OdbcManager图形界面</h2><p><a target="_blank" rel="noopener" href="http://www.odbcmanager.net/">http://www.odbcmanager.net/</a></p>
-<h2 id="postgres驱动"><a href="#postgres驱动" class="headerlink" title="postgres驱动"></a>postgres驱动</h2><p><a target="_blank" rel="noopener" href="https://odbc.postgresql.org/">https://odbc.postgresql.org/</a><br><a target="_blank" rel="noopener" href="https://blogs.sap.com/2015/01/22/%E6%80%8E%E6%A0%B7%E5%9C%A8linux%E4%B8%AD%E9%85%8D%E7%BD%AEpostgre-sql-odbc%E8%BF%9E%E6%8E%A5/">https://blogs.sap.com/2015/01/22/%E6%80%8E%E6%A0%B7%E5%9C%A8linux%E4%B8%AD%E9%85%8D%E7%BD%AEpostgre-sql-odbc%E8%BF%9E%E6%8E%A5/</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 源码编译安装</span></span><br><span class="line">./configure</span><br><span class="line">make &amp;&amp; make install</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h2 id="odbcinst-ini配置"><a href="#odbcinst-ini配置" class="headerlink" title="odbcinst.ini配置"></a>odbcinst.ini配置</h2><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[PostgreSQL]</span></span><br><span class="line"><span class="attr">Description</span>     = ODBC for PostgreSQL</span><br><span class="line"><span class="attr">Driver</span>          = /usr/local/lib/psqlodbcw.so</span><br><span class="line"><span class="attr">Setup</span>           = /usr/local/lib/psqlodbca.so</span><br><span class="line"><span class="attr">Driver64</span>        = /usr/local/lib/psqlodbcw.so</span><br><span class="line"><span class="attr">Setup64</span>         = /usr/local/lib/psqlodbca.so</span><br><span class="line"><span class="attr">FileUsage</span>       = <span class="number">1</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="odbc-ini配置"><a href="#odbc-ini配置" class="headerlink" title="odbc.ini配置"></a>odbc.ini配置</h2><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[PostgreSQL35W]</span></span><br><span class="line"><span class="attr">Description</span> = Test to pg</span><br><span class="line"><span class="attr">Driver</span> = PostgreSQL</span><br><span class="line"><span class="attr">Database</span> = gbdb</span><br><span class="line"><span class="attr">Servername</span> = <span class="number">127.0</span>.<span class="number">0.1</span></span><br><span class="line"><span class="attr">UserName</span> = postgres</span><br><span class="line"><span class="attr">Password</span> = postgres</span><br><span class="line"><span class="attr">Port</span> = <span class="number">5432</span></span><br><span class="line"><span class="attr">ReadOnly</span> = <span class="number">0</span></span><br><span class="line"><span class="attr">ConnSettings</span> = set client_encoding to UTF8</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-14-%E5%BA%94%E7%94%A8%E9%95%9C%E5%83%8F%E8%BF%81%E7%A7%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-14-%E5%BA%94%E7%94%A8%E9%95%9C%E5%83%8F%E8%BF%81%E7%A7%BB/" class="post-title-link" itemprop="url">K8S离线部署笔记-14-应用镜像迁移</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:06:28" itemprop="dateCreated datePublished" datetime="2021-01-05T14:06:28+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="配置DNS"><a href="#配置DNS" class="headerlink" title="配置DNS"></a>配置DNS</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/hosts</span><br><span class="line"><span class="comment"># 本地虚拟机</span></span><br><span class="line">10.10.50.204  registry.yourcompany.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境</span></span><br><span class="line">10.10.51.77  registry.yourcompany.com</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置Docker允许HTTP"><a href="#配置Docker允许HTTP" class="headerlink" title="配置Docker允许HTTP"></a>配置Docker允许HTTP</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123; &quot;insecure-registries&quot;:[&quot;registry.yourcompany.com:5000&quot;] &#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="镜像导出脚本"><a href="#镜像导出脚本" class="headerlink" title="镜像导出脚本"></a>镜像导出脚本</h2><p>repo_save.sh</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">images=(</span><br><span class="line">    tomcat/tomcat-oraclejdk8:8.5.50</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">    docker pull registry.yourcompany.com:5000/<span class="variable">$imageName</span></span><br><span class="line">    docker save registry.yourcompany.com:5000/<span class="variable">$imageName</span> &gt; <span class="variable">$imageName</span>.tar</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="镜像导入脚本"><a href="#镜像导入脚本" class="headerlink" title="镜像导入脚本"></a>镜像导入脚本</h2><p>repo_load.sh</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">images=(</span><br><span class="line">    tomcat/tomcat-oraclejdk8:8.5.50</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">    docker load &lt; <span class="variable">$imageName</span>.tar</span><br><span class="line">    docker push registry.yourcompany.com:5000/<span class="variable">$imageName</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="手工导出导入"><a href="#手工导出导入" class="headerlink" title="手工导出导入"></a>手工导出导入</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导出</span></span><br><span class="line">docker pull registry.yourcompany.com:5000/yourimage:2.2.0</span><br><span class="line">docker save registry.yourcompany.com:5000/yourimage:2.2.0 &gt; yourimage:2.2.0.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入</span></span><br><span class="line">docker load &lt; yourimage:2.2.0.tar</span><br><span class="line">docker push registry.yourcompany.com:5000/yourimage:2.2.0</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-13-IngressNginx/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-13-IngressNginx/" class="post-title-link" itemprop="url">K8S离线部署笔记-13-IngressNginx</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:06:19" itemprop="dateCreated datePublished" datetime="2021-01-05T14:06:19+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="下载yml"><a href="#下载yml" class="headerlink" title="下载yml"></a>下载yml</h2><p><a target="_blank" rel="noopener" href="https://github.com/kubernetes/ingress-nginx/tree/ingress-nginx-3.3.0/deploy/static/provider/baremetal">https://github.com/kubernetes/ingress-nginx/tree/ingress-nginx-3.3.0/deploy/static/provider/baremetal</a></p>
-<h2 id="下载镜像"><a href="#下载镜像" class="headerlink" title="下载镜像"></a>下载镜像</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境</span></span><br><span class="line">docker pull k8s.gcr.io/ingress-nginx/controller:v0.35.0</span><br><span class="line">docker pull docker.io/jettech/kube-webhook-certgen:v1.3.0</span><br><span class="line"></span><br><span class="line">docker tag k8s.gcr.io/ingress-nginx/controller:v0.35.0 registry.yourcompany.com:5000/ingress-nginx/controller:v0.35.0</span><br><span class="line">docker tag docker.io/jettech/kube-webhook-certgen:v1.3.0 registry.yourcompany.com:5000/jettech/kube-webhook-certgen:v1.3.0</span><br><span class="line"></span><br><span class="line">docker save -o controller:v0.35.0.tar registry.yourcompany.com:5000/ingress-nginx/controller:v0.35.0</span><br><span class="line">docker save -o kube-webhook-certgen:v1.3.0.tar registry.yourcompany.com:5000/jettech/kube-webhook-certgen:v1.3.0</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境</span></span><br><span class="line">docker load -i controller:v0.35.0.tar</span><br><span class="line">docker load -i kube-webhook-certgen:v1.3.0.tar</span><br><span class="line"></span><br><span class="line">docker push registry.yourcompany.com:5000/ingress-nginx/controller:v0.35.0</span><br><span class="line">docker push registry.yourcompany.com:5000/jettech/kube-webhook-certgen:v1.3.0</span><br></pre></td></tr></table></figure>
-
-<h2 id="修改yml"><a href="#修改yml" class="headerlink" title="修改yml"></a>修改yml</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">image: registry.yourcompany.com:5000/ingress-nginx/controller:v0.35.0</span><br><span class="line">image: registry.yourcompany.com:5000/jettech/kube-webhook-certgen:v1.3.0</span><br></pre></td></tr></table></figure>
-
-<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl label node uat-worker01.yourcompany.com isIngress=<span class="string">&quot;true&quot;</span></span><br><span class="line">kubectl apply -f deploy.yaml</span><br></pre></td></tr></table></figure>
-
-<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p><a target="_blank" rel="noopener" href="http://test.ingress.com/ip">http://test.ingress.com/ip</a></p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/14/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><span class="page-number current">15</span><a class="page-number" href="/page/16/">16</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/16/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/14/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><span class="page-number current">15</span><a class="page-number" href="/page/16/">16</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/16/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>

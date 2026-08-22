@@ -132,7 +132,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">275</span>
+          <span class="site-state-item-count">282</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -158,6 +158,615 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/Tekton%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202305/Tekton%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">Tekton离线部署</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-06-10 15:29:39" itemprop="dateCreated datePublished" datetime="2023-06-10T15:29:39+08:00">2023-06-10</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://tekton.dev/docs/getting-started">https://tekton.dev/docs/getting-started</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/tektoncd/pipeline/tree/main/examples/v1beta1/pipelineruns">https://github.com/tektoncd/pipeline/tree/main/examples/v1beta1/pipelineruns</a></li>
+<li><a target="_blank" rel="noopener" href="https://hub.tekton.dev/">https://hub.tekton.dev/</a></li>
+</ul>
+<h2 id="其它参考文档"><a href="#其它参考文档" class="headerlink" title="其它参考文档"></a>其它参考文档</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.chenshaowen.com/blog/infinite-io-capability-for-tekton.html">https://www.chenshaowen.com/blog/infinite-io-capability-for-tekton.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1663104">https://cloud.tencent.com/developer/article/1663104</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.soulchild.cn/post/tekton-operator%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3/">https://www.soulchild.cn/post/tekton-operator%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0%E8%AF%A6%E8%A7%A3/</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/tektoncd/pipeline/blob/main/docs/auth.md">https://github.com/tektoncd/pipeline/blob/main/docs/auth.md</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/tektoncd/catalog/tree/main/task/git-clone/0.9/#using-basic-auth-credentials">https://github.com/tektoncd/catalog/tree/main/task/git-clone/0.9/#using-basic-auth-credentials</a></li>
+</ul>
+<h2 id="离线镜像清单"><a href="#离线镜像清单" class="headerlink" title="离线镜像清单"></a>离线镜像清单</h2><h3 id="安装时使用"><a href="#安装时使用" class="headerlink" title="安装时使用"></a>安装时使用</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/controller:v0.48.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/events:v0.48.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/resolvers:v0.48.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/webhook:v0.48.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/controller:v0.24.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/webhook:v0.24.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/interceptors:v0.24.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard:v0.35.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint:v0.48.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/nop:v0.48.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/sidecarlogresults:v0.48.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit:v0.48.0</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink:v0.24.0</span><br><span class="line">cgr.dev/chainguard/busybox:latest</span><br><span class="line">mcr.microsoft.com/powershell:latest</span><br></pre></td></tr></table></figure>
+
+<h3 id="构建时使用"><a href="#构建时使用" class="headerlink" title="构建时使用"></a>构建时使用</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 官方镜像</span></span><br><span class="line">alpine:latest</span><br><span class="line">busybox:latest</span><br><span class="line">gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2</span><br><span class="line">alpine/git:latest</span><br><span class="line">docker:latest</span><br><span class="line">docker:dind</span><br><span class="line">curlimages/curl:latest</span><br><span class="line">gcr.io/kaniko-project/executor:v1.5.1</span><br><span class="line">gcr.io/cloud-builders/mvn:latest</span><br><span class="line">docker.io/library/node:12-alpine</span><br><span class="line"><span class="comment"># 自制镜像</span></span><br><span class="line">harbor.dubhe:30002/dubhe-base/alpine:3.16.3</span><br><span class="line">harbor.dubhe:30002/dubhe-base/dubhe-buildkit:1.2.0</span><br><span class="line">harbor.dubhe:30002/dubhe-base/chart-update:latest</span><br></pre></td></tr></table></figure>
+
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><h3 id="下载常用组件"><a href="#下载常用组件" class="headerlink" title="下载常用组件"></a>下载常用组件</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">curl -o operator.yaml https://storage.googleapis.com/tekton-releases/operator/latest/release.yaml</span><br><span class="line">curl -o pipeline.yaml https://storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml</span><br><span class="line">curl -o triggers.yaml https://storage.googleapis.com/tekton-releases/triggers/latest/release.yaml</span><br><span class="line">curl -o interceptors.yaml https://storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml</span><br><span class="line">curl -o dashboard.yaml https://storage.googleapis.com/tekton-releases/dashboard/latest/release.yaml</span><br><span class="line">curl -o chains.yaml https://storage.googleapis.com/tekton-releases/chains/latest/release.yaml</span><br></pre></td></tr></table></figure>
+
+<h3 id="部署常用组件"><a href="#部署常用组件" class="headerlink" title="部署常用组件"></a>部署常用组件</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f ./operator.yaml</span><br><span class="line">kubectl apply -f ./pipeline.yaml</span><br><span class="line">kubectl apply -f ./triggers.yaml</span><br><span class="line">kubectl apply -f ./interceptors.yaml</span><br><span class="line">kubectl apply -f ./dashboard.yaml</span><br><span class="line">kubectl apply -f ./chains.yaml</span><br></pre></td></tr></table></figure>
+
+<h3 id="DashBoard开放访问"><a href="#DashBoard开放访问" class="headerlink" title="DashBoard开放访问"></a>DashBoard开放访问</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">tekton-dashboard-exposed</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">tekton-pipelines</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">app.kubernetes.io/component:</span> <span class="string">dashboard</span></span><br><span class="line">    <span class="attr">app.kubernetes.io/instance:</span> <span class="string">default</span></span><br><span class="line">    <span class="attr">app.kubernetes.io/name:</span> <span class="string">dashboard</span></span><br><span class="line">    <span class="attr">app.kubernetes.io/part-of:</span> <span class="string">tekton-dashboard</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">protocol:</span> <span class="string">TCP</span></span><br><span class="line">      <span class="attr">port:</span> <span class="number">9097</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="number">9097</span></span><br><span class="line">      <span class="attr">nodePort:</span> <span class="number">30014</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">NodePort</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f nodeport.yaml</span><br><span class="line">open http://10.193.35.21:30014</span><br></pre></td></tr></table></figure>
+
+<h3 id="代理服务器配置-可选"><a href="#代理服务器配置-可选" class="headerlink" title="代理服务器配置(可选)"></a>代理服务器配置(可选)</h3><blockquote>
+<p>vi operator.yaml</p>
+</blockquote>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">containers:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">env:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">HTTP_PROXY</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;socks5://10.193.36.33:7890/&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">HTTPS_PROXY</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;socks5://10.193.36.33:7890/&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">NO_PROXY</span></span><br><span class="line">    <span class="attr">value:</span> <span class="string">&quot;127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,harbor.dubhe,10.193.36.252&quot;</span></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="关闭亲和性助手-可选"><a href="#关闭亲和性助手-可选" class="headerlink" title="关闭亲和性助手(可选)"></a>关闭亲和性助手(可选)</h3><p><a target="_blank" rel="noopener" href="https://github.com/tektoncd/pipeline/blob/main/config/config-feature-flags.yaml">https://github.com/tektoncd/pipeline/blob/main/config/config-feature-flags.yaml</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl edit configmap feature-flags -n tekton-pipelines</span><br><span class="line">disable-affinity-assistant: <span class="string">&quot;true&quot;</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202304/Harbor%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202304/Harbor%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">Harbor离线部署</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-06-07 14:07:09" itemprop="dateCreated datePublished" datetime="2023-06-07T14:07:09+08:00">2023-06-07</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000040905311">https://segmentfault.com/a/1190000040905311</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/releases">https://github.com/goharbor/harbor/releases</a></li>
+</ul>
+<h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><ul>
+<li>Compose方式 <a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/releases/download/v2.8.0/harbor-offline-installer-v2.8.0.tgz">https://github.com/goharbor/harbor/releases/download/v2.8.0/harbor-offline-installer-v2.8.0.tgz</a></li>
+<li>Helm方式 <a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor-helm">https://github.com/goharbor/harbor-helm</a></li>
+</ul>
+<h2 id="配置hosts"><a href="#配置hosts" class="headerlink" title="配置hosts"></a>配置hosts</h2><p>在本机及所有节点配置hosts:<br>192.168.101.244 harbor.dubhe</p>
+<hr>
+<h2 id="Compose方式安装"><a href="#Compose方式安装" class="headerlink" title="Compose方式安装"></a>Compose方式安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 解压</span></span><br><span class="line">tar -zxvf harbor-offline-installer-v2.8.0.tgz &amp;&amp; <span class="built_in">cd</span> harbor</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置harbor.yml</span></span><br><span class="line"><span class="built_in">cp</span> harbor.yml.tmpl harbor.yml</span><br><span class="line">vi harbor.yml </span><br><span class="line">1. 注释掉https</span><br><span class="line">2. hostname改为域名 harbor.dubhe或IP</span><br><span class="line">3. 端口改为 5000</span><br><span class="line">4. 修改数据目录/data(可选)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">./install.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启停</span></span><br><span class="line">docker-compose down</span><br><span class="line">docker-compose up -d</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新生成配置</span></span><br><span class="line">./prepare</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Helm方式安装"><a href="#Helm方式安装" class="headerlink" title="Helm方式安装"></a>Helm方式安装</h2><h3 id="镜像清单"><a href="#镜像清单" class="headerlink" title="镜像清单"></a>镜像清单</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">goharbor/harbor-core:v2.8.0</span><br><span class="line">goharbor/harbor-db:v2.8.0</span><br><span class="line">goharbor/harbor-exporter:v2.8.0</span><br><span class="line">goharbor/harbor-jobservice:v2.8.0</span><br><span class="line">goharbor/harbor-portal:v2.8.0</span><br><span class="line">goharbor/harbor-registryctl:v2.8.0</span><br><span class="line">goharbor/nginx-photon:v2.8.0</span><br><span class="line">goharbor/notary-server-photon:v2.8.0</span><br><span class="line">goharbor/notary-signer-photon:v2.8.0</span><br><span class="line">goharbor/redis-photon:v2.8.0</span><br><span class="line">goharbor/registry-photon:v2.8.0</span><br><span class="line">goharbor/trivy-adapter-photon:v2.8.0</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装过程"><a href="#安装过程" class="headerlink" title="安装过程"></a>安装过程</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用dockemon工具将镜像导入到每个节点</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载chart并修改</span></span><br><span class="line">helm repo add harbor https://helm.goharbor.io</span><br><span class="line">helm pull harbor/harbor</span><br><span class="line">修改values.yaml: </span><br><span class="line">1、<span class="built_in">type</span>: nodePort</span><br><span class="line">2、tls.enabled: <span class="literal">false</span></span><br><span class="line">3、externalURL: http://harbor.dubhe</span><br><span class="line">4、storageClass: <span class="string">&quot;local-path&quot;</span> </span><br><span class="line">5、size: 50Gi</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用Helm安装</span></span><br><span class="line">helm install harbor ./harbor_chart --namespace harbor --create-namespace</span><br><span class="line"></span><br><span class="line"><span class="comment"># 更新</span></span><br><span class="line">helm upgrade harbor ./harbor_chart --namespace harbor</span><br><span class="line"></span><br><span class="line">helm uninstall harbor --namespace harbor</span><br></pre></td></tr></table></figure>
+
+<h3 id="Console"><a href="#Console" class="headerlink" title="Console"></a>Console</h3><p><a target="_blank" rel="noopener" href="http://harbor.dubhe:30002/">http://harbor.dubhe:30002</a><br>admin&#x2F;yourpass</p>
+<hr>
+<h2 id="自签名证书-可选"><a href="#自签名证书-可选" class="headerlink" title="自签名证书(可选)"></a>自签名证书(可选)</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">openssl genrsa -aes256 -out ca-key.pem 4096</span><br><span class="line">openssl req -new -x509 -days 365 -key ca-key.pem -sha256 -subj <span class="string">&quot;/CN=harbor.dubhe&quot;</span> -out ca.pem</span><br><span class="line">openssl genrsa -out server-key.pem 4096</span><br><span class="line">openssl req -new -sha256 \</span><br><span class="line">    -key server-key.pem \</span><br><span class="line">    -subj <span class="string">&quot;/C=CN/OU=sdas/O=evayinfo/CN=dubhe&quot;</span> \</span><br><span class="line">    -reqexts SAN \</span><br><span class="line">    -config &lt;(<span class="built_in">cat</span> /etc/ssl/openssl.cnf \</span><br><span class="line">        &lt;(<span class="built_in">printf</span> <span class="string">&quot;\n[SAN]\nsubjectAltName=DNS:harbor.dubhe&quot;</span>)) \</span><br><span class="line">    -out server.csr</span><br><span class="line">openssl x509 -req -days 365 \</span><br><span class="line">    -<span class="keyword">in</span> server.csr -out server-cert.pem \</span><br><span class="line">    -CA ca.pem -CAkey ca-key.pem -CAcreateserial \</span><br><span class="line">    -extensions SAN \</span><br><span class="line">    -extfile &lt;(<span class="built_in">cat</span> /etc/ssl/openssl.cnf &lt;(<span class="built_in">printf</span> <span class="string">&quot;[SAN]\nsubjectAltName=DNS:harbor.dubhe&quot;</span>))</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="镜像仓库配置"><a href="#镜像仓库配置" class="headerlink" title="镜像仓库配置"></a>镜像仓库配置</h2><h3 id="docker配置http方式私有仓库"><a href="#docker配置http方式私有仓库" class="headerlink" title="docker配置http方式私有仓库"></a>docker配置http方式私有仓库</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 配置</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /etc/docker</span><br><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123; <span class="string">&quot;insecure-registries&quot;</span>:[<span class="string">&quot;harbor.dubhe:30002&quot;</span>] &#125; </span><br><span class="line"></span><br><span class="line"><span class="comment"># 重启</span></span><br><span class="line">killall dockerd</span><br><span class="line">dockerd&amp;</span><br></pre></td></tr></table></figure>
+
+<h3 id="containerd-k3s-配置http方式私有仓库"><a href="#containerd-k3s-配置http方式私有仓库" class="headerlink" title="containerd(k3s)配置http方式私有仓库"></a>containerd(k3s)配置http方式私有仓库</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 配置DNS</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;10.193.36.252  harbor.dubhe&quot;</span>&gt;/etc/hosts</span><br><span class="line"><span class="comment"># 配置</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /etc/rancher/k3s</span><br><span class="line"><span class="built_in">cat</span> &lt;&lt; <span class="string">EOF &gt;/etc/rancher/k3s/registries.yaml</span></span><br><span class="line"><span class="string">mirrors:</span></span><br><span class="line"><span class="string">  &quot;harbor.dubhe:30002&quot;:</span></span><br><span class="line"><span class="string">    endpoint:</span></span><br><span class="line"><span class="string">      - &quot;http://harbor.dubhe:30002&quot;</span></span><br><span class="line"><span class="string">configs:</span></span><br><span class="line"><span class="string">  &quot;harbor.dubhe:30002&quot;:</span></span><br><span class="line"><span class="string">    auth:</span></span><br><span class="line"><span class="string">      username: admin</span></span><br><span class="line"><span class="string">      password: yourpass</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 重启k3s，注意要修改并重启每个节点</span></span><br><span class="line">systemctl restart k3s</span><br><span class="line">systemctl restart k3s-agent</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看自动生成的配置</span></span><br><span class="line"><span class="built_in">cat</span> /var/lib/rancher/k3s/agent/etc/containerd/config.toml</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="containerd-k3s-配置镜像仓库"><a href="#containerd-k3s-配置镜像仓库" class="headerlink" title="containerd(k3s)配置镜像仓库"></a>containerd(k3s)配置镜像仓库</h3><p><a target="_blank" rel="noopener" href="https://docs.k3s.io/zh/installation/private-registry">https://docs.k3s.io/zh/installation/private-registry</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 配置DNS</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;10.193.36.50  harbor.dubhe&quot;</span>&gt;&gt;/etc/hosts</span><br><span class="line"><span class="comment"># 配置</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /etc/rancher/k3s</span><br><span class="line"><span class="built_in">cat</span> &lt;&lt; <span class="string">EOF &gt;/etc/rancher/k3s/registries.yaml</span></span><br><span class="line"><span class="string">mirrors:</span></span><br><span class="line"><span class="string">  &quot;docker.io&quot;:</span></span><br><span class="line"><span class="string">    endpoint:</span></span><br><span class="line"><span class="string">      - &quot;http://harbor.dubhe:30002&quot;</span></span><br><span class="line"><span class="string">  &quot;quay.io&quot;:</span></span><br><span class="line"><span class="string">    endpoint:</span></span><br><span class="line"><span class="string">      - &quot;http://harbor.dubhe:30002&quot;</span></span><br><span class="line"><span class="string">  &quot;ghcr.io&quot;:</span></span><br><span class="line"><span class="string">    endpoint:</span></span><br><span class="line"><span class="string">      - &quot;http://harbor.dubhe:30002&quot;</span></span><br><span class="line"><span class="string">  &quot;k8s.gcr.io&quot;:</span></span><br><span class="line"><span class="string">    endpoint:</span></span><br><span class="line"><span class="string">      - &quot;http://harbor.dubhe:30002&quot;</span></span><br><span class="line"><span class="string">  &quot;registry.k8s.io&quot;:</span></span><br><span class="line"><span class="string">    endpoint:</span></span><br><span class="line"><span class="string">      - &quot;http://harbor.dubhe:30002&quot;</span></span><br><span class="line"><span class="string">  &quot;gcr.io&quot;:</span></span><br><span class="line"><span class="string">    endpoint:</span></span><br><span class="line"><span class="string">      - &quot;http://harbor.dubhe:30002&quot;</span></span><br><span class="line"><span class="string">  &quot;harbor.dubhe:30002&quot;:</span></span><br><span class="line"><span class="string">    endpoint:</span></span><br><span class="line"><span class="string">      - &quot;http://harbor.dubhe:30002&quot;</span></span><br><span class="line"><span class="string">configs:</span></span><br><span class="line"><span class="string">  &quot;harbor.dubhe:30002&quot;:</span></span><br><span class="line"><span class="string">    auth:</span></span><br><span class="line"><span class="string">      username: admin</span></span><br><span class="line"><span class="string">      password: yourpass</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line">      </span><br><span class="line"><span class="comment"># 重启k3s，注意要修改并重启每个节点</span></span><br><span class="line">systemctl restart k3s</span><br><span class="line">systemctl restart k3s-agent</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看自动生成的配置</span></span><br><span class="line"><span class="built_in">cat</span> /var/lib/rancher/k3s/agent/etc/containerd/config.toml</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/ShellClash%E8%81%94%E7%BD%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202305/ShellClash%E8%81%94%E7%BD%91/" class="post-title-link" itemprop="url">ShellClash联网</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-06-06 09:30:12" itemprop="dateCreated datePublished" datetime="2023-06-06T09:30:12+08:00">2023-06-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h2><p><a target="_blank" rel="noopener" href="https://github.com/juewuy/ShellClash/blob/master/README_CN.md">https://github.com/juewuy/ShellClash/blob/master/README_CN.md</a></p>
+<h2 id="跳板机"><a href="#跳板机" class="headerlink" title="跳板机"></a>跳板机</h2><p>ssh <a href="mailto:&#x72;&#111;&#x6f;&#x74;&#64;&#x31;&#x30;&#x2e;&#49;&#57;&#51;&#x2e;&#51;&#x36;&#46;&#51;&#51;">root@10.193.36.33</a></p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 临时开启反向SSH隧道</span></span><br><span class="line">ssh -R 7890:127.0.0.1:7890 root@10.193.36.33</span><br><span class="line"><span class="built_in">export</span> https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=http://127.0.0.1:7890</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线安装ShellClash</span></span><br><span class="line"><span class="built_in">export</span> url=<span class="string">&#x27;https://fastly.jsdelivr.net/gh/juewuy/ShellClash@master&#x27;</span> &amp;&amp; wget -q --no-check-certificate -O /tmp/install.sh <span class="variable">$url</span>/install.sh  &amp;&amp; bash /tmp/install.sh &amp;&amp; <span class="built_in">source</span> /etc/profile &amp;&gt; /dev/null</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入机场订阅</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># UI面板</span></span><br><span class="line">http://10.193.36.33:9999/ui</span><br></pre></td></tr></table></figure>
+
+<h2 id="常规代理"><a href="#常规代理" class="headerlink" title="常规代理"></a>常规代理</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> https_proxy=http://10.193.36.33:7890 http_proxy=http://10.193.36.33:7890 all_proxy=http://10.193.36.33:7890</span><br></pre></td></tr></table></figure>
+
+<h2 id="docker配置http代理"><a href="#docker配置http代理" class="headerlink" title="docker配置http代理"></a>docker配置http代理</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建配置文件</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /etc/systemd/system/docker.service.d</span><br><span class="line"><span class="comment"># 编辑配置文件</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt; <span class="string">EOF &gt;/etc/systemd/system/docker.service.d/http-proxy.conf</span></span><br><span class="line"><span class="string">[Service]</span></span><br><span class="line"><span class="string">Environment=&quot;HTTP_PROXY=socks5://10.193.36.33:7890/&quot;</span></span><br><span class="line"><span class="string">Environment=&quot;HTTPS_PROXY=socks5://10.193.36.33:7890/&quot;</span></span><br><span class="line"><span class="string">Environment=&quot;NO_PROXY=localhost,127.0.0.1,harbor.dubhe,10.193.36.252&quot;</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"><span class="comment"># 重启 Docker</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart docker</span><br><span class="line">systemctl show --property=Environment docker</span><br></pre></td></tr></table></figure>
+
+<h2 id="containerd-k3s-配置http代理"><a href="#containerd-k3s-配置http代理" class="headerlink" title="containerd(k3s)配置http代理"></a>containerd(k3s)配置http代理</h2><p><a target="_blank" rel="noopener" href="https://docs.k3s.io/zh/advanced">https://docs.k3s.io/zh/advanced</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/systemd/system/k3s.service.env        <span class="comment"># 在master节点</span></span><br><span class="line">vi /etc/systemd/system/k3s-agent.service.env  <span class="comment"># 在agent节点</span></span><br><span class="line"></span><br><span class="line">HTTP_PROXY=socks5://10.193.36.33:7890/</span><br><span class="line">HTTPS_PROXY=socks5://10.193.36.33:7890/</span><br><span class="line">NO_PROXY=127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,harbor.dubhe,10.193.36.252,10.193.35.11</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重启k3s，注意要修改并重启每个节点</span></span><br><span class="line">systemctl restart k3s</span><br><span class="line">systemctl restart k3s-agent</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看自动生成的配置</span></span><br><span class="line"><span class="built_in">cat</span> /var/lib/rancher/k3s/agent/etc/containerd/config.toml</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202304/K3S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202304/K3S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">K3S离线部署</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-06-05 18:19:13" itemprop="dateCreated datePublished" datetime="2023-06-05T18:19:13+08:00">2023-06-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://k3s.io/">https://k3s.io/</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.k3s.io/zh/">https://docs.k3s.io/zh/</a></li>
+</ul>
+<h2 id="k3s离线部署"><a href="#k3s离线部署" class="headerlink" title="k3s离线部署"></a>k3s离线部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 拷贝文件</span></span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">mkdir</span> -p /var/lib/rancher/k3s/agent/images/</span><br><span class="line">gunzip k3s-airgap-images-amd64.tar.gz</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> ./k3s-airgap-images-amd64.tar /var/lib/rancher/k3s/agent/images/</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">chmod</span> +x k3s</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> ./k3s /usr/local/bin/</span><br><span class="line"><span class="built_in">chmod</span> +x install.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># server端安装</span></span><br><span class="line">INSTALL_K3S_SKIP_DOWNLOAD=<span class="literal">true</span> ./install.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看安装状态</span></span><br><span class="line">kubectl get pods --all-namespaces</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看token</span></span><br><span class="line"><span class="built_in">cat</span> /var/lib/rancher/k3s/server/token</span><br><span class="line"></span><br><span class="line"><span class="comment"># client端安装</span></span><br><span class="line">INSTALL_K3S_SKIP_DOWNLOAD=<span class="literal">true</span> K3S_URL=https://10.193.36.61:6443 \</span><br><span class="line">K3S_TOKEN=K1010e7f60c6242eaa23cdbfc4ac1da1476c281fb740e871e8639b049aad3a8aa8d::server:467f87f6a531a63cd8a9cb74c1caa890 \</span><br><span class="line">./install.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置local-storage路径</span></span><br><span class="line">vi /etc/systemd/system/k3s.service</span><br><span class="line">ExecStart=/usr/local/bin/k3s server --default-local-storage-path /dubhe</span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart k3s</span><br><span class="line"><span class="built_in">cat</span> /var/lib/rancher/k3s/server/manifests/local-storage.yaml <span class="comment"># 验证</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="常用运维操作"><a href="#常用运维操作" class="headerlink" title="常用运维操作"></a>常用运维操作</h2><h3 id="启停"><a href="#启停" class="headerlink" title="启停"></a>启停</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启停</span></span><br><span class="line">systemctl restart k3s</span><br><span class="line">systemctl restart k3s-agent</span><br><span class="line"></span><br><span class="line"><span class="comment"># 强杀</span></span><br><span class="line">/usr/local/bin/k3s-killall.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 卸载</span></span><br><span class="line">/usr/local/bin/k3s-uninstall.sh</span><br><span class="line">/usr/local/bin/k3s-agent-uninstall.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看日志</span></span><br><span class="line">journalctl -u k3s -f -n100</span><br><span class="line">journalctl -u containerd</span><br></pre></td></tr></table></figure>
+
+<h3 id="server节点访问"><a href="#server节点访问" class="headerlink" title="server节点访问"></a>server节点访问</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 配置.profile</span></span><br><span class="line"><span class="built_in">alias</span> ctr=<span class="string">&quot;ctr --address /run/k3s/containerd/containerd.sock --namespace k8s.io&quot;</span></span><br><span class="line"><span class="built_in">export</span> KUBECONFIG=/etc/rancher/k3s/k3s.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试</span></span><br><span class="line">kubectl get pods --all-namespaces</span><br><span class="line">helm <span class="built_in">ls</span> --all-namespaces</span><br><span class="line">ctr c <span class="built_in">ls</span></span><br><span class="line">crictl ps</span><br></pre></td></tr></table></figure>
+
+<h3 id="本机访问"><a href="#本机访问" class="headerlink" title="本机访问"></a>本机访问</h3><p>将<code>/etc/rancher/k3s/k3s.yaml</code>复制到本机的 <code>~/.kube/config</code>，并将server字段的值替换为Server的IP<br>接下来可使用<code>kubectl</code>或<code>k9s</code>进行远程管理</p>
+<hr>
+<h2 id="管理工具安装"><a href="#管理工具安装" class="headerlink" title="管理工具安装"></a>管理工具安装</h2><h3 id="nerdctl离线安装"><a href="#nerdctl离线安装" class="headerlink" title="nerdctl离线安装"></a>nerdctl离线安装</h3><p><a target="_blank" rel="noopener" href="https://github.com/containerd/nerdctl">https://github.com/containerd/nerdctl</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">tar -zxvf nerdctl-1.3.1-linux-amd64.tar.gz -C /usr/local/bin</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置alias</span></span><br><span class="line"><span class="built_in">alias</span> nerdctl=<span class="string">&quot;nerdctl --host=/run/k3s/containerd/containerd.sock --namespace k8s.io --insecure-registry&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="k9s离线安装"><a href="#k9s离线安装" class="headerlink" title="k9s离线安装"></a>k9s离线安装</h3><p><a target="_blank" rel="noopener" href="https://i.cloudnative.to/toolkits/kubernetes/k9s">https://i.cloudnative.to/toolkits/kubernetes/k9s</a><br><a target="_blank" rel="noopener" href="https://k9scli.io/topics/install/">https://k9scli.io/topics/install/</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf k9s_Linux_amd64.tar.gz</span><br><span class="line"><span class="built_in">cp</span> ./k9s /usr/local/bin/</span><br></pre></td></tr></table></figure>
+
+<h3 id="helm离线安装"><a href="#helm离线安装" class="headerlink" title="helm离线安装"></a>helm离线安装</h3><p><a target="_blank" rel="noopener" href="https://github.com/helm/helm/releases">https://github.com/helm/helm/releases</a></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf helm-v3.11.3-linux-amd64.tar.gz</span><br><span class="line"><span class="built_in">mv</span> linux-amd64/helm /usr/local/bin/helm</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="宿主机联网"><a href="#宿主机联网" class="headerlink" title="宿主机联网"></a>宿主机联网</h2><h3 id="本机开启HTTP代理端口"><a href="#本机开启HTTP代理端口" class="headerlink" title="本机开启HTTP代理端口"></a>本机开启HTTP代理端口</h3><p>方式有多种，可以:<br>1、使用ClashX在本机开启一个7890的Socks5端口<br>2、使用Privoxy将其转为HTTP端口8118</p>
+<h3 id="SSH反向代理"><a href="#SSH反向代理" class="headerlink" title="SSH反向代理"></a>SSH反向代理</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 开启GatewayPorts(使局域网中其它机器也可访问代理端口)</span></span><br><span class="line">vi /etc/ssh/sshd_config</span><br><span class="line">GatewayPorts <span class="built_in">yes</span></span><br><span class="line">systemctl restart sshd</span><br><span class="line"><span class="comment"># SSH接入其中一台服务器</span></span><br><span class="line">ssh -R 7890:127.0.0.1:8118 root@10.193.35.11</span><br><span class="line"><span class="comment"># 环境变量(每台机器)</span></span><br><span class="line"><span class="built_in">export</span> https_proxy=http://10.193.35.11:7890 http_proxy=http://10.193.35.11:7890 all_proxy=http://10.193.35.11:7890</span><br><span class="line"><span class="comment"># 测试</span></span><br><span class="line">curl cip.cc</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置k3s"><a href="#配置k3s" class="headerlink" title="配置k3s"></a>配置k3s</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编辑</span></span><br><span class="line">vi /etc/systemd/system/k3s.service.env  <span class="comment"># server节点</span></span><br><span class="line">vi /etc/systemd/system/k3s-agent.service.env  <span class="comment"># agent节点</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加</span></span><br><span class="line">HTTP_PROXY=http://10.193.35.11:7890</span><br><span class="line">HTTPS_PROXY=http://10.193.35.11:7890</span><br><span class="line">NO_PROXY=127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重启</span></span><br><span class="line">systemctl restart k3s  <span class="comment"># server节点</span></span><br><span class="line">systemctl restart k3s-agent  <span class="comment"># agent节点</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试</span></span><br><span class="line">ctr i pull docker.io/library/nginx:alpine</span><br><span class="line">crictl pull nginx:alpine</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202306/Registry%E7%AE%80%E6%98%93%E5%AE%89%E8%A3%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202306/Registry%E7%AE%80%E6%98%93%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">Registry简易搭建</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-06-03 09:17:09" itemprop="dateCreated datePublished" datetime="2023-06-03T09:17:09+08:00">2023-06-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://docs.docker.com/registry/">https://docs.docker.com/registry/</a></li>
+<li><a target="_blank" rel="noopener" href="https://hub.docker.com/r/konradkleine/docker-registry-frontend/">https://hub.docker.com/r/konradkleine/docker-registry-frontend/</a></li>
+<li><a target="_blank" rel="noopener" href="https://hub.docker.com/r/hyper/docker-registry-web/">https://hub.docker.com/r/hyper/docker-registry-web/</a></li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装registry</span></span><br><span class="line">docker run -d --name registry -p 5000:5000 -v /dubhe/registry:/var/lib/registry  registry:2</span><br><span class="line">docker run -d --name registry --network host -v /dubhe/registry:/var/lib/registry registry:2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置daemon.json并测试</span></span><br><span class="line">docker image tag ubuntu 10.193.36.33:5000/myfirstimage</span><br><span class="line">docker push 10.193.36.33:5000/myfirstimage</span><br><span class="line">docker pull 10.193.36.33:5000/myfirstimage</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装UI</span></span><br><span class="line">docker run -d --name registry-ui \</span><br><span class="line">-e ENV_DOCKER_REGISTRY_HOST=10.193.36.33 \</span><br><span class="line">-e ENV_DOCKER_REGISTRY_PORT=5000 \</span><br><span class="line">-p 8080:80 \</span><br><span class="line">konradkleine/docker-registry-frontend:v2</span><br><span class="line"></span><br><span class="line">http://10.193.36.33:8080</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/JenkinsOnK8S%E9%85%8D%E7%BD%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202305/JenkinsOnK8S%E9%85%8D%E7%BD%AE/" class="post-title-link" itemprop="url">JenkinsOnK8S配置</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-06-01 15:18:39" itemprop="dateCreated datePublished" datetime="2023-06-01T15:18:39+08:00">2023-06-01</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="节点亲和性"><a href="#节点亲和性" class="headerlink" title="节点亲和性"></a>节点亲和性</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl get nodes --show-labels</span><br><span class="line">kubectl label nodes worker-s001 node-role.kubernetes.io/worker=ci</span><br></pre></td></tr></table></figure>
+
+<h2 id="构建所需基础镜像"><a href="#构建所需基础镜像" class="headerlink" title="构建所需基础镜像"></a>构建所需基础镜像</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">busybox:1.36.0</span><br><span class="line">java:8u111-jre-alpine</span><br><span class="line">openjdk:8-jre-slim-buster</span><br></pre></td></tr></table></figure>
+
+<h2 id="自定义容器"><a href="#自定义容器" class="headerlink" title="自定义容器"></a>自定义容器</h2><ol>
+<li>编辑<code>kubesphere-devops-system</code>命名空间下的名为<code>jenkins-casc-config</code>的configmap，</li>
+<li>重启名为<code>devops-jenkins-xxx</code>的deployment</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">&quot;dubhe&quot;</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">&quot;kubesphere-devops-worker&quot;</span></span><br><span class="line">  <span class="attr">label:</span> <span class="string">&quot;dubhe&quot;</span></span><br><span class="line">  <span class="attr">nodeUsageMode:</span> <span class="string">&quot;EXCLUSIVE&quot;</span></span><br><span class="line">  <span class="attr">idleMinutes:</span> <span class="number">0</span></span><br><span class="line">  <span class="attr">containers:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">&quot;maven&quot;</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">&quot;kubesphere/builder-maven:v3.2.0-podman&quot;</span></span><br><span class="line">    <span class="attr">command:</span> <span class="string">&quot;cat&quot;</span></span><br><span class="line">    <span class="attr">args:</span> <span class="string">&quot;&quot;</span></span><br><span class="line">    <span class="attr">ttyEnabled:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">privileged:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">resourceRequestCpu:</span> <span class="string">&quot;100m&quot;</span></span><br><span class="line">    <span class="attr">resourceLimitCpu:</span> <span class="string">&quot;4000m&quot;</span></span><br><span class="line">    <span class="attr">resourceRequestMemory:</span> <span class="string">&quot;100Mi&quot;</span></span><br><span class="line">    <span class="attr">resourceLimitMemory:</span> <span class="string">&quot;8192Mi&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">&quot;nodejs&quot;</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">&quot;kubesphere/builder-nodejs:v3.2.0-podman&quot;</span></span><br><span class="line">    <span class="attr">command:</span> <span class="string">&quot;cat&quot;</span></span><br><span class="line">    <span class="attr">args:</span> <span class="string">&quot;&quot;</span></span><br><span class="line">    <span class="attr">ttyEnabled:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">privileged:</span> <span class="literal">true</span></span><br><span class="line">    <span class="attr">resourceRequestCpu:</span> <span class="string">&quot;100m&quot;</span></span><br><span class="line">    <span class="attr">resourceLimitCpu:</span> <span class="string">&quot;4000m&quot;</span></span><br><span class="line">    <span class="attr">resourceRequestMemory:</span> <span class="string">&quot;100Mi&quot;</span></span><br><span class="line">    <span class="attr">resourceLimitMemory:</span> <span class="string">&quot;8192Mi&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">&quot;jnlp&quot;</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">&quot;jenkins/inbound-agent:4.10-2&quot;</span></span><br><span class="line">    <span class="attr">args:</span> <span class="string">&quot;^$&#123;computer.jnlpmac&#125; ^$&#123;computer.name&#125;&quot;</span></span><br><span class="line">    <span class="attr">resourceRequestCpu:</span> <span class="string">&quot;50m&quot;</span></span><br><span class="line">    <span class="attr">resourceLimitCpu:</span> <span class="string">&quot;500m&quot;</span></span><br><span class="line">    <span class="attr">resourceRequestMemory:</span> <span class="string">&quot;400Mi&quot;</span></span><br><span class="line">    <span class="attr">resourceLimitMemory:</span> <span class="string">&quot;1536Mi&quot;</span></span><br><span class="line">  <span class="attr">workspaceVolume:</span></span><br><span class="line">    <span class="attr">emptyDirWorkspaceVolume:</span></span><br><span class="line">      <span class="attr">memory:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">hostPathVolume:</span></span><br><span class="line">      <span class="attr">hostPath:</span> <span class="string">&quot;/run/k3s/containerd/containerd.sock&quot;</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">&quot;/run/containerd/containerd.sock&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">hostPathVolume:</span></span><br><span class="line">      <span class="attr">hostPath:</span> <span class="string">&quot;/var/data/jenkins_maven_cache&quot;</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">&quot;/root/.m2&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">hostPathVolume:</span></span><br><span class="line">      <span class="attr">hostPath:</span> <span class="string">&quot;/var/data/jenkins_sonar_cache&quot;</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">&quot;/root/.sonar/cache&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">hostPathVolume:</span></span><br><span class="line">      <span class="attr">hostPath:</span> <span class="string">&quot;/var/data/jenkins_nodejs_yarn_cache&quot;</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">&quot;/root/.yarn&quot;</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">hostPathVolume:</span></span><br><span class="line">      <span class="attr">hostPath:</span> <span class="string">&quot;/var/data/jenkins_nodejs_npm_cache&quot;</span></span><br><span class="line">      <span class="attr">mountPath:</span> <span class="string">&quot;/root/.npm&quot;</span></span><br><span class="line">  <span class="attr">yaml:</span> <span class="string">|</span></span><br><span class="line"><span class="string">    spec:</span></span><br><span class="line"><span class="string">      hostAliases:</span></span><br><span class="line"><span class="string">      - ip: &quot;10.193.35.21&quot;</span></span><br><span class="line"><span class="string">        hostnames:</span></span><br><span class="line"><span class="string">        - &quot;harbor.dubhe&quot;</span></span><br><span class="line"><span class="string">      affinity:</span></span><br><span class="line"><span class="string">        nodeAffinity:</span></span><br><span class="line"><span class="string">          preferredDuringSchedulingIgnoredDuringExecution:</span></span><br><span class="line"><span class="string">          - weight: 1</span></span><br><span class="line"><span class="string">            preference:</span></span><br><span class="line"><span class="string">              matchExpressions:</span></span><br><span class="line"><span class="string">              - key: node-role.kubernetes.io/worker</span></span><br><span class="line"><span class="string">                operator: In</span></span><br><span class="line"><span class="string">                values:</span></span><br><span class="line"><span class="string">                - ci</span></span><br><span class="line"><span class="string">      tolerations:</span></span><br><span class="line"><span class="string">      - key: &quot;node.kubernetes.io/ci&quot;</span></span><br><span class="line"><span class="string">        operator: &quot;Exists&quot;</span></span><br><span class="line"><span class="string">        effect: &quot;NoSchedule&quot;</span></span><br><span class="line"><span class="string">      - key: &quot;node.kubernetes.io/ci&quot;</span></span><br><span class="line"><span class="string">        operator: &quot;Exists&quot;</span></span><br><span class="line"><span class="string">        effect: &quot;PreferNoSchedule&quot;</span></span><br><span class="line"><span class="string">      containers:</span></span><br><span class="line"><span class="string">      - name: &quot;maven&quot;</span></span><br><span class="line"><span class="string">        resources:</span></span><br><span class="line"><span class="string">          requests:</span></span><br><span class="line"><span class="string">            ephemeral-storage: &quot;1Gi&quot;</span></span><br><span class="line"><span class="string">          limits:</span></span><br><span class="line"><span class="string">            ephemeral-storage: &quot;10Gi&quot;</span></span><br><span class="line"><span class="string">        volumeMounts:</span></span><br><span class="line"><span class="string">        - name: config-volume</span></span><br><span class="line"><span class="string">          mountPath: /opt/apache-maven-3.5.3/conf/settings.xml</span></span><br><span class="line"><span class="string">          subPath: settings.xml</span></span><br><span class="line"><span class="string">      - name: &quot;nodejs&quot;</span></span><br><span class="line"><span class="string">        resources:</span></span><br><span class="line"><span class="string">          requests:</span></span><br><span class="line"><span class="string">            ephemeral-storage: &quot;1Gi&quot;</span></span><br><span class="line"><span class="string">          limits:</span></span><br><span class="line"><span class="string">            ephemeral-storage: &quot;10Gi&quot;</span></span><br><span class="line"><span class="string">      volumes:</span></span><br><span class="line"><span class="string">        - name: config-volume</span></span><br><span class="line"><span class="string">          configMap:</span></span><br><span class="line"><span class="string">            name: ks-devops-agent</span></span><br><span class="line"><span class="string">            items:</span></span><br><span class="line"><span class="string">            - key: MavenSetting</span></span><br><span class="line"><span class="string">              path: settings.xml</span></span><br><span class="line"><span class="string">      securityContext:</span></span><br><span class="line"><span class="string">        fsGroup: 1000</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="自定义maven-settings-xml"><a href="#自定义maven-settings-xml" class="headerlink" title="自定义maven settings.xml"></a>自定义maven settings.xml</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">settings</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/SETTINGS/1.0.0&quot;</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span> <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">pluginGroups</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">pluginGroups</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">proxies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">proxies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servers</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">servers</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">mirrors</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">mirror</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">id</span>&gt;</span>nexus-aliyun<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">mirrorOf</span>&gt;</span>*,!jitpack.io,!elasticsearch-releases,!dtstack-github,!nexus-public,!elastic.co<span class="tag">&lt;/<span class="name">mirrorOf</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">name</span>&gt;</span>Nexus aliyun<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://maven.aliyun.com/nexus/content/groups/public<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">mirror</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">mirrors</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">profiles</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">profiles</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">settings</span>&gt;</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202304/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%88%9D%E5%A7%8B%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202304/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%88%9D%E5%A7%8B%E5%8C%96/" class="post-title-link" itemprop="url">操作系统初始化</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-06-01 13:22:02" itemprop="dateCreated datePublished" datetime="2023-06-01T13:22:02+08:00">2023-06-01</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="网络配置"><a href="#网络配置" class="headerlink" title="网络配置"></a>网络配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># centos/ubuntu传统配置</span></span><br><span class="line">nmtui</span><br><span class="line">或</span><br><span class="line">vi /etc/network/interfaces</span><br><span class="line">auto eth0</span><br><span class="line">iface eth0 inet static</span><br><span class="line">    address 192.0.2.7</span><br><span class="line">    netmask 255.255.255.0</span><br><span class="line">    gateway 192.0.2.254</span><br><span class="line">systemctl restart networking</span><br><span class="line"></span><br><span class="line"><span class="comment"># ubuntu netplan方式配置</span></span><br><span class="line">vim /etc/netplan/00-installer-config.yaml</span><br><span class="line">network:</span><br><span class="line">  version: 2</span><br><span class="line">  renderer: networkd</span><br><span class="line">  ethernets:</span><br><span class="line">    enp0s9:</span><br><span class="line">      dhcp4: no</span><br><span class="line">      addresses:</span><br><span class="line">        - 192.168.121.221/24</span><br><span class="line">      gateway4: 192.168.121.1</span><br><span class="line">      nameservers:</span><br><span class="line">          addresses: [8.8.8.8, 1.1.1.1]</span><br><span class="line">netplan apply</span><br></pre></td></tr></table></figure>
+
+<h2 id="开启root用户ssh登录"><a href="#开启root用户ssh登录" class="headerlink" title="开启root用户ssh登录"></a>开启root用户ssh登录</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ubuntu下设置root密码</span></span><br><span class="line"><span class="built_in">sudo</span> passwd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开启SSH</span></span><br><span class="line">vi /etc/ssh/sshd_config</span><br><span class="line">PermitRootLogin <span class="built_in">yes</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="配置hostname"><a href="#配置hostname" class="headerlink" title="配置hostname"></a>配置hostname</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostnamectl set-hostname k3s11</span><br></pre></td></tr></table></figure>
+
+<h2 id="磁盘挂载"><a href="#磁盘挂载" class="headerlink" title="磁盘挂载"></a>磁盘挂载</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 格盘</span></span><br><span class="line"><span class="built_in">df</span> -h</span><br><span class="line">lsblk -l</span><br><span class="line">mkfs.ext4 /dev/vdc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 挂载</span></span><br><span class="line">lsblk -f</span><br><span class="line"><span class="built_in">mkdir</span> /dubhe</span><br><span class="line">vi /etc/fstab</span><br><span class="line">UUID=6fbe9169-6432-4186-bfb9-6ec9e3d309eb  /dubhe  ext4  defaults  0  0</span><br><span class="line"><span class="comment"># tidb需要添加nodelalloc,noatime参数</span></span><br><span class="line">UUID=356e7933-6f43-4d02-97f2-213ecdc9499f  /dubhe  ext4  defaults,nodelalloc,noatime  0  0</span><br><span class="line">mount -a</span><br></pre></td></tr></table></figure>
+
+<h2 id="通用调整"><a href="#通用调整" class="headerlink" title="通用调整"></a>通用调整</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Ulimit设置</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">EOF &gt;&gt;  /etc/security/limits.conf</span></span><br><span class="line"><span class="string">root        soft        nofile        1048576</span></span><br><span class="line"><span class="string">root        hard        nofile        1048576</span></span><br><span class="line"><span class="string">root        soft        stack         10240</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">sysctl --system</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭Swap</span></span><br><span class="line">swapoff -a</span><br><span class="line">sed -i <span class="string">&#x27;s/^\(.*swap.*\)$/#\1/&#x27;</span> /etc/fstab</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭防火墙(centos)</span></span><br><span class="line">systemctl stop firewalld</span><br><span class="line">systemctl <span class="built_in">disable</span> firewalld</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭防火墙(ubuntu)</span></span><br><span class="line">ufw status verbose</span><br><span class="line">ufw <span class="built_in">disable</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 禁用selinux(only centos)</span></span><br><span class="line">setenforce 0</span><br><span class="line">sed -i <span class="string">&#x27;s/^SELINUX=enforcing$/SELINUX=permissive/&#x27;</span> /etc/selinux/config</span><br></pre></td></tr></table></figure>
+
+<h2 id="K8S专属调整"><a href="#K8S专属调整" class="headerlink" title="K8S专属调整"></a>K8S专属调整</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 配置IP转发</span></span><br><span class="line">iptables -P FORWARD ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment"># 内核参数调优</span></span><br><span class="line">modprobe br_netfilter</span><br><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">EOF &gt;  /etc/sysctl.d/k8s.conf</span></span><br><span class="line"><span class="string">net.bridge.bridge-nf-call-ip6tables = 1</span></span><br><span class="line"><span class="string">net.bridge.bridge-nf-call-iptables = 1</span></span><br><span class="line"><span class="string">net.bridge.bridge-nf-call-arptables = 1</span></span><br><span class="line"><span class="string">net.core.somaxconn = 32768</span></span><br><span class="line"><span class="string">vm.swappiness = 0</span></span><br><span class="line"><span class="string">net.ipv4.tcp_syncookies = 0</span></span><br><span class="line"><span class="string">net.ipv4.ip_forward = 1</span></span><br><span class="line"><span class="string">fs.file-max = 1000000</span></span><br><span class="line"><span class="string">fs.inotify.max_user_watches = 1048576</span></span><br><span class="line"><span class="string">fs.inotify.max_user_instances = 1024</span></span><br><span class="line"><span class="string">net.ipv4.conf.all.rp_filter = 1</span></span><br><span class="line"><span class="string">net.ipv4.neigh.default.gc_thresh1 = 80000</span></span><br><span class="line"><span class="string">net.ipv4.neigh.default.gc_thresh2 = 90000</span></span><br><span class="line"><span class="string">net.ipv4.neigh.default.gc_thresh3 = 100000</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">sysctl --system</span><br></pre></td></tr></table></figure>
+
+<h2 id="TiDB专属调整"><a href="#TiDB专属调整" class="headerlink" title="TiDB专属调整"></a>TiDB专属调整</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ulimit</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt; <span class="string">EOF &gt;&gt;/etc/security/limits.conf</span></span><br><span class="line"><span class="string">tidb           soft    nofile          1000000</span></span><br><span class="line"><span class="string">tidb           hard    nofile          1000000</span></span><br><span class="line"><span class="string">tidb           soft    stack          32768</span></span><br><span class="line"><span class="string">tidb           hard    stack          32768</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># TIDB配置irqbalance服务</span></span><br><span class="line">systemctl status irqbalance</span><br><span class="line">systemctl <span class="built_in">enable</span> irqbalance</span><br><span class="line">systemctl start irqbalance</span><br><span class="line"></span><br><span class="line"><span class="comment"># 内核参数调整</span></span><br><span class="line"><span class="built_in">echo</span> never &gt; /sys/kernel/mm/transparent_hugepage/enabled</span><br><span class="line"><span class="built_in">echo</span> never &gt; /sys/kernel/mm/transparent_hugepage/defrag</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;export GODEBUG=madvdontneed=1&#x27;</span> &gt;&gt; /root/.bash_profile &amp;&amp; <span class="built_in">source</span> /root/.bash_profile</span><br></pre></td></tr></table></figure>
+
+<h2 id="Docker配置"><a href="#Docker配置" class="headerlink" title="Docker配置"></a>Docker配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Docker的数据保存到一块单独的盘上</span></span><br><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;exec-opts&quot;</span>: [<span class="string">&quot;native.cgroupdriver=systemd&quot;</span>],</span><br><span class="line">  <span class="string">&quot;log-driver&quot;</span>: <span class="string">&quot;json-file&quot;</span>,</span><br><span class="line">  <span class="string">&quot;log-opts&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;max-size&quot;</span>: <span class="string">&quot;100m&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;storage-driver&quot;</span>: <span class="string">&quot;overlay2&quot;</span>,</span><br><span class="line">  <span class="string">&quot;storage-opts&quot;</span>: [</span><br><span class="line">    <span class="string">&quot;overlay2.override_kernel_check=true&quot;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&quot;data-root&quot;</span>: <span class="string">&quot;/data1/docker&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Docker配置http仓库</span></span><br><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;insecure-registries&quot;</span> : [<span class="string">&quot;10.193.34.4:9010&quot;</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置 Docker daemon 的 ulimit</span></span><br><span class="line"><span class="comment">## 1、创建 docker service 的 systemd drop-in 目录 /etc/systemd/system/docker.service.d</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /etc/systemd/system/docker.service.d</span><br><span class="line"><span class="comment">## 2、创建 /etc/systemd/system/docker.service.d/limit-nofile.conf 文件，并配置 LimitNOFILE 参数的值，取值范围为大于等于 1048576 的数字即可</span></span><br><span class="line"><span class="built_in">cat</span> &gt; /etc/systemd/system/docker.service.d/limit-nofile.conf &lt;&lt;<span class="string">EOF</span></span><br><span class="line"><span class="string">[Service]</span></span><br><span class="line"><span class="string">LimitNOFILE=1048576</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"><span class="comment">## 3、重新加载配置</span></span><br><span class="line">systemctl daemon-reload &amp;&amp; systemctl restart docker</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="配置软件源"><a href="#配置软件源" class="headerlink" title="配置软件源"></a>配置软件源</h2><h3 id="ubuntu在线阿里源"><a href="#ubuntu在线阿里源" class="headerlink" title="ubuntu在线阿里源"></a>ubuntu在线阿里源</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 参考: https://developer.aliyun.com/mirror/ubuntu/</span></span><br><span class="line"><span class="built_in">cp</span> /etc/apt/sources.list /etc/apt/sources.list.bak</span><br><span class="line"><span class="built_in">cat</span> &lt;&lt; <span class="string">EOF &gt;/etc/apt/sources.list</span></span><br><span class="line"><span class="string">deb https://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb-src https://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb https://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb-src https://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb https://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb-src https://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb https://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse</span></span><br><span class="line"><span class="string">deb-src https://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">apt update</span><br></pre></td></tr></table></figure>
+
+<h3 id="centos在线阿里源"><a href="#centos在线阿里源" class="headerlink" title="centos在线阿里源"></a>centos在线阿里源</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mv</span> /etc/yum.repos.d /etc/yum.repos.d.bak</span><br><span class="line"><span class="built_in">mkdir</span> /etc/yum.repos.d</span><br><span class="line">curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo</span><br><span class="line">curl -o /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo</span><br><span class="line">yum clean all &amp;&amp; yum makecache</span><br></pre></td></tr></table></figure>
+
+<h3 id="centos本地源"><a href="#centos本地源" class="headerlink" title="centos本地源"></a>centos本地源</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 挂载镜像</span></span><br><span class="line">mount -t iso9660 -o loop,utf8 your.iso /mnt/yum</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清空Yum配置目录</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /etc/yum.repos.d.bak</span><br><span class="line"><span class="built_in">mv</span> /etc/yum.repos.d/* /etc/yum.repos.d.bak</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加本地Yum源配置</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt; <span class="string">EOF &gt;/etc/yum.repos.d/CentOS-Local.repo</span></span><br><span class="line"><span class="string">[local]</span></span><br><span class="line"><span class="string">name=local</span></span><br><span class="line"><span class="string">baseurl=file:///mnt/yum</span></span><br><span class="line"><span class="string">enabled=1</span></span><br><span class="line"><span class="string">gpgcheck=1</span></span><br><span class="line"><span class="string">gpgkey=file:///mnt/yum</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 重建Yum缓存</span></span><br><span class="line">yum clean all &amp;&amp; yum makecache</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="开启ntp"><a href="#开启ntp" class="headerlink" title="开启ntp"></a>开启ntp</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum install ntp ntpdate -y</span><br><span class="line">systemctl start ntpd.service</span><br><span class="line">systemctl <span class="built_in">enable</span> ntpd.service</span><br><span class="line">ntpstat</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -412,620 +1021,8 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%98%E6%96%B9Helm%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202305/%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%98%E6%96%B9Helm%E5%AE%89%E8%A3%85/" class="post-title-link" itemprop="url">常用中间件官方Helm安装</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-05-29 14:25:09" itemprop="dateCreated datePublished" datetime="2023-05-29T14:25:09+08:00">2023-05-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/mysql">https://artifacthub.io/packages/helm/bitnami/mysql</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/mysql --version 9.9.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami mysql 9.9.1</span><br><span class="line">helm install mysql ./mysql --namespace mysql --create-namespace</span><br><span class="line">helm status mysql -n mysql</span><br><span class="line"></span><br><span class="line"><span class="comment"># DNS</span></span><br><span class="line">mysql.mysql.svc.cluster.local:3306</span><br><span class="line"><span class="comment"># 查看root用户名</span></span><br><span class="line">MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace mysql mysql -o jsonpath=<span class="string">&quot;&#123;.data.mysql-root-password&#125;&quot;</span> | <span class="built_in">base64</span> -d)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$MYSQL_ROOT_PASSWORD</span>  <span class="comment"># rVrmiKcXOo</span></span><br><span class="line"><span class="comment"># 运行客户端</span></span><br><span class="line">kubectl run mysql-client --<span class="built_in">rm</span> --<span class="built_in">tty</span> -i --restart=<span class="string">&#x27;Never&#x27;</span> --image  docker.io/bitnami/mysql:8.0.33-debian-11-r7 --namespace mysql --<span class="built_in">env</span> MYSQL_ROOT_PASSWORD=<span class="variable">$MYSQL_ROOT_PASSWORD</span> --<span class="built_in">command</span> -- bash</span><br><span class="line">mysql -h mysql.mysql.svc.cluster.local -uroot -p<span class="string">&quot;<span class="variable">$MYSQL_ROOT_PASSWORD</span>&quot;</span></span><br><span class="line"><span class="comment"># 本机port-forward</span></span><br><span class="line">kubectl port-forward --namespace mysql svc/mysql 3306:3306</span><br></pre></td></tr></table></figure>
-
-<h2 id="Redis"><a href="#Redis" class="headerlink" title="Redis"></a>Redis</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/redis">https://artifacthub.io/packages/helm/bitnami/redis</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo bitnami/redis --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/redis --version 17.10.3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami redis 17.10.3</span><br><span class="line">helm install redis ./redis --namespace redis --create-namespace</span><br><span class="line">helm status redis -n redis</span><br><span class="line"></span><br><span class="line"><span class="comment"># DNS</span></span><br><span class="line">redis-master.redis.svc.cluster.local <span class="keyword">for</span> <span class="built_in">read</span>/write operations (port 6379)</span><br><span class="line">redis-replicas.redis.svc.cluster.local <span class="keyword">for</span> read-only operations (port 6379)</span><br><span class="line"><span class="comment"># 查看密码</span></span><br><span class="line"><span class="built_in">export</span> REDIS_PASSWORD=$(kubectl get secret --namespace redis redis -o jsonpath=<span class="string">&quot;&#123;.data.redis-password&#125;&quot;</span> | <span class="built_in">base64</span> -d)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$REDIS_PASSWORD</span> <span class="comment"># 4BEkvq5vdW</span></span><br><span class="line"><span class="comment"># 运行Client</span></span><br><span class="line">kubectl run --namespace redis redis-client --restart=<span class="string">&#x27;Never&#x27;</span>  --<span class="built_in">env</span> REDIS_PASSWORD=<span class="variable">$REDIS_PASSWORD</span>  --image docker.io/bitnami/redis:7.0.11-debian-11-r7 --<span class="built_in">command</span> -- <span class="built_in">sleep</span> infinity</span><br><span class="line">kubectl <span class="built_in">exec</span> --<span class="built_in">tty</span> -i redis-client --namespace redis -- bash</span><br><span class="line">REDISCLI_AUTH=<span class="string">&quot;<span class="variable">$REDIS_PASSWORD</span>&quot;</span> redis-cli -h redis-master</span><br><span class="line"><span class="comment"># 本机port-forward</span></span><br><span class="line">kubectl port-forward --namespace redis svc/redis-master 6379:6379</span><br><span class="line">REDISCLI_AUTH=<span class="string">&quot;<span class="variable">$REDIS_PASSWORD</span>&quot;</span> redis-cli -h 127.0.0.1 -p 6379</span><br></pre></td></tr></table></figure>
-
-<h2 id="Zookeeper"><a href="#Zookeeper" class="headerlink" title="Zookeeper"></a>Zookeeper</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/zookeeper">https://artifacthub.io/packages/helm/bitnami/zookeeper</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo bitnami/zookeeper --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/zookeeper --version 11.3.2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami zookeeper 11.3.2</span><br><span class="line">helm install zookeeper ./zookeeper --namespace zookeeper --create-namespace</span><br><span class="line">helm status zookeeper -n zookeeper</span><br><span class="line"></span><br><span class="line"><span class="comment"># DNS</span></span><br><span class="line">zookeeper.zookeeper.svc.cluster.local</span><br><span class="line"><span class="comment"># 客户端</span></span><br><span class="line"><span class="built_in">export</span> POD_NAME=$(kubectl get pods --namespace zookeeper -l <span class="string">&quot;app.kubernetes.io/name=zookeeper,app.kubernetes.io/instance=zookeeper,app.kubernetes.io/component=zookeeper&quot;</span> -o jsonpath=<span class="string">&quot;&#123;.items[0].metadata.name&#125;&quot;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$POD_NAME</span></span><br><span class="line">kubectl <span class="built_in">exec</span> -it  --namespace zookeeper <span class="variable">$POD_NAME</span> -- zkCli.sh</span><br><span class="line"><span class="comment"># 本机port-forward</span></span><br><span class="line">kubectl port-forward --namespace zookeeper svc/zookeeper 2181:2181</span><br><span class="line">zkCli.sh 127.0.0.1:2181</span><br></pre></td></tr></table></figure>
-
-<h2 id="Minio"><a href="#Minio" class="headerlink" title="Minio"></a>Minio</h2><p><a target="_blank" rel="noopener" href="https://helm.min.io/">https://helm.min.io/</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add minio https://helm.min.io/</span><br><span class="line">helm update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo minio/minio --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull minio/minio --version 8.0.10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart minio minio 8.0.10</span><br><span class="line">helm install minio ./minio --namespace minio --create-namespace</span><br><span class="line">helm status minio -n minio</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本机portforward</span></span><br><span class="line"><span class="built_in">export</span> POD_NAME=$(kubectl get pods --namespace minio -l <span class="string">&quot;release=minio&quot;</span> -o jsonpath=<span class="string">&quot;&#123;.items[0].metadata.name&#125;&quot;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$POD_NAME</span></span><br><span class="line">kubectl port-forward <span class="variable">$POD_NAME</span> 9000 --namespace minio</span><br><span class="line"><span class="comment"># 查看access_key/secret_key</span></span><br><span class="line">ACCESS_KEY=$(kubectl get secret minio --namespace minio -o jsonpath=<span class="string">&quot;&#123;.data.accesskey&#125;&quot;</span> | <span class="built_in">base64</span> --decode) </span><br><span class="line">SECRET_KEY=$(kubectl get secret minio --namespace minio -o jsonpath=<span class="string">&quot;&#123;.data.secretkey&#125;&quot;</span> | <span class="built_in">base64</span> --decode)</span><br><span class="line"><span class="built_in">echo</span> <span class="variable">$ACCESS_KEY</span> <span class="variable">$SECRET_KEY</span></span><br></pre></td></tr></table></figure>
-
-
-<h2 id="Nginx"><a href="#Nginx" class="headerlink" title="Nginx"></a>Nginx</h2><p><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/bitnami/nginx">https://artifacthub.io/packages/helm/bitnami/nginx</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 添加仓库</span></span><br><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br><span class="line"><span class="comment"># 查看所有版本号</span></span><br><span class="line">helm search repo bitnami/nginx --versions --devel</span><br><span class="line"><span class="comment"># 拉取chart(可选)</span></span><br><span class="line">helm pull bitnami/nginx --version 14.2.1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线安装</span></span><br><span class="line">dockemon chart bitnami nginx 14.2.1</span><br><span class="line">helm install nginx ./nginx --namespace nginx --create-namespace</span><br><span class="line">helm status nginx -n nginx</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> SERVICE_PORT=$(kubectl get --namespace nginx -o jsonpath=<span class="string">&quot;&#123;.spec.ports[0].port&#125;&quot;</span> services nginx)</span><br><span class="line"><span class="built_in">export</span> SERVICE_IP=$(kubectl get svc --namespace nginx nginx -o jsonpath=<span class="string">&#x27;&#123;.status.loadBalancer.ingress[0].ip&#125;&#x27;</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;http://<span class="variable">$&#123;SERVICE_IP&#125;</span>:<span class="variable">$&#123;SERVICE_PORT&#125;</span>&quot;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="Neo4j"><a href="#Neo4j" class="headerlink" title="Neo4j"></a>Neo4j</h2><p><a target="_blank" rel="noopener" href="https://github.com/neo4j-contrib/neo4j-helm">https://github.com/neo4j-contrib/neo4j-helm</a><br><a target="_blank" rel="noopener" href="https://artifacthub.io/packages/helm/neo4j-helm-charts/neo4j">https://artifacthub.io/packages/helm/neo4j-helm-charts/neo4j</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 编辑镜像清单</span></span><br><span class="line">dockemon edit</span><br><span class="line">neo4j:4.4.10-enterprise</span><br><span class="line">gcr.io/neo4j-helm/restore:4.1.0-1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 推送离线镜像</span></span><br><span class="line">dockemon image</span><br><span class="line"></span><br><span class="line"><span class="comment"># 手工下载Chart</span></span><br><span class="line">https://github.com/neo4j-contrib/neo4j-helm/releases</span><br><span class="line">tar -zxvf neo4j-4.4.10.1.tgz &amp; <span class="built_in">cd</span> neo4j</span><br><span class="line"><span class="comment"># 注意修改values.yaml，pvc.size改小</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Chart安装</span></span><br><span class="line">helm install neo4j ./neo4j --<span class="built_in">set</span> core.standalone=<span class="literal">true</span> --<span class="built_in">set</span> acceptLicenseAgreement=<span class="built_in">yes</span> --<span class="built_in">set</span> neo4jPassword=abcd1234 --namespace neo4j --create-namespace</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/Longhorn%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202305/Longhorn%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">Longhorn离线部署</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-05-29 14:24:44" itemprop="dateCreated datePublished" datetime="2023-05-29T14:24:44+08:00">2023-05-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.k3s.io/zh/storage">https://docs.k3s.io/zh/storage</a></li>
-<li><a target="_blank" rel="noopener" href="https://longhorn.io/docs/1.4.1/">https://longhorn.io/docs/1.4.1/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/longhorn/longhorn">https://github.com/longhorn/longhorn</a></li>
-<li><a target="_blank" rel="noopener" href="https://ranchermanager.docs.rancher.com/zh/integrations-in-rancher/longhorn">https://ranchermanager.docs.rancher.com/zh/integrations-in-rancher/longhorn</a></li>
-</ul>
-<h2 id="版本选择"><a href="#版本选择" class="headerlink" title="版本选择"></a>版本选择</h2><p>1.4.1</p>
-<h2 id="镜像列表"><a href="#镜像列表" class="headerlink" title="镜像列表"></a>镜像列表</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">longhornio/backing-image-manager:v1.4.2</span><br><span class="line">longhornio/csi-attacher:v3.4.0</span><br><span class="line">longhornio/csi-node-driver-registrar:v2.7.0</span><br><span class="line">longhornio/csi-provisioner:v2.1.2</span><br><span class="line">longhornio/csi-provisioner:v3.4.1</span><br><span class="line">longhornio/csi-resizer:v1.3.0</span><br><span class="line">longhornio/csi-snapshotter:v5.0.1</span><br><span class="line">longhornio/livenessprobe:v2.8.0</span><br><span class="line">longhornio/livenessprobe:v2.9.0</span><br><span class="line">longhornio/longhorn-engine:v1.4.2</span><br><span class="line">longhornio/longhorn-instance-manager:v1.4.2</span><br><span class="line">longhornio/longhorn-manager:v1.4.2</span><br><span class="line">longhornio/longhorn-share-manager:v1.4.2</span><br><span class="line">longhornio/longhorn-ui:v1.4.2</span><br><span class="line">longhornio/support-bundle-kit:v0.0.24</span><br></pre></td></tr></table></figure>
-
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># helm下载</span></span><br><span class="line">helm repo add longhorn https://charts.longhorn.io</span><br><span class="line">helm repo update</span><br><span class="line">helm pull longhorn/longhorn</span><br><span class="line"></span><br><span class="line"><span class="comment"># 参数调整</span></span><br><span class="line">defaultClassReplicaCount: 1</span><br><span class="line">defaultDataLocality: best-effort <span class="comment"># best-effort otherwise</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">helm install longhorn ./longhorn_chart --namespace longhorn --create-namespace</span><br><span class="line"><span class="comment"># 更新</span></span><br><span class="line">helm upgrade longhorn ./longhorn_chart --namespace longhorn --create-namespace</span><br><span class="line"><span class="comment"># 删除</span></span><br><span class="line">helm uninstall longhorn -n longhorn</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="添加自定义StorageClass"><a href="#添加自定义StorageClass" class="headerlink" title="添加自定义StorageClass"></a>添加自定义StorageClass</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">StorageClass</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">storage.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">longhorn-retain</span></span><br><span class="line">  <span class="attr">annotations:</span></span><br><span class="line">    <span class="attr">storageclass.kubernetes.io/is-default-class:</span> <span class="string">&#x27;true&#x27;</span></span><br><span class="line">    <span class="attr">storageclass.kubesphere.io/allow-clone:</span> <span class="string">&#x27;true&#x27;</span></span><br><span class="line">    <span class="attr">storageclass.kubesphere.io/allow-snapshot:</span> <span class="string">&#x27;true&#x27;</span></span><br><span class="line"><span class="attr">provisioner:</span> <span class="string">driver.longhorn.io</span></span><br><span class="line"><span class="attr">parameters:</span></span><br><span class="line">  <span class="attr">dataLocality:</span> <span class="string">best-effort</span></span><br><span class="line">  <span class="attr">fromBackup:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line">  <span class="attr">fsType:</span> <span class="string">ext4</span></span><br><span class="line">  <span class="attr">numberOfReplicas:</span> <span class="string">&#x27;2&#x27;</span></span><br><span class="line">  <span class="attr">staleReplicaTimeout:</span> <span class="string">&#x27;30&#x27;</span></span><br><span class="line"><span class="attr">reclaimPolicy:</span> <span class="string">Retain</span></span><br><span class="line"><span class="attr">allowVolumeExpansion:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">volumeBindingMode:</span> <span class="string">Immediate</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/KubeSphere%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202305/KubeSphere%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">KubeSphere离线部署</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-05-29 14:24:17" itemprop="dateCreated datePublished" datetime="2023-05-29T14:24:17+08:00">2023-05-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://kubesphere.io/zh/docs/v3.3/installing-on-kubernetes/on-prem-kubernetes/install-ks-on-linux-airgapped/">https://kubesphere.io/zh/docs/v3.3/installing-on-kubernetes/on-prem-kubernetes/install-ks-on-linux-airgapped/</a></p>
-<h2 id="版本选择"><a href="#版本选择" class="headerlink" title="版本选择"></a>版本选择</h2><ul>
-<li>Kubernetes: v1.24.13+k3s1</li>
-<li>KubeSphere: v3.3.1</li>
-</ul>
-<h2 id="导入镜像"><a href="#导入镜像" class="headerlink" title="导入镜像"></a>导入镜像</h2><p>使用<code>dockemon</code>工具将镜像离线导入Harbor</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">kubesphere/ks-installer:v3.3.1</span><br><span class="line">kubesphere/ks-apiserver:v3.3.1</span><br><span class="line">kubesphere/ks-console:v3.3.1</span><br><span class="line">kubesphere/ks-controller-manager:v3.3.1</span><br><span class="line">kubesphere/ks-upgrade:v3.3.1</span><br><span class="line">kubesphere/kubectl:v1.22.0</span><br><span class="line">kubesphere/kubectl:v1.21.0</span><br><span class="line">kubesphere/kubectl:v1.20.0</span><br><span class="line">kubesphere/kubefed:v0.8.1</span><br><span class="line">kubesphere/tower:v0.2.0</span><br><span class="line">minio/minio:RELEASE.2019-08-07T01-59-21Z</span><br><span class="line">minio/mc:RELEASE.2019-08-07T23-14-43Z</span><br><span class="line">csiplugin/snapshot-controller:v4.0.0</span><br><span class="line">kubesphere/nginx-ingress-controller:v1.1.0</span><br><span class="line">mirrorgooglecontainers/defaultbackend-amd64:1.4</span><br><span class="line">kubesphere/metrics-server:v0.4.2</span><br><span class="line">redis:5.0.14-alpine</span><br><span class="line">haproxy:2.0.25-alpine</span><br><span class="line">alpine:3.14</span><br><span class="line">osixia/openldap:1.3.0</span><br><span class="line">kubesphere/netshoot:v1.0</span><br><span class="line">jimmidyson/configmap-reload:v0.5.0</span><br><span class="line">prom/prometheus:v2.34.0</span><br><span class="line">kubesphere/prometheus-config-reloader:v0.55.1</span><br><span class="line">kubesphere/prometheus-operator:v0.55.1</span><br><span class="line">kubesphere/kube-rbac-proxy:v0.11.0</span><br><span class="line">kubesphere/kube-state-metrics:v2.5.0</span><br><span class="line">prom/node-exporter:v1.3.1</span><br><span class="line">prom/alertmanager:v0.23.0</span><br><span class="line">thanosio/thanos:v0.25.2</span><br><span class="line">grafana/grafana:8.3.3</span><br><span class="line">kubesphere/kube-rbac-proxy:v0.8.0</span><br><span class="line">kubesphere/notification-manager-operator:v1.4.0</span><br><span class="line">kubesphere/notification-manager:v1.4.0</span><br><span class="line">kubesphere/notification-tenant-sidecar:v3.2.0</span><br><span class="line">kubesphere/elasticsearch-curator:v5.7.6</span><br><span class="line">kubesphere/elasticsearch-oss:6.8.22</span><br><span class="line">kubesphere/fluentbit-operator:v0.13.0</span><br><span class="line">docker:19.03</span><br><span class="line">kubesphere/fluent-bit:v1.8.11</span><br><span class="line">kubesphere/log-sidecar-injector:1.1</span><br><span class="line">elastic/filebeat:6.7.0</span><br><span class="line">kubesphere/kube-events-operator:v0.4.0</span><br><span class="line">kubesphere/kube-events-exporter:v0.4.0</span><br><span class="line">kubesphere/kube-events-ruler:v0.4.0</span><br><span class="line">kubesphere/kube-auditing-operator:v0.2.0</span><br><span class="line">kubesphere/kube-auditing-webhook:v0.2.0</span><br><span class="line">kubesphere/devops-tools:v3.3.1</span><br><span class="line">kubesphere/devops-controller:v3.3.1</span><br><span class="line">kubesphere/devops-apiserver:v3.3.1</span><br><span class="line">kubesphere/ks-jenkins:v3.3.0-2.319.1</span><br><span class="line">kubesphere/s2ioperator:v3.2.1</span><br><span class="line">redis:6.2.6-alpine</span><br><span class="line">quay.io/argoproj/argocd:v2.3.3</span><br><span class="line">quay.io/argoproj/argocd-applicationset:v0.4.1</span><br><span class="line">ghcr.io/dexidp/dex:v2.30.2</span><br><span class="line">kubesphere/builder-nodejs:v3.2.0-podman</span><br><span class="line">kubesphere/builder-maven:v3.2.0-podman</span><br><span class="line">jenkins/inbound-agent:4.10-2</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">harbor.dubhe:30002/library/alpine:3.14</span><br><span class="line">harbor.dubhe:30002/library/redis:5.0.14-alpine</span><br><span class="line">harbor.dubhe:30002/kubesphere/ks-console:v3.3.1</span><br><span class="line">harbor.dubhe:30002/kubesphere/ks-controller-manager:v3.3.1</span><br><span class="line">harbor.dubhe:30002/kubesphere/ks-installer:v3.3.1</span><br><span class="line">harbor.dubhe:30002/kubesphere/ks-apiserver:v3.3.1</span><br><span class="line">harbor.dubhe:30002/kubesphere/ks-upgrade:v3.3.1</span><br><span class="line">harbor.dubhe:30002/kubesphere/kube-state-metrics:v2.5.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/fluent-bit:v1.8.11</span><br><span class="line">harbor.dubhe:30002/kubesphere/prometheus-config-reloader:v0.55.1</span><br><span class="line">harbor.dubhe:30002/kubesphere/prometheus-operator:v0.55.1</span><br><span class="line">harbor.dubhe:30002/thanosio/thanos:v0.25.2</span><br><span class="line">harbor.dubhe:30002/prom/prometheus:v2.34.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/fluentbit-operator:v0.13.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kube-events-ruler:v0.4.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kube-events-operator:v0.4.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kube-events-exporter:v0.4.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/elasticsearch-oss:6.8.22</span><br><span class="line">harbor.dubhe:30002/grafana/grafana:8.3.3</span><br><span class="line">harbor.dubhe:30002/prom/node-exporter:v1.3.1</span><br><span class="line">harbor.dubhe:30002/library/haproxy:2.0.25-alpine</span><br><span class="line">harbor.dubhe:30002/kubesphere/nginx-ingress-controller:v1.1.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kubectl:v1.22.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kubectl:v1.21.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/notification-manager:v1.4.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/notification-tenant-sidecar:v3.2.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/notification-manager-operator:v1.4.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kubefed:v0.8.1</span><br><span class="line">harbor.dubhe:30002/prom/alertmanager:v0.23.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kube-auditing-operator:v0.2.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kube-auditing-webhook:v0.2.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kube-rbac-proxy:v0.11.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kubectl:v1.20.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/tower:v0.2.0</span><br><span class="line">harbor.dubhe:30002/library/docker:19.03</span><br><span class="line">harbor.dubhe:30002/kubesphere/metrics-server:v0.4.2</span><br><span class="line">harbor.dubhe:30002/jimmidyson/configmap-reload:v0.5.0</span><br><span class="line">harbor.dubhe:30002/csiplugin/snapshot-controller:v4.0.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/kube-rbac-proxy:v0.8.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/log-sidecar-injector:1.1</span><br><span class="line">harbor.dubhe:30002/osixia/openldap:1.3.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/elasticsearch-curator:v5.7.6</span><br><span class="line">harbor.dubhe:30002/minio/mc:RELEASE.2019-08-07T23-14-43Z</span><br><span class="line">harbor.dubhe:30002/minio/minio:RELEASE.2019-08-07T01-59-21Z</span><br><span class="line">harbor.dubhe:30002/elastic/filebeat:6.7.0</span><br><span class="line">harbor.dubhe:30002/kubesphere/netshoot:v1.0</span><br><span class="line">harbor.dubhe:30002/mirrorgooglecontainers/defaultbackend-amd64:1.4</span><br></pre></td></tr></table></figure>
-
-<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下载安装工具</span></span><br><span class="line">curl -L -O https://github.com/kubesphere/ks-installer/releases/download/v3.3.1/offline-installation-tool.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载部署脚本</span></span><br><span class="line">curl -L -O https://github.com/kubesphere/ks-installer/releases/download/v3.3.1/cluster-configuration.yaml</span><br><span class="line">curl -L -O https://github.com/kubesphere/ks-installer/releases/download/v3.3.1/kubesphere-installer.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改为本地仓库(可选项)</span></span><br><span class="line">vi cluster-configuration.yaml</span><br><span class="line">spec.local_registry: <span class="string">&quot;harbor.dubhe:30002&quot;</span></span><br><span class="line">sed -i <span class="string">&quot;s#^\s*image: kubesphere.*/ks-installer:.*#        image: harbor.dubhe:30002/kubesphere/ks-installer:v3.0.0#&quot;</span> kubesphere-installer.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开始安装</span></span><br><span class="line">kubectl apply -f kubesphere-installer.yaml</span><br><span class="line">kubectl apply -f cluster-configuration.yaml</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/TiDB%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202305/TiDB%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">KubeSphere离线部署</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-05-29 14:23:55" itemprop="dateCreated datePublished" datetime="2023-05-29T14:23:55+08:00">2023-05-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://docs.pingcap.com/zh/tidb-in-kubernetes/v1.5/prerequisites">https://docs.pingcap.com/zh/tidb-in-kubernetes/v1.5/prerequisites</a></p>
-<h2 id="镜像列表"><a href="#镜像列表" class="headerlink" title="镜像列表"></a>镜像列表</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">alpine:3.16.0</span><br><span class="line">bitnami/kubectl:latest</span><br><span class="line">busybox:1.26.2</span><br><span class="line">grafana/grafana:6.0.1</span><br><span class="line">grafana/grafana:7.5.7</span><br><span class="line">k8s.gcr.io/kube-scheduler:v1.24.13</span><br><span class="line">pingcap/advanced-statefulset:v0.3.3</span><br><span class="line">pingcap/advanced-statefulset:v0.4.0</span><br><span class="line">pingcap/ng-monitoring:v6.5.0</span><br><span class="line">pingcap/pd:v6.5.0</span><br><span class="line">pingcap/ticdc:v6.5.0</span><br><span class="line">pingcap/tidb-backup-manager:v1.5.0-beta.1</span><br><span class="line">pingcap/tidb-binlog:v6.5.0</span><br><span class="line">pingcap/tidb-dashboard:v6.5.0</span><br><span class="line">pingcap/tidb-monitor-initializer:v6.5.0</span><br><span class="line">pingcap/tidb-monitor-reloader:v1.0.1</span><br><span class="line">pingcap/tidb-operator:v1.5.0-beta.1</span><br><span class="line">pingcap/tidb:v6.5.0</span><br><span class="line">pingcap/tiflash:v6.5.0</span><br><span class="line">pingcap/tikv:v6.5.0</span><br><span class="line">prom/prometheus:v2.18.1</span><br><span class="line">quay.io/prometheus-operator/prometheus-config-reloader:v0.49.0</span><br><span class="line">tnir/mysqlclient:latest</span><br></pre></td></tr></table></figure>
-
-<p>注意手工处理一下kube-scheduler镜像，将其移动到默认库中。并同时修改TidbOperator的values.yaml:  </p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nerdctl tag harbor.dubhe:30002/k8s.gcr.io/kube-scheduler:v1.24.13 harbor.dubhe:30002/library/kube-scheduler:v1.24.13</span><br><span class="line">nerdctl push harbor.dubhe:30002/library/kube-scheduler:v1.24.13</span><br></pre></td></tr></table></figure>
-
-<h2 id="使用Helm安装tidb-operator"><a href="#使用Helm安装tidb-operator" class="headerlink" title="使用Helm安装tidb-operator"></a>使用Helm安装tidb-operator</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wget http://charts.pingcap.org/tidb-operator-v1.5.0-beta.1.tgz <span class="comment"># 下载HelmRepo</span></span><br><span class="line">tar -zxvf tidb-operator-v1.5.0-beta.1.tgz</span><br><span class="line"></span><br><span class="line">helm install tidb-operator ./tidb-operator --namespace=tidb-admin --create-namespace</span><br></pre></td></tr></table></figure>
-
-<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><p>yaml示例:<br><a target="_blank" rel="noopener" href="https://github.com/pingcap/tidb-operator/blob/master/examples/advanced/tidb-cluster.yaml">https://github.com/pingcap/tidb-operator/blob/master/examples/advanced/tidb-cluster.yaml</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建CRD</span></span><br><span class="line">kubectl create -f ./crd.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改tidb-cluster.yaml</span></span><br><span class="line">name: tidb-dubhe</span><br><span class="line">namespace: default  <span class="comment"># 注释掉</span></span><br><span class="line">requests:  <span class="comment"># 限制CPU/MEM，可选</span></span><br><span class="line">storageClassName:  <span class="comment"># 可以默认不填或写成&quot;local-path&quot;</span></span><br><span class="line">externalTrafficPolicy: <span class="comment"># Local改为Cluster，可选</span></span><br><span class="line">mysqlNodePort: 30550 <span class="comment"># 取消注释</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 部署tidb</span></span><br><span class="line">kubectl create namespace tidb</span><br><span class="line">kubectl apply -f tidb-cluster.yaml -n tidb</span><br></pre></td></tr></table></figure>
-
-<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>yaml示例:<br><a target="_blank" rel="noopener" href="https://github.com/pingcap/tidb-operator/blob/master/manifests/initializer/tidb-initializer.yaml">https://github.com/pingcap/tidb-operator/blob/master/manifests/initializer/tidb-initializer.yaml</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修改tidb-initializer.yaml</span></span><br><span class="line">apiVersion: pingcap.com/v1alpha1</span><br><span class="line">kind: TidbInitializer</span><br><span class="line">metadata:</span><br><span class="line">  name: tidb-dubhe-init</span><br><span class="line">  <span class="comment"># namespace: demo</span></span><br><span class="line">spec:</span><br><span class="line">  image: tnir/mysqlclient</span><br><span class="line">  cluster:</span><br><span class="line">    <span class="comment"># namespace: demo</span></span><br><span class="line">    name: tidb-dubhe</span><br><span class="line">  initSql: |-</span><br><span class="line">    create database app;</span><br><span class="line">  passwordSecret: tidb-secret</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建secret</span></span><br><span class="line">kubectl create secret generic tidb-secret --from-literal=root=yourpass --namespace=tidb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化tidb</span></span><br><span class="line">kubectl apply -f tidb-initializer.yaml -n tidb</span><br><span class="line"></span><br><span class="line"><span class="comment"># 访问tidb</span></span><br><span class="line">kubectl get svc -n tidb</span><br><span class="line">mysql://10.193.35.11:300550</span><br><span class="line">root/yourpass</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="安装monitoring"><a href="#安装monitoring" class="headerlink" title="安装monitoring"></a>安装monitoring</h2><p>yaml示例:  </p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/pingcap/tidb-operator/blob/master/manifests/monitor/tidb-monitor.yaml">https://github.com/pingcap/tidb-operator/blob/master/manifests/monitor/tidb-monitor.yaml</a></li>
-<li><a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/pingcap/tidb-operator/master/examples/basic/tidb-monitor.yaml">https://raw.githubusercontent.com/pingcap/tidb-operator/master/examples/basic/tidb-monitor.yaml</a></li>
-</ul>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f tidb-monitor.yaml -n tidb</span><br><span class="line"></span><br><span class="line"><span class="comment"># Console</span></span><br><span class="line">http://10.193.35.11:30552</span><br></pre></td></tr></table></figure>
-
-<h2 id="安装dashboard"><a href="#安装dashboard" class="headerlink" title="安装dashboard"></a>安装dashboard</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kubectl apply -f tidb-dashboard.yaml -n tidb</span><br><span class="line">kubectl apply -f tidb-ng-monitoring.yaml -n tidb</span><br><span class="line"></span><br><span class="line"><span class="comment"># Console</span></span><br><span class="line">http://10.193.35.11:30551/dashboard</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/DockEmon%E9%95%9C%E5%83%8F%E5%B7%A5%E5%85%B7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202305/DockEmon%E9%95%9C%E5%83%8F%E5%B7%A5%E5%85%B7/" class="post-title-link" itemprop="url">DOCKEMON镜像工具</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-05-29 14:17:55" itemprop="dateCreated datePublished" datetime="2023-05-29T14:17:55+08:00">2023-05-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p><strong>DOCKEMON</strong>是一个Docker镜像工具包，用于简化离线K8S环境下的镜像的拉取、打标、推送、导出导入等批量操作</p>
-<p>同时支持<strong>一键安装Chart</strong>、<strong>一键推送镜像</strong>等快捷操作</p>
-<h2 id="GitHub下载地址"><a href="#GitHub下载地址" class="headerlink" title="GitHub下载地址"></a>GitHub下载地址</h2><p><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/dockemon">https://github.com/xiiiblue/dockemon</a></p>
-<h2 id="系统要求"><a href="#系统要求" class="headerlink" title="系统要求"></a>系统要求</h2><ul>
-<li>推荐macOS、Linux下的bash或zsh环境，Windows下的mobaXterm未经测试</li>
-<li>涉及镜像相关操作，需要安装DockerDesktop或Nerdctl</li>
-<li>涉及Chart相关操作，需要安装Helm</li>
-</ul>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>将<code>dockemon-installer.sh</code>安装脚本下载到本机或服务器，并执行: </p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> +x dockemon-installer.sh &amp; ./dockemon-installer.sh</span><br></pre></td></tr></table></figure>
-<p>安装完成后，在任意路径下执行 <code>dockemon</code> 即可启动程序</p>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><ol>
-<li>执行<code>dockemon help</code>查看帮助信息</li>
-<li>执行<code>dockemon conf</code>配置Harbor地址等常用参数(可选)</li>
-<li>执行<code>dockemon edit</code>配置要处理的镜像清单，<code>dockemon show</code>查看清单(可选)</li>
-</ol>
-<h2 id="常用功能"><a href="#常用功能" class="headerlink" title="常用功能"></a>常用功能</h2><h3 id="一键安装Chart"><a href="#一键安装Chart" class="headerlink" title="一键安装Chart"></a>一键安装Chart</h3><p>一键安装Chart。包含: 下载Chart-&gt;分析镜像清单-&gt;拉取镜像-&gt;打标-&gt;建仓库-&gt;推送镜像</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dockemon chart [仓库名称] [Chart名称] [版本号]  </span><br></pre></td></tr></table></figure>
-
-<p>示例:   </p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dockemon chart bitnami redis 17.10.3</span><br></pre></td></tr></table></figure>
-
-<h3 id="一键推送镜像"><a href="#一键推送镜像" class="headerlink" title="一键推送镜像"></a>一键推送镜像</h3><p>一键推送镜像。包含: 拉取镜像-&gt;打标-&gt;建仓库-&gt;推送镜像。如果不传入镜像名，则批量处理镜像清单</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dockemon image [镜像名]</span><br></pre></td></tr></table></figure>
-
-<p>示例:   </p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dockemon image nginx:alpine</span><br></pre></td></tr></table></figure>
-<h3 id="其它批量操作"><a href="#其它批量操作" class="headerlink" title="其它批量操作"></a>其它批量操作</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">dockemon pull  <span class="comment"># 拉取镜像</span></span><br><span class="line">dockemon tag   <span class="comment"># 打标签</span></span><br><span class="line">dockemon tag_group [仓库名]  <span class="comment"># 打标签归到同一个仓库，必须传入一个仓库名</span></span><br><span class="line">dockemon push  <span class="comment"># 推送镜像</span></span><br><span class="line">dockemon save  <span class="comment"># 导出镜像</span></span><br><span class="line">dockemon load  <span class="comment"># 导入镜像</span></span><br><span class="line">dockemon login <span class="comment"># 登录HARBOR</span></span><br><span class="line">dockemon repo  <span class="comment"># 创建HARBOR仓库</span></span><br><span class="line">dockemon values <span class="comment"># 分析helm配置文件并生成镜像清单</span></span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><ol>
-<li><p>Helm操作在本机联网环境下远程执行，请确保<code>～/.kube/config</code>配置正确，<code>kubectl get nodes</code>能连接到集群</p>
-</li>
-<li><p>安装Chart前需要先添加好仓库并更新，示例:</p>
-</li>
-</ol>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">helm repo add bitnami https://charts.bitnami.com/bitnami</span><br><span class="line">helm repo update</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><p>Harbor仓库如果使用域名连接，请先配置好<code>/etc/hosts</code>的指向</p>
-</li>
-<li><p>如果无法通过VPN连接到离线集群(例如隔着堡垒机)，则只能分步操作上传镜像，大体步骤为:</p>
-</li>
-</ol>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pull -&gt; tag -&gt; save -&gt; 手工上传 -&gt; load</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202304/Docker%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202304/Docker%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">Docker离线部署</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-05-29 14:15:33" itemprop="dateCreated datePublished" datetime="2023-05-29T14:15:33+08:00">2023-05-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="Docker二进制方式离线"><a href="#Docker二进制方式离线" class="headerlink" title="Docker二进制方式离线"></a>Docker二进制方式离线</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wget https://download.docker.com/linux/static/stable/x86_64/docker-23.0.4.tgz</span><br><span class="line">tar -zxvf docker-23.0.4.tgz</span><br><span class="line"><span class="built_in">cp</span> docker/* /usr/bin/</span><br><span class="line">dockerd &amp;</span><br></pre></td></tr></table></figure>
-
-<h1 id="DockerUbuntu下在线安装"><a href="#DockerUbuntu下在线安装" class="headerlink" title="DockerUbuntu下在线安装"></a>DockerUbuntu下在线安装</h1><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt install -y docker.io</span><br><span class="line"><span class="built_in">sudo</span> gpasswd -a <span class="variable">$USER</span> docker</span><br><span class="line">newgrp docker</span><br><span class="line">docker version</span><br><span class="line">docker info</span><br></pre></td></tr></table></figure>
-
-<h2 id="DockerCompose离线安装"><a href="#DockerCompose离线安装" class="headerlink" title="DockerCompose离线安装"></a>DockerCompose离线安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下载</span></span><br><span class="line">wget https://github.com/docker/compose/releases/download/v2.17.3/docker-compose-linux-x86_64</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> docker-compose-linux-x86_64 /usr/local/bin/docker-compose</span><br><span class="line"><span class="built_in">chmod</span> +x /usr/local/bin/docker-compose</span><br></pre></td></tr></table></figure>
-
-
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202304/Containerd%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202304/Containerd%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Containerd常用操作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-05-29 14:05:01" itemprop="dateCreated datePublished" datetime="2023-05-29T14:05:01+08:00">2023-05-29</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://os.51cto.com/article/705519.html">https://os.51cto.com/article/705519.html</a> 如何在命令行下优雅地管理 Containerd</li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/338484552">https://zhuanlan.zhihu.com/p/338484552</a> Containerd 的前世今生和保姆级入门教程</li>
-<li><a target="_blank" rel="noopener" href="https://aijishu.com/a/1060000000083155">https://aijishu.com/a/1060000000083155</a>  如何优雅地使用containerd</li>
-<li><a target="_blank" rel="noopener" href="https://www.zhangbj.com/p/1095.html">https://www.zhangbj.com/p/1095.html</a>  k3s设置镜像</li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/0f7940258b7a">https://www.jianshu.com/p/0f7940258b7a</a> crictl 命令用法及与docker-cli的命令对比</li>
-<li><a target="_blank" rel="noopener" href="https://www.qikqiak.com/k8strain2/containerd/nerdctl/">https://www.qikqiak.com/k8strain2/containerd/nerdctl/</a> Containerd 高级命令行工具 nerdctl</li>
-</ul>
-<h2 id="docker下containerd配置信息"><a href="#docker下containerd配置信息" class="headerlink" title="docker下containerd配置信息"></a>docker下containerd配置信息</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># address</span></span><br><span class="line">/var/run/docker/containerd/containerd.sock</span><br><span class="line"><span class="comment"># namespace</span></span><br><span class="line">moby</span><br><span class="line"><span class="comment"># 手动配置路径</span></span><br><span class="line">/etc/docker</span><br><span class="line"><span class="comment"># 自动生成的配置路径</span></span><br><span class="line">/var/run/docker/containerd/containerd.toml</span><br><span class="line"><span class="comment"># ctr访问</span></span><br><span class="line">ctr --address /var/run/docker/containerd/containerd.sock --namespace moby c <span class="built_in">ls</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="k3s下containerd配置信息"><a href="#k3s下containerd配置信息" class="headerlink" title="k3s下containerd配置信息"></a>k3s下containerd配置信息</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># address</span></span><br><span class="line">/run/k3s/containerd/containerd.sock</span><br><span class="line"><span class="comment"># namespace</span></span><br><span class="line">k8s.io</span><br><span class="line"><span class="comment"># 手动配置路径</span></span><br><span class="line"><span class="built_in">cat</span> /etc/rancher/k3s/registries.yaml</span><br><span class="line"><span class="comment"># 自动生成配置路径</span></span><br><span class="line"><span class="built_in">cat</span> /var/lib/rancher/k3s/agent/etc/containerd/config.toml</span><br><span class="line"><span class="comment"># ctr访问</span></span><br><span class="line">ctr --address /run/k3s/containerd/containerd.sock --namespace k8s.io c <span class="built_in">ls</span></span><br></pre></td></tr></table></figure>
-
-<hr>
-<h2 id="ctr常用管理命令"><a href="#ctr常用管理命令" class="headerlink" title="ctr常用管理命令"></a>ctr常用管理命令</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># k3s下的alias配置</span></span><br><span class="line"><span class="built_in">alias</span> ctr=<span class="string">&quot;ctr --address /run/k3s/containerd/containerd.sock --namespace k8s.io&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看命名空间</span></span><br><span class="line">ctr ns <span class="built_in">ls</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看镜像</span></span><br><span class="line">ctr i <span class="built_in">ls</span></span><br><span class="line"><span class="comment"># 拉取镜像</span></span><br><span class="line">ctr i pull docker.io/library/nginx:1.21</span><br><span class="line"><span class="comment"># 导入镜像</span></span><br><span class="line">ctr i import image.tar</span><br><span class="line"><span class="comment"># 删除镜像</span></span><br><span class="line">ctr i remove docker.io/library/nginx:1.21</span><br><span class="line"></span><br><span class="line"><span class="comment"># 运行(本质上是容器创建+任务启动)</span></span><br><span class="line">ctr run --<span class="built_in">rm</span> -t docker.io/library/debian:latest cont1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建容器</span></span><br><span class="line">ctr c create -t docker.io/library/nginx:latest nginx_1</span><br><span class="line"><span class="comment"># 查看容器</span></span><br><span class="line">ctr c <span class="built_in">ls</span></span><br><span class="line"><span class="comment"># 创建任务</span></span><br><span class="line">ctr t start -d nginx_1</span><br><span class="line"><span class="comment"># 查看任务</span></span><br><span class="line">ctr t <span class="built_in">ls</span></span><br><span class="line"><span class="comment"># 在容器中执行一个任务</span></span><br><span class="line">ctr t <span class="built_in">exec</span> -t --exec-id bash_1 nginx_1 bash</span><br><span class="line"></span><br><span class="line"><span class="comment"># 停止任务</span></span><br><span class="line">ctr t <span class="built_in">kill</span> -9 nginx_1</span><br><span class="line">ctr t <span class="built_in">rm</span> -f nginx_1</span><br><span class="line"><span class="comment"># 删除容器</span></span><br><span class="line">ctr c <span class="built_in">rm</span> nginx_1</span><br></pre></td></tr></table></figure>
-
-
-<hr>
-<h2 id="crictl常用管理命令"><a href="#crictl常用管理命令" class="headerlink" title="crictl常用管理命令"></a>crictl常用管理命令</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看pod</span></span><br><span class="line">crictl pods</span><br><span class="line"><span class="comment"># 查看镜像</span></span><br><span class="line">crictl images</span><br><span class="line"><span class="comment"># 查看容器</span></span><br><span class="line">crictl ps -a</span><br><span class="line"><span class="comment"># 在容器中执行</span></span><br><span class="line">crictl <span class="built_in">exec</span> -it 21c8007a90eea <span class="built_in">ls</span></span><br><span class="line"><span class="comment"># 查看容器日志</span></span><br><span class="line">crictl logs -f 21c8007a90eea</span><br><span class="line"><span class="comment"># 拉取镜像</span></span><br><span class="line">crictl pull busybox</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h2 id="nerdctl常用管理命令"><a href="#nerdctl常用管理命令" class="headerlink" title="nerdctl常用管理命令"></a>nerdctl常用管理命令</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># k3s下alias配置</span></span><br><span class="line"><span class="built_in">alias</span> nerdctl=<span class="string">&#x27;nerdctl --host=/run/k3s/containerd/containerd.sock --namespace k8s.io --insecure-registry&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 基本兼容docker cmd，直接使用 nerdctl --help 查看帮助即可</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
-    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/28/">28</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/5/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" title="Previous page" aria-label="Previous page" href="/page/3/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/29/">29</a><a class="extend next" rel="next" title="Next page" aria-label="Next page" href="/page/5/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 </div>
