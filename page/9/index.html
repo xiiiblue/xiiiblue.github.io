@@ -132,9 +132,17 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">306</span>
+          <span class="site-state-item-count">307</span>
           <span class="site-state-item-name">posts</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
       </div>
   </nav>
 </div>
@@ -158,6 +166,74 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202301/%E6%96%87%E4%BB%B6%E6%89%93%E5%BC%80%E6%95%B0%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E6%AD%A5%E9%AA%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202301/%E6%96%87%E4%BB%B6%E6%89%93%E5%BC%80%E6%95%B0%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E6%AD%A5%E9%AA%A4/" class="post-title-link" itemprop="url">文件打开数问题排查步骤</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2023-03-24 09:54:49" itemprop="dateCreated datePublished" datetime="2023-03-24T09:54:49+08:00">2023-03-24</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看系统最大FD总和</span></span><br><span class="line"><span class="built_in">cat</span> /proc/sys/fs/file-max</span><br><span class="line">或 sysctl -a|grep fs.file-max</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置系统最大FD总和</span></span><br><span class="line">vi /etc/sysctl.conf</span><br><span class="line">fs.file-max=3244084</span><br><span class="line">sysctl -p</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看进程最大FD</span></span><br><span class="line"><span class="built_in">ulimit</span> -n</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置进程最大FD</span></span><br><span class="line">vim /etc/security/limits.conf</span><br><span class="line">* soft nofile 65535</span><br><span class="line">* hard nofile 65535</span><br><span class="line"></span><br><span class="line"><span class="comment"># 进程FD排行(此方式准确)</span></span><br><span class="line">find /proc -<span class="built_in">print</span> | grep -P <span class="string">&#x27;/proc/\d+/fd/&#x27;</span>| awk -F <span class="string">&#x27;/&#x27;</span> <span class="string">&#x27;&#123;print $3&#125;&#x27;</span> | <span class="built_in">uniq</span> -c | <span class="built_in">sort</span> -rn | <span class="built_in">head</span> -10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 进程FD排行(网上流传的此方式，在CentOS7.3之后多了一列线程ID，算成了笛卡尔积)</span></span><br><span class="line">lsof -n|awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>|<span class="built_in">sort</span>|<span class="built_in">uniq</span> -c|<span class="built_in">sort</span> -nr|<span class="built_in">head</span> -10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 进程内线程数排行</span></span><br><span class="line">ps -efT|grep java|awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>|<span class="built_in">sort</span>|<span class="built_in">uniq</span> -c|<span class="built_in">sort</span> -nr|<span class="built_in">head</span> -10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 进程TCP连接排行</span></span><br><span class="line">lsof -n -i tcp | awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>|<span class="built_in">sort</span>|<span class="built_in">uniq</span> -c|<span class="built_in">sort</span> -nr|<span class="built_in">head</span> -10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看指定进程的FD数</span></span><br><span class="line"><span class="built_in">ls</span> /proc/32484/fd -l | <span class="built_in">wc</span> -l </span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看指定进程的线程数</span></span><br><span class="line">ps huH p 25439 | <span class="built_in">wc</span> -l</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看系统所有TCP CLOSE-WAIT数</span></span><br><span class="line">ss -tan|grep CLOSE-WAIT|<span class="built_in">wc</span> -l</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -894,82 +970,6 @@
 
 
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202210/Docker%E7%89%88OpenVPN/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202210/Docker%E7%89%88OpenVPN/" class="post-title-link" itemprop="url">Docker版OpenVPN</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2022-11-02 17:24:31" itemprop="dateCreated datePublished" datetime="2022-11-02T17:24:31+08:00">2022-11-02</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="GitHub"><a href="#GitHub" class="headerlink" title="GitHub"></a>GitHub</h2><p><a target="_blank" rel="noopener" href="https://github.com/curve25519xsalsa20poly1305/docker-openvpn-socks5">https://github.com/curve25519xsalsa20poly1305/docker-openvpn-socks5</a></p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://zzz.buzz/zh/2018/03/07/windows-openvpn-logs-algorithm-too-weak-solution/">https://zzz.buzz/zh/2018/03/07/windows-openvpn-logs-algorithm-too-weak-solution/</a></p>
-<h2 id="启动脚本"><a href="#启动脚本" class="headerlink" title="启动脚本"></a>启动脚本</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">docker run  -itd --name ov_publish \</span><br><span class="line">--device=/dev/net/tun --cap-add=NET_ADMIN \</span><br><span class="line">-v /opt/openvpn/publish:/vpn:ro \</span><br><span class="line">-e OPENVPN_CONFIG=/vpn/vpn.ovpn \</span><br><span class="line">-p 7031:1080 \</span><br><span class="line">curve25519xsalsa20poly1305/openvpn-socks5</span><br></pre></td></tr></table></figure>
-
-<h2 id="ovpn配置文件调整"><a href="#ovpn配置文件调整" class="headerlink" title="ovpn配置文件调整"></a>ovpn配置文件调整</h2><p>vpn.ovpn</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 继续接受弱算法保护的证书</span><br><span class="line">tls-cipher &quot;DEFAULT:@SECLEVEL=0&quot;</span><br><span class="line"># 配置用户名密码文件</span><br><span class="line">auth-user-pass login.conf</span><br></pre></td></tr></table></figure>
-
-<p>login.conf</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yourname</span><br><span class="line">yourpass</span><br></pre></td></tr></table></figure>
       
     </div>
 

@@ -132,9 +132,17 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">306</span>
+          <span class="site-state-item-count">307</span>
           <span class="site-state-item-name">posts</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
       </div>
   </nav>
 </div>
@@ -158,6 +166,188 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/" class="post-title-link" itemprop="url">BM1684X上将YOLOv8量化为INT8BModel</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-04-15 00:00:00" itemprop="dateCreated datePublished" datetime="2026-04-15T00:00:00+08:00">2026-04-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>为了把YOLOv8部署到BM1684X，这次使用TPU-MLIR完成了从ONNX到BModel的转换。F16模型可以直接编译，INT8则要多做一次校准；全INT8精度不理想时，再用qtable把敏感层保留为浮点计算。</p>
+<p>这次只转换了少量模型，目标是跑通工具链并比较F16和INT8，没有覆盖其他检测、跟踪和人脸模型。TPU-MLIR版本当时没有记录，命令中的参数应以所用SDK附带的文档为准。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/sophgo/tpu-mlir">TPU-MLIR项目与视觉模型转换示例</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sophgo/tpu-mlir/blob/master/docs/quick_start/source_zh/07_quantization.rst">TPU-MLIR量化与混合精度说明</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sophgo/sophon-demo/blob/release/sample/YOLOv8_plus_det/docs/YOLOv8_Export_Guide.md">SOPHGO YOLOv8导出说明</a></li>
+</ul>
+<h2 id="从ONNX生成MLIR"><a href="#从ONNX生成MLIR" class="headerlink" title="从ONNX生成MLIR"></a>从ONNX生成MLIR</h2><p>先准备固定输入尺寸的ONNX模型、一张测试图片和校准图片目录，工作目录使用以下名称：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">workspace/</span><br><span class="line">├── detector.onnx</span><br><span class="line">├── image/</span><br><span class="line">│   └── sample.jpg</span><br><span class="line">└── calibration/</span><br><span class="line">    ├── 0001.jpg</span><br><span class="line">    └── ...</span><br></pre></td></tr></table></figure>
+
+<p>转换时把YOLOv8的<code>0~255</code>RGB输入缩放到<code>0~1</code>，并生成后续比对需要的测试结果：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">model_transform.py \</span><br><span class="line">  --model_name detector \</span><br><span class="line">  --model_def detector.onnx \</span><br><span class="line">  --input_shapes <span class="string">&#x27;[[1,3,640,640]]&#x27;</span> \</span><br><span class="line">  --mean 0.0,0.0,0.0 \</span><br><span class="line">  --scale 0.0039216,0.0039216,0.0039216 \</span><br><span class="line">  --keep_aspect_ratio \</span><br><span class="line">  --pixel_format rgb \</span><br><span class="line">  --test_input image/sample.jpg \</span><br><span class="line">  --test_result detector_top_outputs.npz \</span><br><span class="line">  --mlir detector.mlir</span><br></pre></td></tr></table></figure>
+
+<p>这里的预处理必须和训练、ONNX推理及最终应用保持一致。<code>--keep_aspect_ratio</code>会在缩放时保留宽高比并补边；如果原来的推理代码采用直接拉伸，这个参数也要随之调整，不能只照搬示例。</p>
+<p>命令还会生成<code>detector_in_f32.npz</code>，它是同一张测试图片经过预处理后的输入，后面的F16和INT8编译都用它做数值比对。</p>
+<h2 id="先生成F16基线"><a href="#先生成F16基线" class="headerlink" title="先生成F16基线"></a>先生成F16基线</h2><p>F16不需要校准表，可以直接从MLIR生成BM1684X使用的BModel：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">model_deploy.py \</span><br><span class="line">  --mlir detector.mlir \</span><br><span class="line">  --quantize F16 \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --test_input detector_in_f32.npz \</span><br><span class="line">  --test_reference detector_top_outputs.npz \</span><br><span class="line">  --model detector_1684x_f16.bmodel</span><br></pre></td></tr></table></figure>
+
+<p>先保留F16结果很有必要。它既是部署候选，也能把“模型转换本身的问题”和“INT8量化带来的误差”分开。</p>
+<p>可以用<code>model_runner.py</code>检查BModel输出：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">model_runner.py \</span><br><span class="line">  --input detector_in_f32.npz \</span><br><span class="line">  --model detector_1684x_f16.bmodel \</span><br><span class="line">  --output detector_f16_outputs.npz</span><br></pre></td></tr></table></figure>
+
+<p><code>model_deploy.py</code>的相似度检查和输出张量统计只能发现明显的数值异常，不能代替完整数据集上的mAP、Precision和Recall评估。</p>
+<h2 id="生成校准表和INT8模型"><a href="#生成校准表和INT8模型" class="headerlink" title="生成校准表和INT8模型"></a>生成校准表和INT8模型</h2><p>这次探索使用了100张校准图片：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">run_calibration.py detector.mlir \</span><br><span class="line">  --dataset calibration \</span><br><span class="line">  --input_num 100 \</span><br><span class="line">  -o detector_cali_table</span><br></pre></td></tr></table></figure>
+
+<p>校准图片应来自实际输入分布。100张只是这次跑通流程时的取值，不是固定标准；TPU-MLIR当前文档给出的常见范围是100至1000张，正式模型仍要根据数据复杂度和精度结果调整。</p>
+<p>使用校准表生成全INT8对称量化模型：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">model_deploy.py \</span><br><span class="line">  --mlir detector.mlir \</span><br><span class="line">  --quantize INT8 \</span><br><span class="line">  --calibration_table detector_cali_table \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --test_input detector_in_f32.npz \</span><br><span class="line">  --test_reference detector_top_outputs.npz \</span><br><span class="line">  --tolerance 0.85,0.45 \</span><br><span class="line">  --model detector_1684x_int8.bmodel</span><br></pre></td></tr></table></figure>
+
+<p><code>--tolerance</code>控制转换过程中的相似度检查门限，不代表最终检测精度。模型成功生成之后，仍要使用带标签的数据集进行评估。</p>
+<h2 id="全INT8不够时使用混合精度"><a href="#全INT8不够时使用混合精度" class="headerlink" title="全INT8不够时使用混合精度"></a>全INT8不够时使用混合精度</h2><p>TPU-MLIR用qtable记录哪些算子保留为F32、F16或BF16。当前版本能够为YOLO结构自动识别部分不适合INT8的后处理算子，也可以通过<code>search_qtable</code>继续搜索敏感层。</p>
+<p>搜索命令同时指定校准表和qtable的输出名称，避免后续部署时串错文件：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">run_calibration.py detector.mlir \</span><br><span class="line">  --dataset calibration \</span><br><span class="line">  --input_num 100 \</span><br><span class="line">  --inference_num 10 \</span><br><span class="line">  --search search_qtable \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --quantize_table detector_qtable \</span><br><span class="line">  --calibration_table detector_search_cali_table</span><br></pre></td></tr></table></figure>
+
+<p>不同TPU-MLIR版本对搜索后更新校准表的文件名处理并不完全一致。有的版本会另外生成<code>new_cali_table.txt</code>，因此下一步不能凭文件名猜测：先查看搜索日志，确认最终qtable和更新后校准表的实际路径，再传给<code>model_deploy.py</code>。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">SEARCH_CALI_TABLE=new_cali_table.txt</span><br><span class="line"></span><br><span class="line">model_deploy.py \</span><br><span class="line">  --mlir detector.mlir \</span><br><span class="line">  --quantize INT8 \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --calibration_table <span class="string">&quot;<span class="variable">$SEARCH_CALI_TABLE</span>&quot;</span> \</span><br><span class="line">  --quantize_table detector_qtable \</span><br><span class="line">  --test_input detector_in_f32.npz \</span><br><span class="line">  --test_reference detector_top_outputs.npz \</span><br><span class="line">  --tolerance 0.85,0.45 \</span><br><span class="line">  --model detector_1684x_mix.bmodel</span><br></pre></td></tr></table></figure>
+
+<p>部署阶段如果引用了另一个临时qtable文件，命令仍可能成功，却不能证明模型使用的是刚完成搜索的配置。这里最好统一命名，并在编译前查看两个表的路径和内容。</p>
+<h2 id="这次的精度和耗时"><a href="#这次的精度和耗时" class="headerlink" title="这次的精度和耗时"></a>这次的精度和耗时</h2><p>同一检测模型的测试结果如下。数据集规模、TPU-MLIR版本和板卡运行状态没有完整记录，所以只比较这组测试内部的相对变化。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th align="right"><a href="mailto:&#x6d;&#65;&#80;&#64;&#48;&#x2e;&#x35;">mAP@0.5</a></th>
+<th align="right"><a href="mailto:&#109;&#x41;&#80;&#64;&#x30;&#46;&#x35;">mAP@0.5</a>:0.95</th>
+<th align="right">Precision</th>
+<th align="right">Recall</th>
+<th align="right">F1</th>
+<th align="right">推理(ms)</th>
+<th align="right">换算FPS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BModel FP32</td>
+<td align="right">0.9439</td>
+<td align="right">0.6620</td>
+<td align="right">0.9043</td>
+<td align="right">0.9699</td>
+<td align="right">0.9359</td>
+<td align="right">38.0</td>
+<td align="right">26.4</td>
+</tr>
+<tr>
+<td>BModel F16</td>
+<td align="right">0.9440</td>
+<td align="right">0.6620</td>
+<td align="right">0.9037</td>
+<td align="right">0.9699</td>
+<td align="right">0.9356</td>
+<td align="right">14.1</td>
+<td align="right">71.1</td>
+</tr>
+<tr>
+<td>BModel INT8方案A</td>
+<td align="right">0.9156</td>
+<td align="right">0.6128</td>
+<td align="right">0.8864</td>
+<td align="right">0.9706</td>
+<td align="right">0.9266</td>
+<td align="right">11.6</td>
+<td align="right">86.5</td>
+</tr>
+<tr>
+<td>BModel INT8方案B</td>
+<td align="right">0.9242</td>
+<td align="right">0.6250</td>
+<td align="right">0.9008</td>
+<td align="right">0.9671</td>
+<td align="right">0.9328</td>
+<td align="right">11.5</td>
+<td align="right">86.7</td>
+</tr>
+<tr>
+<td>BModel INT8自动pattern</td>
+<td align="right">0.9242</td>
+<td align="right">0.6250</td>
+<td align="right">0.9008</td>
+<td align="right">0.9671</td>
+<td align="right">0.9328</td>
+<td align="right">11.6</td>
+<td align="right">86.6</td>
+</tr>
+</tbody></table>
+<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的<a href="mailto:&#x6d;&#65;&#80;&#64;&#48;&#46;&#x35;">mAP@0.5</a>为0.9242，比F16低0.0198；F1只低0.0028。</p>
+<p>方案A和方案B对应两次混精度调整，但当时没有把具体qtable差异记录下来，无法从结果反推出是哪几层带来了改善。自动pattern与方案B得到相同精度，说明在这个模型上没有必要仅为了“手工调过”而保留更复杂的配置。</p>
+<p>现有结果足以支持继续使用F16，并把INT8作为有条件的优化选项。真正上线INT8之前，还需要在目标板卡上用真实图片复查预处理、后处理和检测结果；这部分当时没有完成，不能把转换成功直接当成部署验证通过。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -203,7 +393,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:28:12" itemprop="dateModified" datetime="2026-08-22T20:28:12+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -216,7 +406,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>同一个YOLOv8检测模型导出为ONNX和TensorRTEngine后，我在RTX 2080 Ti上比较了FP32、FP16和INT8。结果基本确认了TensorRT的速度优势，但也暴露出两个不能忽略的问题：INT8Engine的精度损失较大，ONNX INT8在两套测试中的耗时相差悬殊。</p>
+          <p>同一个YOLOv8检测模型导出为ONNX和TensorRTEngine后，在RTX 2080 Ti上比较了FP32、FP16和INT8。结果基本确认了TensorRT的速度优势，但也暴露出两个不能忽略的问题：INT8Engine的精度损失较大，ONNX INT8在两套测试中的耗时相差悬殊。</p>
 <p>这组数据只适用于当时的模型和环境。测试使用CUDA11.8、cuDNN8.9.7和ONNXRuntimeGPU1.16.3，TensorRT版本、输入尺寸和完整硬件状态没有记录，因此不适合拿这些数字预测其他机器的性能。</p>
 <h2 id="单图推理耗时"><a href="#单图推理耗时" class="headerlink" title="单图推理耗时"></a>单图推理耗时</h2><p>性能脚本对同一张图片预热10轮，再执行100轮。表中的FPS是按平均推理耗时换算的数值，不是包含图片读取、预处理和后处理的端到端吞吐量。</p>
 <table>
@@ -293,8 +483,8 @@
 <thead>
 <tr>
 <th>模型</th>
-<th align="right"><a href="mailto:&#x6d;&#65;&#80;&#x40;&#x30;&#46;&#x35;">mAP@0.5</a></th>
-<th align="right"><a href="mailto:&#x6d;&#x41;&#80;&#64;&#x30;&#46;&#53;">mAP@0.5</a>:0.95</th>
+<th align="right"><a href="mailto:&#x6d;&#x41;&#x50;&#64;&#48;&#46;&#x35;">mAP@0.5</a></th>
+<th align="right"><a href="mailto:&#x6d;&#x41;&#x50;&#64;&#48;&#x2e;&#x35;">mAP@0.5</a>:0.95</th>
 <th align="right">Precision</th>
 <th align="right">Recall</th>
 <th align="right">F1</th>
@@ -374,7 +564,7 @@
 </tr>
 </tbody></table>
 <p>FP32和FP16的精度几乎没有变化，TensorRTEngine的耗时更低。其中FP16Engine相对PyTorch基线降低了41.2%的推理耗时，mAP和F1仍在同一水平，是这组模型里更稳妥的部署选择。</p>
-<p>INT8Engine虽然最快，但代价很明显。它的<a href="mailto:&#109;&#65;&#80;&#x40;&#48;&#x2e;&#53;">mAP@0.5</a>比PyTorch基线低0.1590，Recall低0.1611；Precision升至0.9782，并不能说明模型整体更准，而是漏检增加后留下的预测更保守。对检测任务来说，这种变化不能只靠更高的FPS抵消。</p>
+<p>INT8Engine虽然最快，但代价很明显。它的<a href="mailto:&#x6d;&#65;&#x50;&#x40;&#48;&#46;&#x35;">mAP@0.5</a>比PyTorch基线低0.1590，Recall低0.1611；Precision升至0.9782，并不能说明模型整体更准，而是漏检增加后留下的预测更保守。对检测任务来说，这种变化不能只靠更高的FPS抵消。</p>
 <h2 id="ONNX-INT8结果不能直接采用"><a href="#ONNX-INT8结果不能直接采用" class="headerlink" title="ONNX INT8结果不能直接采用"></a>ONNX INT8结果不能直接采用</h2><p>ONNX INT8在单图测试中的平均耗时是13.33ms，在完整数据集测试中却变成91.4ms，同时精度也远低于其他格式。两次测试不是同一测量路径，差异已经大到不能当作普通波动处理。</p>
 <p>重新导出后数据仍然异常，但当时没有继续定位到具体原因。因此这项结果只能标记为异常，不能据此得出“ONNX INT8天然更慢”或“ONNXRuntime不适合INT8”的结论。继续排查时至少需要固定以下条件：</p>
 <ul>
@@ -384,7 +574,7 @@
 <li>保存量化方式、校准集、算子类型以及导出日志；</li>
 <li>在同一数据集上重复测试，并同时观察GPU利用率和显存占用。</li>
 </ul>
-<p>基于现有数据，我会优先使用FP16Engine。INT8Engine只有在重新校准并确认Recall下降可以接受后才值得采用，ONNX INT8则需要先把精度和耗时异常查清楚。</p>
+<p>基于现有数据，FP16Engine应作为优先选择。INT8Engine只有在重新校准并确认Recall下降可以接受后才值得采用，ONNX INT8则需要先把精度和耗时异常查清楚。</p>
 
       
     </div>
@@ -447,7 +637,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:25:01" itemprop="dateModified" datetime="2026-08-22T20:25:01+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -465,7 +655,7 @@
 <h2 id="先确认是不是同一个问题"><a href="#先确认是不是同一个问题" class="headerlink" title="先确认是不是同一个问题"></a>先确认是不是同一个问题</h2><p>Dify公开过不止一处SSRF风险，远程文件上传、自定义工具测试和文档解析属于不同入口。只看到“Dify存在SSRF”就套用某个CVE编号，很容易把受影响版本和修复结论写错。</p>
 <p>这次需要确认的是<code>/console/api/remote-files/upload</code>。Dify后来发布的<a target="_blank" rel="noopener" href="https://github.com/langgenius/dify/security/advisories/GHSA-8235-vv5j-mmvg">GHSA-8235-vv5j-mmvg</a>专门描述了这个接口：未登录的请求可以触发服务端获取远程资源，影响范围是<code>&lt; 1.13.0</code>，修复版本为1.13.0。公告没有为它分配CVE编号，不必强行和其他SSRF记录对应。</p>
 <p>官方公告发布前，公开漏洞库中已经出现过指向远程文件上传控制器的<a target="_blank" rel="noopener" href="https://nvd.nist.gov/vuln/detail/CVE-2025-29720">CVE-2025-29720</a>，但该记录没有给出可靠的修复版本。判断当前部署是否需要处理时，以Dify维护者后来公布的公告和修复提交为准更稳妥。</p>
-<h2 id="先缩小暴露面"><a href="#先缩小暴露面" class="headerlink" title="先缩小暴露面"></a>先缩小暴露面</h2><p>发现风险后，我先取消了公网NAT映射。这一步不能消除漏洞，但能立即切断原来的公网入口，适合在补丁窗口到来前降低风险。</p>
+<h2 id="先缩小暴露面"><a href="#先缩小暴露面" class="headerlink" title="先缩小暴露面"></a>先缩小暴露面</h2><p>发现风险后，先取消了公网NAT映射。这一步不能消除漏洞，但能立即切断原来的公网入口，适合在补丁窗口到来前降低风险。</p>
 <p>如果服务不能完全下线，至少应把Dify入口收回到可信网络，或在反向代理、VPN和访问控制层限制来源。不要只隐藏前端页面：风险点在API，请求是否能直接到达后端才是检查重点。</p>
 <p>可以先从主机监听端口和容器映射开始检查：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ss -lntp</span><br><span class="line">docker compose ps</span><br></pre></td></tr></table></figure>
@@ -553,7 +743,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 21:12:04" itemprop="dateModified" datetime="2026-08-22T21:12:04+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -566,7 +756,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>OctoPrint已经可以远程控制3D打印机，但手头的网络摄像头只提供RTSP。浏览器不能直接播放RTSP，OctoPrint的Classic Webcam兼容层需要MJPEG流和一张可以单独请求的快照，于是我在两者之间增加了Restreamer。</p>
+          <p>OctoPrint已经可以远程控制3D打印机，但手头的网络摄像头只提供RTSP。浏览器不能直接播放RTSP，OctoPrint的Classic Webcam兼容层需要MJPEG流和一张可以单独请求的快照，于是在两者之间增加了Restreamer。</p>
 <p>数据链路很简单：摄像头通过RTSP把视频交给Restreamer，Restreamer再向OctoPrint提供浏览器能够访问的流和快照。打印机串口仍然由OctoPrint直接管理，视频转码服务不接触打印控制。</p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://github.com/OctoPrint/octoprint-docker">OctoPrint Docker镜像</a></li>
@@ -587,9 +777,9 @@
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p config data</span><br><span class="line">docker compose up -d</span><br><span class="line">docker compose logs -f restreamer</span><br></pre></td></tr></table></figure>
 
 <p>容器运行后打开<code>http://&lt;Restreamer主机&gt;:8080/ui</code>，设置独立的管理密码，再通过向导添加网络视频源。RTSP地址和摄像头凭据直接填入Restreamer，不写进Compose文件或OctoPrint配置。</p>
-<p>网络RTSP输入不需要访问宿主机摄像头设备，因此也不需要<code>--privileged</code>。我最初在LXC中遇到过AppArmor与runc权限错误，但把LXC改成<code>unconfined</code>、屏蔽AppArmor状态或给容器放开seccomp都会扩大权限，不适合作为通用解决办法。无法在受限LXC中正常运行时，换成具备标准Docker能力的虚拟机或主机更省事。</p>
+<p>网络RTSP输入不需要访问宿主机摄像头设备，因此也不需要<code>--privileged</code>。早期在LXC中出现过AppArmor与runc权限错误，但把LXC改成<code>unconfined</code>、屏蔽AppArmor状态或给容器放开seccomp都会扩大权限，不适合作为通用解决办法。无法在受限LXC中正常运行时，换成具备标准Docker能力的虚拟机或主机更省事。</p>
 <h2 id="找到MJPEG流和快照"><a href="#找到MJPEG流和快照" class="headerlink" title="找到MJPEG流和快照"></a>找到MJPEG流和快照</h2><p>Restreamer界面可以复制HLS与Snapshot地址。Snapshot可以直接交给OctoPrint；HLS地址通常以<code>.m3u8</code>结尾，不能直接填进Classic Webcam的Stream URL，因为OctoPrint兼容层要求MJPEG。</p>
-<p>我使用的Restreamer版本还提供了这个MJPEG地址：</p>
+<p>当时使用的Restreamer版本还提供了这个MJPEG地址：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.0.2.10:8080/stream.mjpg?type=mjpeg</span><br></pre></td></tr></table></figure>
 
 <p>这个路径没有出现在当前Restreamer文档中，升级后不能默认它仍然存在。填写OctoPrint之前，先检查响应类型：</p>
@@ -792,7 +982,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 22:10:00" itemprop="dateModified" datetime="2026-08-22T22:10:00+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -806,7 +996,7 @@
     
     <div class="post-body" itemprop="articleBody">
           <p>有些网络对普通TCP连接没有限制，UDP却很不稳定，甚至完全不可用。WireGuard一类依赖UDP的服务遇到这种环境时，可以在外面再套一层传输。PhanTun、udp2raw和wstunnel都能做这件事，但它们模拟的层次不同，部署代价也不一样。</p>
-<p>我分别整理过这三种方案。真正选择时不必纠结谁“性能最好”，先看中间网络能够识别到哪一层：只有普通NAT和四层防火墙时，FakeTCP已经够用；必须经过HTTP代理或七层网关时，WebSocket才有意义。</p>
+<p>三种方案解决的是不同层次的问题。真正选择时不必纠结谁“性能最好”，先看中间网络能够识别到哪一层：只有普通NAT和四层防火墙时，FakeTCP已经够用；必须经过HTTP代理或七层网关时，WebSocket才有意义。</p>
 <h2 id="三种方案的区别"><a href="#三种方案的区别" class="headerlink" title="三种方案的区别"></a>三种方案的区别</h2><table>
 <thead>
 <tr>
@@ -858,7 +1048,7 @@
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 服务端：外层监听4096，内层交给本机UDP 51820</span></span><br><span class="line">udp2raw_amd64 -s \</span><br><span class="line">  -l 0.0.0.0:4096 \</span><br><span class="line">  -r 127.0.0.1:51820 \</span><br><span class="line">  --raw-mode faketcp \</span><br><span class="line">  -k <span class="string">&#x27;&lt;REPLACE_WITH_RANDOM_SHARED_KEY&gt;&#x27;</span> \</span><br><span class="line">  -a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 客户端：本机UDP 51820转到远端4096</span></span><br><span class="line">udp2raw_amd64 -c \</span><br><span class="line">  -l 127.0.0.1:51820 \</span><br><span class="line">  -r 192.0.2.10:4096 \</span><br><span class="line">  --raw-mode faketcp \</span><br><span class="line">  -k <span class="string">&#x27;&lt;REPLACE_WITH_RANDOM_SHARED_KEY&gt;&#x27;</span> \</span><br><span class="line">  -a</span><br></pre></td></tr></table></figure>
 
 <p>客户端和服务端的<code>--raw-mode</code>、密钥、加密模式与认证模式必须一致。命令行里的共享密钥可能被同机用户从进程列表看到，服务文件和日志也可能泄露它，因此至少要限制配置文件权限，并避免把真实值提交到Git。</p>
-<p>udp2raw仍然可用，但官方Release页面显示最新正式发布停留在2023年。新部署时我会优先评估维护更活跃的方案；已有稳定链路则没有必要只为了“换新”而迁移。</p>
+<p>udp2raw仍然可用，但官方Release页面显示最新正式发布停留在2023年。新部署应优先评估维护更活跃的方案；已有稳定链路则没有必要只为了“换新”而迁移。</p>
 <h2 id="wstunnel：需要真正的WebSocket时再用"><a href="#wstunnel：需要真正的WebSocket时再用" class="headerlink" title="wstunnel：需要真正的WebSocket时再用"></a>wstunnel：需要真正的WebSocket时再用</h2><p>wstunnel把TCP或UDP流量放进WebSocket或HTTP&#x2F;2连接，适合中间网络要求标准HTTP握手、必须经过HTTP代理，或者已经有HTTPS入口的情况。它的协议层次更高，部署时要同时考虑TLS证书、域名解析和反向代理超时。</p>
 <p>服务端限制只允许转发到本机WireGuard端口，避免把它变成任意目标的开放代理：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wstunnel server \</span><br><span class="line">  --restrict-to 127.0.0.1:51820 \</span><br><span class="line">  wss://0.0.0.0:443</span><br></pre></td></tr></table></figure>
@@ -869,7 +1059,7 @@
 <p>WireGuard的<code>Endpoint</code>随后指向<code>127.0.0.1:51820</code>。如果WireGuard接管默认路由，还要为wstunnel服务端地址保留一条走物理网关的静态路由，否则会形成“wstunnel连接又被送回WireGuard”的循环。</p>
 <p><code>timeout_sec=0</code>用于关闭UDP映射默认的空闲超时，适合长期保持的WireGuard入口。吞吐异常时先检查MTU，不要一开始就把问题归咎于WebSocket。</p>
 <h2 id="动态公网地址的处理"><a href="#动态公网地址的处理" class="headerlink" title="动态公网地址的处理"></a>动态公网地址的处理</h2><p>三种客户端都可以把远端写成域名，但常驻进程通常只在启动时解析一次。服务端公网地址变化后，DNS记录即使已经更新，旧进程也可能继续连接原地址。</p>
-<p>我采用的处理方式是让systemd管理进程，再用一个很小的定时任务比较当前解析结果和上次记录；只有地址变化时才执行<code>systemctl restart</code>。脚本至少要满足这几个条件：</p>
+<p>处理方式是让systemd管理进程，再用一个很小的定时任务比较当前解析结果和上次记录；只有地址变化时才执行<code>systemctl restart</code>。脚本至少要满足这几个条件：</p>
 <ul>
 <li>使用<code>getent ahostsv4</code>或明确的A记录查询，失败时不覆盖旧状态。</li>
 <li>用<code>flock</code>防止定时任务重叠。</li>
@@ -877,7 +1067,7 @@
 <li>由systemd负责重启和日志，不用<code>pkill -f</code>模糊匹配整条命令。</li>
 </ul>
 <p>如果地址很少变化，手工重启服务反而比维护一百多行监控脚本更可靠。</p>
-<h2 id="我的选择"><a href="#我的选择" class="headerlink" title="我的选择"></a>我的选择</h2><p>普通家庭网络和四层防火墙之间传输WireGuard时，我会先试PhanTun；它的职责单一，额外开销和配置都比较容易看清。只有中间链路明确要求WebSocket、HTTP代理或HTTPS入口时才换wstunnel。udp2raw更适合维护既有部署，或者确实需要它提供的多种Raw模式。</p>
+<h2 id="实际选择"><a href="#实际选择" class="headerlink" title="实际选择"></a>实际选择</h2><p>普通家庭网络和四层防火墙之间传输WireGuard时，可以先试PhanTun；它的职责单一，额外开销和配置都比较容易看清。只有中间链路明确要求WebSocket、HTTP代理或HTTPS入口时才换wstunnel。udp2raw更适合维护既有部署，或者确实需要它提供的多种Raw模式。</p>
 <p>无论选择哪一种，都应该先用前台命令确认两端参数和MTU，再写成systemd服务。隧道能建立只说明外层连通，最终还要检查内层握手、路由、DNS和持续丢包情况。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://github.com/dndx/phantun">PhanTun官方仓库</a></li>
@@ -946,7 +1136,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 21:18:05" itemprop="dateModified" datetime="2026-08-22T21:18:05+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -960,7 +1150,7 @@
     
     <div class="post-body" itemprop="articleBody">
           <p>RouterOS的防火墙不难写，真正容易出错的是规则顺序。前面一条过于宽泛的<code>drop</code>，会让后面的黑名单规则永远没有机会命中；一条看似普通的FastTrack，也可能绕过策略路由、队列或IPsec。</p>
-<p>我最后保留的是一套很朴素的基线：先放行已经建立的连接，再处理必要的控制流量和内网流量，最后统一丢弃。端口扫描识别、MSS调整和FastTrack都不塞进基础规则，需要时再单独增加。</p>
+<p>最终保留的是一套很朴素的基线：先放行已经建立的连接，再处理必要的控制流量和内网流量，最后统一丢弃。端口扫描识别、MSS调整和FastTrack都不塞进基础规则，需要时再单独增加。</p>
 <h2 id="动手前先留退路"><a href="#动手前先留退路" class="headerlink" title="动手前先留退路"></a>动手前先留退路</h2><p>防火墙改错以后，最现实的问题不是网络不通，而是远程管理连接也会一起断掉。先导出IPv4和IPv6配置：</p>
 <figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">/ip firewall </span><span class="built_in">export</span> <span class="attribute">file</span>=firewall-ipv4-before</span><br><span class="line"><span class="built_in">/ipv6 firewall </span><span class="built_in">export</span> <span class="attribute">file</span>=firewall-ipv6-before</span><br></pre></td></tr></table></figure>
 
@@ -1198,7 +1388,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:15:22" itemprop="dateModified" datetime="2026-08-22T20:15:22+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -1211,7 +1401,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>在NVIDIAGPU上部署YOLO时，我最后选择了TensorRTEngine加Ultralytics推理。做这个选择之前，需要先弄清<code>.pt</code>、<code>.onnx</code>和<code>.engine</code>分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。</p>
+          <p>在NVIDIAGPU上部署YOLO时，最终采用了TensorRTEngine加Ultralytics推理。作出选择之前，需要先弄清<code>.pt</code>、<code>.onnx</code>和<code>.engine</code>分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。</p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://docs.ultralytics.com/modes/export/">Ultralytics模型导出</a></li>
 <li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/install/">ONNXRuntime安装</a></li>
@@ -1428,132 +1618,6 @@
 <h2 id="构建和发布"><a href="#构建和发布" class="headerlink" title="构建和发布"></a>构建和发布</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uv build</span><br><span class="line">uv publish</span><br></pre></td></tr></table></figure>
 
 <p>构建产物位于<code>dist/</code>。发布前需要在目标包索引中配置认证；如果项目配置了多个索引，使用<code>uv publish --index &lt;name&gt;</code>明确指定发布目标。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Qdrant的Docker启动与RESTAPI常用操作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-09-24 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-24T00:00:00+08:00">2024-09-24</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>本地调试Qdrant时，用Docker启动服务，再直接通过RESTAPI操作Collection和Point就足够了。查询接口已经统一到QueryAPI，旧的Search接口不再继续使用。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/quick-start/">Qdrant本地启动</a></li>
-<li><a target="_blank" rel="noopener" href="https://api.qdrant.tech/">QdrantRESTAPI</a></li>
-<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/search/">QueryAPI</a></li>
-<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/security/">安全配置</a></li>
-</ul>
-<h2 id="Docker启动"><a href="#Docker启动" class="headerlink" title="Docker启动"></a>Docker启动</h2><p>示例使用<code>v1.19.0</code>：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> \</span><br><span class="line">  --name qdrant \</span><br><span class="line">  -p 127.0.0.1:6333:6333 \</span><br><span class="line">  -p 127.0.0.1:6334:6334 \</span><br><span class="line">  -v <span class="string">&quot;<span class="variable">$PWD</span>/qdrant_storage:/qdrant/storage&quot;</span> \</span><br><span class="line">  qdrant/qdrant:v1.19.0</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>RESTAPI：<code>http://localhost:6333</code></li>
-<li>WebUI：<code>http://localhost:6333/dashboard</code></li>
-<li>gRPC：<code>localhost:6334</code></li>
-</ul>
-<p>DockerCompose配置：</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">qdrant:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">qdrant/qdrant:v1.19.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">qdrant</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;127.0.0.1:6333:6333&quot;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;127.0.0.1:6334:6334&quot;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./qdrant_storage:/qdrant/storage</span></span><br></pre></td></tr></table></figure>
-
-<p>自建Qdrant默认没有认证和TLS，所以这里只绑定到<code>127.0.0.1</code>。需要从其他机器访问时，先配置APIKey、TLS或带鉴权的反向代理，不要直接把6333和6334端口暴露到公网。</p>
-<p>下面的RESTAPI示例都使用本机地址：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> QDRANT_URL=http://localhost:6333</span><br></pre></td></tr></table></figure>
-
-<h2 id="Collection"><a href="#Collection" class="headerlink" title="Collection"></a>Collection</h2><p>列出Collection：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>创建一个4维向量的Collection：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X PUT \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;vectors&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;size&quot;: 4,</span></span><br><span class="line"><span class="string">      &quot;distance&quot;: &quot;Cosine&quot;</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>查看Collection和检查是否存在：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection&quot;</span></span><br><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/exists&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>创建别名：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/aliases&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;actions&quot;: [</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;create_alias&quot;: &#123;</span></span><br><span class="line"><span class="string">          &quot;collection_name&quot;: &quot;test_collection&quot;,</span></span><br><span class="line"><span class="string">          &quot;alias_name&quot;: &quot;production_collection&quot;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      &#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="Point"><a href="#Point" class="headerlink" title="Point"></a>Point</h2><p>批量写入3个Point：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X PUT \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points?wait=true&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;points&quot;: [</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 1,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;red&quot;, &quot;city&quot;: &quot;Beijing&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.9, 0.1, 0.1, 0.2]</span></span><br><span class="line"><span class="string">      &#125;,</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 2,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;green&quot;, &quot;city&quot;: &quot;Shanghai&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.1, 0.9, 0.1, 0.2]</span></span><br><span class="line"><span class="string">      &#125;,</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 3,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;blue&quot;, &quot;city&quot;: &quot;Beijing&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.1, 0.1, 0.9, 0.2]</span></span><br><span class="line"><span class="string">      &#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="Scroll查询"><a href="#Scroll查询" class="headerlink" title="Scroll查询"></a>Scroll查询</h2><p>Scroll不计算向量相似度，适合按条件遍历Point：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/scroll&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 10,</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true,</span></span><br><span class="line"><span class="string">    &quot;with_vector&quot;: false</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>返回结果中的<code>next_page_offset</code>可以作为下一次请求的<code>offset</code>。</p>
-<h2 id="向量查询"><a href="#向量查询" class="headerlink" title="向量查询"></a>向量查询</h2><p><code>points/search</code>属于旧接口，向量查询改用QueryAPI：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/query&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;query&quot;: [0.2, 0.1, 0.9, 0.7],</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;params&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;hnsw_ef&quot;: 128,</span></span><br><span class="line"><span class="string">      &quot;exact&quot;: false</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 3,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<p>也可以使用已有Point的ID作为查询向量：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/query&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;query&quot;: 2,</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 3,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="统计"><a href="#统计" class="headerlink" title="统计"></a>统计</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/count&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;exact&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="删除Point"><a href="#删除Point" class="headerlink" title="删除Point"></a>删除Point</h2><p>按ID删除Point：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/delete?wait=true&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;&quot;points&quot;: [1, 3]&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
 
       
     </div>

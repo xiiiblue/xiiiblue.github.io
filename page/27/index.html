@@ -132,9 +132,17 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">306</span>
+          <span class="site-state-item-count">307</span>
           <span class="site-state-item-name">posts</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
       </div>
   </nav>
 </div>
@@ -158,6 +166,143 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201702/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7Redmine%E7%9A%84%E9%83%A8%E7%BD%B2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/201702/%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7Redmine%E7%9A%84%E9%83%A8%E7%BD%B2/" class="post-title-link" itemprop="url">项目管理工具Redmine的部署</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-11-06 15:48:00" itemprop="dateCreated datePublished" datetime="2018-11-06T15:48:00+08:00">2018-11-06</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="什么是Redmine"><a href="#什么是Redmine" class="headerlink" title="什么是Redmine"></a>什么是Redmine</h2><p>Redmine是用Ruby On Rails开发的一款基于WEB的项目管理软件。<br>它集成了项目管理所需的各项功能：日历、甘特图、问题跟踪和版本控制，可以同时处理多个项目。  </p>
+<p>相比禅道等软件，Redmine的安装还是比较繁琐的，一方面是因为它没有一个自动化的安装脚本，另一方面主要是个人对于Ruby初次接触，需要花一些时间在Ruby的学习上。<br>本文仅讨论Redmine的部署方式，关于Redmine使用今后会单独写一篇博文来讲解。  </p>
+<h2 id="相关资源"><a href="#相关资源" class="headerlink" title="相关资源"></a>相关资源</h2><p><a target="_blank" rel="noopener" href="http://www.redmine.org/">官网WIKI</a>  </p>
+<h2 id="主机环境"><a href="#主机环境" class="headerlink" title="主机环境"></a>主机环境</h2><p>RedHat&#x2F;CentOS 6.X</p>
+<h2 id="代理服务器配置"><a href="#代理服务器配置" class="headerlink" title="代理服务器配置"></a>代理服务器配置</h2><p>如果主机处于内网环境中，无法直连Internet时，需要首先配置可用的网络环境，最简单的方式是使用代理服务器。<br>关于代理服务器的搭建不再赘述了，可以使用<code>srelay</code>+<code>polipo</code>这样的组合，详细步骤请参考之前的一篇文章《内网主机Python3环境搭建》。  </p>
+<p>代理服务器配置好之后，我们导入两条环境变量即可。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export http_proxy=&quot;http://xxx.xxx.xxx.xxx:31081&quot;</span><br><span class="line">export https_proxy=&quot;http://xxx.xxx.xxx.xxx:31081&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>这时wget、curl、yum等已经可以正常使用了。</p>
+<h2 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h2><p>首先使用yum安装一些基本依赖，以下只是一些参考，可以在具体编译时缺什么补什么。  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install nano zip unzip libyaml-devel zlib-devel curl-devel openssl-devel httpd-devel apr-devel apr-util-devel mysql-devel gcc ruby-devel gcc-c++ make postgresql-devel ImageMagick-devel sqlite-devel perl-LDAP mod_perl perl-Digest-SHA</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装MySQL"><a href="#安装MySQL" class="headerlink" title="安装MySQL"></a>安装MySQL</h2><p>这里为了省事，使用最简单的yum的方式，直接在本机安装一套MySQL。yumd源中的MySQL版本比较老旧，是5.1.73。如果时间充裕的话，建议使用源码或二进制方式进行安装。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install mysql mysql-server</span><br></pre></td></tr></table></figure>
+
+<p>将MySQL设置为开机自启，并手工启动服务：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chkconfig mysqld on</span><br><span class="line">service mysqld start</span><br></pre></td></tr></table></figure>
+
+<p>初次运行，进行密码等安全性</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/mysql_secure_installation</span><br></pre></td></tr></table></figure>
+
+<p><code>Disallow root login remotely</code>这一项可以选NO</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Enter current password for root (enter for none):</span><br><span class="line">Set root password? [Y/n] y</span><br><span class="line">Remove anonymous users? [Y/n] y</span><br><span class="line">Disallow root login remotely? [Y/n] n</span><br><span class="line">Remove test database and access to it? [Y/n] y</span><br><span class="line">Reload privilege tables now? [Y/n] y</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="新建MySQL数据库及用户"><a href="#新建MySQL数据库及用户" class="headerlink" title="新建MySQL数据库及用户"></a>新建MySQL数据库及用户</h2><p>直接在本机登录mysql，新建一个数据库及用户</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mysql -uroot -p</span><br><span class="line">&gt; create database redmine_db character set utf8;</span><br><span class="line">&gt; create user &#x27;redmine_admin&#x27;@&#x27;localhost&#x27; identified by &#x27;your_new_password&#x27;;</span><br><span class="line">&gt; grant all privileges on redmine_db.* to &#x27;redmine_admin&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="关闭SELinux"><a href="#关闭SELinux" class="headerlink" title="关闭SELinux"></a>关闭SELinux</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/selinux/config</span><br><span class="line">SELINUX=disabled</span><br><span class="line"></span><br><span class="line">/usr/sbin/setenforce 0 立刻关闭</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置iptables"><a href="#配置iptables" class="headerlink" title="配置iptables"></a>配置iptables</h2><p>配置iptables防火墙，将3000端口打开</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/sysconfig/iptables</span><br><span class="line"></span><br><span class="line">-A INPUT -m state --state NEW -m tcp -p tcp --dport 3000 -j ACCEPT</span><br></pre></td></tr></table></figure>
+<p>重启iptables：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/iptables restart</span><br></pre></td></tr></table></figure>
+
+<h2 id="安装Ruby"><a href="#安装Ruby" class="headerlink" title="安装Ruby"></a>安装Ruby</h2><p>使用RVM进行Ruby的安装。RVM是一个命令行工具,可以提供一个便捷的多版本Ruby环境的管理和切换。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -L https://get.rvm.io | bash</span><br><span class="line">source /etc/profile.d/rvm.sh</span><br></pre></td></tr></table></figure>
+
+<p>列出已知的Ruby版本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rvm list known</span><br></pre></td></tr></table></figure>
+
+<p>这里我们选择安装2.3.0：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rvm install 2.3.0</span><br></pre></td></tr></table></figure>
+
+<p>等待编译安装完成之后，可以查看一下版本号，确认安装成功：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ruby -v</span><br><span class="line">ruby 2.3.0p0 (2015-12-25 revision 53290) [x86_64-linux]</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="安装Rubygems"><a href="#安装Rubygems" class="headerlink" title="安装Rubygems"></a>安装Rubygems</h2><p>RubyGems简称gems，是一个用于对Ruby组件进行打包的Ruby打包系统。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install rubygems</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="下载Redmine"><a href="#下载Redmine" class="headerlink" title="下载Redmine"></a>下载Redmine</h2><p>我们新建一个redmine用户来进行接下来的操作。首先是从官网下载redmine的安装包并解压：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget http://www.redmine.org/releases/redmine-3.3.2.tar.gz</span><br><span class="line">tar -zxvf redmine-3.3.2.tar.gz</span><br><span class="line">mv redmine-3.3.2 redmine</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置数据库连接"><a href="#配置数据库连接" class="headerlink" title="配置数据库连接"></a>配置数据库连接</h2><p>从示例中复制一份database.yml出来：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /path/to/redmine/config</span><br><span class="line">cp database.yml.example database.yml</span><br></pre></td></tr></table></figure>
+
+<p>编辑database.yml，填写刚才新建的数据库的各项参数:   </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vi database.yml</span><br><span class="line"></span><br><span class="line">production:</span><br><span class="line">  adapter: mysql2</span><br><span class="line">  database: redmine_db</span><br><span class="line">  host: localhost</span><br><span class="line">  username: redmine_admin</span><br><span class="line">  password: &quot;redmine_password&quot;</span><br><span class="line">  encoding: utf8</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用Bundle设置Rails"><a href="#使用Bundle设置Rails" class="headerlink" title="使用Bundle设置Rails"></a>使用Bundle设置Rails</h2><p>使用Bundle安装依赖的库</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gem install bundler</span><br><span class="line">bundle install</span><br><span class="line">rake generate_secret_token</span><br></pre></td></tr></table></figure>
+
+<h2 id="初始化数据库表及数据"><a href="#初始化数据库表及数据" class="headerlink" title="初始化数据库表及数据"></a>初始化数据库表及数据</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RAILS_ENV=production rake db:migrate</span><br><span class="line">RAILS_ENV=production rake redmine:load_default_data</span><br></pre></td></tr></table></figure>
+
+<h2 id="设置文件系统权限"><a href="#设置文件系统权限" class="headerlink" title="设置文件系统权限"></a>设置文件系统权限</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p tmp tmp/pdf public/plugin_assets</span><br><span class="line">sudo chown -R redmine:redmine files log tmp public/plugin_assets</span><br><span class="line">sudo chmod -R 755 files log tmp public/plugin_assets</span><br></pre></td></tr></table></figure>
+
+<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bundle exec rails server -b 0.0.0.0 webrick -e production -d</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -1708,78 +1853,6 @@
 
 <p><strong>&#x2F;restapi&#x2F;build.gradle</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">jar.baseName &#x27;project-rest-api&#x27;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile project(&#x27;:repository&#x27;)</span><br><span class="line">    compile project(&#x27;:common&#x27;)</span><br><span class="line">    //spring boot</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-thymeleaf&#x27;</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-cache&#x27;</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-security&#x27;</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-actuator&#x27;</span><br><span class="line">    //oauth2</span><br><span class="line">    compile &#x27;org.springframework.security.oauth:spring-security-oauth2:2.0.11.RELEASE&#x27;</span><br><span class="line">    //cache</span><br><span class="line">    compile &#x27;net.sf.ehcache:ehcache:2.10.2.2.21&#x27;</span><br><span class="line">    //pool</span><br><span class="line">    compile &#x27;com.alibaba:druid:1.0.23&#x27;</span><br><span class="line">    compile &#x27;com.zaxxer:HikariCP:2.5.0&#x27;</span><br><span class="line">    //swagger-staticdocs</span><br><span class="line">    testCompile &#x27;io.springfox:springfox-staticdocs:2.6.0&#x27;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/" class="post-title-link" itemprop="url">使用Java编写简单Socket客户端和服务端</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:45:39" itemprop="dateCreated datePublished" datetime="2018-11-06T15:45:39+08:00">2018-11-06</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>某同事要用Socket连接外围系统，帮忙写了个简单的Demo。<br>包含一个客户端和一个服务端的，仅是示例，比较简陋，服务端也没有用多线程。<br>直接贴代码了。  </p>
-<h2 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line">import java.io.*;</span><br><span class="line">import java.net.*;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Socket服务端示例</span><br><span class="line"> */</span><br><span class="line">public class SocketServer &#123;</span><br><span class="line">    ServerSocket serverSocket;</span><br><span class="line">    Socket connection = null;</span><br><span class="line">    ObjectOutputStream out;</span><br><span class="line">    ObjectInputStream in;</span><br><span class="line">    String message;</span><br><span class="line"></span><br><span class="line">    void runServer() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            // 创建服务端监听</span><br><span class="line">            serverSocket = new ServerSocket(31313, 10);</span><br><span class="line"></span><br><span class="line">            // 等待客户端连接</span><br><span class="line">            System.out.println(&quot;等待客户端连接...&quot;);</span><br><span class="line">            connection = serverSocket.accept();</span><br><span class="line">            System.out.println(&quot;收到客户端连接： &quot; + connection.getInetAddress().getHostName());</span><br><span class="line"></span><br><span class="line">            // 获取输入输出流</span><br><span class="line">            out = new ObjectOutputStream(connection.getOutputStream());</span><br><span class="line">            out.flush();</span><br><span class="line">            in = new ObjectInputStream(connection.getInputStream());</span><br><span class="line"></span><br><span class="line">            // 连接成功后，首先向客户端发成功消息</span><br><span class="line">            sendMsg(&quot;连接成功&quot;);</span><br><span class="line"></span><br><span class="line">            // 发送接收消息</span><br><span class="line">            do &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    message = (String) in.readObject();</span><br><span class="line">                    System.out.println(&quot;client&gt;&quot; + message);</span><br><span class="line"></span><br><span class="line">                    // 发送退出消息</span><br><span class="line">                    if (message.equals(&quot;bye&quot;)) &#123;</span><br><span class="line">                        sendMsg(&quot;bye&quot;);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; catch (ClassNotFoundException ex) &#123;</span><br><span class="line">                    ex.printStackTrace();</span><br><span class="line">                    System.err.println(&quot;数据格式无效&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; while (!message.equals(&quot;bye&quot;));  //当对方消息为bye时退出循环</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            // 关闭Socket连接</span><br><span class="line">            try &#123;</span><br><span class="line">                in.close();</span><br><span class="line">                out.close();</span><br><span class="line">                serverSocket.close();</span><br><span class="line">            &#125; catch (IOException ioException) &#123;</span><br><span class="line">                ioException.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void sendMsg(String msg) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            out.writeObject(msg);</span><br><span class="line">            out.flush();</span><br><span class="line">            System.out.println(&quot;server&gt;&quot; + msg);</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String args[]) &#123;</span><br><span class="line">        SocketServer server = new SocketServer();</span><br><span class="line">        while (true) &#123;</span><br><span class="line">            server.runServer();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">import java.io.*;</span><br><span class="line">import java.net.*;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Socket客户端示例</span><br><span class="line"> */</span><br><span class="line">public class SocketClient &#123;</span><br><span class="line">    Socket clientSocket;</span><br><span class="line">    ObjectOutputStream out;</span><br><span class="line">    ObjectInputStream in;</span><br><span class="line">    String message;</span><br><span class="line"></span><br><span class="line">    void runClient() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            // 连接到服务端</span><br><span class="line">            clientSocket = new Socket(&quot;localhost&quot;, 31313);</span><br><span class="line">            System.out.println(&quot;已连接到服务端&quot;);</span><br><span class="line"></span><br><span class="line">            // 获取输入输出流</span><br><span class="line">            out = new ObjectOutputStream(clientSocket.getOutputStream());</span><br><span class="line">            out.flush();</span><br><span class="line">            in = new ObjectInputStream(clientSocket.getInputStream());</span><br><span class="line"></span><br><span class="line">            // 发送接收消息</span><br><span class="line">            do &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    // 接收消息</span><br><span class="line">                    message = (String) in.readObject();</span><br><span class="line">                    System.out.println(&quot;server&gt;&quot; + message);</span><br><span class="line"></span><br><span class="line">                    // 发送消息</span><br><span class="line">                    sendMsg(&quot;hello&quot;);</span><br><span class="line">                    sendMsg(&quot;hello again&quot;);</span><br><span class="line"></span><br><span class="line">                    // 发送退出消息</span><br><span class="line">                    message = &quot;bye&quot;;</span><br><span class="line">                    sendMsg(message);</span><br><span class="line">                &#125; catch (ClassNotFoundException ex) &#123;</span><br><span class="line">                    ex.printStackTrace();</span><br><span class="line">                    System.err.println(&quot;数据格式无效&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; while (!message.equals(&quot;bye&quot;)); //当对方消息为bye时退出循环</span><br><span class="line">        &#125; catch (UnknownHostException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">            System.err.println(&quot;无法连接到服务端&quot;);</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            // 关闭Socket连接</span><br><span class="line">            try &#123;</span><br><span class="line">                in.close();</span><br><span class="line">                out.close();</span><br><span class="line">                clientSocket.close();</span><br><span class="line">            &#125; catch (IOException ex) &#123;</span><br><span class="line">                ex.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void sendMsg(String msg) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            out.writeObject(msg);</span><br><span class="line">            out.flush();</span><br><span class="line">            System.out.println(&quot;client&gt;&quot; + msg);</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String args[]) &#123;</span><br><span class="line">        SocketClient client = new SocketClient();</span><br><span class="line">        client.runClient();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>

@@ -132,9 +132,17 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">306</span>
+          <span class="site-state-item-count">307</span>
           <span class="site-state-item-name">posts</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
       </div>
   </nav>
 </div>
@@ -353,750 +361,6 @@
 <li>尚未解决的事情由谁、在哪个对象中继续处理。</li>
 </ul>
 <p>五个问题已经有清楚答案，工作就可以在适当位置结束。缺少答案时，增加对应的调查、设计、Loop或确认；答案已经充分时，不再为了“走完整流程”制造多余对象。ACDL的价值不在于让每项工作看起来一样，而在于让不同工作都根据风险高低完成必要的设计、验证和评审，并得到可靠结果。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/" class="post-title-link" itemprop="url">ACDL研发流程08：让多个Agent在不同worktree工作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>ACDL研发流程系列第8篇，共15篇。</p>
-<p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/">ACDL研发流程07：把设计拆成可以独立验证的任务</a></p>
-<p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B09-%E5%AE%8C%E6%88%90%E4%BB%A3%E7%A0%81%E3%80%81%E9%AA%8C%E8%AF%81%E5%B9%B6%E6%9B%B4%E6%96%B0%E7%8E%AF%E5%A2%83/">ACDL研发流程09：完成代码、验证并更新环境</a></p>
-</blockquote>
-<h2 id="多Agent不等于把同一个任务切成多份"><a href="#多Agent不等于把同一个任务切成多份" class="headerlink" title="多Agent不等于把同一个任务切成多份"></a>多Agent不等于把同一个任务切成多份</h2><p>Agent可以很快地读取代码和生成实现，所以多个Agent同时工作看上去是最直接的加速方式。但如果它们正在等待同一个未定稿接口，修改同一批文件，或者各自理解了不同的产品结果，并行只会把返工也同时放大。</p>
-<p>当前项目并行的基本单位不是Agent，而是第7章已经拆好的独立任务。每项任务有自己的工作来源、ACL、目标、非目标、起点和验证结果，然后再交给一个主要Agent。不把数据库、接口、页面和测试分给几个Agent，让它们在同一项尚未定稿的改变中相互等待。</p>
-<p>如果当前只有一项端到端任务，一个Agent保持完整上下文通常更快。只有出现两项或更多能够真正独立推进的工作时，才需要组织并行开发。</p>
-<h2 id="第一步：先确认这些任务能否并行"><a href="#第一步：先确认这些任务能否并行" class="headerlink" title="第一步：先确认这些任务能否并行"></a>第一步：先确认这些任务能否并行</h2><p>可以独立验证是并行的第一个条件，但还不够。Director和Agent还要看任务之间的依赖、文件交叉和外部资源。</p>
-<p>两项任务通常适合并行，需要同时满足以下条件：</p>
-<ul>
-<li>它们不需要等待对方的未定稿结论，已知依赖要么已经完成，要么已经确认接口和数据格式在并行期间不会变化；</li>
-<li>它们的主要修改范围能够分开，少量共同文件也能预先说明谁先改、谁在集成时适配；</li>
-<li>它们可以使用不同的测试数据库、端口、容器、账号或证据目录，不会互相改写外部状态；</li>
-<li>需要隔离文件修改时，每项工作都能在自己的worktree中实施、测试、提交和记录；</li>
-<li>Director已经知道谁负责最终集成，以及几项结果以什么顺序进入主线。</li>
-</ul>
-<p>上一章把收藏会话拆成“保存收藏状态”和“筛选收藏内容”两个结果，但第二项依赖第一项，它们仍然需要串行。假如当前还有一项Runtime恢复缺陷和一项文档检查工具优化，而它们分别有自己的工作来源和验证方法，就可以与收藏会话同时开展：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">同一个已确认起点</span><br><span class="line">  ├─收藏会话ACL→worktree A→Agent A</span><br><span class="line">  ├─Runtime恢复ACL→worktree B→Agent B</span><br><span class="line">  └─文档工具ACL→worktree C→Agent C</span><br></pre></td></tr></table></figure>
-
-<p>这里同时推进的是三项工作，不是三个Agent共同完成收藏会话。</p>
-<p>如果两项工作同时改动一个核心契约，共用一个无法分离的真实环境，或者第二项的验证结果完全取决于第一项的实现，就先保持串行。不需要为了让Agent都有事做而制造并行任务。</p>
-<h2 id="第二步：需要文件隔离时，一项任务使用一个worktree"><a href="#第二步：需要文件隔离时，一项任务使用一个worktree" class="headerlink" title="第二步：需要文件隔离时，一项任务使用一个worktree"></a>第二步：需要文件隔离时，一项任务使用一个worktree</h2><p>worktree是Git在同一个仓库上同时保留多个工作目录的方式。每个worktree检出自己的分支，Agent可以在其中查看、修改和测试文件，不会把未提交差异混到其它任务的目录里。</p>
-<p>存在文件冲突风险时，推荐使用以下对应关系：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">一项独立任务</span><br><span class="line">  →一轮ACL</span><br><span class="line">    →一个短期分支</span><br><span class="line">      →一个worktree</span><br><span class="line">        →一个主要Agent</span><br></pre></td></tr></table></figure>
-
-<p>分支、worktree和Pull Request都按实际需要使用。只做只读调查、修改范围完全不相交，或者当前Harness已经提供其它可靠隔离时，不为了形式机械创建。需要隔离文件差异时，主工作树保留共同起点，每个并行任务在独立worktree中开展。</p>
-<p>分支名称可以由小写ACL编号和简短主题组成，例如<code>acl-000039-conversation-favorites</code>。分支跟踪的是工作而不是Agent身份，不要使用模型名或Agent名命名。</p>
-<p>建立worktree前，先根据当前运行时确认是哪一种Harness。Orca、Codex或其它Harness已经提供原生worktree能力时，优先使用它的创建和交付入口；原生能力不可用或不适合当前任务时，才用Git命令作为后备，并选择稳定、可识别的非临时目录。无论由哪种工具创建，都先记下完整起点提交、分支和目录。</p>
-<p>不同任务可以从同一个已确认提交开始，也可以根据已知依赖从不同提交开始。无论怎样选择，每轮ACL的启动方案都保存自己的分支、明确的起点提交和worktree路径，不用“从最新代码开始”这种无法复现的说法。</p>
-<h2 id="同一任务需要多个Agent时，可以串行接棒"><a href="#同一任务需要多个Agent时，可以串行接棒" class="headerlink" title="同一任务需要多个Agent时，可以串行接棒"></a>同一任务需要多个Agent时，可以串行接棒</h2><p>并行规则解决的是多项独立任务怎样同时推进。另一种常见情况是，同一项任务先由ChatGPT整理需求或设计候选，再由本地Agent实施和验证，最后交给ChatGPT或其它Agent评审。它们处理的是同一轮工作，不需要为了参与者不同而拆成多个ACL，适合按阶段串行接棒。</p>
-<p>本机Agent通常使用worktree取得完整文件、依赖和验证反馈；通过GitHub参与的远端Agent通常使用远端分支、提交和Draft Pull Request取得隔离空间。远端Agent是否能够写入，取决于连接器和仓库权限：能够写入时可以直接准备候选，只有读取能力时则提交分析或评审意见，由当前写入者落地。工具能力不同，不改变仓库事实源和Director确认边界。</p>
-<p>同一分支由多个Agent接力时，推荐采用以下约定：</p>
-<p>1.任一时刻只指定一个当前写入者，其他Agent只读或评审；<br>2.交接前提交并推送候选变化，记录完整HEAD提交；<br>3.接棒者先核对远端分支仍指向交接提交，再开始修改；<br>4.已经交接的共享分支不强制推送、不改写交接历史；<br>5.两个Agent要探索不同方案时使用不同分支，不在同一分支互相覆盖；<br>6.共同决定写回REQ、设计、ADR或Loop记录，Pull Request只保存差异讨论和交接摘要。</p>
-<p>这些约定用于降低远端与本机协作中的竞态，不表示每项工作都必须创建Pull Request。只有一名Agent、没有远端评审或无需隔离时，继续使用原来的短路径即可。</p>
-<p>需要反复交接时，可以在Draft Pull Request顶部维护一段简短的当前状态：</p>
-<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">## 协作状态</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> 当前阶段：需求、设计、实现、验证、评审或待确认</span><br><span class="line"><span class="bullet">-</span> 当前写入者：当前负责修改分支的人或Agent</span><br><span class="line"><span class="bullet">-</span> 当前候选：完整HEAD提交</span><br><span class="line"><span class="bullet">-</span> 下一接棒者：下一位参与者</span><br><span class="line"><span class="bullet">-</span> 下一步：一句话说明要完成的动作</span><br></pre></td></tr></table></figure>
-
-<p>每次正式交接再用Pull Request评论保留固定快照，至少说明基线、当前候选、正式依据、本轮目标和非目标、实际修改、已运行与未运行的验证、剩余风险和下一步。新会话先读取这段交接、正式文档和固定提交，不依赖上一段聊天记录恢复现场。</p>
-<h2 id="第三步：把代码之外的资源也分开"><a href="#第三步：把代码之外的资源也分开" class="headerlink" title="第三步：把代码之外的资源也分开"></a>第三步：把代码之外的资源也分开</h2><p>worktree隔离了文件目录、当前分支和未提交差异，但它们仍然属于同一个Git仓库，也仍然在同一台机器或同一套基础设施上工作。它不会自动分开：</p>
-<ul>
-<li>Git的共享引用和对象；</li>
-<li>测试数据库及其中的数据；</li>
-<li>本机端口、进程、容器、网络和数据卷；</li>
-<li>开发或真实环境；</li>
-<li>测试账号、外部系统和限额；</li>
-<li>日志、截图、检查结果和其它证据目录。</li>
-</ul>
-<p>因此，Director在启动并行任务时，为每轮ACL分配不会冲突的外部资源。例如，每项数据库测试使用独立的专用测试库，每个本地服务使用不同端口，每轮验证写入自己的证据目录。只有一套的真实环境默认串行更新，不让两个Agent同时发布并相互覆盖结果。</p>
-<p>这些分配写入各自启动方案。如果无法把一项关键外部资源分配成互不影响的独立资源，就把需要它的步骤排成明确的串行顺序，不用“小心一点”代替隔离。</p>
-<h2 id="第四步：为每个Agent准备独立上下文"><a href="#第四步：为每个Agent准备独立上下文" class="headerlink" title="第四步：为每个Agent准备独立上下文"></a>第四步：为每个Agent准备独立上下文</h2><p>每个主要Agent只需要读取完成自己任务所需的上下文，不需要理解所有并行任务的实施细节。交付一个worktree时，至少让Agent知道：</p>
-<ul>
-<li>它负责的ACL编号、工作来源和启动方案；</li>
-<li>需要遵守的REQ、Accepted设计和ADR；</li>
-<li>worktree路径、当前分支和明确的起点提交；</li>
-<li>可以修改的范围、已经分配的外部资源和不可执行的高风险动作；</li>
-<li>任务与其它ACL的已知依赖、预计集成顺序和交付方式；</li>
-<li>完成前需要运行的定点验证和需要保留的证据。</li>
-</ul>
-<p>不需要把Director与其它Agent的全部聊天记录同步到每个worktree。共同决定写回REQ、设计或启动方案，当前进展写入各自实施记录的“当前摘要”。任务在新会话中继续时，Agent重新读取这些内容并核对当前Git差异，不从记忆中猜测上一次做到了哪里。</p>
-<h2 id="第五步：让每个Agent交付一个可以独立验证的完整结果"><a href="#第五步：让每个Agent交付一个可以独立验证的完整结果" class="headerlink" title="第五步：让每个Agent交付一个可以独立验证的完整结果"></a>第五步：让每个Agent交付一个可以独立验证的完整结果</h2><p>并行开始以后，每个Agent在自己的worktree中推进完整任务。它可以修改前端、接口、领域逻辑、数据和测试中真正受影响的部分，不被“你只是前端Agent”之类的职能划分限制。完成时留下的是一个能被验证的结果，不是一批等别人收尾的文件。</p>
-<p>并行开发不需要让Agent之间持续互相播报每个实施细节。他们只需要告知会影响其它任务的变化：稳定契约改变、共享资源冲突、起点被修正，或者原定依赖不再成立。Director根据这些事实决定调整集成顺序、暂停某项工作，或者回到设计重新确认。</p>
-<p>如果一个Agent发现需要改动另一项ACL的范围，它不直接进入对方worktree修改。它先记录新事实和影响，由Director判断这是可以在集成时处理的局部适配，还是原来的任务拆分已经不再成立。如果会改变已确认的产品行为或技术边界，就暂停受影响的实施并回到设计。</p>
-<h2 id="第六步：主线依次接收并行结果"><a href="#第六步：主线依次接收并行结果" class="headerlink" title="第六步：主线依次接收并行结果"></a>第六步：主线依次接收并行结果</h2><p>多项任务可以同时开发，但不能同时改写主线。每个Agent先在自己的分支上完成范围内的代码、文档、定点验证和实施记录，并把修改整理成容易理解、目的单一的提交。Director或当次指定的集成Agent根据依赖和风险决定接收顺序。</p>
-<p>第一项结果进入主线以后，下一项先取得最新的main，处理它与当前main的差异，再重新运行受影响的定点验证。希望保持线性历史时，任务分支可以先同步当前主线：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rebase main</span><br></pre></td></tr></table></figure>
-
-<p>确认冲突已经解决且相关验证仍然通过后，再在主工作树中接收该分支：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge --ff-only acl-000039-conversation-favorites</span><br></pre></td></tr></table></figure>
-
-<p>代码冲突有两种。一种只是同一文件不同位置的机械冲突，集成Agent根据两边已确认的结果处理并重新测试。另一种暴露了两项任务对对象、状态、接口或权限的理解不同，这不是选择哪边代码更好合并的问题，而是设计矛盾。Director与Agent需要先回到相关设计统一答案。</p>
-<p>每项结果进入主线时做受影响的验证，全部接收后再做跨任务的整体验证。分支能够合并只证明Git接受了这些差异，不证明几项工作组合后的系统能够工作。</p>
-<h2 id="第七步：完成交付后再清理worktree"><a href="#第七步：完成交付后再清理worktree" class="headerlink" title="第七步：完成交付后再清理worktree"></a>第七步：完成交付后再清理worktree</h2><p>一项分支进入主线，不表示它的ACL已经结束。实际修改、验证、失败和跳过项、剩余问题、Director的结论确认以及实际合入提交仍要完整保留。ACL只有在这些事实齐全后才能进入<code>Completed</code>。</p>
-<p>确认分支结果已进入主线、所有需要的记录和证据已经交付，而且没有Agent继续使用该目录后，才移除worktree和对应短期分支。未合并结果、失败现场、待复核差异和其它Agent仍在使用的worktree都需要保留，不为了目录整洁而提前删除。</p>
-<h2 id="并行数量取决于Director能够评审和合并多少结果"><a href="#并行数量取决于Director能够评审和合并多少结果" class="headerlink" title="并行数量取决于Director能够评审和合并多少结果"></a>并行数量取决于Director能够评审和合并多少结果</h2><p>可用Agent数量不是并行数量的上限判断。Director还要看有多少真正独立的任务，外部资源能分成几份，以及自己能否及时处理歧义、评审结果和组织集成。</p>
-<p>如果五个Agent同时完成五个分支，但主线一次只能安全接收一个，其它分支就会迅速过期，后续时间都用在重新同步、解决冲突和补做验证上。少量稳定的并行通常比一次启动尽可能多的Agent更快。</p>
-<h2 id="回头检查这条路径"><a href="#回头检查这条路径" class="headerlink" title="回头检查这条路径"></a>回头检查这条路径</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">多项已启动的独立ACL</span><br><span class="line">  →检查依赖、修改范围和外部资源</span><br><span class="line">    →按冲突风险决定是否建立分支和worktree</span><br><span class="line">      →为每个主要Agent交付独立上下文</span><br><span class="line">        →各自完成可以独立验证的完整结果和定点验证</span><br><span class="line">          →按已定顺序依次进入主线</span><br><span class="line">            →运行整体验证并保留各轮记录</span><br></pre></td></tr></table></figure>
-
-<p>并行开发的目标是同时推进多项独立结果，不是让更多Agent出现在同一项任务中。worktree把各项任务的文件和未提交修改分开，启动方案和实施记录把上下文分开，外部资源分配和主线集成则让这些结果能够安全重新组合。</p>
-<p>同一任务的多Agent协作采用另一条按需路径：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">一项已启动的ACL</span><br><span class="line">  →当前写入者在隔离空间完成一个固定候选</span><br><span class="line">    →提交、推送并记录完整HEAD</span><br><span class="line">      →下一位Agent核对基线后接棒或评审</span><br><span class="line">        →共同结论写回正式事实源</span><br><span class="line">          →本地完成必要验证并由Director确认结果</span><br></pre></td></tr></table></figure>
-
-<p>两条路径可以同时存在：不同任务之间并行，同一任务内部串行。关键是每个时刻都能回答谁在写、正在修改哪个固定候选、下一步由谁接棒，以及哪些结论已经写回仓库。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95A-%E6%9C%AF%E8%AF%AD%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95A-%E6%9C%AF%E8%AF%AD%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB/" class="post-title-link" itemprop="url">ACDL研发流程附录A：术语和对象关系</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>ACDL研发流程系列第13篇，共15篇。</p>
-<p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B12-%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BB%8E%E5%93%AA%E9%87%8C%E5%BC%80%E5%A7%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F/">ACDL研发流程12：不同工作从哪里开始、在哪里结束</a></p>
-<p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">ACDL研发流程附录B：登记表、状态和常用命令</a></p>
-</blockquote>
-<h2 id="这份附录怎样使用"><a href="#这份附录怎样使用" class="headerlink" title="这份附录怎样使用"></a>这份附录怎样使用</h2><p>正文按一次研发工作的自然顺序介绍ACDL，本附录按概念查找。遇到一个缩写、编号或状态不知道属于哪里时，先在这里确认它回答什么问题，再到附录B查实际登记入口。</p>
-<p>ACDL中的对象不是越多越好。每份文档或记录只回答一个主要问题：ISSUE保存问题去向，REQ保存为什么改变产品，设计保存系统应该怎样工作，Loop保存一轮实际工作，版本保存最终交付结果。能够在当前会话内完成的小事，不需要为了填满这张关系图制造全部对象。</p>
-<h2 id="ACDL和两类参与者"><a href="#ACDL和两类参与者" class="headerlink" title="ACDL和两类参与者"></a>ACDL和两类参与者</h2><table>
-<thead>
-<tr>
-<th>名称</th>
-<th>全称或中文含义</th>
-<th>在当前项目中的作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ACDL</td>
-<td>Agent Collaborative Development Lifecycle；Agent协同研发体系</td>
-<td>当前项目根据自身研发现场定制的完整研发体系，覆盖问题、需求、设计、实施、验证、反馈和版本</td>
-</tr>
-<tr>
-<td>Director</td>
-<td>对方向和结果负责的人</td>
-<td>提出和筛选问题，参与设计，决定取舍与授权，确认Loop结论和正式版本</td>
-</tr>
-<tr>
-<td>Agent</td>
-<td>在明确目标与边界内工作的智能体</td>
-<td>调查、设计、实施、测试、发布、记录证据或开展独立评审</td>
-</tr>
-</tbody></table>
-<p>Director不是一个传统管理岗位。一个人在不同时间可以同时承担产品、架构、开发、测试、发布和验收职责，但涉及取舍、授权和最终接受时，仍以Director身份作出决定。</p>
-<p>Agent也不是单一代码生成器。它可以主导ACL中的实施，也可以在没有参与被评内容实施时主导ERL。Agent承担的工作越多，越需要从仓库文档和固定提交中取得上下文，不能只依赖当前聊天记录。</p>
-<h2 id="一项变化涉及的主要对象"><a href="#一项变化涉及的主要对象" class="headerlink" title="一项变化涉及的主要对象"></a>一项变化涉及的主要对象</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">真实问题、反馈，或者实际代码、测试与环境中发现的问题</span><br><span class="line">  →需要跨会话继续处理时登记ISSUE</span><br><span class="line">    →确认需要改变产品时登记REQ</span><br><span class="line">      →修改负责当前事实的系统、能力或横切设计，必要时建立ADR</span><br><span class="line">        →为长期重要规则分配稳定设计要求编号</span><br><span class="line">          →设计确认后确定目标版本</span><br><span class="line">            →按当前目的启动ACL、DFL或ERL</span><br><span class="line">              →各轮记录实际结果并分别结束</span><br><span class="line">                →Director选择实际纳入范围</span><br><span class="line">                  →正式版本和Git标签</span><br></pre></td></tr></table></figure>
-
-<p>这不是每项工作的必经清单。已经明确的产品变化可以直接登记REQ；恢复Accepted设计的缺陷可以从ISSUE或ACL开始；DFL和ERL可以单独启动；一轮Loop结束后也可以不立即形成正式版本。</p>
-<h2 id="问题、需求和路线图"><a href="#问题、需求和路线图" class="headerlink" title="问题、需求和路线图"></a>问题、需求和路线图</h2><table>
-<thead>
-<tr>
-<th>对象</th>
-<th>编号或名称</th>
-<th>回答的问题</th>
-<th>不负责什么</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ISSUE</td>
-<td><code>ISSUE-六位编号</code></td>
-<td>发现了什么问题，现在处于什么状态，由什么继续处理</td>
-<td>不提前决定一定要改变产品，也不复制完整实施证据</td>
-</tr>
-<tr>
-<td>GitHub Issue</td>
-<td>GitHub中的<code>#数字</code></td>
-<td>怎样接收反馈、讨论和在看板中展示进展</td>
-<td>不替代本地ISSUE身份和状态</td>
-</tr>
-<tr>
-<td>REQ</td>
-<td><code>REQ-六位编号</code></td>
-<td>为什么改变产品，希望得到什么结果，何时实际交付</td>
-<td>不规定接口、数据表和代码方案</td>
-</tr>
-<tr>
-<td>路线图</td>
-<td><code>RM-三位编号</code></td>
-<td>多个候选REQ之间怎样排序，有什么依赖和开始条件</td>
-<td>不重复定义需求，也不提前承诺版本范围</td>
-</tr>
-</tbody></table>
-<p>ISSUE和REQ最容易混淆。判断方法是：如果仍在调查发生了什么，或者只是让实现重新符合已经确认的设计，使用ISSUE；如果已经确认要改变用户行为、业务规则、权限、安全、数据边界或正式支持范围，使用REQ。</p>
-<p><code>REQ-000001</code>和<code>PRD-001</code>也不是同一种编号。REQ追踪一次产品变化，稳定设计要求追踪系统需要长期保持的一条规则。一项REQ可以产生多条稳定设计要求，一条旧要求也可能被后续REQ修改。</p>
-<h2 id="当前设计、ADR和稳定设计要求"><a href="#当前设计、ADR和稳定设计要求" class="headerlink" title="当前设计、ADR和稳定设计要求"></a>当前设计、ADR和稳定设计要求</h2><table>
-<thead>
-<tr>
-<th>对象</th>
-<th>文件或编号形式</th>
-<th>保存什么</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>系统设计</td>
-<td><code>SYS-三位编号-标题.md</code></td>
-<td>产品定位、总体范围、核心进程、存储和外部边界</td>
-</tr>
-<tr>
-<td>能力设计</td>
-<td><code>CAP-三位编号-标题.md</code></td>
-<td>一项能力的用户行为、对象、状态、流程、失败，以及对应数据、接口、事务、恢复、代码和测试入口</td>
-</tr>
-<tr>
-<td>横切设计</td>
-<td><code>CRS-三位编号-标题.md</code></td>
-<td>多个能力共同遵守的安全、数据、接口、审计、观测、部署和恢复规则</td>
-</tr>
-<tr>
-<td>ADR</td>
-<td><code>ADR-四位编号-决定名称.md</code></td>
-<td>重要决定的背景、备选方案、选择理由和代价</td>
-</tr>
-<tr>
-<td>索引与追踪</td>
-<td><code>IDX-三位编号-标题.md</code></td>
-<td>设计地图、旧编号迁移和要求验证关系，不定义新的设计规则</td>
-</tr>
-<tr>
-<td>稳定设计要求</td>
-<td><code>PRD-*</code>、<code>DOM-*</code>、<code>ARCH-*</code>、<code>SEC-*</code></td>
-<td>需要长期保持、追踪和验证的单条规则</td>
-</tr>
-</tbody></table>
-<p>设计类别按事实职责划分，不要求每个REQ新建一组文档。先找到真正负责当前事实的设计，再检查相关共同规则是否需要同步。旧<code>PLAT / DOMAIN / MODULE</code>只用于历史追溯。</p>
-<p>ADR解释为什么选择某个重要方案，最终决定仍要进入受影响的系统、能力或横切设计。推翻Accepted ADR时建立新的ADR，并让旧记录进入<code>Superseded</code>。</p>
-<p>稳定设计要求的前缀表达规则性质，不等同于所在文档目录：</p>
-<table>
-<thead>
-<tr>
-<th>前缀</th>
-<th>表达的规则</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>PRD-</code></td>
-<td>平台级产品范围、用户承诺、核心规则和结果指标</td>
-</tr>
-<tr>
-<td><code>DOM-</code></td>
-<td>领域行为、用户流程、对象状态和验收结果</td>
-</tr>
-<tr>
-<td><code>ARCH-</code></td>
-<td>跨进程、数据、接口、部署、迁移和恢复约束</td>
-</tr>
-<tr>
-<td><code>SEC-</code></td>
-<td>身份、凭据、隔离、网络、审计和数据安全约束</td>
-</tr>
-</tbody></table>
-<h2 id="目标版本、Loop和三种Loop"><a href="#目标版本、Loop和三种Loop" class="headerlink" title="目标版本、Loop和三种Loop"></a>目标版本、Loop和三种Loop</h2><p>目标版本为准备组织的交付分配版本号，并在版本总览中建立记录。它在设计确认、REQ准备排期时形成，但此时还没有承诺最终纳入全部候选内容。正式版本要等验收完成并创建真实Git标签后才存在。</p>
-<p>Loop是一轮有明确准备、执行、证据和结论的工作单元，不是Agent在一个Prompt中反复思考的内部循环。</p>
-<table>
-<thead>
-<tr>
-<th>Loop</th>
-<th>全称</th>
-<th>主导者</th>
-<th>主要结果</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ACL</td>
-<td>Agentic Coding Loop</td>
-<td>Agent</td>
-<td>把Accepted设计变成代码、测试和可以评审的实施结果</td>
-</tr>
-<tr>
-<td>DFL</td>
-<td>Developer Feedback Loop</td>
-<td>Director</td>
-<td>在真实角色、界面、数据和环境中完成任务并记录反馈</td>
-</tr>
-<tr>
-<td>ERL</td>
-<td>Engineering Review Loop</td>
-<td>独立Agent</td>
-<td>对固定提交、差异范围或Git标签开展独立工程评审；局部发现先留在本轮记录，需要继续处理时再进入ISSUE、REQ或ACL</td>
-</tr>
-</tbody></table>
-<p>三种Loop彼此独立，不是开发、测试、验收三个串行阶段。ACL可以单独结束，DFL可以检查运行已久的功能，ERL也可以单独评审一个关键模块。是否成为某个正式版本的证据，由版本验收时的实际选择决定。</p>
-<h2 id="启动方案、独立计划和实施记录"><a href="#启动方案、独立计划和实施记录" class="headerlink" title="启动方案、独立计划和实施记录"></a>启动方案、独立计划和实施记录</h2><table>
-<thead>
-<tr>
-<th>对象</th>
-<th>回答的问题</th>
-<th>通常放在哪里</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>启动方案</td>
-<td>这一轮准备为什么做、从哪里开始、做什么、不做什么、怎样验证和结束</td>
-<td>对应Loop主记录的开头</td>
-</tr>
-<tr>
-<td>独立计划</td>
-<td>哪些工作需要在执行前单独批准高风险、恢复或评审边界</td>
-<td>确实需要单独确认时建立，不按Loop类型机械创建</td>
-</tr>
-<tr>
-<td>实施或评审记录</td>
-<td>实际做了什么，发生了哪些失败、差异、验证和剩余问题</td>
-<td>对应ACL、DFL或ERL目录</td>
-</tr>
-<tr>
-<td>当前摘要</td>
-<td>当前做到哪里、什么已完成、什么阻塞、下一步是什么</td>
-<td>正在执行的Loop记录</td>
-</tr>
-</tbody></table>
-<p>计划写将要发生的事，记录写已经发生的事。执行过程改变时，在记录中追加变化原因，不把原方案悄悄改成最后结果。</p>
-<h2 id="环境、目标版本和正式版本的区别"><a href="#环境、目标版本和正式版本的区别" class="headerlink" title="环境、目标版本和正式版本的区别"></a>环境、目标版本和正式版本的区别</h2><table>
-<thead>
-<tr>
-<th>对象</th>
-<th>回答的问题</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>环境记录</td>
-<td>某个环境现在运行什么提交、制品和配置，怎样恢复</td>
-</tr>
-<tr>
-<td>目标版本</td>
-<td>目前准备组织哪一次候选交付</td>
-</tr>
-<tr>
-<td>正式版本</td>
-<td>哪些变化已经验收，哪个Git标签固定了结果</td>
-</tr>
-</tbody></table>
-<p>环境中已经部署不表示Loop结束，也不表示正式版本形成。正式版本形成后，也不表示它已经部署到所有环境。一个环境可以运行候选供DFL使用，也可以暂时停留在旧正式版本。</p>
-<h2 id="状态属于对象还是文档"><a href="#状态属于对象还是文档" class="headerlink" title="状态属于对象还是文档"></a>状态属于对象还是文档</h2><p>同一份REQ正文同时有需求状态和Markdown文档状态，它们表达不同事实。需求状态说明这项产品变化走到了哪里，文档状态说明这份文件是否已经可以采用。Loop整体状态与它的计划、记录文档状态同样不能互相替代。</p>
-<p>例如：</p>
-<ul>
-<li>REQ可以处于<code>候选</code>，正文仍处于<code>Draft</code>；</li>
-<li>REQ进入<code>已排期</code>时，相关设计应当已经<code>Accepted</code>；</li>
-<li>ACL整体处于<code>Review</code>时，其记录也在等待Director确认；</li>
-<li>一份Accepted设计可以被多轮ACL长期使用；</li>
-<li>正式版本和发布说明只有在Git标签真实存在后才进入<code>Completed</code>。</li>
-</ul>
-<p>附录B集中列出这些登记表、状态和命令。</p>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/" class="post-title-link" itemprop="url">ACDL研发流程附录C：设计要求与验证追踪</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>ACDL研发流程系列第15篇，共15篇。</p>
-<p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">ACDL研发流程附录B：登记表、状态和常用命令</a></p>
-</blockquote>
-<h2 id="这套追踪解决什么问题"><a href="#这套追踪解决什么问题" class="headerlink" title="这套追踪解决什么问题"></a>这套追踪解决什么问题</h2><p>项目规模扩大以后，仅仅知道“有测试”还不够。Director和Agent需要继续回答：一条长期规则在哪里定义，为什么存在，哪些验证能够直接判断它，哪些测试只是提供相关支持。</p>
-<p>当前项目的设计要求追踪只保存设计要求与来源、产生原因和验证之间的长期关系，不把需求、设计、代码、测试结果和版本状态复制到一张大表中。</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">已经确认的设计正文</span><br><span class="line">  →定义稳定设计要求的完整含义</span><br><span class="line"></span><br><span class="line">design-requirements.json</span><br><span class="line">  →登记要求来源、产生原因、主题和验证关系</span><br><span class="line"></span><br><span class="line">测试或其它验证入口</span><br><span class="line">  →提供实际判断方式</span><br><span class="line"></span><br><span class="line">当前设计要求与验证追踪.md</span><br><span class="line">  →生成供人查阅的关系视图</span><br></pre></td></tr></table></figure>
-
-<p>测试是否真正通过，继续写在ACL、DFL、ERL或版本记录中；REQ、ISSUE和Loop状态也继续由各自登记表负责。追踪账本不是第二份状态台账，更不是测试报告。</p>
-<h2 id="什么样的规则需要稳定编号"><a href="#什么样的规则需要稳定编号" class="headerlink" title="什么样的规则需要稳定编号"></a>什么样的规则需要稳定编号</h2><p>不是每个带有“必须”或“不得”的句子都需要编号。新增或实质修改的规则满足以下任一条件时，才分配稳定设计要求编号：</p>
-<ul>
-<li>决定用户可以观察和验收的结果；</li>
-<li>构成权限、安全或数据边界；</li>
-<li>形成跨模块、跨进程、接口、迁移、部署或恢复的长期约束；</li>
-<li>需要跨版本持续回归或进入正式验收。</li>
-</ul>
-<p>普通私有函数怎样拆分、局部变量怎样命名、单个测试怎样组织，不为便于引用而分配稳定编号。一个编号也不能包住几条彼此无关的规则，否则测试无法判断它究竟证明了什么。</p>
-<table>
-<thead>
-<tr>
-<th>前缀</th>
-<th>用于</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>PRD-</code></td>
-<td>平台级产品范围、用户承诺、核心规则和结果指标</td>
-</tr>
-<tr>
-<td><code>DOM-</code></td>
-<td>领域行为、用户流程、对象状态和验收结果</td>
-</tr>
-<tr>
-<td><code>ARCH-</code></td>
-<td>跨进程、数据、接口、部署、迁移和恢复要求</td>
-</tr>
-<tr>
-<td><code>SEC-</code></td>
-<td>身份、凭据、隔离、网络、审计和数据安全要求</td>
-</tr>
-</tbody></table>
-<p>每类使用三位数字，一经使用不修改、回收或复用。<code>CAP-005</code>是整份能力设计文档，<code>DOM-005</code>是文档中的一条领域行为要求，两者不要混用。</p>
-<h2 id="六个组成部分各自负责什么"><a href="#六个组成部分各自负责什么" class="headerlink" title="六个组成部分各自负责什么"></a>六个组成部分各自负责什么</h2><table>
-<thead>
-<tr>
-<th>组成部分</th>
-<th>路径或标记</th>
-<th>职责</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>设计正文</td>
-<td><code>docs/02-设计/</code>中的系统、能力或横切设计</td>
-<td>保存要求完整含义，完整内容只在这里定义</td>
-</tr>
-<tr>
-<td>追踪账本</td>
-<td><code>tests/traceability/design-requirements.json</code></td>
-<td>保存当前主题、每项要求的来源和验证关系</td>
-</tr>
-<tr>
-<td>账本JSON结构规则（Schema）</td>
-<td><code>tests/traceability/design-requirements.schema.json</code></td>
-<td>规定JSON字段、编号格式和验证方法</td>
-</tr>
-<tr>
-<td>测试标记</td>
-<td><code>TRACE-REQ</code>或<code>TRACE-TOPIC</code></td>
-<td>让检查器确认测试声明的直接或支持性关系</td>
-</tr>
-<tr>
-<td>生成视图</td>
-<td><code>docs/02-设计/00-索引与追踪/IDX-002-设计要求与验证追踪.md</code></td>
-<td>按主题和要求生成人类可读入口</td>
-</tr>
-<tr>
-<td>检查与生成脚本</td>
-<td><code>pnpm trace:check</code>、<code>pnpm trace:render</code>、<code>pnpm trace:refresh -- --reviewed</code></td>
-<td>检查关系、重建视图；设计定义经过人工复核后，受控刷新定义来源和摘要</td>
-</tr>
-</tbody></table>
-<p>普通设计变化只修改设计正文、账本和必要测试，不修改Schema。只有追踪系统的数据结构本身改变时，才调整Schema和相应工具。</p>
-<h2 id="账本字段怎样理解"><a href="#账本字段怎样理解" class="headerlink" title="账本字段怎样理解"></a>账本字段怎样理解</h2><p>逐要求记录使用以下字段：</p>
-<table>
-<thead>
-<tr>
-<th>字段</th>
-<th>表达的事实</th>
-<th>维护要求</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>id</code></td>
-<td>稳定设计要求编号</td>
-<td>与设计正文完全一致</td>
-</tr>
-<tr>
-<td><code>source</code></td>
-<td>完整定义所在的仓库路径</td>
-<td>只指向当前设计，不指向计划和实施记录</td>
-</tr>
-<tr>
-<td><code>definitionDigest</code></td>
-<td>该项要求定义块的SHA-256摘要</td>
-<td>正文变化或移动后，在人工复核关系后刷新</td>
-</tr>
-<tr>
-<td><code>origin</code></td>
-<td>要求为什么产生</td>
-<td>新要求填写对应<code>REQ-六位编号</code>；旧基线使用<code>pre-req-process</code></td>
-</tr>
-<tr>
-<td><code>topics</code></td>
-<td>按问题查找要求时使用的主题</td>
-<td>优先复用已有主题</td>
-</tr>
-<tr>
-<td><code>directVerification</code></td>
-<td>能够直接判断该项要求的验证</td>
-<td>不能完整判断时保持空数组</td>
-</tr>
-<tr>
-<td><code>issues</code></td>
-<td>当前与该要求直接相关的问题</td>
-<td>可选，只引用已登记ISSUE，不复制状态</td>
-</tr>
-</tbody></table>
-<p>主题记录只保存<code>id</code>、<code>title</code>和<code>supportingVerification</code>。同一批代表性测试在主题上登记一次，不复制到几十条要求中。</p>
-<p>每项验证使用：</p>
-<table>
-<thead>
-<tr>
-<th>字段</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>method</code></td>
-<td><code>test</code>、<code>inspection</code>、<code>analysis</code>或<code>demonstration</code>之一</td>
-</tr>
-<tr>
-<td><code>references</code></td>
-<td>真实存在的测试、检查、分析或实机记录路径</td>
-</tr>
-<tr>
-<td><code>note</code></td>
-<td>可选，说明这项证据能证明什么、不能证明什么</td>
-</tr>
-</tbody></table>
-<p><code>test</code>表示自动化测试；<code>inspection</code>表示人工或工具检查；<code>analysis</code>表示通过设计、代码、数据或模型分析作出判断；<code>demonstration</code>表示实机操作或运行记录。没有自动化测试不等于不能验证，但必须选择真实发生的方法和证据入口。</p>
-<h2 id="直接验证和支持性验证有什么区别"><a href="#直接验证和支持性验证有什么区别" class="headerlink" title="直接验证和支持性验证有什么区别"></a>直接验证和支持性验证有什么区别</h2><p>直接验证（<code>direct</code>）表示一个引用能够直接判断某项具体要求是否满足。假设一条要求同时规定“员工只能读取自己的文件”“跨员工请求必须拒绝”“不得泄露目标文件是否存在”，直接测试需要对这三部分都作出明确判断。</p>
-<p>直接测试文件使用要求编号标记：</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TRACE-REQ: SEC-999</span></span><br></pre></td></tr></table></figure>
-
-<p>并把这个文件登记到该要求的<code>directVerification</code>。<code>SEC-999</code>在这里只是教学编号，不是仓库中的真实要求。</p>
-<p>支持性验证（<code>supporting</code>）表示测试与一个主题相关，却不能单独证明其中每条要求。测试文件使用主题标记：</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TRACE-TOPIC: workspace-runtime</span></span><br></pre></td></tr></table></figure>
-
-<p>并登记到主题的<code>supportingVerification</code>。支持性测试不能描述成“逐项覆盖全部要求”。如果没有一项测试能够完整判断某条要求，<code>directVerification</code>保持空数组，比夸大覆盖更准确。</p>
-<h2 id="新增一条稳定设计要求"><a href="#新增一条稳定设计要求" class="headerlink" title="新增一条稳定设计要求"></a>新增一条稳定设计要求</h2><p>下面继续使用虚构的<code>SEC-999</code>说明完整操作。实际工作先从对应REQ和设计评审开始，不能直接复制这个编号。</p>
-<p>第一步，在受影响的设计正文中写出一条完整、可以判断的规则：</p>
-<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="strong">**SEC-999**</span>：员工只能通过工作空间文件接口读取自己的文件；请求其它员工的路径时必须拒绝，且不得返回文件是否存在。</span><br></pre></td></tr></table></figure>
-
-<p>第二步，在<code>design-requirements.json</code>增加记录。此时重点先把人工维护的关系写准确：<code>source</code>指向定义正文，<code>origin</code>指向产生这项变化的REQ，<code>topics</code>和验证关系按实际情况填写。<code>definitionDigest</code>可以先保留一个符合格式的临时值，最终由受控刷新命令根据正文统一生成。</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;SEC-999&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;docs/02-设计/03-横切设计/CRS-001-安全与信任边界.md&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;definitionDigest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:0000000000000000000000000000000000000000000000000000000000000000&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;origin&quot;</span><span class="punctuation">:</span> <span class="string">&quot;REQ-替换为真实六位编号&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;topics&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;workspace-runtime&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;directVerification&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>第三步，根据实际证明能力选择直接或支持性验证。只有测试能够判断整条要求时才添加<code>TRACE-REQ</code>并登记到<code>directVerification</code>；一般相关测试使用<code>TRACE-TOPIC</code>并登记到主题。</p>
-<p>第四步，人工复核设计要求的身份、产生原因、主题、直接&#x2F;支持性验证和Issue关系。确认这些关系准确后，运行：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:refresh -- --reviewed</span><br><span class="line">pnpm docs:check</span><br><span class="line">git diff --check</span><br></pre></td></tr></table></figure>
-
-<p><code>trace:refresh</code>会先要求当前设计定义集合和追踪账本一一对应，然后只刷新每项要求的<code>source</code>和<code>definitionDigest</code>，保留<code>origin</code>、<code>topics</code>、<code>directVerification</code>和<code>issues</code>。随后它会重建追踪Markdown生成区。出现新增、缺失或重复ID时直接拒绝，不会为了生成摘要自动猜测关系。</p>
-<p><code>trace:render</code>只用于<strong>账本关系和定义摘要都已经正确、只是Markdown生成视图过期</strong>的情况：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:render</span><br></pre></td></tr></table></figure>
-
-<p>它只更新生成视图中的自动生成区域，不修改设计正文和账本。生成区域不接受手工编辑。</p>
-<h2 id="修改、移动或替代旧要求"><a href="#修改、移动或替代旧要求" class="headerlink" title="修改、移动或替代旧要求"></a>修改、移动或替代旧要求</h2><p>只改善表达且含义不变时，保留原编号。正文变化会让<code>trace:check</code>报告摘要不一致，这是提醒人工复核，不是要求把文字改回旧写法。确认要求含义、产生原因、主题、验证关系和Issue关系仍然正确后，运行：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:refresh -- --reviewed</span><br></pre></td></tr></table></figure>
-
-<p>要求移动到另一份设计但含义不变时，同样保留编号。受控刷新会把<code>source</code>更新到当前唯一的定义位置，并重新计算摘要；如果同一编号在多处定义或账本和正文集合不一致，会直接失败。</p>
-<p>要求含义发生实质变化时，先判断修改后的规则是否仍与原规则表达同一件事。如果新规则替代了旧要求，保留旧要求的替代说明，并为新规则取得新编号；不要继续使用旧编号表达不同含义。变化来自现行产品需求时，新的<code>origin</code>填写对应REQ。</p>
-<p>测试移动、删除或覆盖范围变化时，同步更新验证入口和标记。一个测试不再能直接判断整项要求时，把它降为支持性验证或移除关系，不为了让覆盖数量看起来不下降继续登记为<code>direct</code>。</p>
-<p>ISSUE关闭后，复核要求记录中的可选<code>issues</code>是否仍有保留关系的必要。这里不复制ISSUE状态和结论，问题的当前状态和结论始终从ISSUE台账读取。</p>
-<h2 id="常见检查失败怎样处理"><a href="#常见检查失败怎样处理" class="headerlink" title="常见检查失败怎样处理"></a>常见检查失败怎样处理</h2><table>
-<thead>
-<tr>
-<th>检查结果</th>
-<th>实际含义</th>
-<th>正确处理</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>当前稳定设计要求没有进入账本</td>
-<td>正文新增了编号，账本没有对应记录</td>
-<td>补充来源、摘要、产生原因、主题和验证关系，复核后运行<code>trace:refresh</code></td>
-</tr>
-<tr>
-<td>账本引用未定义稳定要求</td>
-<td>编号或路径错误，或者正文已经删除</td>
-<td>恢复定义或按替代关系更新账本</td>
-</tr>
-<tr>
-<td>要求正文已经变化</td>
-<td><code>definitionDigest</code>与当前定义不一致</td>
-<td>先复核产生原因和验证关系；确认语义没有错误漂移后运行<code>pnpm trace:refresh -- --reviewed</code></td>
-</tr>
-<tr>
-<td>验证引用不存在</td>
-<td>测试或证据文件移动、删除或拼写错误</td>
-<td>更新为真实入口，不创建空文件绕过</td>
-</tr>
-<tr>
-<td>缺少<code>TRACE-REQ</code></td>
-<td>测试被登记为直接验证，但文件没有要求标记</td>
-<td>确认是否真的直接验证，再补标记或降低关系</td>
-</tr>
-<tr>
-<td>缺少<code>TRACE-TOPIC</code></td>
-<td>测试被登记为主题支持性验证，但文件没有主题标记</td>
-<td>补充准确主题标记或移除关系</td>
-</tr>
-<tr>
-<td>Markdown与账本不一致</td>
-<td>生成视图已经过期</td>
-<td>运行<code>pnpm trace:render</code>，不手工修改生成区</td>
-</tr>
-</tbody></table>
-<p>检查通过只证明编号、来源、关系和生成结果彼此一致。它不能证明设计决定合理，也不能证明测试最近一次运行成功。设计合理性由设计评审确认，实际验证结果由Loop和版本记录保存，Director仍然对最终结论负责。</p>
 
       
     </div>
@@ -1581,6 +845,972 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/" class="post-title-link" itemprop="url">ACDL研发流程附录C：设计要求与验证追踪</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>ACDL研发流程系列第15篇，共15篇。</p>
+<p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">ACDL研发流程附录B：登记表、状态和常用命令</a></p>
+</blockquote>
+<h2 id="这套追踪解决什么问题"><a href="#这套追踪解决什么问题" class="headerlink" title="这套追踪解决什么问题"></a>这套追踪解决什么问题</h2><p>项目规模扩大以后，仅仅知道“有测试”还不够。Director和Agent需要继续回答：一条长期规则在哪里定义，为什么存在，哪些验证能够直接判断它，哪些测试只是提供相关支持。</p>
+<p>当前项目的设计要求追踪只保存设计要求与来源、产生原因和验证之间的长期关系，不把需求、设计、代码、测试结果和版本状态复制到一张大表中。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">已经确认的设计正文</span><br><span class="line">  →定义稳定设计要求的完整含义</span><br><span class="line"></span><br><span class="line">design-requirements.json</span><br><span class="line">  →登记要求来源、产生原因、主题和验证关系</span><br><span class="line"></span><br><span class="line">测试或其它验证入口</span><br><span class="line">  →提供实际判断方式</span><br><span class="line"></span><br><span class="line">当前设计要求与验证追踪.md</span><br><span class="line">  →生成供人查阅的关系视图</span><br></pre></td></tr></table></figure>
+
+<p>测试是否真正通过，继续写在ACL、DFL、ERL或版本记录中；REQ、ISSUE和Loop状态也继续由各自登记表负责。追踪账本不是第二份状态台账，更不是测试报告。</p>
+<h2 id="什么样的规则需要稳定编号"><a href="#什么样的规则需要稳定编号" class="headerlink" title="什么样的规则需要稳定编号"></a>什么样的规则需要稳定编号</h2><p>不是每个带有“必须”或“不得”的句子都需要编号。新增或实质修改的规则满足以下任一条件时，才分配稳定设计要求编号：</p>
+<ul>
+<li>决定用户可以观察和验收的结果；</li>
+<li>构成权限、安全或数据边界；</li>
+<li>形成跨模块、跨进程、接口、迁移、部署或恢复的长期约束；</li>
+<li>需要跨版本持续回归或进入正式验收。</li>
+</ul>
+<p>普通私有函数怎样拆分、局部变量怎样命名、单个测试怎样组织，不为便于引用而分配稳定编号。一个编号也不能包住几条彼此无关的规则，否则测试无法判断它究竟证明了什么。</p>
+<table>
+<thead>
+<tr>
+<th>前缀</th>
+<th>用于</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PRD-</code></td>
+<td>平台级产品范围、用户承诺、核心规则和结果指标</td>
+</tr>
+<tr>
+<td><code>DOM-</code></td>
+<td>领域行为、用户流程、对象状态和验收结果</td>
+</tr>
+<tr>
+<td><code>ARCH-</code></td>
+<td>跨进程、数据、接口、部署、迁移和恢复要求</td>
+</tr>
+<tr>
+<td><code>SEC-</code></td>
+<td>身份、凭据、隔离、网络、审计和数据安全要求</td>
+</tr>
+</tbody></table>
+<p>每类使用三位数字，一经使用不修改、回收或复用。<code>CAP-005</code>是整份能力设计文档，<code>DOM-005</code>是文档中的一条领域行为要求，两者不要混用。</p>
+<h2 id="六个组成部分各自负责什么"><a href="#六个组成部分各自负责什么" class="headerlink" title="六个组成部分各自负责什么"></a>六个组成部分各自负责什么</h2><table>
+<thead>
+<tr>
+<th>组成部分</th>
+<th>路径或标记</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>设计正文</td>
+<td><code>docs/02-设计/</code>中的系统、能力或横切设计</td>
+<td>保存要求完整含义，完整内容只在这里定义</td>
+</tr>
+<tr>
+<td>追踪账本</td>
+<td><code>tests/traceability/design-requirements.json</code></td>
+<td>保存当前主题、每项要求的来源和验证关系</td>
+</tr>
+<tr>
+<td>账本JSON结构规则（Schema）</td>
+<td><code>tests/traceability/design-requirements.schema.json</code></td>
+<td>规定JSON字段、编号格式和验证方法</td>
+</tr>
+<tr>
+<td>测试标记</td>
+<td><code>TRACE-REQ</code>或<code>TRACE-TOPIC</code></td>
+<td>让检查器确认测试声明的直接或支持性关系</td>
+</tr>
+<tr>
+<td>生成视图</td>
+<td><code>docs/02-设计/00-索引与追踪/IDX-002-设计要求与验证追踪.md</code></td>
+<td>按主题和要求生成人类可读入口</td>
+</tr>
+<tr>
+<td>检查与生成脚本</td>
+<td><code>pnpm trace:check</code>、<code>pnpm trace:render</code>、<code>pnpm trace:refresh -- --reviewed</code></td>
+<td>检查关系、重建视图；设计定义经过人工复核后，受控刷新定义来源和摘要</td>
+</tr>
+</tbody></table>
+<p>普通设计变化只修改设计正文、账本和必要测试，不修改Schema。只有追踪系统的数据结构本身改变时，才调整Schema和相应工具。</p>
+<h2 id="账本字段怎样理解"><a href="#账本字段怎样理解" class="headerlink" title="账本字段怎样理解"></a>账本字段怎样理解</h2><p>逐要求记录使用以下字段：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>表达的事实</th>
+<th>维护要求</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>稳定设计要求编号</td>
+<td>与设计正文完全一致</td>
+</tr>
+<tr>
+<td><code>source</code></td>
+<td>完整定义所在的仓库路径</td>
+<td>只指向当前设计，不指向计划和实施记录</td>
+</tr>
+<tr>
+<td><code>definitionDigest</code></td>
+<td>该项要求定义块的SHA-256摘要</td>
+<td>正文变化或移动后，在人工复核关系后刷新</td>
+</tr>
+<tr>
+<td><code>origin</code></td>
+<td>要求为什么产生</td>
+<td>新要求填写对应<code>REQ-六位编号</code>；旧基线使用<code>pre-req-process</code></td>
+</tr>
+<tr>
+<td><code>topics</code></td>
+<td>按问题查找要求时使用的主题</td>
+<td>优先复用已有主题</td>
+</tr>
+<tr>
+<td><code>directVerification</code></td>
+<td>能够直接判断该项要求的验证</td>
+<td>不能完整判断时保持空数组</td>
+</tr>
+<tr>
+<td><code>issues</code></td>
+<td>当前与该要求直接相关的问题</td>
+<td>可选，只引用已登记ISSUE，不复制状态</td>
+</tr>
+</tbody></table>
+<p>主题记录只保存<code>id</code>、<code>title</code>和<code>supportingVerification</code>。同一批代表性测试在主题上登记一次，不复制到几十条要求中。</p>
+<p>每项验证使用：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>method</code></td>
+<td><code>test</code>、<code>inspection</code>、<code>analysis</code>或<code>demonstration</code>之一</td>
+</tr>
+<tr>
+<td><code>references</code></td>
+<td>真实存在的测试、检查、分析或实机记录路径</td>
+</tr>
+<tr>
+<td><code>note</code></td>
+<td>可选，说明这项证据能证明什么、不能证明什么</td>
+</tr>
+</tbody></table>
+<p><code>test</code>表示自动化测试；<code>inspection</code>表示人工或工具检查；<code>analysis</code>表示通过设计、代码、数据或模型分析作出判断；<code>demonstration</code>表示实机操作或运行记录。没有自动化测试不等于不能验证，但必须选择真实发生的方法和证据入口。</p>
+<h2 id="直接验证和支持性验证有什么区别"><a href="#直接验证和支持性验证有什么区别" class="headerlink" title="直接验证和支持性验证有什么区别"></a>直接验证和支持性验证有什么区别</h2><p>直接验证（<code>direct</code>）表示一个引用能够直接判断某项具体要求是否满足。假设一条要求同时规定“员工只能读取自己的文件”“跨员工请求必须拒绝”“不得泄露目标文件是否存在”，直接测试需要对这三部分都作出明确判断。</p>
+<p>直接测试文件使用要求编号标记：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TRACE-REQ: SEC-999</span></span><br></pre></td></tr></table></figure>
+
+<p>并把这个文件登记到该要求的<code>directVerification</code>。<code>SEC-999</code>在这里只是教学编号，不是仓库中的真实要求。</p>
+<p>支持性验证（<code>supporting</code>）表示测试与一个主题相关，却不能单独证明其中每条要求。测试文件使用主题标记：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TRACE-TOPIC: workspace-runtime</span></span><br></pre></td></tr></table></figure>
+
+<p>并登记到主题的<code>supportingVerification</code>。支持性测试不能描述成“逐项覆盖全部要求”。如果没有一项测试能够完整判断某条要求，<code>directVerification</code>保持空数组，比夸大覆盖更准确。</p>
+<h2 id="新增一条稳定设计要求"><a href="#新增一条稳定设计要求" class="headerlink" title="新增一条稳定设计要求"></a>新增一条稳定设计要求</h2><p>下面继续使用虚构的<code>SEC-999</code>说明完整操作。实际工作先从对应REQ和设计评审开始，不能直接复制这个编号。</p>
+<p>第一步，在受影响的设计正文中写出一条完整、可以判断的规则：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="strong">**SEC-999**</span>：员工只能通过工作空间文件接口读取自己的文件；请求其它员工的路径时必须拒绝，且不得返回文件是否存在。</span><br></pre></td></tr></table></figure>
+
+<p>第二步，在<code>design-requirements.json</code>增加记录。此时重点先把人工维护的关系写准确：<code>source</code>指向定义正文，<code>origin</code>指向产生这项变化的REQ，<code>topics</code>和验证关系按实际情况填写。<code>definitionDigest</code>可以先保留一个符合格式的临时值，最终由受控刷新命令根据正文统一生成。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;SEC-999&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;docs/02-设计/03-横切设计/CRS-001-安全与信任边界.md&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;definitionDigest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:0000000000000000000000000000000000000000000000000000000000000000&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;origin&quot;</span><span class="punctuation">:</span> <span class="string">&quot;REQ-替换为真实六位编号&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;topics&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;workspace-runtime&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;directVerification&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>第三步，根据实际证明能力选择直接或支持性验证。只有测试能够判断整条要求时才添加<code>TRACE-REQ</code>并登记到<code>directVerification</code>；一般相关测试使用<code>TRACE-TOPIC</code>并登记到主题。</p>
+<p>第四步，人工复核设计要求的身份、产生原因、主题、直接&#x2F;支持性验证和Issue关系。确认这些关系准确后，运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:refresh -- --reviewed</span><br><span class="line">pnpm docs:check</span><br><span class="line">git diff --check</span><br></pre></td></tr></table></figure>
+
+<p><code>trace:refresh</code>会先要求当前设计定义集合和追踪账本一一对应，然后只刷新每项要求的<code>source</code>和<code>definitionDigest</code>，保留<code>origin</code>、<code>topics</code>、<code>directVerification</code>和<code>issues</code>。随后它会重建追踪Markdown生成区。出现新增、缺失或重复ID时直接拒绝，不会为了生成摘要自动猜测关系。</p>
+<p><code>trace:render</code>只用于<strong>账本关系和定义摘要都已经正确、只是Markdown生成视图过期</strong>的情况：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:render</span><br></pre></td></tr></table></figure>
+
+<p>它只更新生成视图中的自动生成区域，不修改设计正文和账本。生成区域不接受手工编辑。</p>
+<h2 id="修改、移动或替代旧要求"><a href="#修改、移动或替代旧要求" class="headerlink" title="修改、移动或替代旧要求"></a>修改、移动或替代旧要求</h2><p>只改善表达且含义不变时，保留原编号。正文变化会让<code>trace:check</code>报告摘要不一致，这是提醒人工复核，不是要求把文字改回旧写法。确认要求含义、产生原因、主题、验证关系和Issue关系仍然正确后，运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:refresh -- --reviewed</span><br></pre></td></tr></table></figure>
+
+<p>要求移动到另一份设计但含义不变时，同样保留编号。受控刷新会把<code>source</code>更新到当前唯一的定义位置，并重新计算摘要；如果同一编号在多处定义或账本和正文集合不一致，会直接失败。</p>
+<p>要求含义发生实质变化时，先判断修改后的规则是否仍与原规则表达同一件事。如果新规则替代了旧要求，保留旧要求的替代说明，并为新规则取得新编号；不要继续使用旧编号表达不同含义。变化来自现行产品需求时，新的<code>origin</code>填写对应REQ。</p>
+<p>测试移动、删除或覆盖范围变化时，同步更新验证入口和标记。一个测试不再能直接判断整项要求时，把它降为支持性验证或移除关系，不为了让覆盖数量看起来不下降继续登记为<code>direct</code>。</p>
+<p>ISSUE关闭后，复核要求记录中的可选<code>issues</code>是否仍有保留关系的必要。这里不复制ISSUE状态和结论，问题的当前状态和结论始终从ISSUE台账读取。</p>
+<h2 id="常见检查失败怎样处理"><a href="#常见检查失败怎样处理" class="headerlink" title="常见检查失败怎样处理"></a>常见检查失败怎样处理</h2><table>
+<thead>
+<tr>
+<th>检查结果</th>
+<th>实际含义</th>
+<th>正确处理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>当前稳定设计要求没有进入账本</td>
+<td>正文新增了编号，账本没有对应记录</td>
+<td>补充来源、摘要、产生原因、主题和验证关系，复核后运行<code>trace:refresh</code></td>
+</tr>
+<tr>
+<td>账本引用未定义稳定要求</td>
+<td>编号或路径错误，或者正文已经删除</td>
+<td>恢复定义或按替代关系更新账本</td>
+</tr>
+<tr>
+<td>要求正文已经变化</td>
+<td><code>definitionDigest</code>与当前定义不一致</td>
+<td>先复核产生原因和验证关系；确认语义没有错误漂移后运行<code>pnpm trace:refresh -- --reviewed</code></td>
+</tr>
+<tr>
+<td>验证引用不存在</td>
+<td>测试或证据文件移动、删除或拼写错误</td>
+<td>更新为真实入口，不创建空文件绕过</td>
+</tr>
+<tr>
+<td>缺少<code>TRACE-REQ</code></td>
+<td>测试被登记为直接验证，但文件没有要求标记</td>
+<td>确认是否真的直接验证，再补标记或降低关系</td>
+</tr>
+<tr>
+<td>缺少<code>TRACE-TOPIC</code></td>
+<td>测试被登记为主题支持性验证，但文件没有主题标记</td>
+<td>补充准确主题标记或移除关系</td>
+</tr>
+<tr>
+<td>Markdown与账本不一致</td>
+<td>生成视图已经过期</td>
+<td>运行<code>pnpm trace:render</code>，不手工修改生成区</td>
+</tr>
+</tbody></table>
+<p>检查通过只证明编号、来源、关系和生成结果彼此一致。它不能证明设计决定合理，也不能证明测试最近一次运行成功。设计合理性由设计评审确认，实际验证结果由Loop和版本记录保存，Director仍然对最终结论负责。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B10-%E9%80%9A%E8%BF%87%E7%9C%9F%E5%AE%9E%E4%BD%BF%E7%94%A8%E5%92%8C%E7%8B%AC%E7%AB%8B%E8%AF%84%E5%AE%A1%E5%8F%91%E7%8E%B0%E9%81%97%E6%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B10-%E9%80%9A%E8%BF%87%E7%9C%9F%E5%AE%9E%E4%BD%BF%E7%94%A8%E5%92%8C%E7%8B%AC%E7%AB%8B%E8%AF%84%E5%AE%A1%E5%8F%91%E7%8E%B0%E9%81%97%E6%BC%8F/" class="post-title-link" itemprop="url">ACDL研发流程10：通过真实使用和独立评审发现遗漏</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>ACDL研发流程系列第10篇，共15篇。</p>
+<p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B09-%E5%AE%8C%E6%88%90%E4%BB%A3%E7%A0%81%E3%80%81%E9%AA%8C%E8%AF%81%E5%B9%B6%E6%9B%B4%E6%96%B0%E7%8E%AF%E5%A2%83/">ACDL研发流程09：完成代码、验证并更新环境</a></p>
+<p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B11-%E7%BB%93%E6%9D%9FLoop%E5%B9%B6%E5%86%BB%E7%BB%93%E6%AD%A3%E5%BC%8F%E7%89%88%E6%9C%AC/">ACDL研发流程11：结束Loop并冻结正式版本</a></p>
+</blockquote>
+<h2 id="自动化验证通过以后还会遗漏什么"><a href="#自动化验证通过以后还会遗漏什么" class="headerlink" title="自动化验证通过以后还会遗漏什么"></a>自动化验证通过以后还会遗漏什么</h2><p>自动化测试擅长回答已经被写成判断条件的问题。例如，收藏接口能否保存状态，重复请求是否生成重复数据，员工是否只能收藏自己有权访问的会话。这些问题只要定义清楚，就可以快速、稳定地反复检查。</p>
+<p>但产品仍然可能不好用。收藏按钮也许没有明显反馈，收藏后的会话也许仍然淹没在长列表中，真实账号也许因为历史数据触发了测试数据没有覆盖的情况。代码还可能存在另一类问题：实现者和测试使用了同一种理解，因此一起漏掉了权限、并发、恢复或发布风险。</p>
+<p>ACDL使用两种彼此独立的Loop主动寻找这些遗漏：</p>
+<table>
+<thead>
+<tr>
+<th>Loop</th>
+<th>主导者</th>
+<th>主要观察对象</th>
+<th>主要回答的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DFL(Developer Feedback Loop)</td>
+<td>负责人</td>
+<td>固定环境、制品、提交、角色和账号中的真实任务</td>
+<td>产品在实际工作中是否真的好用</td>
+</tr>
+<tr>
+<td>ERL(Engineering Review Loop)</td>
+<td>独立Agent</td>
+<td>固定提交、差异范围或Git标签中的设计、代码、测试和发布材料</td>
+<td>现有结果是否隐藏工程风险</td>
+</tr>
+</tbody></table>
+<p>DFL不是人工执行一遍自动化测试，ERL也不是让原来的Agent再解释一次自己的代码。两者都要从实施者以外的视角寻找ACL(Agentic Coding Loop)和自动化验证不容易发现的问题。</p>
+<p>它们也不是ACL之后必须依次完成的两个阶段。Director可以单独对运行已久的功能开展DFL，独立Agent也可以单独评审某个关键能力或正式版本。是否启动、何时启动、检查多深，由当前问题和风险决定。</p>
+<p>DFL全称中的Developer是这个Loop既有名称的一部分。在ACDL中，主导DFL的人仍然统一称为Director，Developer不是第三类参与者或一个单独岗位。</p>
+<h2 id="两种Loop分别登记编号和记录"><a href="#两种Loop分别登记编号和记录" class="headerlink" title="两种Loop分别登记编号和记录"></a>两种Loop分别登记编号和记录</h2><p>DFL和ERL都单独使用编号、范围、记录和结束条件。开始前分别在<code>docs/03-实施/DFL/README.md</code>和<code>docs/03-实施/ERL/README.md</code>登记，取得<code>DFL-六位编号</code>或<code>ERL-六位编号</code>。编号在整个项目中连续使用，不随目标版本重新开始。</p>
+<p>DFL和ERL是否另建独立计划，都取决于执行前是否需要单独批准高风险、恢复或评审边界。普通工作直接在主记录中保存启动方案、当前进展、实际操作、发现和结论，不因Loop类型机械拆成计划和记录两份文档。</p>
+<p>对应登记表保存每轮Loop的整体状态和文档入口。单个计划或记录的文档状态，只说明这份文件是否已经确认，不能代替整轮Loop的状态。</p>
+<h2 id="DFL-Developer-Feedback-Loop-：让Director真正使用产品"><a href="#DFL-Developer-Feedback-Loop-：让Director真正使用产品" class="headerlink" title="DFL(Developer Feedback Loop)：让Director真正使用产品"></a>DFL(Developer Feedback Loop)：让Director真正使用产品</h2><p>DFL由Director主导。这里的“主导”不是指Director独自准备环境、收集日志和整理文档，而是由Director选择真实任务、亲自操作产品，并对观察到的体验作出判断。</p>
+<p>Agent可以帮助确认环境状态、准备测试账号、定位入口、记录操作、提取日志和调查原因，但不能代替Director感受产品。Agent能够证明按钮响应了请求，却不能替Director判断这个按钮是否容易找到、等待过程是否让人困惑，或者整个流程是否符合实际工作习惯。</p>
+<p>DFL关心的是一个人能不能自然地完成任务，而不是每个控件是否被点击过。以“收藏会话”为例，一次有意义的DFL可能是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">从日常使用的长列表中找到一个重要会话</span><br><span class="line">  →收藏它</span><br><span class="line">    →继续处理其它工作</span><br><span class="line">      →刷新页面并重新登录</span><br><span class="line">        →再次寻找刚才收藏的会话</span><br><span class="line">          →取消收藏</span><br></pre></td></tr></table></figure>
+
+<p>这段过程会自然暴露按钮反馈、列表排序、等待时间、错误提示和上下文中断等问题。只写“点击收藏按钮，结果成功”看似通过了检查，却没有回答收藏功能是否真的帮助Director更快找回重要内容。</p>
+<h2 id="开始DFL前，先记清使用的环境、账号和版本"><a href="#开始DFL前，先记清使用的环境、账号和版本" class="headerlink" title="开始DFL前，先记清使用的环境、账号和版本"></a>开始DFL前，先记清使用的环境、账号和版本</h2><p>DFL不要求先完成某轮ACL，但开始前要说清楚这次准备了解什么。普通DFL直接在实施记录开头写启动方案，不需要另外制造一份计划文档。</p>
+<p>启动方案至少要让后来的人看懂这些信息：</p>
+<ul>
+<li>为什么开展这轮DFL，准备回答什么问题；</li>
+<li>实际使用哪个环境，以及环境中运行的具体提交或制品；</li>
+<li>使用什么账号和角色，它具有什么权限和已有数据；</li>
+<li>本轮完成哪些真实任务，明确不检查什么；</li>
+<li>哪些风险优先观察，遇到什么情况立即停止；</li>
+<li>做到什么程度可以认为本轮使用已经完成。</li>
+</ul>
+<p>“关联V0.10”只能说明这轮工作开始时的版本背景，不能证明环境里实际运行了什么。DFL需要另外记录执行基线。执行基线就是当时真正部署的提交、制品和必要配置。否则同样一条反馈可能来自不同代码，后续Agent无法复现。</p>
+<p>账号角色同样不能省略。员工、管理员和运维人员看到的入口、数据和失败结果不同。使用一个拥有全部权限的临时账号通过，不代表普通员工可以完成相同任务。</p>
+<p>如果DFL涉及备份恢复、全局暂停、系统或公共Skill紧急禁用等高风险操作，则先建立独立计划，固定可恢复环境、操作前状态、停止条件和恢复检查。普通体验反馈不要与这些可能改变系统状态的专项操作混在同一轮中。</p>
+<h2 id="用真实任务开展DFL，而不是维护永久手工清单"><a href="#用真实任务开展DFL，而不是维护永久手工清单" class="headerlink" title="用真实任务开展DFL，而不是维护永久手工清单"></a>用真实任务开展DFL，而不是维护永久手工清单</h2><p>开始使用后，Director按自然顺序完成任务。Agent记录发生了什么，必要时同时查看页面、接口、日志和数据，但不要频繁打断使用过程，把一次真实体验切成几十项孤立的技术检查。</p>
+<p>每项关键结果可以记为“通过”“有问题”“阻塞”“当前不可用”或“不适用”。这些词需要配上具体观察。例如：</p>
+<ul>
+<li>通过：重新登录后收藏状态仍然保留，收藏会话出现在列表顶部；</li>
+<li>有问题：点击后约两秒没有反馈，Director误以为没有生效并再次点击；</li>
+<li>阻塞：普通员工打开列表时接口返回无权限，无法继续完成寻找任务；</li>
+<li>当前不可用：目标环境没有部署这次变化，因此本轮不能检查；</li>
+<li>不适用：本轮使用员工账号，不检查管理员批量操作。</li>
+</ul>
+<p>DFL不是问题数量竞赛。没有发现问题也是有效结果，前提是记录能够说明使用了什么环境、完成了什么任务，以及观察覆盖了哪些风险。反过来，漫无边际地试遍所有历史功能并不会让结论更可靠，只会让每一轮都难以完成，也让反馈失去明确对象。</p>
+<p>一条路径已经稳定、步骤固定并且需要反复检查时，把它转成ACL中的自动化测试或发布后的冒烟检查。DFL保留给真实工作流、体验和新风险，不承担永久人工回归清单。</p>
+<h2 id="DFL发现问题以后先固定发现，不在原Loop里修产品"><a href="#DFL发现问题以后先固定发现，不在原Loop里修产品" class="headerlink" title="DFL发现问题以后先固定发现，不在原Loop里修产品"></a>DFL发现问题以后先固定发现，不在原Loop里修产品</h2><p>真实使用中经常会发现看似很小的问题，例如按钮没有反馈、文字不准确，或者一个已经确认的交互状态没有实现。DFL此时先记录实际操作、观察结果和候选基线，不直接修改产品代码、测试、部署定义或正式文档。这样，原记录才能持续回答“这个固定候选在真实使用中发生了什么”。</p>
+<p>需要修改时，先在DFL中记录一项局部发现（Finding），再建立ACL处理。问题需要跨工作单元、跨会话、跨责任人或跨版本继续调查、决定或验证时，再登记全局ISSUE；需要改变产品行为、权限、安全、数据或正式范围时，则建立REQ并回到设计。修复完成后固定新的环境、制品和提交，开始下一次尝试（Attempt）复验，不把新结果覆盖到第一次候选上。</p>
+<h2 id="ERL-Engineering-Review-Loop-：让独立Agent检查固定结果"><a href="#ERL-Engineering-Review-Loop-：让独立Agent检查固定结果" class="headerlink" title="ERL(Engineering Review Loop)：让独立Agent检查固定结果"></a>ERL(Engineering Review Loop)：让独立Agent检查固定结果</h2><p>ERL由没有参与被评内容实施的Agent主导，从评审者而非实现者的角度，独立检查一个不会在评审中继续变化的提交、差异范围或Git标签。Director确定为什么评审、评审什么以及哪些风险值得优先关注，评审Agent负责展开调查、提出候选发现并寻找证据。</p>
+<p>一次ERL至少需要三种变化：</p>
+<ul>
+<li>使用独立上下文重新理解问题，不继承原实现过程中的全部判断；</li>
+<li>读取<strong>已经确认的设计</strong>、完整差异和验证结果，而不是只听原Agent概述；</li>
+<li>主动寻找能够推翻“已经完成”的证据，而不是帮助实现者证明原方案正确。</li>
+</ul>
+<p>原来主导ACL的Agent可以解释背景和提供入口，但不应代替独立评审。完全没有新视角的自检仍然有价值，却不能当作ERL。</p>
+<h2 id="普通Pull-Request审查不自动成为ERL"><a href="#普通Pull-Request审查不自动成为ERL" class="headerlink" title="普通Pull Request审查不自动成为ERL"></a>普通Pull Request审查不自动成为ERL</h2><p>ChatGPT或其它Agent可以在Pull Request中检查需求与实现是否一致、测试是否覆盖主要风险、实施记录是否与差异和验证结果相符。这类普通审查适合快速发现当前候选中的遗漏，问题也可以直接留在Pull Request中，由当前ACL修复并重新验证。</p>
+<p>普通审查不要求另建ERL。尤其是评审Agent已经参与同一方案的形成、评审对象仍在持续变化，或者结论只服务当前Pull Request时，把它登记成ERL不会增加独立性，只会增加记录。Pull Request中的通过、批准或自动检查结果也不能代替本机、数据库、容器、浏览器或真实环境验证。</p>
+<p>出现以下情况时，可以考虑把普通审查升级为正式ERL：</p>
+<ul>
+<li>变化涉及权限、Secret、员工隔离、事务、并发、迁移、删除、恢复或其它高风险边界；</li>
+<li>需要一个没有参与被评内容实施的Agent从新上下文重新理解问题；</li>
+<li>需要固定评审基线、逐项复核发现，并把结论作为长期工程证据；</li>
+<li>某个版本或重要候选需要独立于原ACL保存审查范围和结果。</li>
+</ul>
+<p>使用ChatGPT开展正式独立评审时，可以新建会话，只提供Pull Request、完整HEAD提交、Accepted需求与设计、相关源码、验证证据和明确评审目标，不把原实现讨论当作结论灌入新上下文。评审期间保持被评提交不变；需要修复时另开ACL或在原ACL的新提交中处理，再决定是否对新提交开展复核。这样做是降低原方案锚定的一种推荐方法，不是所有Pull Request的强制门禁。</p>
+<h2 id="ERL先固定评审对象，再决定检查角度"><a href="#ERL先固定评审对象，再决定检查角度" class="headerlink" title="ERL先固定评审对象，再决定检查角度"></a>ERL先固定评审对象，再决定检查角度</h2><p>ERL默认可以把启动范围和评审结果保存在同一份主记录中。只有评审边界需要在执行前单独批准时，才另建独立计划；无论是否拆文档，第一次正式检查开始后都保留原范围，后续变化追加原因和影响。</p>
+<p>开始前，Director与评审Agent固定：</p>
+<ul>
+<li>一个完整Git提交或Git标签，作为评审基线，也就是本轮实际检查且不会中途替换的对象；</li>
+<li>关联版本或“未确定”，用来说明开始时的计划背景；</li>
+<li>评审范围和明确不检查的范围；</li>
+<li>真正受影响的风险角度；</li>
+<li>使用的模型、工具和必要配置；</li>
+<li>问题严重程度、复核方法、证据位置和结束条件。</li>
+</ul>
+<p>评审基线回答“实际检查了什么”，关联版本回答“当时可能服务于哪个版本”，两者不能互相替代。一轮ERL后来是否成为某个版本的正式验收依据，要等版本验收时由Director选择，不因为记录里写了关联版本就自动生效。</p>
+<p>不同改动需要不同检查角度。收藏功能可能重点检查员工之间的数据隔离、重复请求、会话删除后的残留数据、列表查询性能、迁移回退和测试遗漏；纯文档调整则重点检查事实是否准确、入口是否完整和规则是否互相矛盾。不要每次照抄一份覆盖整个仓库的万能清单。</p>
+<h2 id="评审Agent先提出可能存在的问题，再用证据确认"><a href="#评审Agent先提出可能存在的问题，再用证据确认" class="headerlink" title="评审Agent先提出可能存在的问题，再用证据确认"></a>评审Agent先提出可能存在的问题，再用证据确认</h2><p>评审Agent和辅助工具可能给出大量看似合理的风险，其中一部分来自误读、重复发现或不适用于当前设计的通用建议。ERL的价值不在于生成更长的问题列表，而在于把真正成立的问题找出来。</p>
+<p>每项候选发现都要回到<strong>已经确认的设计</strong>、代码、测试或运行事实复核：</p>
+<p>1.指出具体对象和可以复现的条件；<br>2.说明它违反了哪项已经确认的行为或工程边界；<br>3.提供代码、测试、数据或运行证据；<br>4.检查是否已经存在相同根因的ISSUE或历史发现；<br>5.确认影响和严重程度，再决定去向。</p>
+<p>只有“这里可能有并发问题”还不够。评审Agent需要进一步说明哪些操作可能同时发生、当前代码怎样处理、会出现什么错误结果，以及现有测试为什么没有发现它。无法取得证据的推测可以保留为未确认候选，但不能登记成已经确认的问题。</p>
+<p>相同根因、修复方式和验证方式的发现合并处理。后续ERL再次发现同一问题时，引用原ISSUE并记录新的评审基线，不为同一个问题重复分配编号。</p>
+<h2 id="ERL记录问题，修复工作另开ACL"><a href="#ERL记录问题，修复工作另开ACL" class="headerlink" title="ERL记录问题，修复工作另开ACL"></a>ERL记录问题，修复工作另开ACL</h2><p>ERL评审的是固定基线。评审过程中即使已经知道怎样修复，也不能修改代码后继续使用同一个基线，并把原问题写成不存在。否则评审记录无法再回答“当时的候选结果是否安全”。</p>
+<p>确认的实现、测试或文档问题进入ISSUE，并由独立ACL修复；需要改变产品行为、权限、安全或数据边界的问题进入REQ和设计。修复工作可以在ERL尚未结束时并行启动，但它使用自己的起点、范围、验证和实施记录。</p>
+<p>原ERL继续保存原基线、发现证据和当时的严重程度。修复结果和回归证据写在处理它的ACL中，两边保持明确关联。需要确认修复是否消除风险时，可以对新的固定提交开展定点复核，不能改写第一次评审的记录。</p>
+<h2 id="DFL与ERL发现的问题怎样回到ACDL"><a href="#DFL与ERL发现的问题怎样回到ACDL" class="headerlink" title="DFL与ERL发现的问题怎样回到ACDL"></a>DFL与ERL发现的问题怎样回到ACDL</h2><p>无论问题来自真实使用还是独立评审，先判断它是让实现重新符合已经确认的设计，还是要改变产品或设计。这个判断决定工作返回实施还是重新进入需求。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">DFL或ERL中的候选发现</span><br><span class="line">  →复核问题是否存在、影响多大、是否已经记录</span><br><span class="line">    →在本轮记录局部发现（Finding）</span><br><span class="line">      →需要修改正式产物</span><br><span class="line">        →建立ACL修复和验证</span><br><span class="line">      →需要跨工作单元继续处理</span><br><span class="line">        →提升为全局ISSUE</span><br><span class="line">      →改变产品行为或正式边界</span><br><span class="line">        →登记REQ并重新完成产品与架构设计</span><br><span class="line">      →环境自身问题</span><br><span class="line">        →更新环境记录，并按需要建立ISSUE或ACL</span><br></pre></td></tr></table></figure>
+
+<p>例如，DFL发现刷新后收藏状态丢失，而<strong>现行设计已经明确要求</strong>状态持久保存，这是实现缺陷，可以进入ISSUE和ACL。DFL发现收藏超过十个后需要文件夹，则是在增加新对象和新流程，需要登记REQ。ERL发现员工可以读取他人的收藏数据，是实现或安全缺陷；如果修复需要重新定义跨员工共享行为，则还要回到REQ和相应层级设计。</p>
+<p>ISSUE保存问题的当前状态和后续去向，DFL或ERL记录保存它最初怎样被发现。不要把真实操作、评审证据和完整调查复制到ISSUE台账中，也不要只在原Loop里写一句“后续处理”，却没有给需要跨会话处理的问题分配ISSUE编号并登记。</p>
+<h2 id="一轮Loop结束不等于所有问题已经修完"><a href="#一轮Loop结束不等于所有问题已经修完" class="headerlink" title="一轮Loop结束不等于所有问题已经修完"></a>一轮Loop结束不等于所有问题已经修完</h2><p>DFL达到结束条件，表示约定的真实任务已经完成，结果和问题已经记录，并且未解决事项都有明确去向。ERL达到结束条件，表示计划范围已经检查，候选发现已经逐项复核，重复项已经合并，问题严重程度和后续去向也已经写清，误报与不采用项也说明了理由。</p>
+<p>两者都不要求在结束前修复全部发现。如果把“所有问题都修完”作为结束条件，一轮评审会因为不断产生新的ACL和新需求而永远无法结束，原来的使用或评审事实也会被后续变化冲淡。</p>
+<p>准备结束时，记录先进入<code>Review</code>。Director核对：</p>
+<ul>
+<li>原来准备回答的问题是否已经得到结论；</li>
+<li>实际环境、执行基线或评审基线是否清楚；</li>
+<li>结果、失败、跳过和停止事项是否如实保留；</li>
+<li>确认问题是否都已经写入对应的ISSUE、REQ、ACL或环境记录；</li>
+<li>当前结论有没有把“尚未检查”写成“已经通过”；</li>
+<li>如果这轮工作准备服务某个版本，它能证明什么，又不能证明什么。</li>
+</ul>
+<p>Director确认结论后，Loop及其必要记录才能进入<code>Completed</code>。<code>Completed</code>表示这轮真实使用或独立评审已经完整结束，不表示相关版本已经形成，也不表示它自动成为某个版本的验收依据。</p>
+<h2 id="按风险选择DFL、ERL或两者都不开展"><a href="#按风险选择DFL、ERL或两者都不开展" class="headerlink" title="按风险选择DFL、ERL或两者都不开展"></a>按风险选择DFL、ERL或两者都不开展</h2><p>DFL和ERL的价值来自不同视角，不来自数量。准备交付一项明显影响日常操作的新功能时，DFL通常很有价值；涉及权限、Secret、数据迁移、并发、恢复或大范围架构变化时，ERL通常更值得投入。既改变核心工作流又涉及高风险数据边界的候选，可以分别开展两种Loop。</p>
+<p>低风险文档修正、局部重构或已经有充分自动化证据的内部调整，可能两者都不需要。选择不开展时，不用建立空记录来证明“已经跳过”；只需要在ACL或版本验收中如实说明实际采用了哪些证据，以及为什么这些证据足以检查本次风险。</p>
+<p>反过来，开展了DFL或ERL也不能让版本自动通过。下一章将继续说明怎样分别结束多轮Loop，再由Director选择真正纳入的需求、提交和证据，形成一个可以用Git标签固定的正式版本。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95A-%E6%9C%AF%E8%AF%AD%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95A-%E6%9C%AF%E8%AF%AD%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB/" class="post-title-link" itemprop="url">ACDL研发流程附录A：术语和对象关系</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>ACDL研发流程系列第13篇，共15篇。</p>
+<p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B12-%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BB%8E%E5%93%AA%E9%87%8C%E5%BC%80%E5%A7%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F/">ACDL研发流程12：不同工作从哪里开始、在哪里结束</a></p>
+<p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">ACDL研发流程附录B：登记表、状态和常用命令</a></p>
+</blockquote>
+<h2 id="这份附录怎样使用"><a href="#这份附录怎样使用" class="headerlink" title="这份附录怎样使用"></a>这份附录怎样使用</h2><p>正文按一次研发工作的自然顺序介绍ACDL，本附录按概念查找。遇到一个缩写、编号或状态不知道属于哪里时，先在这里确认它回答什么问题，再到附录B查实际登记入口。</p>
+<p>ACDL中的对象不是越多越好。每份文档或记录只回答一个主要问题：ISSUE保存问题去向，REQ保存为什么改变产品，设计保存系统应该怎样工作，Loop保存一轮实际工作，版本保存最终交付结果。能够在当前会话内完成的小事，不需要为了填满这张关系图制造全部对象。</p>
+<h2 id="ACDL和两类参与者"><a href="#ACDL和两类参与者" class="headerlink" title="ACDL和两类参与者"></a>ACDL和两类参与者</h2><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>全称或中文含义</th>
+<th>在当前项目中的作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACDL</td>
+<td>Agent Collaborative Development Lifecycle；Agent协同研发体系</td>
+<td>当前项目根据自身研发现场定制的完整研发体系，覆盖问题、需求、设计、实施、验证、反馈和版本</td>
+</tr>
+<tr>
+<td>Director</td>
+<td>对方向和结果负责的人</td>
+<td>提出和筛选问题，参与设计，决定取舍与授权，确认Loop结论和正式版本</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>在明确目标与边界内工作的智能体</td>
+<td>调查、设计、实施、测试、发布、记录证据或开展独立评审</td>
+</tr>
+</tbody></table>
+<p>Director不是一个传统管理岗位。一个人在不同时间可以同时承担产品、架构、开发、测试、发布和验收职责，但涉及取舍、授权和最终接受时，仍以Director身份作出决定。</p>
+<p>Agent也不是单一代码生成器。它可以主导ACL中的实施，也可以在没有参与被评内容实施时主导ERL。Agent承担的工作越多，越需要从仓库文档和固定提交中取得上下文，不能只依赖当前聊天记录。</p>
+<h2 id="一项变化涉及的主要对象"><a href="#一项变化涉及的主要对象" class="headerlink" title="一项变化涉及的主要对象"></a>一项变化涉及的主要对象</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">真实问题、反馈，或者实际代码、测试与环境中发现的问题</span><br><span class="line">  →需要跨会话继续处理时登记ISSUE</span><br><span class="line">    →确认需要改变产品时登记REQ</span><br><span class="line">      →修改负责当前事实的系统、能力或横切设计，必要时建立ADR</span><br><span class="line">        →为长期重要规则分配稳定设计要求编号</span><br><span class="line">          →设计确认后确定目标版本</span><br><span class="line">            →按当前目的启动ACL、DFL或ERL</span><br><span class="line">              →各轮记录实际结果并分别结束</span><br><span class="line">                →Director选择实际纳入范围</span><br><span class="line">                  →正式版本和Git标签</span><br></pre></td></tr></table></figure>
+
+<p>这不是每项工作的必经清单。已经明确的产品变化可以直接登记REQ；恢复Accepted设计的缺陷可以从ISSUE或ACL开始；DFL和ERL可以单独启动；一轮Loop结束后也可以不立即形成正式版本。</p>
+<h2 id="问题、需求和路线图"><a href="#问题、需求和路线图" class="headerlink" title="问题、需求和路线图"></a>问题、需求和路线图</h2><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>编号或名称</th>
+<th>回答的问题</th>
+<th>不负责什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ISSUE</td>
+<td><code>ISSUE-六位编号</code></td>
+<td>发现了什么问题，现在处于什么状态，由什么继续处理</td>
+<td>不提前决定一定要改变产品，也不复制完整实施证据</td>
+</tr>
+<tr>
+<td>GitHub Issue</td>
+<td>GitHub中的<code>#数字</code></td>
+<td>怎样接收反馈、讨论和在看板中展示进展</td>
+<td>不替代本地ISSUE身份和状态</td>
+</tr>
+<tr>
+<td>REQ</td>
+<td><code>REQ-六位编号</code></td>
+<td>为什么改变产品，希望得到什么结果，何时实际交付</td>
+<td>不规定接口、数据表和代码方案</td>
+</tr>
+<tr>
+<td>路线图</td>
+<td><code>RM-三位编号</code></td>
+<td>多个候选REQ之间怎样排序，有什么依赖和开始条件</td>
+<td>不重复定义需求，也不提前承诺版本范围</td>
+</tr>
+</tbody></table>
+<p>ISSUE和REQ最容易混淆。判断方法是：如果仍在调查发生了什么，或者只是让实现重新符合已经确认的设计，使用ISSUE；如果已经确认要改变用户行为、业务规则、权限、安全、数据边界或正式支持范围，使用REQ。</p>
+<p><code>REQ-000001</code>和<code>PRD-001</code>也不是同一种编号。REQ追踪一次产品变化，稳定设计要求追踪系统需要长期保持的一条规则。一项REQ可以产生多条稳定设计要求，一条旧要求也可能被后续REQ修改。</p>
+<h2 id="当前设计、ADR和稳定设计要求"><a href="#当前设计、ADR和稳定设计要求" class="headerlink" title="当前设计、ADR和稳定设计要求"></a>当前设计、ADR和稳定设计要求</h2><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>文件或编号形式</th>
+<th>保存什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系统设计</td>
+<td><code>SYS-三位编号-标题.md</code></td>
+<td>产品定位、总体范围、核心进程、存储和外部边界</td>
+</tr>
+<tr>
+<td>能力设计</td>
+<td><code>CAP-三位编号-标题.md</code></td>
+<td>一项能力的用户行为、对象、状态、流程、失败，以及对应数据、接口、事务、恢复、代码和测试入口</td>
+</tr>
+<tr>
+<td>横切设计</td>
+<td><code>CRS-三位编号-标题.md</code></td>
+<td>多个能力共同遵守的安全、数据、接口、审计、观测、部署和恢复规则</td>
+</tr>
+<tr>
+<td>ADR</td>
+<td><code>ADR-四位编号-决定名称.md</code></td>
+<td>重要决定的背景、备选方案、选择理由和代价</td>
+</tr>
+<tr>
+<td>索引与追踪</td>
+<td><code>IDX-三位编号-标题.md</code></td>
+<td>设计地图、旧编号迁移和要求验证关系，不定义新的设计规则</td>
+</tr>
+<tr>
+<td>稳定设计要求</td>
+<td><code>PRD-*</code>、<code>DOM-*</code>、<code>ARCH-*</code>、<code>SEC-*</code></td>
+<td>需要长期保持、追踪和验证的单条规则</td>
+</tr>
+</tbody></table>
+<p>设计类别按事实职责划分，不要求每个REQ新建一组文档。先找到真正负责当前事实的设计，再检查相关共同规则是否需要同步。旧<code>PLAT / DOMAIN / MODULE</code>只用于历史追溯。</p>
+<p>ADR解释为什么选择某个重要方案，最终决定仍要进入受影响的系统、能力或横切设计。推翻Accepted ADR时建立新的ADR，并让旧记录进入<code>Superseded</code>。</p>
+<p>稳定设计要求的前缀表达规则性质，不等同于所在文档目录：</p>
+<table>
+<thead>
+<tr>
+<th>前缀</th>
+<th>表达的规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>PRD-</code></td>
+<td>平台级产品范围、用户承诺、核心规则和结果指标</td>
+</tr>
+<tr>
+<td><code>DOM-</code></td>
+<td>领域行为、用户流程、对象状态和验收结果</td>
+</tr>
+<tr>
+<td><code>ARCH-</code></td>
+<td>跨进程、数据、接口、部署、迁移和恢复约束</td>
+</tr>
+<tr>
+<td><code>SEC-</code></td>
+<td>身份、凭据、隔离、网络、审计和数据安全约束</td>
+</tr>
+</tbody></table>
+<h2 id="目标版本、Loop和三种Loop"><a href="#目标版本、Loop和三种Loop" class="headerlink" title="目标版本、Loop和三种Loop"></a>目标版本、Loop和三种Loop</h2><p>目标版本为准备组织的交付分配版本号，并在版本总览中建立记录。它在设计确认、REQ准备排期时形成，但此时还没有承诺最终纳入全部候选内容。正式版本要等验收完成并创建真实Git标签后才存在。</p>
+<p>Loop是一轮有明确准备、执行、证据和结论的工作单元，不是Agent在一个Prompt中反复思考的内部循环。</p>
+<table>
+<thead>
+<tr>
+<th>Loop</th>
+<th>全称</th>
+<th>主导者</th>
+<th>主要结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ACL</td>
+<td>Agentic Coding Loop</td>
+<td>Agent</td>
+<td>把Accepted设计变成代码、测试和可以评审的实施结果</td>
+</tr>
+<tr>
+<td>DFL</td>
+<td>Developer Feedback Loop</td>
+<td>Director</td>
+<td>在真实角色、界面、数据和环境中完成任务并记录反馈</td>
+</tr>
+<tr>
+<td>ERL</td>
+<td>Engineering Review Loop</td>
+<td>独立Agent</td>
+<td>对固定提交、差异范围或Git标签开展独立工程评审；局部发现先留在本轮记录，需要继续处理时再进入ISSUE、REQ或ACL</td>
+</tr>
+</tbody></table>
+<p>三种Loop彼此独立，不是开发、测试、验收三个串行阶段。ACL可以单独结束，DFL可以检查运行已久的功能，ERL也可以单独评审一个关键模块。是否成为某个正式版本的证据，由版本验收时的实际选择决定。</p>
+<h2 id="启动方案、独立计划和实施记录"><a href="#启动方案、独立计划和实施记录" class="headerlink" title="启动方案、独立计划和实施记录"></a>启动方案、独立计划和实施记录</h2><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>回答的问题</th>
+<th>通常放在哪里</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动方案</td>
+<td>这一轮准备为什么做、从哪里开始、做什么、不做什么、怎样验证和结束</td>
+<td>对应Loop主记录的开头</td>
+</tr>
+<tr>
+<td>独立计划</td>
+<td>哪些工作需要在执行前单独批准高风险、恢复或评审边界</td>
+<td>确实需要单独确认时建立，不按Loop类型机械创建</td>
+</tr>
+<tr>
+<td>实施或评审记录</td>
+<td>实际做了什么，发生了哪些失败、差异、验证和剩余问题</td>
+<td>对应ACL、DFL或ERL目录</td>
+</tr>
+<tr>
+<td>当前摘要</td>
+<td>当前做到哪里、什么已完成、什么阻塞、下一步是什么</td>
+<td>正在执行的Loop记录</td>
+</tr>
+</tbody></table>
+<p>计划写将要发生的事，记录写已经发生的事。执行过程改变时，在记录中追加变化原因，不把原方案悄悄改成最后结果。</p>
+<h2 id="环境、目标版本和正式版本的区别"><a href="#环境、目标版本和正式版本的区别" class="headerlink" title="环境、目标版本和正式版本的区别"></a>环境、目标版本和正式版本的区别</h2><table>
+<thead>
+<tr>
+<th>对象</th>
+<th>回答的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>环境记录</td>
+<td>某个环境现在运行什么提交、制品和配置，怎样恢复</td>
+</tr>
+<tr>
+<td>目标版本</td>
+<td>目前准备组织哪一次候选交付</td>
+</tr>
+<tr>
+<td>正式版本</td>
+<td>哪些变化已经验收，哪个Git标签固定了结果</td>
+</tr>
+</tbody></table>
+<p>环境中已经部署不表示Loop结束，也不表示正式版本形成。正式版本形成后，也不表示它已经部署到所有环境。一个环境可以运行候选供DFL使用，也可以暂时停留在旧正式版本。</p>
+<h2 id="状态属于对象还是文档"><a href="#状态属于对象还是文档" class="headerlink" title="状态属于对象还是文档"></a>状态属于对象还是文档</h2><p>同一份REQ正文同时有需求状态和Markdown文档状态，它们表达不同事实。需求状态说明这项产品变化走到了哪里，文档状态说明这份文件是否已经可以采用。Loop整体状态与它的计划、记录文档状态同样不能互相替代。</p>
+<p>例如：</p>
+<ul>
+<li>REQ可以处于<code>候选</code>，正文仍处于<code>Draft</code>；</li>
+<li>REQ进入<code>已排期</code>时，相关设计应当已经<code>Accepted</code>；</li>
+<li>ACL整体处于<code>Review</code>时，其记录也在等待Director确认；</li>
+<li>一份Accepted设计可以被多轮ACL长期使用；</li>
+<li>正式版本和发布说明只有在Git标签真实存在后才进入<code>Completed</code>。</li>
+</ul>
+<p>附录B集中列出这些登记表、状态和命令。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B06-%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B06-%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" class="post-title-link" itemprop="url">ACDL研发流程06：共同完成产品与架构设计</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <blockquote>
+<p>ACDL研发流程系列第6篇，共15篇。</p>
+<p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B05-%E5%86%B3%E5%AE%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%94%B9%E5%8F%98%E4%BA%A7%E5%93%81/">ACDL研发流程05：决定为什么要改变产品</a></p>
+<p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/">ACDL研发流程07：把设计拆成可以独立验证的任务</a></p>
+</blockquote>
+<h2 id="1-被选中的需求还不能直接交给Agent实现"><a href="#1-被选中的需求还不能直接交给Agent实现" class="headerlink" title="1.被选中的需求还不能直接交给Agent实现"></a>1.被选中的需求还不能直接交给Agent实现</h2><p>REQ进入<code>已选中</code>，表示Director已经确认这个问题值得改变，问题、期望结果、非目标和验收场景足以开始设计。但这时通常还没有把所有关键问题说清：用户从哪里操作，对象属于谁，状态怎样变化，失败时发生什么，接口和数据怎样实现，权限和恢复边界又是什么。</p>
+<p>如果直接让Agent编码，这些空白不会自动消失，它往往会在实现过程中自行补齐。很多返工并不是代码写错，而是<strong>代码替项目作出了还没有确认的产品或技术决定</strong>。</p>
+<p>设计阶段的任务，是把REQ中的期望结果变成一套前后一致、可以实施和验证的当前答案。</p>
+<h2 id="2-先用一句话写清准备改变什么"><a href="#2-先用一句话写清准备改变什么" class="headerlink" title="2.先用一句话写清准备改变什么"></a>2.先用一句话写清准备改变什么</h2><p>开始修改设计前，Director和Agent先用普通中文描述变化。</p>
+<p>以“收藏会话”为例：</p>
+<blockquote>
+<p>员工可以收藏自己有权访问的会话，收藏属于员工个人，刷新和重新登录后仍然保留，并能帮助员工更快找到这些会话。</p>
+</blockquote>
+<p>这不是完整设计，但已经可以用来检查：</p>
+<ul>
+<li>当前已经确认的设计是否已经要求这个行为；</li>
+<li>哪一层设计首先发生变化；</li>
+<li>哪些相关设计需要同步；</li>
+<li>当前代码只是没有做到设计，还是确实需要新的设计决定。</li>
+</ul>
+<p>如果现有设计已经明确答案，只是代码没有实现，应该转为实现缺陷处理，不需要为了流程完整重新设计。</p>
+<h2 id="3-现行设计怎样分工"><a href="#3-现行设计怎样分工" class="headerlink" title="3.现行设计怎样分工"></a>3.现行设计怎样分工</h2><p>当前项目按五类对象组织设计。它们是事实职责，不是开发阶段：</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>负责什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SYS-xxx</code>系统设计</td>
+<td>产品定位、总体范围、核心进程、存储和外部边界</td>
+</tr>
+<tr>
+<td><code>CAP-xxx</code>能力设计</td>
+<td>一项能力的用户行为、对象、状态、流程、失败，以及对应数据、接口、事务、恢复、代码和测试入口</td>
+</tr>
+<tr>
+<td><code>CRS-xxx</code>横切设计</td>
+<td>多个能力共同遵守的安全、数据、接口、审计、观测、部署和恢复规则</td>
+</tr>
+<tr>
+<td><code>ADR-xxxx</code>决策记录</td>
+<td>重要选择的背景、备选方案、理由、代价和替代关系</td>
+</tr>
+<tr>
+<td><code>IDX-xxx</code>索引与追踪</td>
+<td>设计地图、编号迁移和要求验证关系，不定义新的产品或技术规则</td>
+</tr>
+</tbody></table>
+<p>旧<code>PLAT / DOMAIN / MODULE</code>只用于历史追溯，不再作为活动设计身份。当前入口见《设计目录》和《设计文档地图》。</p>
+<h2 id="4-先找负责事实的文档，不按类别走流程"><a href="#4-先找负责事实的文档，不按类别走流程" class="headerlink" title="4.先找负责事实的文档，不按类别走流程"></a>4.先找负责事实的文档，不按类别走流程</h2><p>以“收藏会话”为例，员工怎样收藏、关系属于谁、失去访问权后发生什么，以及对应数据、接口和测试入口，主要进入Conversation相关能力设计。员工隔离、数据所有权和接口错误等多个能力共同遵守的规则，要核对相应横切设计。只有这项能力改变产品定位、核心进程或全局边界时，才修改系统设计。</p>
+<p>能力设计不是旧领域设计或模块设计的简单改名。它围绕一项完整能力，把用户行为与长期实现边界放在一起。这样，Agent不必从几份文档拼接同一个能力的答案，也不能让数据库或接口实现反过来偷偷定义用户规则。</p>
+<p>一项REQ可以影响多份设计，一份设计也可以承接多个REQ。先找到真正负责该事实的位置，再检查相关共同规则；不要为每项REQ机械新建一组文件，也不要把单一能力特有的规则塞进横切设计。</p>
+<h2 id="5-Director和Agent怎样共同完成设计"><a href="#5-Director和Agent怎样共同完成设计" class="headerlink" title="5.Director和Agent怎样共同完成设计"></a>5.Director和Agent怎样共同完成设计</h2><p>设计不是“Director想产品，Agent补技术”，也不是“Agent出完整方案，Director只点确认”。</p>
+<p>Director带来真实使用场景、业务优先级、风险承受和最终取舍；Agent读取REQ、当前设计、代码和数据，调查现实约束，复述自己的理解，指出缺口，并提出不同方案及其代价。</p>
+<p>以收藏会话为例，Agent不能把“需要更快找回重要会话”直接翻译成一个星标按钮。它需要继续确认：</p>
+<ul>
+<li>收藏是个人行为还是共享行为；</li>
+<li>是否跨设备保留；</li>
+<li>收藏怎样影响排序或筛选；</li>
+<li>删除或失权以后是否保留关系；</li>
+<li>数据量增加后查询怎样保持可用；</li>
+<li>哪些失败需要用户看到。</li>
+</ul>
+<p>Director根据真实工作方式回答或修正这些假设。Agent再结合现有Conversation模型、权限和分页实现提出技术方案。如果最简单的实现不能解决真实问题，就重新设计；如果产品设想会带来明显的数据或安全风险，也要在确认前把这些风险反馈回来。</p>
+<p>共同设计的结果必须写回相应设计文档。聊天记录可以保存讨论过程，但不能代替项目当前答案。</p>
+<h2 id="6-设计文件和稳定要求编号不要混淆"><a href="#6-设计文件和稳定要求编号不要混淆" class="headerlink" title="6.设计文件和稳定要求编号不要混淆"></a>6.设计文件和稳定要求编号不要混淆</h2><p>设计文件使用：</p>
+<ul>
+<li><code>SYS-三位编号-标题.md</code>：系统设计；</li>
+<li><code>CAP-三位编号-标题.md</code>：能力设计；</li>
+<li><code>CRS-三位编号-标题.md</code>：横切设计。</li>
+</ul>
+<p>这些编号标识<strong>整份文档</strong>。</p>
+<p>文档中还会有需要跨版本长期验证的单条要求：</p>
+<ul>
+<li><code>PRD-*</code>：平台级产品要求；</li>
+<li><code>DOM-*</code>：领域行为要求；</li>
+<li><code>ARCH-*</code>：架构与跨模块技术要求；</li>
+<li><code>SEC-*</code>：安全要求。</li>
+</ul>
+<p>例如<code>CAP-002</code>是一份能力设计，<code>DOM-021</code>则是正文中的一条具体行为要求。两种编号不能混用。</p>
+<p>不是每句“必须”都要分配编号。只有会长期影响用户结果、权限、安全、数据或跨模块边界，并需要持续回归的要求，才值得进入设计要求追踪。</p>
+<h2 id="7-ADR记录为什么这样选，不是第四层设计"><a href="#7-ADR记录为什么这样选，不是第四层设计" class="headerlink" title="7.ADR记录为什么这样选，不是第四层设计"></a>7.ADR记录为什么这样选，不是第四层设计</h2><p>设计中经常存在多个都能实现的方案。如果选择会长期限制后续方向、迁移或运维成本较高，或者要替代已有决定，就用ADR记录：</p>
+<ul>
+<li>当时遇到什么问题；</li>
+<li>比较过哪些真正不同的方案；</li>
+<li>最后选择什么；</li>
+<li>为什么这样选；</li>
+<li>为此接受什么代价；</li>
+<li>什么情况下需要重新评审。</li>
+</ul>
+<p>普通错误修复、局部实现细节和容易替换的技术选择不需要ADR。</p>
+<p>ADR只回答“为什么这样决定”。决定生效以后，<strong>当前应该怎样工作</strong>仍要写回真正受影响的系统、能力或横切设计。否则后续Agent只知道历史理由，却找不到当前实施依据。</p>
+<h2 id="8-设计怎样从草稿变成已确认状态"><a href="#8-设计怎样从草稿变成已确认状态" class="headerlink" title="8.设计怎样从草稿变成已确认状态"></a>8.设计怎样从草稿变成已确认状态</h2><p>设计写出来不表示已经确认，更不表示代码已经实现。</p>
+<p>评审时，Director和Agent把REQ、受影响的设计和必要ADR放在一起检查，重点确认：</p>
+<ul>
+<li>用户问题和非目标有没有被设计真正覆盖；</li>
+<li>系统、能力和横切设计之间有没有互相矛盾；</li>
+<li>权限、安全、数据、迁移、回退和失败结果是否说清；</li>
+<li>验收场景是否真的能判断结果；</li>
+<li>是否还存在阻止当前方案进入实施的问题。</li>
+</ul>
+<p>评审问题要区分“阻塞当前设计”和“以后可以继续优化”。阻塞问题必须解决，或者通过缩小范围明确移出本次设计。</p>
+<p>Director明确确认后，把受影响的设计更新为<code>Accepted</code>并通过Git保存。只在聊天里说“可以”而文档长期停在<code>Review</code>，后续Agent仍然无法可靠判断它能否采用。</p>
+<h2 id="9-设计确认以后才决定是否排期实施"><a href="#9-设计确认以后才决定是否排期实施" class="headerlink" title="9.设计确认以后才决定是否排期实施"></a>9.设计确认以后才决定是否排期实施</h2><p><code>Accepted</code>表示设计已经可以作为实施依据，不表示代码已经完成，也不表示需求已经承诺进入某个正式版本。</p>
+<p>如果Director决定现在实施，再为REQ确定目标版本并把它改为<code>已排期</code>。随后才进入下一章，把设计拆成一个或多个可以独立验证的ACL。</p>
+<p>完整关系是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">已选中的REQ</span><br><span class="line">  →写清准备改变的结果</span><br><span class="line">    →找到负责当前事实的设计并修改</span><br><span class="line">      →Director和Agent共同讨论并处理阻塞问题</span><br><span class="line">        →必要时登记稳定要求和ADR</span><br><span class="line">          →Director确认</span><br><span class="line">            →相关设计进入Accepted</span><br><span class="line">              →决定是否排期并启动实施</span><br></pre></td></tr></table></figure>
+
+<p>设计分类的目标不是增加文档数量，而是让<strong>系统整体、完整能力和共同规则</strong>各自有明确位置。只要相关文档描述的是同一个系统，Agent就能够从需求进入实现，而不用在代码中重新猜产品答案。</p>
+
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202606/macOS%E4%B8%8Asyspolicyd%E9%AB%98%E5%8D%A0%E7%94%A8%E6%97%B6%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E4%B8%8ECodex%E6%9C%89%E5%85%B3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1617,7 +1847,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 21:46:00" itemprop="dateModified" datetime="2026-08-22T21:46:00+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -1631,7 +1861,7 @@
     
     <div class="post-body" itemprop="articleBody">
           <p>在macOS上使用Codex桌面端时，如果机器突然变卡，活动监视器里又恰好是<code>syspolicyd</code>或<code>trustd</code>占满CPU，很容易把两件事直接联系起来。不过，<code>syspolicyd</code>本来就是系统安全策略的一部分，应用启动、签名验证以及应用写入的可执行文件都可能触发它。进程同时出现，只能说明值得继续查，还不能证明Codex就是根因。</p>
-<p>我更愿意先做一轮只读检查，确认高占用是否随桌面应用启动和退出而变化，再决定是更新应用、暂时改用CLI，还是继续检查其他刚刚安装或生成的程序。</p>
+<p>更稳妥的顺序是先做一轮只读检查，确认高占用是否随桌面应用启动和退出而变化，再决定是更新应用、暂时改用CLI，还是继续检查其他刚刚安装或生成的程序。</p>
 <h2 id="先确认是谁在消耗资源"><a href="#先确认是谁在消耗资源" class="headerlink" title="先确认是谁在消耗资源"></a>先确认是谁在消耗资源</h2><p>活动监视器已经足够看出CPU趋势。需要把进程信息留存下来时，可以执行：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps -axo pid,ppid,%cpu,%mem,etime,<span class="built_in">command</span> \</span><br><span class="line">  | grep -E <span class="string">&#x27;[s]yspolicyd|[t]rustd|[C]hatGPT|[C]odex&#x27;</span></span><br></pre></td></tr></table></figure>
 
@@ -1716,7 +1946,7 @@
     </span>
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
-          <a href="/202605/%E6%88%91%E7%9A%84Obsidian%E7%9F%A5%E8%AF%86%E5%BA%93%E6%98%AF%E6%80%8E%E6%A0%B7%E7%BB%84%E7%BB%87%E7%9A%84/" class="post-title-link" itemprop="url">我的Obsidian知识库是怎样组织的</a>
+          <a href="/202605/%E6%88%91%E7%9A%84Obsidian%E7%9F%A5%E8%AF%86%E5%BA%93%E6%98%AF%E6%80%8E%E6%A0%B7%E7%BB%84%E7%BB%87%E7%9A%84/" class="post-title-link" itemprop="url">Obsidian知识库的目录与维护方式</a>
         </h2>
 
         <div class="post-meta-container">
@@ -1734,7 +1964,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 22:10:00" itemprop="dateModified" datetime="2026-08-22T22:10:00+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -1747,7 +1977,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>很多年前我用Markdown加同步盘管理个人文档，当时最看重的是纯文本、可以随时更换编辑器，也不会被某个云笔记服务锁住。后来编辑器换成Obsidian，同步方式和目录也调整了几轮，但这个出发点一直没变。</p>
+          <p>早期使用Markdown加同步盘管理个人文档，最看重的是纯文本、可以随时更换编辑器，也不会被某个云笔记服务锁住。后来编辑器换成Obsidian，同步方式和目录也调整了几轮，但这个出发点一直没变。</p>
 <p>现在这套知识库仍然只是一组本地Markdown文件。Obsidian负责编辑、搜索、双链和Base视图，同步工具负责多设备传输，Git负责留下可回退的版本。三者各做一件事，比把所有希望都压在某个插件上稳定得多。</p>
 <h2 id="目录按内容处境划分"><a href="#目录按内容处境划分" class="headerlink" title="目录按内容处境划分"></a>目录按内容处境划分</h2><p>目前根目录保持为七个入口：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">00.Inbox/       临时收集和待整理内容</span><br><span class="line">10.Notes/       长期保留的主题笔记</span><br><span class="line">20.Projects/    项目、任务和阶段资料</span><br><span class="line">30.Areas/       需要持续维护的领域</span><br><span class="line">40.Resources/   摘录、提示词和可复用材料</span><br><span class="line">50.Archive/     已结束或低频查阅的资料</span><br><span class="line">99.Assets/      PDF和通用附件</span><br></pre></td></tr></table></figure>
@@ -1760,25 +1990,25 @@
 
 <p>索引页承担人工导航，能写清楚一组笔记为什么放在一起；Obsidian的Base则负责按属性动态筛选。两者不是替代关系：Base适合看“所有进行中的项目”，索引更适合进入某个主题时看到经过选择的入口。</p>
 <p>这也避免了一个老问题：为了表达所有关系，不断增加目录层级。一篇笔记可能同时与网络、容器和安全有关，文件只能放在一个位置，但索引和双链可以从多个主题指向它。</p>
-<h2 id="front-matter只保留会用到的字段"><a href="#front-matter只保留会用到的字段" class="headerlink" title="front-matter只保留会用到的字段"></a>front-matter只保留会用到的字段</h2><p>Obsidian的Properties最终仍然存成文件顶部的YAML。我的常用字段是：</p>
+<h2 id="front-matter只保留会用到的字段"><a href="#front-matter只保留会用到的字段" class="headerlink" title="front-matter只保留会用到的字段"></a>front-matter只保留会用到的字段</h2><p>Obsidian的Properties最终仍然存成文件顶部的YAML。当前常用字段是：</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">type:</span> <span class="string">note</span></span><br><span class="line"><span class="attr">status:</span> <span class="string">stable</span></span><br><span class="line"><span class="attr">created:</span> <span class="number">2026-05-30</span></span><br><span class="line"><span class="attr">updated:</span> <span class="number">2026-08-22</span></span><br><span class="line"><span class="attr">topic:</span> <span class="string">知识管理</span></span><br><span class="line"><span class="attr">tags:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">obsidian</span></span><br><span class="line"><span class="meta">---</span></span><br></pre></td></tr></table></figure>
 
 <p>不同目录只增加确实需要的字段：项目资料使用<code>project</code>，领域资料使用<code>area</code>，长期笔记和资源使用<code>topic</code>。<code>status</code>也只保留少量固定值，例如<code>draft</code>、<code>active</code>、<code>stable</code>、<code>reference</code>和<code>archived</code>。</p>
-<p>我没有给所有历史文件一次性补满属性。属性只有在搜索、Base过滤或维护规则中真正使用时才有价值；为了“看起来结构化”增加十几个长期为空的字段，只会让写笔记变慢。</p>
-<h2 id="链接先解决导航，不追求一张完美的图"><a href="#链接先解决导航，不追求一张完美的图" class="headerlink" title="链接先解决导航，不追求一张完美的图"></a>链接先解决导航，不追求一张完美的图</h2><p>重要主题会建立索引，相关笔记之间再补少量带说明的链接。相比在每篇文章末尾堆一串标题，我更愿意说明关系：</p>
+<p>历史文件没有一次性补满属性。属性只有在搜索、Base过滤或维护规则中真正使用时才有价值；为了“看起来结构化”增加十几个长期为空的字段，只会让写笔记变慢。</p>
+<h2 id="链接先解决导航，不追求一张完美的图"><a href="#链接先解决导航，不追求一张完美的图" class="headerlink" title="链接先解决导航，不追求一张完美的图"></a>链接先解决导航，不追求一张完美的图</h2><p>重要主题会建立索引，相关笔记之间再补少量带说明的链接。相比在每篇文章末尾堆一串标题，直接说明关系更有用：</p>
 <figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">## 相关笔记</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> [[WireGuard配置]]：这条隧道承载的内层协议。</span><br><span class="line"><span class="bullet">-</span> [[RouterOS防火墙]]：公网入口和转发规则。</span><br></pre></td></tr></table></figure>
 
 <p>反向链接和关系图可以帮助发现遗漏，但不会自动产生知识结构。两个文件互相链接，只说明它们有关；链接旁边为什么相关，才是以后重新找到它时最有用的信息。</p>
-<p>移动或重命名文件时，我让Obsidian自动更新内部链接。批量调整目录仍然会单独提交一次Git，这样外部Markdown链接、脚本引用或同步冲突出问题时还能看清改了什么。</p>
-<h2 id="附件没有只用一种规则"><a href="#附件没有只用一种规则" class="headerlink" title="附件没有只用一种规则"></a>附件没有只用一种规则</h2><p>通用建议通常是把所有附件集中到一个目录，我后来发现这不适合所有情况。现在图片优先放在笔记同目录的<code>assets/</code>子目录，移动整组笔记时正文和截图可以一起带走：</p>
+<p>移动或重命名文件时，由Obsidian自动更新内部链接。批量调整目录仍然会单独提交一次Git，这样外部Markdown链接、脚本引用或同步冲突出问题时还能看清改了什么。</p>
+<h2 id="附件没有只用一种规则"><a href="#附件没有只用一种规则" class="headerlink" title="附件没有只用一种规则"></a>附件没有只用一种规则</h2><p>通用建议通常是把所有附件集中到一个目录，但实际使用后发现这不适合所有情况。现在图片优先放在笔记同目录的<code>assets/</code>子目录，移动整组笔记时正文和截图可以一起带走：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">某篇笔记.md</span><br><span class="line">assets/</span><br><span class="line">  某篇笔记-截图.png</span><br></pre></td></tr></table></figure>
 
 <p>PDF放进<code>99.Assets/pdfs/</code>，其他跨主题使用的文件放进<code>99.Assets/files/</code>。旧笔记中的历史附件不批量迁移，因为一次移动几百个文件带来的断链风险，通常大于目录变整齐的收益。</p>
 <p>Obsidian支持把新附件放到当前文件旁的子目录，可以在“设置→文件与链接→新附件的默认位置”中配置。无论采用哪种规则，最好在大量粘贴截图之前确定下来。</p>
 <h2 id="同步不是版本历史"><a href="#同步不是版本历史" class="headerlink" title="同步不是版本历史"></a>同步不是版本历史</h2><p>这套知识库日常通过同步工具在设备之间传输，Git只做版本保险。同步可以让几台设备看到同一份最新文件，也会很快传播误删和错误覆盖；Git则用来查看差异、恢复文件和确认一次整理到底改了哪些内容。</p>
-<p>我的日常顺序是先等同步完成，再开始编辑；一组相关整理完成后提交一次Git。多台设备同时修改同一文件时，先处理同步冲突，不在冲突未解决时继续批量提交。</p>
+<p>日常顺序是先等同步完成，再开始编辑；一组相关整理完成后提交一次Git。多台设备同时修改同一文件时，先处理同步冲突，不在冲突未解决时继续批量提交。</p>
 <p><code>.obsidian</code>也不需要全收或全丢。插件列表、主题、快捷键等可复现配置可以纳入版本管理，<code>workspace.json</code>和移动端工作区这类界面状态则忽略。大附件是否进入Git要单独考虑，不能因为Markdown文件很小，就假设整个知识库永远适合普通Git仓库。</p>
-<h2 id="给自动化工具留一份维护约定"><a href="#给自动化工具留一份维护约定" class="headerlink" title="给自动化工具留一份维护约定"></a>给自动化工具留一份维护约定</h2><p>知识库开始由脚本或AI辅助整理以后，我在根目录增加了<code>AGENTS.md</code>。它不负责介绍知识内容，只约束维护动作：</p>
+<h2 id="给自动化工具留一份维护约定"><a href="#给自动化工具留一份维护约定" class="headerlink" title="给自动化工具留一份维护约定"></a>给自动化工具留一份维护约定</h2><p>知识库开始由脚本或AI辅助整理以后，根目录增加了<code>AGENTS.md</code>。它不负责介绍知识内容，只约束维护动作：</p>
 <ul>
 <li>不随意删除、移动或合并原始笔记。</li>
 <li>大规模调整前先说明范围，小步修改并保留Git差异。</li>
@@ -1787,7 +2017,7 @@
 <li>不强行为所有文件补标签和front-matter。</li>
 </ul>
 <p>这份约定比一段临时提示词更可靠。工具换了以后，新工具仍然可以先读同一个文件，了解哪些内容允许修改、哪些操作必须停下来确认。</p>
-<h2 id="我没有采用的做法"><a href="#我没有采用的做法" class="headerlink" title="我没有采用的做法"></a>我没有采用的做法</h2><p>我没有把Daily Note作为所有内容的最终归宿，也没有安装大量插件来替代目录和文件名。当前真正离不开的仍然是文件浏览、全局搜索、快速切换、Properties、反向链接和Bases等基础能力。</p>
+<h2 id="没有采用的做法"><a href="#没有采用的做法" class="headerlink" title="没有采用的做法"></a>没有采用的做法</h2><p>Daily Note没有作为所有内容的最终归宿，也没有安装大量插件来替代目录和文件名。当前真正离不开的仍然是文件浏览、全局搜索、快速切换、Properties、反向链接和Bases等基础能力。</p>
 <p>模板也保持很少。新文件只带日期、类型和状态，正文结构按内容决定。部署记录、故障排查、项目过程和资料摘录本来就不应该长成同一个样子。</p>
 <p>知识库规模变大以后，稳定来自几个很普通的习惯：文件仍然可以脱离Obsidian阅读，目录变化可回退，索引有人维护，敏感内容不会因为自动整理跑到错误的位置。其他功能都可以等确实遇到问题时再增加。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
@@ -1858,7 +2088,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 22:10:00" itemprop="dateModified" datetime="2026-08-22T22:10:00+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -1871,7 +2101,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>Hermes Agent既可以在终端里交互，也可以通过Dashboard和消息网关长期运行。我最初把安装、WebUI、机器人接入和多Agent配置混在一起，真正维护起来以后，最值得固定的是官方CLI和Profile：前者负责安装与诊断，后者把模型、密钥、记忆和会话分开。</p>
+          <p>Hermes Agent既可以在终端里交互，也可以通过Dashboard和消息网关长期运行。早期配置曾把安装、WebUI、机器人接入和多Agent配置混在一起，真正维护起来以后，最值得固定的是官方CLI和Profile：前者负责安装与诊断，后者把模型、密钥、记忆和会话分开。</p>
 <p>这套配置基于Linux主机。第三方WebUI和直接修改Python依赖包的临时补丁没有纳入日常方案，官方Dashboard已经能够管理多个Profile，升级时也更容易保持一致。</p>
 <h2 id="安装与首次配置"><a href="#安装与首次配置" class="headerlink" title="安装与首次配置"></a>安装与首次配置</h2><p>官方提供了一键安装脚本：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash</span><br></pre></td></tr></table></figure>
@@ -1894,7 +2124,7 @@
 <p>需要临时把它设为默认入口时使用：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hermes profile use research</span><br><span class="line">hermes profile use default</span><br></pre></td></tr></table></figure>
 
-<p>我会把知识库整理、技术简报、代码辅助和深度研究拆成不同Profile。拆分的理由不是角色名称听起来更专业，而是避免记忆、技能和密钥互相污染。两个Agent进程也不要同时使用同一个Profile目录，它们会共同写入状态和记忆。</p>
+<p>知识库整理、技术简报、代码辅助和深度研究应拆成不同Profile。拆分的理由不是角色名称听起来更专业，而是避免记忆、技能和密钥互相污染。两个Agent进程也不要同时使用同一个Profile目录，它们会共同写入状态和记忆。</p>
 <p>Profile同样不等于文件系统沙箱。<code>SOUL.md</code>里写“只访问某个目录”只是行为说明，不能限制进程权限。需要固定命令起始位置时，应明确设置<code>terminal.cwd</code>：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">research config <span class="built_in">set</span> terminal.cwd /srv/hermes/workspace</span><br></pre></td></tr></table></figure>
 
@@ -1911,7 +2141,7 @@
 <h2 id="Dashboard保持本机监听"><a href="#Dashboard保持本机监听" class="headerlink" title="Dashboard保持本机监听"></a>Dashboard保持本机监听</h2><p>启动官方Dashboard：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes dashboard</span><br></pre></td></tr></table></figure>
 
-<p>默认地址是<code>http://127.0.0.1:9119</code>，可以在侧边栏切换并管理不同Profile，不需要为每个Profile再启动一套第三方WebUI。远程使用时，我更倾向于保留回环监听，通过SSH转发：</p>
+<p>默认地址是<code>http://127.0.0.1:9119</code>，可以在侧边栏切换并管理不同Profile，不需要为每个Profile再启动一套第三方WebUI。远程使用时，继续保留回环监听并通过SSH转发更稳妥：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -L 9119:127.0.0.1:9119 user@192.0.2.10</span><br></pre></td></tr></table></figure>
 
 <p>然后在本机浏览器打开<code>http://127.0.0.1:9119</code>。</p>
@@ -1928,7 +2158,7 @@
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hermes update</span><br><span class="line">hermes doctor</span><br><span class="line">hermes profile list</span><br><span class="line">hermes gateway list</span><br></pre></td></tr></table></figure>
 
 <p>然后分别打开常用Profile的新会话，确认模型、工具和工作目录。网关正在运行时，还要检查它是否仍由对应Profile启动。</p>
-<p>我曾记录过直接修改Hermes虚拟环境中OpenAI SDK解析代码的办法，用来绕过流式响应末尾<code>output: null</code>的问题。这种补丁会在升级后丢失，也可能掩盖上游已经修复或改变的数据结构，因此不再作为常规操作。遇到类似问题，优先更新Hermes和依赖、保留错误日志并核对官方Issue；确实必须临时修改时，也应保存补丁文件和版本信息，而不是只改<code>site-packages</code>。</p>
+<p>早期记录中曾有直接修改Hermes虚拟环境中OpenAI SDK解析代码的办法，用来绕过流式响应末尾<code>output: null</code>的问题。这种补丁会在升级后丢失，也可能掩盖上游已经修复或改变的数据结构，因此不再作为常规操作。遇到类似问题，优先更新Hermes和依赖、保留错误日志并核对官方Issue；确实必须临时修改时，也应保存补丁文件和版本信息，而不是只改<code>site-packages</code>。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
 <li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/reference/cli-commands">Hermes Agent CLI命令</a></li>
 <li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/user-guide/profiles/">Hermes Agent Profiles</a></li>
@@ -1997,7 +2227,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 22:10:00" itemprop="dateModified" datetime="2026-08-22T22:10:00+08:00">2026-08-22</time>
+      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
     </span>
 
   
@@ -2010,7 +2240,7 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <p>我把ComfyUI装在一台带GPU的Linux主机上，浏览器从另一台电脑访问。安装本身不复杂，容易留下问题的是远程监听：直接让ComfyUI暴露在局域网甚至公网，模型、工作流和生成结果都会跟着暴露。</p>
+          <p>ComfyUI安装在一台带GPU的Linux主机上，浏览器从另一台电脑访问。安装本身不复杂，容易留下问题的是远程监听：直接让ComfyUI暴露在局域网甚至公网，模型、工作流和生成结果都会跟着暴露。</p>
 <p>最后的结构是ComfyUI只监听本机回环地址，Nginx再提供一个带认证的入口；跨网络访问时继续套SSH隧道或VPN，不直接开放ComfyUI端口。</p>
 <h2 id="用comfy-cli安装"><a href="#用comfy-cli安装" class="headerlink" title="用comfy-cli安装"></a>用comfy-cli安装</h2><p>官方的<code>comfy-cli</code>可以管理安装、启动、更新、模型和自定义节点。单独创建Python环境，避免和其他推理项目互相污染：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">conda create -n comfy-env python=3.11 -y</span><br><span class="line">conda activate comfy-env</span><br><span class="line"></span><br><span class="line">python -m pip install --upgrade comfy-cli</span><br><span class="line">comfy --install-completion</span><br><span class="line">comfy install</span><br></pre></td></tr></table></figure>
@@ -2055,188 +2285,6 @@
 <li><a target="_blank" rel="noopener" href="https://docs.comfy.org/installation/manual_install">ComfyUI手工安装</a></li>
 <li><a target="_blank" rel="noopener" href="https://docs.comfy.org/troubleshooting/model-issues">ComfyUI模型问题排查</a></li>
 </ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/" class="post-title-link" itemprop="url">BM1684X上将YOLOv8量化为INT8BModel</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-04-15 00:00:00" itemprop="dateCreated datePublished" datetime="2026-04-15T00:00:00+08:00">2026-04-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:57:25" itemprop="dateModified" datetime="2026-08-22T20:57:25+08:00">2026-08-22</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>为了把YOLOv8部署到BM1684X，我用TPU-MLIR走了一遍从ONNX到BModel的转换。F16模型可以直接编译，INT8则要多做一次校准；全INT8精度不理想时，再用qtable把敏感层保留为浮点计算。</p>
-<p>这次只转换了少量模型，目标是跑通工具链并比较F16和INT8，没有覆盖其他检测、跟踪和人脸模型。TPU-MLIR版本当时没有记录，命令中的参数应以所用SDK附带的文档为准。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/sophgo/tpu-mlir">TPU-MLIR项目与视觉模型转换示例</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/sophgo/tpu-mlir/blob/master/docs/quick_start/source_zh/07_quantization.rst">TPU-MLIR量化与混合精度说明</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/sophgo/sophon-demo/blob/release/sample/YOLOv8_plus_det/docs/YOLOv8_Export_Guide.md">SOPHGO YOLOv8导出说明</a></li>
-</ul>
-<h2 id="从ONNX生成MLIR"><a href="#从ONNX生成MLIR" class="headerlink" title="从ONNX生成MLIR"></a>从ONNX生成MLIR</h2><p>先准备固定输入尺寸的ONNX模型、一张测试图片和校准图片目录，工作目录使用以下名称：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">workspace/</span><br><span class="line">├── detector.onnx</span><br><span class="line">├── image/</span><br><span class="line">│   └── sample.jpg</span><br><span class="line">└── calibration/</span><br><span class="line">    ├── 0001.jpg</span><br><span class="line">    └── ...</span><br></pre></td></tr></table></figure>
-
-<p>转换时把YOLOv8的<code>0~255</code>RGB输入缩放到<code>0~1</code>，并生成后续比对需要的测试结果：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">model_transform.py \</span><br><span class="line">  --model_name detector \</span><br><span class="line">  --model_def detector.onnx \</span><br><span class="line">  --input_shapes <span class="string">&#x27;[[1,3,640,640]]&#x27;</span> \</span><br><span class="line">  --mean 0.0,0.0,0.0 \</span><br><span class="line">  --scale 0.0039216,0.0039216,0.0039216 \</span><br><span class="line">  --keep_aspect_ratio \</span><br><span class="line">  --pixel_format rgb \</span><br><span class="line">  --test_input image/sample.jpg \</span><br><span class="line">  --test_result detector_top_outputs.npz \</span><br><span class="line">  --mlir detector.mlir</span><br></pre></td></tr></table></figure>
-
-<p>这里的预处理必须和训练、ONNX推理及最终应用保持一致。<code>--keep_aspect_ratio</code>会在缩放时保留宽高比并补边；如果原来的推理代码采用直接拉伸，这个参数也要随之调整，不能只照搬示例。</p>
-<p>命令还会生成<code>detector_in_f32.npz</code>，它是同一张测试图片经过预处理后的输入，后面的F16和INT8编译都用它做数值比对。</p>
-<h2 id="先生成F16基线"><a href="#先生成F16基线" class="headerlink" title="先生成F16基线"></a>先生成F16基线</h2><p>F16不需要校准表，可以直接从MLIR生成BM1684X使用的BModel：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">model_deploy.py \</span><br><span class="line">  --mlir detector.mlir \</span><br><span class="line">  --quantize F16 \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --test_input detector_in_f32.npz \</span><br><span class="line">  --test_reference detector_top_outputs.npz \</span><br><span class="line">  --model detector_1684x_f16.bmodel</span><br></pre></td></tr></table></figure>
-
-<p>先保留F16结果很有必要。它既是部署候选，也能把“模型转换本身的问题”和“INT8量化带来的误差”分开。</p>
-<p>可以用<code>model_runner.py</code>检查BModel输出：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">model_runner.py \</span><br><span class="line">  --input detector_in_f32.npz \</span><br><span class="line">  --model detector_1684x_f16.bmodel \</span><br><span class="line">  --output detector_f16_outputs.npz</span><br></pre></td></tr></table></figure>
-
-<p><code>model_deploy.py</code>的相似度检查和输出张量统计只能发现明显的数值异常，不能代替完整数据集上的mAP、Precision和Recall评估。</p>
-<h2 id="生成校准表和INT8模型"><a href="#生成校准表和INT8模型" class="headerlink" title="生成校准表和INT8模型"></a>生成校准表和INT8模型</h2><p>这次探索使用了100张校准图片：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">run_calibration.py detector.mlir \</span><br><span class="line">  --dataset calibration \</span><br><span class="line">  --input_num 100 \</span><br><span class="line">  -o detector_cali_table</span><br></pre></td></tr></table></figure>
-
-<p>校准图片应来自实际输入分布。100张只是这次跑通流程时的取值，不是固定标准；TPU-MLIR当前文档给出的常见范围是100至1000张，正式模型仍要根据数据复杂度和精度结果调整。</p>
-<p>使用校准表生成全INT8对称量化模型：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">model_deploy.py \</span><br><span class="line">  --mlir detector.mlir \</span><br><span class="line">  --quantize INT8 \</span><br><span class="line">  --calibration_table detector_cali_table \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --test_input detector_in_f32.npz \</span><br><span class="line">  --test_reference detector_top_outputs.npz \</span><br><span class="line">  --tolerance 0.85,0.45 \</span><br><span class="line">  --model detector_1684x_int8.bmodel</span><br></pre></td></tr></table></figure>
-
-<p><code>--tolerance</code>控制转换过程中的相似度检查门限，不代表最终检测精度。模型成功生成之后，仍要使用带标签的数据集进行评估。</p>
-<h2 id="全INT8不够时使用混合精度"><a href="#全INT8不够时使用混合精度" class="headerlink" title="全INT8不够时使用混合精度"></a>全INT8不够时使用混合精度</h2><p>TPU-MLIR用qtable记录哪些算子保留为F32、F16或BF16。当前版本能够为YOLO结构自动识别部分不适合INT8的后处理算子，也可以通过<code>search_qtable</code>继续搜索敏感层。</p>
-<p>搜索命令同时指定校准表和qtable的输出名称，避免后续部署时串错文件：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">run_calibration.py detector.mlir \</span><br><span class="line">  --dataset calibration \</span><br><span class="line">  --input_num 100 \</span><br><span class="line">  --inference_num 10 \</span><br><span class="line">  --search search_qtable \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --quantize_table detector_qtable \</span><br><span class="line">  --calibration_table detector_search_cali_table</span><br></pre></td></tr></table></figure>
-
-<p>不同TPU-MLIR版本对搜索后更新校准表的文件名处理并不完全一致。有的版本会另外生成<code>new_cali_table.txt</code>，因此下一步不能凭文件名猜测：先查看搜索日志，确认最终qtable和更新后校准表的实际路径，再传给<code>model_deploy.py</code>。</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">SEARCH_CALI_TABLE=new_cali_table.txt</span><br><span class="line"></span><br><span class="line">model_deploy.py \</span><br><span class="line">  --mlir detector.mlir \</span><br><span class="line">  --quantize INT8 \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --calibration_table <span class="string">&quot;<span class="variable">$SEARCH_CALI_TABLE</span>&quot;</span> \</span><br><span class="line">  --quantize_table detector_qtable \</span><br><span class="line">  --test_input detector_in_f32.npz \</span><br><span class="line">  --test_reference detector_top_outputs.npz \</span><br><span class="line">  --tolerance 0.85,0.45 \</span><br><span class="line">  --model detector_1684x_mix.bmodel</span><br></pre></td></tr></table></figure>
-
-<p>部署阶段如果引用了另一个临时qtable文件，命令仍可能成功，却不能证明模型使用的是刚完成搜索的配置。这里最好统一命名，并在编译前查看两个表的路径和内容。</p>
-<h2 id="这次的精度和耗时"><a href="#这次的精度和耗时" class="headerlink" title="这次的精度和耗时"></a>这次的精度和耗时</h2><p>同一检测模型的测试结果如下。数据集规模、TPU-MLIR版本和板卡运行状态没有完整记录，所以只比较这组测试内部的相对变化。</p>
-<table>
-<thead>
-<tr>
-<th>模型</th>
-<th align="right"><a href="mailto:&#109;&#65;&#x50;&#64;&#x30;&#46;&#x35;">mAP@0.5</a></th>
-<th align="right"><a href="mailto:&#109;&#65;&#80;&#64;&#48;&#46;&#53;">mAP@0.5</a>:0.95</th>
-<th align="right">Precision</th>
-<th align="right">Recall</th>
-<th align="right">F1</th>
-<th align="right">推理(ms)</th>
-<th align="right">换算FPS</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>BModel FP32</td>
-<td align="right">0.9439</td>
-<td align="right">0.6620</td>
-<td align="right">0.9043</td>
-<td align="right">0.9699</td>
-<td align="right">0.9359</td>
-<td align="right">38.0</td>
-<td align="right">26.4</td>
-</tr>
-<tr>
-<td>BModel F16</td>
-<td align="right">0.9440</td>
-<td align="right">0.6620</td>
-<td align="right">0.9037</td>
-<td align="right">0.9699</td>
-<td align="right">0.9356</td>
-<td align="right">14.1</td>
-<td align="right">71.1</td>
-</tr>
-<tr>
-<td>BModel INT8方案A</td>
-<td align="right">0.9156</td>
-<td align="right">0.6128</td>
-<td align="right">0.8864</td>
-<td align="right">0.9706</td>
-<td align="right">0.9266</td>
-<td align="right">11.6</td>
-<td align="right">86.5</td>
-</tr>
-<tr>
-<td>BModel INT8方案B</td>
-<td align="right">0.9242</td>
-<td align="right">0.6250</td>
-<td align="right">0.9008</td>
-<td align="right">0.9671</td>
-<td align="right">0.9328</td>
-<td align="right">11.5</td>
-<td align="right">86.7</td>
-</tr>
-<tr>
-<td>BModel INT8自动pattern</td>
-<td align="right">0.9242</td>
-<td align="right">0.6250</td>
-<td align="right">0.9008</td>
-<td align="right">0.9671</td>
-<td align="right">0.9328</td>
-<td align="right">11.6</td>
-<td align="right">86.6</td>
-</tr>
-</tbody></table>
-<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的<a href="mailto:&#109;&#x41;&#x50;&#x40;&#x30;&#x2e;&#x35;">mAP@0.5</a>为0.9242，比F16低0.0198；F1只低0.0028。</p>
-<p>方案A和方案B对应两次混精度调整，但当时没有把具体qtable差异记录下来，无法从结果反推出是哪几层带来了改善。自动pattern与方案B得到相同精度，说明在这个模型上没有必要仅为了“手工调过”而保留更复杂的配置。</p>
-<p>现有结果足以支持继续使用F16，并把INT8作为有条件的优化选项。真正上线INT8之前，还需要在目标板卡上用真实图片复查预处理、后处理和检测结果；这部分当时没有完成，不能把转换成功直接当成部署验证通过。</p>
 
       
     </div>

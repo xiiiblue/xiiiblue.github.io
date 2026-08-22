@@ -132,9 +132,17 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">306</span>
+          <span class="site-state-item-count">307</span>
           <span class="site-state-item-name">posts</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
       </div>
   </nav>
 </div>
@@ -158,6 +166,78 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-4-Registry/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-4-Registry/" class="post-title-link" itemprop="url">K8S离线部署笔记-4-Registry</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-05 14:05:02" itemprop="dateCreated datePublished" datetime="2021-01-05T14:05:02+08:00">2021-01-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="Rigistry"><a href="#Rigistry" class="headerlink" title="Rigistry"></a>Rigistry</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境</span></span><br><span class="line">docker pull docker.io/registry</span><br><span class="line">docker save -o registry.tar registry</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境</span></span><br><span class="line">docker load -i registry.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line">docker run \</span><br><span class="line"> -d \</span><br><span class="line"> -p 5000:5000 \</span><br><span class="line"> -v /var/lib/registry:/var/lib/registry \</span><br><span class="line"> --restart=always \</span><br><span class="line"> --name docker-registry \</span><br><span class="line"> registry</span><br><span class="line"></span><br><span class="line"><span class="comment"># 允许HTTP访问</span></span><br><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123; <span class="string">&quot;insecure-registries&quot;</span>:[<span class="string">&quot;10.10.51.77:5000&quot;</span>,<span class="string">&quot;registry.yourcompany.com:5000&quot;</span>] &#125;</span><br><span class="line"></span><br><span class="line">systemctl daemon-reload &amp; systemctl restart docker</span><br><span class="line"></span><br><span class="line"><span class="comment"># Push镜像</span></span><br><span class="line">docker pull nginx</span><br><span class="line">docker tag nginx 10.10.51.77:5000/nginx</span><br><span class="line">docker push 10.10.51.77:5000/nginx</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<h2 id="UI"><a href="#UI" class="headerlink" title="UI"></a>UI</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境</span></span><br><span class="line">docker pull konradkleine/docker-registry-frontend:v2</span><br><span class="line">docker save -o docker-registry-frontend.tar konradkleine/docker-registry-frontend:v2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境</span></span><br><span class="line">docker load -i docker-registry-frontend.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line">docker run \</span><br><span class="line">  -d \</span><br><span class="line">  -e ENV_DOCKER_REGISTRY_HOST=10.10.51.77 \</span><br><span class="line">  -e ENV_DOCKER_REGISTRY_PORT=5000 \</span><br><span class="line">  -p 8080:80 \</span><br><span class="line">  --restart=always \</span><br><span class="line">  --name docker-registry-frontend \</span><br><span class="line">  konradkleine/docker-registry-frontend:v2</span><br><span class="line">  </span><br><span class="line"><span class="comment"># 浏览器访问</span></span><br><span class="line">http://10.10.51.77:8080</span><br></pre></td></tr></table></figure>
+
+<h2 id="迁移"><a href="#迁移" class="headerlink" title="迁移"></a>迁移</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 打包整个目录</span></span><br><span class="line"><span class="built_in">cd</span> /var/lib/registry</span><br><span class="line">tar -zcvf docker.tar.gz docker</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -913,93 +993,6 @@
 <li><a target="_blank" rel="noopener" href="https://juejin.im/post/6844903550229676039">ffprobe,ffplay ffmpeg常用的命令行命令</a></li>
 <li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/146359917">FFmpeg常用技巧</a></li>
 <li><a target="_blank" rel="noopener" href="https://www.longqi.cf/tools/2015/02/13/ffmpegcn/">ffmpeg中文手册</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202008/Anaconda%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202008/Anaconda%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">Anaconda常用操作</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:03:13" itemprop="dateCreated datePublished" datetime="2021-01-05T14:03:13+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="换源"><a href="#换源" class="headerlink" title="换源"></a>换源</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/</span><br><span class="line">conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/</span><br><span class="line">conda config --<span class="built_in">set</span> show_channel_urls <span class="built_in">yes</span></span><br><span class="line"></span><br><span class="line">conda config --show channels</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="查看版本等信息"><a href="#查看版本等信息" class="headerlink" title="查看版本等信息"></a>查看版本等信息</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">conda info</span><br><span class="line">conda -V/--version</span><br></pre></td></tr></table></figure>
-
-<h2 id="环境查看"><a href="#环境查看" class="headerlink" title="环境查看"></a>环境查看</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">conda <span class="built_in">env</span> list</span><br><span class="line">conda info -e</span><br></pre></td></tr></table></figure>
-
-<h2 id="环境管理"><a href="#环境管理" class="headerlink" title="环境管理"></a>环境管理</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建新环境</span></span><br><span class="line">conda create --name newenv python=3.6</span><br><span class="line"></span><br><span class="line"><span class="comment"># 复制新环境</span></span><br><span class="line">conda create -n newenv --<span class="built_in">clone</span> base</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除环境</span></span><br><span class="line">conda remove --name newenv --all</span><br><span class="line"></span><br><span class="line"><span class="comment"># 激活环境</span></span><br><span class="line">conda activate newenv</span><br><span class="line"></span><br><span class="line"><span class="comment"># 退出环境</span></span><br><span class="line">conda deactivate</span><br></pre></td></tr></table></figure>
-
-<h2 id="环境导入导出"><a href="#环境导入导出" class="headerlink" title="环境导入导出"></a>环境导入导出</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导出</span></span><br><span class="line">conda <span class="built_in">env</span> <span class="built_in">export</span> &gt; environment.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入</span></span><br><span class="line">conda <span class="built_in">env</span> create -f .../environment.yaml</span><br></pre></td></tr></table></figure>
-
-<h2 id="包管理"><a href="#包管理" class="headerlink" title="包管理"></a>包管理</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">conda list <span class="comment"># 查看已经安装的包</span></span><br><span class="line">conda update conda <span class="comment"># 升级conda自身</span></span><br><span class="line">conda search requests <span class="comment"># 查询某个包</span></span><br><span class="line">conda install requests <span class="comment"># 安装新包</span></span><br><span class="line">conda install -n <span class="built_in">test</span> requests <span class="comment"># 将包安装到指定环境</span></span><br><span class="line">conda update --all <span class="comment"># 更新所有包</span></span><br><span class="line">conda update requests <span class="comment"># 升级包</span></span><br><span class="line">conda remove requests <span class="comment"># 移除包</span></span><br><span class="line">conda remove -n <span class="built_in">test</span> requests <span class="comment"># 从指定环境中移除包</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="requirements-txt导入导出"><a href="#requirements-txt导入导出" class="headerlink" title="requirements.txt导入导出"></a>requirements.txt导入导出</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># pip批量导出包含环境中所有组件的requirements.txt文件</span></span><br><span class="line">pip freeze &gt; requirements.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># pip批量安装requirements.txt文件中包含的组件依赖</span></span><br><span class="line">pip install -r requirements.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># conda批量导出包含环境中所有组件的requirements.txt文件</span></span><br><span class="line">conda list -e &gt; requirements.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># conda批量安装requirements.txt文件中包含的组件依赖</span></span><br><span class="line">conda install --<span class="built_in">yes</span> --file requirements.txt</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://jakevdp.github.io/blog/2016/08/25/conda-myths-and-misconceptions/">https://jakevdp.github.io/blog/2016/08/25/conda-myths-and-misconceptions/</a></li>
-<li><a target="_blank" rel="noopener" href="http://lizhiqiang.me/conda/">http://lizhiqiang.me/conda/</a></li>
 </ul>
 
       

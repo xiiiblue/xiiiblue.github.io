@@ -132,9 +132,17 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">306</span>
+          <span class="site-state-item-count">307</span>
           <span class="site-state-item-name">posts</span>
         </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
       </div>
   </nav>
 </div>
@@ -158,6 +166,84 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-14-%E5%BA%94%E7%94%A8%E9%95%9C%E5%83%8F%E8%BF%81%E7%A7%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-14-%E5%BA%94%E7%94%A8%E9%95%9C%E5%83%8F%E8%BF%81%E7%A7%BB/" class="post-title-link" itemprop="url">K8S离线部署笔记-14-应用镜像迁移</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-05 14:06:28" itemprop="dateCreated datePublished" datetime="2021-01-05T14:06:28+08:00">2021-01-05</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="配置DNS"><a href="#配置DNS" class="headerlink" title="配置DNS"></a>配置DNS</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/hosts</span><br><span class="line"><span class="comment"># 本地虚拟机</span></span><br><span class="line">10.10.50.204  registry.yourcompany.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境</span></span><br><span class="line">10.10.51.77  registry.yourcompany.com</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置Docker允许HTTP"><a href="#配置Docker允许HTTP" class="headerlink" title="配置Docker允许HTTP"></a>配置Docker允许HTTP</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123; &quot;insecure-registries&quot;:[&quot;registry.yourcompany.com:5000&quot;] &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="镜像导出脚本"><a href="#镜像导出脚本" class="headerlink" title="镜像导出脚本"></a>镜像导出脚本</h2><p>repo_save.sh</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">images=(</span><br><span class="line">    tomcat/tomcat-oraclejdk8:8.5.50</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">    docker pull registry.yourcompany.com:5000/<span class="variable">$imageName</span></span><br><span class="line">    docker save registry.yourcompany.com:5000/<span class="variable">$imageName</span> &gt; <span class="variable">$imageName</span>.tar</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="镜像导入脚本"><a href="#镜像导入脚本" class="headerlink" title="镜像导入脚本"></a>镜像导入脚本</h2><p>repo_load.sh</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">images=(</span><br><span class="line">    tomcat/tomcat-oraclejdk8:8.5.50</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">    docker load &lt; <span class="variable">$imageName</span>.tar</span><br><span class="line">    docker push registry.yourcompany.com:5000/<span class="variable">$imageName</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="手工导出导入"><a href="#手工导出导入" class="headerlink" title="手工导出导入"></a>手工导出导入</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 导出</span></span><br><span class="line">docker pull registry.yourcompany.com:5000/yourimage:2.2.0</span><br><span class="line">docker save registry.yourcompany.com:5000/yourimage:2.2.0 &gt; yourimage:2.2.0.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导入</span></span><br><span class="line">docker load &lt; yourimage:2.2.0.tar</span><br><span class="line">docker push registry.yourcompany.com:5000/yourimage:2.2.0</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
@@ -825,78 +911,6 @@
 
 <h2 id="配置SSL（可选）"><a href="#配置SSL（可选）" class="headerlink" title="配置SSL（可选）"></a>配置SSL（可选）</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建自签名CA</span></span><br><span class="line">openssl genrsa -out ca.key 2048</span><br><span class="line">openssl req -new -x509 -key ca.key -out ca.crt -days 3650 -subj <span class="string">&quot;/C=CN/ST=HB/L=WH/O=DM/OU=YPT/CN=CA&quot;</span> </span><br><span class="line">openssl x509 -<span class="keyword">in</span> ca.crt -noout -text</span><br><span class="line"><span class="comment"># 签发证书</span></span><br><span class="line">openssl genrsa -out harbor.key 2048</span><br><span class="line">openssl req -new -sha256 -key harbor.key -out harbor.csr -subj <span class="string">&quot;/C=CN/ST=HB/L=WH/O=DM/OU=YPT/CN=yourcompany.com&quot;</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">EOF &gt; harbor.cnf</span></span><br><span class="line"><span class="string">extensions = san</span></span><br><span class="line"><span class="string">[san]</span></span><br><span class="line"><span class="string">keyUsage = digitalSignature</span></span><br><span class="line"><span class="string">extendedKeyUsage = clientAuth,serverAuth</span></span><br><span class="line"><span class="string">subjectKeyIdentifier = hash</span></span><br><span class="line"><span class="string">authorityKeyIdentifier = keyid,issuer</span></span><br><span class="line"><span class="string">subjectAltName = IP:10.10.51.77,DNS:harbor.yourcompany.com</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line">openssl x509 -req -sha256 -days 3650 -<span class="keyword">in</span> harbor.csr -out harbor.crt -CA ca.crt -CAkey ca.key -CAcreateserial -extfile harbor.cnf</span><br><span class="line">openssl x509 -<span class="keyword">in</span> harbor.crt -noout -text</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改harbor.yml</span></span><br><span class="line">certificate: /root/cert/harbor.crt</span><br><span class="line">private_key: /root/cert/harbor.key</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新安装</span></span><br><span class="line">docker-compose down -v</span><br><span class="line">./install.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改hosts</span></span><br><span class="line">vi /etc/hosts</span><br><span class="line">10.10.51.77    harbor.yourcompany.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 浏览器访问</span></span><br><span class="line">https://harbor.yourcompany.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># docker信任证书</span></span><br><span class="line"><span class="built_in">cp</span> /root/cert/ca.crt /etc/pki/ca-trust/source/anchors</span><br><span class="line">update-ca-trust extract</span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-4-Registry/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-4-Registry/" class="post-title-link" itemprop="url">K8S离线部署笔记-4-Registry</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:05:02" itemprop="dateCreated datePublished" datetime="2021-01-05T14:05:02+08:00">2021-01-05</time>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="Rigistry"><a href="#Rigistry" class="headerlink" title="Rigistry"></a>Rigistry</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境</span></span><br><span class="line">docker pull docker.io/registry</span><br><span class="line">docker save -o registry.tar registry</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境</span></span><br><span class="line">docker load -i registry.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line">docker run \</span><br><span class="line"> -d \</span><br><span class="line"> -p 5000:5000 \</span><br><span class="line"> -v /var/lib/registry:/var/lib/registry \</span><br><span class="line"> --restart=always \</span><br><span class="line"> --name docker-registry \</span><br><span class="line"> registry</span><br><span class="line"></span><br><span class="line"><span class="comment"># 允许HTTP访问</span></span><br><span class="line">vi /etc/docker/daemon.json</span><br><span class="line">&#123; <span class="string">&quot;insecure-registries&quot;</span>:[<span class="string">&quot;10.10.51.77:5000&quot;</span>,<span class="string">&quot;registry.yourcompany.com:5000&quot;</span>] &#125;</span><br><span class="line"></span><br><span class="line">systemctl daemon-reload &amp; systemctl restart docker</span><br><span class="line"></span><br><span class="line"><span class="comment"># Push镜像</span></span><br><span class="line">docker pull nginx</span><br><span class="line">docker tag nginx 10.10.51.77:5000/nginx</span><br><span class="line">docker push 10.10.51.77:5000/nginx</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<h2 id="UI"><a href="#UI" class="headerlink" title="UI"></a>UI</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境</span></span><br><span class="line">docker pull konradkleine/docker-registry-frontend:v2</span><br><span class="line">docker save -o docker-registry-frontend.tar konradkleine/docker-registry-frontend:v2</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境</span></span><br><span class="line">docker load -i docker-registry-frontend.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动</span></span><br><span class="line">docker run \</span><br><span class="line">  -d \</span><br><span class="line">  -e ENV_DOCKER_REGISTRY_HOST=10.10.51.77 \</span><br><span class="line">  -e ENV_DOCKER_REGISTRY_PORT=5000 \</span><br><span class="line">  -p 8080:80 \</span><br><span class="line">  --restart=always \</span><br><span class="line">  --name docker-registry-frontend \</span><br><span class="line">  konradkleine/docker-registry-frontend:v2</span><br><span class="line">  </span><br><span class="line"><span class="comment"># 浏览器访问</span></span><br><span class="line">http://10.10.51.77:8080</span><br></pre></td></tr></table></figure>
-
-<h2 id="迁移"><a href="#迁移" class="headerlink" title="迁移"></a>迁移</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 打包整个目录</span></span><br><span class="line"><span class="built_in">cd</span> /var/lib/registry</span><br><span class="line">tar -zcvf docker.tar.gz docker</span><br></pre></td></tr></table></figure>
       
     </div>
 

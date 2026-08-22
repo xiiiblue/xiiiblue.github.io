@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="过去的研发流程一直以本机Codex为主。需求分析、阅读源码、修改代码、运行测试、处理环境问题，基本都在同一个任务里完成。Codex能直接看到本机工作树、依赖、数据库、容器和未提交差异，遇到问题可以反复执行“修改—测试—诊断—再修改”，这套方式很顺手。 ChatGPT能够通过GitHub读取项目以后，也可以进入这套研发流程。ChatGPT更适合长时间讨论需求、比较方案和做独立审阅，Codex则仍然适">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用GitHub让ChatGPT与Codex接力开发">
+<meta property="og:url" content="https://www.bluexiii.com/202608/%E7%94%A8GitHub%E8%AE%A9ChatGPT%E4%B8%8ECodex%E6%8E%A5%E5%8A%9B%E5%BC%80%E5%8F%91/index.html">
+<meta property="og:site_name" content="BlueXIII&#39;s Blog">
+<meta property="og:description" content="过去的研发流程一直以本机Codex为主。需求分析、阅读源码、修改代码、运行测试、处理环境问题，基本都在同一个任务里完成。Codex能直接看到本机工作树、依赖、数据库、容器和未提交差异，遇到问题可以反复执行“修改—测试—诊断—再修改”，这套方式很顺手。 ChatGPT能够通过GitHub读取项目以后，也可以进入这套研发流程。ChatGPT更适合长时间讨论需求、比较方案和做独立审阅，Codex则仍然适">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-08-22T09:31:10.000Z">
+<meta property="article:modified_time" content="2026-08-22T15:27:03.000Z">
+<meta property="article:author" content="BlueXIII">
+<meta property="article:tag" content="ChatGPT">
+<meta property="article:tag" content="Codex">
+<meta property="article:tag" content="GitHub">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.bluexiii.com/202608/%E7%94%A8GitHub%E8%AE%A9ChatGPT%E4%B8%8ECodex%E6%8E%A5%E5%8A%9B%E5%BC%80%E5%8F%91/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202608/%E7%94%A8GitHub%E8%AE%A9ChatGPT%E4%B8%8ECodex%E6%8E%A5%E5%8A%9B%E5%BC%80%E5%8F%91/","path":"202608/用GitHub让ChatGPT与Codex接力开发/","title":"用GitHub让ChatGPT与Codex接力开发"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>用GitHub让ChatGPT与Codex接力开发 | BlueXIII's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">BlueXIII's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E9%9C%80%E8%A6%81%E5%86%8D%E5%8F%91%E6%98%8E%E4%B8%80%E5%A5%97ChatGPT%E6%B5%81%E7%A8%8B"><span class="nav-number">1.</span> <span class="nav-text">不需要再发明一套ChatGPT流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GitHub%E5%8F%AA%E6%98%AF%E5%8D%8F%E4%BD%9C%E6%9E%A2%E7%BA%BD"><span class="nav-number">2.</span> <span class="nav-text">GitHub只是协作枢纽</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E4%B8%A4%E7%B1%BBPR%E6%8A%8A%E5%AE%9A%E4%B9%89%E5%92%8C%E5%AE%9E%E7%8E%B0%E5%88%86%E5%BC%80"><span class="nav-number">3.</span> <span class="nav-text">用两类PR把定义和实现分开</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Definition-PR%EF%BC%9A%E5%85%88%E7%A1%AE%E8%AE%A4%E6%94%B9%E6%88%90%E4%BB%80%E4%B9%88%E6%A0%B7"><span class="nav-number">3.1.</span> <span class="nav-text">Definition PR：先确认改成什么样</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Implementation-PR%EF%BC%9A%E5%AE%9E%E7%8E%B0%E5%B7%B2%E7%BB%8F%E7%A1%AE%E8%AE%A4%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="nav-number">3.2.</span> <span class="nav-text">Implementation PR：实现已经确认的设计</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BA%A4%E7%BB%99%E8%B0%81"><span class="nav-number">4.</span> <span class="nav-text">不同工作交给谁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E5%88%86%E6%94%AF%E5%90%8C%E6%97%B6%E5%8F%AA%E8%83%BD%E6%9C%89%E4%B8%80%E4%B8%AA%E5%86%99%E5%85%A5%E8%80%85"><span class="nav-number">5.</span> <span class="nav-text">一个分支同时只能有一个写入者</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%BD%E6%97%A9%E5%BB%BA%E7%AB%8BDraft-PR"><span class="nav-number">6.</span> <span class="nav-text">尽早建立Draft PR</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Token%E7%9C%81%E5%9C%A8%E4%BA%A4%E6%8E%A5%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E7%9C%81%E6%8E%89%E5%BF%85%E8%A6%81%E4%BF%A1%E6%81%AF"><span class="nav-number">7.</span> <span class="nav-text">Token省在交接，而不是省掉必要信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Review%E5%8F%91%E7%8E%B0%E7%9A%84%E9%97%AE%E9%A2%98%E6%94%BE%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="nav-number">8.</span> <span class="nav-text">Review发现的问题放在哪里</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%99%AE%E9%80%9AReview%E5%92%8C%E7%8B%AC%E7%AB%8BReview"><span class="nav-number">9.</span> <span class="nav-text">普通Review和独立Review</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E8%B4%A3%E4%BB%BB%E4%BB%8D%E7%84%B6%E7%95%99%E5%9C%A8%E6%9C%AC%E6%9C%BA"><span class="nav-number">10.</span> <span class="nav-text">验证责任仍然留在本机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%83%E9%99%90%E4%BB%8E%E6%9C%80%E5%B0%8F%E8%8C%83%E5%9B%B4%E5%BC%80%E5%A7%8B"><span class="nav-number">11.</span> <span class="nav-text">权限从最小范围开始</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%90%BD%E5%88%B0%E4%BB%93%E5%BA%93%E5%8F%AA%E9%9C%80%E8%A6%81%E5%87%A0%E5%A4%84%E5%B0%8F%E6%94%B9%E5%8A%A8"><span class="nav-number">12.</span> <span class="nav-text">落到仓库只需要几处小改动</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">BlueXIII</p>
+  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">307</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/%E7%94%A8GitHub%E8%AE%A9ChatGPT%E4%B8%8ECodex%E6%8E%A5%E5%8A%9B%E5%BC%80%E5%8F%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="用GitHub让ChatGPT与Codex接力开发 | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          用GitHub让ChatGPT与Codex接力开发
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2026-08-22 17:31:10 / Modified: 23:27:03" itemprop="dateCreated datePublished" datetime="2026-08-22T17:31:10+08:00">2026-08-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI/" itemprop="url" rel="index"><span itemprop="name">AI</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+<p>过去的研发流程一直以本机Codex为主。需求分析、阅读源码、修改代码、运行测试、处理环境问题，基本都在同一个任务里完成。Codex能直接看到本机工作树、依赖、数据库、容器和未提交差异，遇到问题可以反复执行“修改—测试—诊断—再修改”，这套方式很顺手。</p>
+<p>ChatGPT能够通过GitHub读取项目以后，也可以进入这套研发流程。ChatGPT更适合长时间讨论需求、比较方案和做独立审阅，Codex则仍然适合留在本机实施。两者不必争夺“主力开发者”的位置，也不应该同时修改同一个工作区。比较自然的分工是：ChatGPT在上游定义问题、在下游检查结果，Codex完成中间那段需要本地反馈的工作。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ChatGPT：定义问题、形成需求、设计方案、独立审阅</span><br><span class="line">Codex：本地实施、测试迭代、环境操作、修复审阅问题</span><br><span class="line">负责人：确认产品取舍、接受风险、合并、发布</span><br><span class="line"></span><br><span class="line">GitHub：保存分支、提交、PR、Issue和交接记录</span><br><span class="line">仓库文档：保存正式需求、设计、实施和版本事实</span><br></pre></td></tr></table></figure>
+
+<p>模型能力当然重要，但在研发流程中，能不能访问真实环境同样重要。ChatGPT可以读懂一段迁移代码，却不能因此宣布数据库迁移已经成功；Codex可以在本机把测试跑通，也不代表它在经历完整个实现过程后仍能像陌生审阅者一样发现设计盲点。把这两种能力串起来，比让它们重复做同一件事更合适。</p>
+<h2 id="不需要再发明一套ChatGPT流程"><a href="#不需要再发明一套ChatGPT流程" class="headerlink" title="不需要再发明一套ChatGPT流程"></a>不需要再发明一套ChatGPT流程</h2><p>如果仓库已经有需求、设计、实施和审阅记录，没有必要增加“ChatGPT任务”“Codex任务”之类的新流程对象。无论由谁完成，工作性质并没有改变：</p>
+<ul>
+<li>ChatGPT修改需求、设计、测试或代码，仍然是一轮正常的实施工作；</li>
+<li>ChatGPT针对固定提交做正式独立审阅，仍然是一轮工程审阅；</li>
+<li>负责人在真实界面和环境中使用产品，仍然属于真实使用验证，ChatGPT不能代替；</li>
+<li>普通PR里的一条Review意见，不需要为了显得正式而单独建立审阅流程；</li>
+<li>对话中确认的需求和设计，最后仍要写回REQ、设计文档或ADR，不能只留在聊天记录里。</li>
+</ul>
+<p>Agent只是当前工作的执行者。流程如果绑定了某个模型名称，换工具以后就要重写；把规则落在分支、提交、验证证据和正式文档上，即使以后换成其他Agent，也不影响协作方式。</p>
+<h2 id="GitHub只是协作枢纽"><a href="#GitHub只是协作枢纽" class="headerlink" title="GitHub只是协作枢纽"></a>GitHub只是协作枢纽</h2><p>引入ChatGPT以后，很容易把Issue和PR当成新的事实源，最终形成两套互相矛盾的记录。正式事实仍应保存在仓库里，GitHub负责讨论、交接和合入。</p>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>保存的内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>REQ</td>
+<td>为什么改变产品，希望得到什么结果</td>
+</tr>
+<tr>
+<td>系统设计、能力设计和ADR</td>
+<td>系统应该怎样工作，为什么作出这个选择</td>
+</tr>
+<tr>
+<td>实施、使用和审阅记录</td>
+<td>实际做过什么，得到什么结果</td>
+</tr>
+<tr>
+<td>GitHub Issue</td>
+<td>外部反馈、待办、讨论和跨会话提醒</td>
+</tr>
+<tr>
+<td>GitHub PR</td>
+<td>一组具体差异的讨论、审阅和合入过程</td>
+</tr>
+<tr>
+<td>Git分支</td>
+<td>一项工作的临时候选</td>
+</tr>
+<tr>
+<td>Commit SHA</td>
+<td>某次交接或审阅面对的准确版本</td>
+</tr>
+<tr>
+<td>Git标签</td>
+<td>已经冻结的正式版本</td>
+</tr>
+</tbody></table>
+<p>这种分层也不依赖GitHub。以后换成GitLab、Forgejo甚至只使用本地Git，REQ、设计和Commit SHA仍然成立，变化的只是协作界面。</p>
+<p>ChatGPT连接GitHub的具体能力可能随使用的App、插件和权限配置而不同，因此流程不能假定它一定能直接写仓库。连接具备写操作时，ChatGPT可以建立分支、提交候选和更新PR；只有读取能力时，它给出设计或Review结果，再由Codex写回仓库。无论使用哪种连接方式，交接对象都应该是正式文档、PR和固定SHA。</p>
+<h2 id="用两类PR把定义和实现分开"><a href="#用两类PR把定义和实现分开" class="headerlink" title="用两类PR把定义和实现分开"></a>用两类PR把定义和实现分开</h2><p>所有修改都塞进一个PR看起来省事，实际会让需求、设计和代码同时变化。ChatGPT审阅实现时，找不到已经确认的设计基线；Codex写到一半，也不知道对话里的新想法是不是正式范围。</p>
+<p>PR可以区分为Definition PR和Implementation PR。这里的名称只是说明用途，不需要增加复杂的GitHub类型或自动化。</p>
+<h3 id="Definition-PR：先确认改成什么样"><a href="#Definition-PR：先确认改成什么样" class="headerlink" title="Definition PR：先确认改成什么样"></a>Definition PR：先确认改成什么样</h3><p>产品行为、业务规则、接口含义、权限、安全、数据或交付范围发生变化时，先准备Definition PR：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">原始想法</span><br><span class="line">  → 负责人和ChatGPT讨论范围</span><br><span class="line">  → ChatGPT检查已有REQ、设计、源码和历史决定</span><br><span class="line">  → 建立或修改REQ</span><br><span class="line">  → 修改受影响的系统设计和能力设计</span><br><span class="line">  → 必要时准备ADR</span><br><span class="line">  → 在Draft PR中讨论阻塞问题</span><br><span class="line">  → 负责人确认</span><br><span class="line">  → 合入主分支</span><br></pre></td></tr></table></figure>
+
+<p>通常可以把REQ和受影响的设计放进同一个Definition PR，不必为了流程机械拆分。只有改动很大、横跨多个领域，或者必须先单独确定产品方向时，才把需求和设计分成两个PR。</p>
+<p>未确认的设计不要和实现混在一起。Definition PR合入以后，Codex面对的是主分支上已经接受的设计，不需要从聊天记录中猜测哪个版本才算最终决定；ChatGPT后续审阅代码时，也有稳定的比较对象。</p>
+<h3 id="Implementation-PR：实现已经确认的设计"><a href="#Implementation-PR：实现已经确认的设计" class="headerlink" title="Implementation PR：实现已经确认的设计"></a>Implementation PR：实现已经确认的设计</h3><p>Definition PR合入以后，Codex从新的主分支建立任务分支和本机worktree：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">已经接受的REQ和设计</span><br><span class="line">  → Codex建立任务分支与worktree</span><br><span class="line">  → 实现代码和测试</span><br><span class="line">  → 运行针对性检查</span><br><span class="line">  → 运行仓库规定的完整验证</span><br><span class="line">  → 推送分支并更新Draft PR</span><br><span class="line">  → 固定HEAD SHA</span><br><span class="line">  → 交给ChatGPT审阅</span><br></pre></td></tr></table></figure>
+
+<p>ChatGPT在Implementation PR里不必重新设计整个功能，主要检查这些问题：</p>
+<ul>
+<li>实现是否符合REQ和已经接受的设计；</li>
+<li>修改是否悄悄扩大了需求范围；</li>
+<li>失败场景、权限边界和恢复行为是否遗漏；</li>
+<li>测试有没有覆盖真正的风险；</li>
+<li>代码、实施记录和验证证据能否互相对应；</li>
+<li>是否为了一个局部需求引入了不必要的复杂结构。</li>
+</ul>
+<p>发现阻塞问题后，由Codex在本机修复并重新验证。负责人看到的不是一段“应该没问题”的回答，而是固定候选、Review意见和对应的验证结果。</p>
+<h2 id="不同工作交给谁"><a href="#不同工作交给谁" class="headerlink" title="不同工作交给谁"></a>不同工作交给谁</h2><p>ChatGPT并非不适合修改代码，真正缺少的通常是完整的本地反馈循环。它可以写出第一版代码，但数据库、并发、容器和部署类修改仍要在真实工作树中收口。</p>
+<table>
+<thead>
+<tr>
+<th>工作类型</th>
+<th>默认主导者</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原始需求讨论、范围收敛</td>
+<td>ChatGPT</td>
+<td>对话分析后形成REQ候选</td>
+</tr>
+<tr>
+<td>产品设计、架构设计、ADR</td>
+<td>ChatGPT</td>
+<td>通过Definition PR确认</td>
+</tr>
+<tr>
+<td>文档Review和重写</td>
+<td>ChatGPT</td>
+<td>修改候选或给出明确差异</td>
+</tr>
+<tr>
+<td>小范围纯逻辑修改</td>
+<td>ChatGPT或Codex</td>
+<td>ChatGPT可以准备第一版，Codex本机验证</td>
+</tr>
+<tr>
+<td>中等规模代码修改</td>
+<td>Codex</td>
+<td>ChatGPT先明确设计和实施边界</td>
+</tr>
+<tr>
+<td>数据库、并发、事务和Runtime</td>
+<td>Codex</td>
+<td>本机实现，ChatGPT针对固定SHA审阅</td>
+</tr>
+<tr>
+<td>Docker、部署、环境和Secret</td>
+<td>Codex</td>
+<td>ChatGPT分析方案，不替代环境操作</td>
+</tr>
+<tr>
+<td>测试方案和遗漏分析</td>
+<td>ChatGPT</td>
+<td>Codex补充测试并实际运行</td>
+</tr>
+<tr>
+<td>自动化验证</td>
+<td>Codex</td>
+<td>在本机或受控开发机执行</td>
+</tr>
+<tr>
+<td>真实界面使用</td>
+<td>负责人</td>
+<td>记录真实使用中发现的问题</td>
+</tr>
+<tr>
+<td>正式工程审阅</td>
+<td>新的ChatGPT会话</td>
+<td>固定提交，独立阅读</td>
+</tr>
+<tr>
+<td>合并、标签和正式发布</td>
+<td>负责人</td>
+<td>Agent准备候选和证据</td>
+</tr>
+</tbody></table>
+<p>这张表不是硬性权限表。一个很小的文案错误没必要先开Definition PR，一个已经确定行为的局部修复也可以直接交给Codex。判断依据仍然是改动有没有改变正式设计，以及验证是否依赖本地环境。</p>
+<h2 id="一个分支同时只能有一个写入者"><a href="#一个分支同时只能有一个写入者" class="headerlink" title="一个分支同时只能有一个写入者"></a>一个分支同时只能有一个写入者</h2><p>ChatGPT和Codex可以共同处理同一项工作，但只能串行接棒，不能同时写同一个分支。否则很容易出现远端分支已经变化、本机仍然基于旧提交修改，或者一方为了整理提交而覆盖另一方历史的情况。</p>
+<p>协作时遵守这些规则：</p>
+<ol>
+<li>一项任务只保留一个主要分支。</li>
+<li>一个分支在任一时刻只有一个当前写入者。</li>
+<li>交接前，当前写入者提交并推送全部候选变化。</li>
+<li>交接记录写出完整HEAD SHA，不使用含糊的“最新提交”。</li>
+<li>接棒者开始前确认远端HEAD仍然等于交接SHA。</li>
+<li>共享分支不做force push，交接后不重写历史。</li>
+<li>试错提交需要整理时，在最终合入主分支时squash。</li>
+<li>两个Agent要尝试不同方案时，分别建立分支或PR，不在同一个分支里互相覆盖。</li>
+</ol>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">一项任务</span><br><span class="line">  → 一轮实施工作</span><br><span class="line">    → 一个短期分支</span><br><span class="line">      → 一个隔离工作空间</span><br><span class="line">        → 一个当前写入者</span><br></pre></td></tr></table></figure>
+
+<p>对Codex来说，隔离工作空间通常是本机worktree；对通过GitHub工作的ChatGPT来说，隔离空间是远端分支和Draft PR。同一项任务可以在不同阶段更换写入者，换人之前必须先形成可以准确定位的提交。</p>
+<p>worktree只隔离代码目录，并不会自动隔离数据库、容器、端口、缓存和凭据。多个本机Agent并行工作时，这些资源仍要单独分配。相关约束在<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/">让多个Agent在不同worktree工作</a>中有更完整的记录。</p>
+<h2 id="尽早建立Draft-PR"><a href="#尽早建立Draft-PR" class="headerlink" title="尽早建立Draft PR"></a>尽早建立Draft PR</h2><p>ChatGPT和Codex共同参与的任务，可以在工作稳定之前就建立Draft PR。它不是“准备合并”的信号，而是两边共同使用的交接面。</p>
+<p>PR正文顶部只保留当前状态：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">## 协作状态</span></span><br><span class="line"></span><br><span class="line">当前阶段：需求 / 设计 / 实现 / 验证 / 评审 / 待确认</span><br><span class="line">当前写入者：ChatGPT / Codex / 负责人</span><br><span class="line">当前候选：&lt;完整HEAD SHA&gt;</span><br><span class="line">下一接棒者：ChatGPT / Codex / 负责人</span><br><span class="line">下一步：一句话说明需要做什么</span><br></pre></td></tr></table></figure>
+
+<p>这些字段会随着任务推进而更新。每次正式交接再增加一条不可变的PR评论，保留当时的准确状态。</p>
+<p>ChatGPT把已经确认的定义交给Codex时，可以使用下面的格式：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">### 交接给Codex</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> 基线：main@<span class="language-xml"><span class="tag">&lt;<span class="name">SHA</span>&gt;</span></span></span><br><span class="line"><span class="bullet">-</span> 当前候选：<span class="language-xml"><span class="tag">&lt;<span class="name">HEAD</span> <span class="attr">SHA</span>&gt;</span></span></span><br><span class="line"><span class="bullet">-</span> 正式依据：REQ-000123、CAP-005、ADR-0012</span><br><span class="line"><span class="bullet">-</span> 本轮目标：……</span><br><span class="line"><span class="bullet">-</span> 明确不做：……</span><br><span class="line"><span class="bullet">-</span> 可以修改：……</span><br><span class="line"><span class="bullet">-</span> 已经完成：……</span><br><span class="line"><span class="bullet">-</span> 已运行验证：……</span><br><span class="line"><span class="bullet">-</span> 未验证和风险：……</span><br><span class="line"><span class="bullet">-</span> 下一步：在本机worktree实施并运行……</span><br></pre></td></tr></table></figure>
+
+<p>Codex完成本机工作后，再把固定候选交给ChatGPT：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">### 交接给ChatGPT审阅</span></span><br><span class="line"></span><br><span class="line"><span class="bullet">-</span> 比较起点：main@<span class="language-xml"><span class="tag">&lt;<span class="name">SHA</span>&gt;</span></span></span><br><span class="line"><span class="bullet">-</span> 固定候选：<span class="language-xml"><span class="tag">&lt;<span class="name">HEAD</span> <span class="attr">SHA</span>&gt;</span></span></span><br><span class="line"><span class="bullet">-</span> 实际修改：……</span><br><span class="line"><span class="bullet">-</span> 本机验证：……</span><br><span class="line"><span class="bullet">-</span> 失败、跳过和警告：……</span><br><span class="line"><span class="bullet">-</span> 明确未验证：……</span><br><span class="line"><span class="bullet">-</span> 重点审阅：……</span><br></pre></td></tr></table></figure>
+
+<p>PR原有的来源、范围、设计、验证和恢复内容可以继续保留，只需增加这段很短的协作状态，不必再造一份复杂清单。</p>
+<h2 id="Token省在交接，而不是省掉必要信息"><a href="#Token省在交接，而不是省掉必要信息" class="headerlink" title="Token省在交接，而不是省掉必要信息"></a>Token省在交接，而不是省掉必要信息</h2><p>让ChatGPT和Codex协作，如果每次都把仓库、全部文档和完整聊天记录重新发一遍，Token只会比原来更多。需要减少的是重复上下文，而不是把需求和验证记录删短。</p>
+<p>可以给不同阶段准备不同的上下文包：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>应该提供</th>
+<th>通常不需要提供</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>需求与设计</td>
+<td>原始问题、相关REQ、现有设计、历史决定、必要源码</td>
+<td>本机缓存、完整测试日志、无关模块</td>
+</tr>
+<tr>
+<td>本机实施</td>
+<td>已接受的REQ和设计、验收条件、允许修改范围、相关代码</td>
+<td>前期所有方案争论、已经否决的长篇讨论</td>
+</tr>
+<tr>
+<td>独立审阅</td>
+<td>比较起点、固定HEAD SHA、REQ、已接受设计、验证摘要</td>
+<td>实现过程的完整聊天、Agent的思考过程</td>
+</tr>
+<tr>
+<td>负责人确认</td>
+<td>PR摘要、阻塞问题、验证结果、未解决风险</td>
+<td>每次命令输出和全部中间尝试</td>
+</tr>
+</tbody></table>
+<p>这里有几个很实际的节省点。</p>
+<p>ChatGPT完成需求讨论后，不把整段对话交给Codex，而是写成REQ、设计和一条交接评论。Codex只读取实施所需的正式结论。需求为什么改变、哪些方案已经否决，如果将来仍有价值，就写进ADR；没有进入正式文档的闲聊不再反复传递。</p>
+<p>Codex完成实现后，也不把本机终端的全部输出塞给ChatGPT。PR记录执行了什么验证、结果如何、哪些检查失败或跳过，详细日志只在需要诊断时按链接或附件读取。</p>
+<p>独立审阅使用新的ChatGPT会话，只给固定SHA和相关事实源。它不需要恢复实施会话的全部历史，也不会因为读过每一步尝试而沿用实现者的判断。</p>
+<p>另外，不再让两个Agent各做一次全仓库调查。ChatGPT在Definition阶段确认受影响的能力和设计，Codex实施时围绕这部分代码工作；如果Codex发现实际依赖超出原范围，再把新的事实写回PR，而不是默默扩大任务。</p>
+<p>这套方法没有一个固定的Token节省比例。项目结构、文档质量和任务大小不同，差异会很大。可以确定的是，长对话不再成为唯一的记忆载体，每位接棒者也不必从项目起点重新建立上下文。</p>
+<h2 id="Review发现的问题放在哪里"><a href="#Review发现的问题放在哪里" class="headerlink" title="Review发现的问题放在哪里"></a>Review发现的问题放在哪里</h2><p>ChatGPT审阅PR时，并不是每条意见都要建立Issue：</p>
+<ul>
+<li>当前PR内可以直接修复并验证的问题，留在PR评论中；</li>
+<li>修复会明显扩大当前范围的问题，建立待复核的GitHub Issue；</li>
+<li>需要长期追踪的问题，再登记到仓库内的正式问题台账；</li>
+<li>会改变产品行为的问题，从Issue转入REQ和设计流程；</li>
+<li>只有改进建议、还不能说明存在缺陷时，保留为建议，不机械建Issue。</li>
+</ul>
+<p>如果一个GitHub Issue已经关联仓库内的正式问题记录，PR合入不一定代表问题已经验证关闭。这时PR使用<code>Refs #123</code>更准确，等实施、验证和正式台账都收口以后再关闭Issue。只有没有进入正式台账、并且合入本PR就能真实结束的问题，才适合使用<code>Closes #123</code>。</p>
+<p>这样做会多一步状态确认，但能避免GitHub显示“已关闭”，仓库记录却仍然等待验证的矛盾。</p>
+<h2 id="普通Review和独立Review"><a href="#普通Review和独立Review" class="headerlink" title="普通Review和独立Review"></a>普通Review和独立Review</h2><p>ChatGPT参与过需求和设计，随后在同一段对话中检查代码是否符合自己的设计，这种Review效率很高，普通PR完全可以这样做。不过它仍然可能受之前方案影响，对权限、Secret、事务、并发、迁移、删除和恢复等高风险修改，应使用新的会话做独立Review：</p>
+<ol>
+<li>固定完整HEAD SHA；</li>
+<li>新建一个没有参与实施讨论的ChatGPT会话；</li>
+<li>只提供PR、REQ、已接受的设计、相关源码和审阅目标；</li>
+<li>不把原实现讨论全部复制过去；</li>
+<li>审阅期间不继续修改被审候选；</li>
+<li>结论需要长期保存时，写入正式审阅记录。</li>
+</ol>
+<p>固定SHA保证审阅者看到的内容不会在审阅途中变化。新会话减少了对原方案的锚定，也顺便缩小了上下文。OpenAI当前的Codex用例同样包含<a target="_blank" rel="noopener" href="https://learn.chatgpt.com/use-cases/github-code-reviews">GitHub PR审阅</a>，它可以作为额外的代码审阅入口，但没有必要让ChatGPT和Codex对每一个普通PR重复给出相同Review。</p>
+<h2 id="验证责任仍然留在本机"><a href="#验证责任仍然留在本机" class="headerlink" title="验证责任仍然留在本机"></a>验证责任仍然留在本机</h2><p>ChatGPT可以阅读测试代码、判断覆盖是否充分、补充测试、查看GitHub Actions结果和分析失败日志。它也可以指出“这里应该补一组事务回滚测试”，但不能因为代码看起来合理，就把没有执行过的测试写成通过。</p>
+<p>本机Codex负责运行仓库规定的验证命令，并记录：</p>
+<ul>
+<li>验证对应的HEAD SHA和比较起点；</li>
+<li>当时的Git tree是否干净；</li>
+<li>运行过哪些命令；</li>
+<li>哪些检查通过、失败或跳过；</li>
+<li>是否使用数据库、容器、浏览器或其他外部环境；</li>
+<li>哪些风险仍然没有验证。</li>
+</ul>
+<p>本机测试、远端CI、数据库检查、容器运行和负责人真实使用解决的是不同问题，不能互相替代。ChatGPT给出的代码候选，也要先由Codex拉到本机worktree中验证，再进入合并判断。</p>
+<h2 id="权限从最小范围开始"><a href="#权限从最小范围开始" class="headerlink" title="权限从最小范围开始"></a>权限从最小范围开始</h2><p>ChatGPT的GitHub连接先只开放需要协作的仓库。读取源码、文档、Issue、PR和CI结果可以作为日常能力；任何写操作都只进入自己的短期分支，不直接推送主分支。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>建议边界</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>读取源码、文档、Issue、PR和CI结果</td>
+<td>允许</td>
+</tr>
+<tr>
+<td>建立短期分支、更新Draft PR</td>
+<td>连接支持时允许</td>
+</tr>
+<tr>
+<td>向任务分支提交</td>
+<td>写入前确认</td>
+</tr>
+<tr>
+<td>添加Review意见或待登记Issue</td>
+<td>允许</td>
+</tr>
+<tr>
+<td>直接推送主分支</td>
+<td>禁止</td>
+</tr>
+<tr>
+<td>合并PR、创建标签、正式Release</td>
+<td>负责人确认</td>
+</tr>
+<tr>
+<td>修改Secret或真实环境</td>
+<td>交给本机Codex，另行确认</td>
+</tr>
+<tr>
+<td>修改Workflow权限</td>
+<td>独立任务处理</td>
+</tr>
+<tr>
+<td>删除分支、Issue或历史证据</td>
+<td>负责人确认</td>
+</tr>
+</tbody></table>
+<p>这里约束的是动作风险，不是对某个模型的信任程度。即使以后连接能力更强，也没有必要让远端Agent绕过PR直接修改主分支。</p>
+<h2 id="落到仓库只需要几处小改动"><a href="#落到仓库只需要几处小改动" class="headerlink" title="落到仓库只需要几处小改动"></a>落到仓库只需要几处小改动</h2><p>这套协作不需要马上增加新的CI门禁或GitHub自动化。先修改四个位置就够了：</p>
+<ul>
+<li>根<code>AGENTS.md</code>继续保持工具无关，只写产品取舍、合并和发布等通用权限边界，不塞入某个模型的操作说明；</li>
+<li>Git协作规范增加“一个分支一个当前写入者、固定SHA交接、共享分支不强推”几条规则；</li>
+<li>PR模板增加当前阶段、当前写入者、当前候选、下一接棒者和下一步；</li>
+<li>研发手册补充本地worktree、远端分支、普通Review和固定SHA独立Review的关系。</li>
+</ul>
+<p>最终形成的链路是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">原始想法</span><br><span class="line">  ↓</span><br><span class="line">负责人和ChatGPT分析需求</span><br><span class="line">  ↓</span><br><span class="line">Definition Draft PR</span><br><span class="line">  ├─REQ</span><br><span class="line">  ├─受影响的设计</span><br><span class="line">  └─必要的ADR</span><br><span class="line">  ↓</span><br><span class="line">负责人确认并合入主分支</span><br><span class="line">  ↓</span><br><span class="line">Codex建立任务分支和本机worktree</span><br><span class="line">  ↓</span><br><span class="line">实现、针对性测试、完整验证</span><br><span class="line">  ↓</span><br><span class="line">Implementation Draft PR并固定HEAD</span><br><span class="line">  ↓</span><br><span class="line">新的ChatGPT会话Review</span><br><span class="line">  ├─阻塞问题：Codex修复并重新验证</span><br><span class="line">  ├─后续问题：建立待复核Issue</span><br><span class="line">  └─普通建议：明确记录去向</span><br><span class="line">  ↓</span><br><span class="line">负责人确认并合并</span><br><span class="line">  ↓</span><br><span class="line">记录实际合入提交、同步问题与版本关系</span><br></pre></td></tr></table></figure>
+
+<p>这样安排以后，ChatGPT不必复制Codex的本机开发过程，Codex也不必重新经历ChatGPT的全部需求讨论。GitHub保存两边交接时的准确状态，仓库文档保存最终结论，长对话只负责帮助形成判断，不再负责充当项目记忆。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ChatGPT/" rel="tag"># ChatGPT</a>
+              <a href="/tags/Codex/" rel="tag"># Codex</a>
+              <a href="/tags/GitHub/" rel="tag"># GitHub</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B01-%E8%AE%A4%E8%AF%86ACDL/" rel="prev" title="ACDL研发流程01：认识ACDL以及为什么需要新的研发体系">
+                  <i class="fa fa-angle-left"></i> ACDL研发流程01：认识ACDL以及为什么需要新的研发体系
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
+  </div>
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
+  </div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
