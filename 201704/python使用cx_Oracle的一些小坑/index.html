@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
-<meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.3.0">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
@@ -13,17 +14,16 @@
 <link rel="stylesheet" href="/css/main.css">
 
 
-<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
-<script id="hexo-configurations">
-    var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"www.bluexiii.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
-  </script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-  <meta name="description" content="引言cx_Oracle是Python环境下的一个（好像也是唯一的一个）用于操作Oracle的第三方模块。最近在写某个对帐程序时，不得已要连接一台Oracle库，于是用到了cx_Oracle，总的来说还是比较顺利的，期间遇到几个有意思的小坑写出来分享一下。 RHEL 6.4下安装cx_OracleRHEL6.4和cx_Oracle比较搭，安装时应该不会遇到什么挫折，使用RPM安装好instantcl">
+<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="引言cx_Oracle是Python环境下的一个（好像也是唯一的一个）用于操作Oracle的第三方模块。最近在写某个对帐程序时，不得已要连接一台Oracle库，于是用到了cx_Oracle，总的来说还是比较顺利的，期间遇到几个有意思的小坑写出来分享一下。 RHEL 6.4下安装cx_OracleRHEL6.4和cx_Oracle比较搭，安装时应该不会遇到什么挫折，使用RPM安装好instantcl">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Python使用cx_Oracle的几个小坑">
-<meta property="og:url" content="http://www.bluexiii.com/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/index.html">
+<meta property="og:url" content="https://www.bluexiii.com/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/index.html">
 <meta property="og:site_name" content="BlueXIII&#39;s Blog">
 <meta property="og:description" content="引言cx_Oracle是Python环境下的一个（好像也是唯一的一个）用于操作Oracle的第三方模块。最近在写某个对帐程序时，不得已要连接一台Oracle库，于是用到了cx_Oracle，总的来说还是比较顺利的，期间遇到几个有意思的小坑写出来分享一下。 RHEL 6.4下安装cx_OracleRHEL6.4和cx_Oracle比较搭，安装时应该不会遇到什么挫折，使用RPM安装好instantcl">
 <meta property="og:locale" content="en_US">
@@ -35,78 +35,68 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/r61vs.jpg">
 
-<link rel="canonical" href="http://www.bluexiii.com/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/">
+
+<link rel="canonical" href="https://www.bluexiii.com/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/">
 
 
-<script id="page-configurations">
-  // https://hexo.io/docs/variables.html
-  CONFIG.page = {
-    sidebar: "",
-    isHome : false,
-    isPost : true,
-    lang   : 'en'
-  };
-</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/","path":"201704/python使用cx_Oracle的一些小坑/","title":"Python使用cx_Oracle的几个小坑"}</script>
 
-  <title>Python使用cx_Oracle的几个小坑 | BlueXIII's Blog</title>
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Python使用cx_Oracle的几个小坑 | BlueXIII's Blog</title>
   
 
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
 
 
 
 
   <noscript>
-  <style>
-  .use-motion .brand,
-  .use-motion .menu-item,
-  .sidebar-inner,
-  .use-motion .post-block,
-  .use-motion .pagination,
-  .use-motion .comments,
-  .use-motion .post-header,
-  .use-motion .post-body,
-  .use-motion .collection-header { opacity: initial; }
-
-  .use-motion .site-title,
-  .use-motion .site-subtitle {
-    opacity: initial;
-    top: initial;
-  }
-
-  .use-motion .logo-line-before i { left: initial; }
-  .use-motion .logo-line-after i { right: initial; }
-  </style>
-</noscript>
-
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage">
-  <div class="container use-motion">
-    <div class="headband"></div>
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
 
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"><div class="site-brand-container">
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
   <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar">
-      <span class="toggle-line toggle-line-first"></span>
-      <span class="toggle-line toggle-line-middle"></span>
-      <span class="toggle-line toggle-line-last"></span>
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
     </div>
   </div>
 
   <div class="site-meta">
 
     <a href="/" class="brand" rel="start">
-      <span class="logo-line-before"><i></i></span>
-      <h1 class="site-title">BlueXIII's Blog</h1>
-      <span class="logo-line-after"><i></i></span>
+      <i class="logo-line"></i>
+      <p class="site-title">BlueXIII's Blog</p>
+      <i class="logo-line"></i>
     </a>
       <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
   </div>
 
   <div class="site-nav-right">
-    <div class="toggle popup-trigger">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
     </div>
   </div>
 </div>
@@ -114,226 +104,16 @@
 
 
 
-<nav class="site-nav">
-  <ul id="menu" class="main-menu menu">
-        <li class="menu-item menu-item-home">
-
-    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
-
-  </li>
-        <li class="menu-item menu-item-archives">
-
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
-
-  </li>
-  </ul>
-</nav>
 
 
 
-
-</div>
-    </header>
-
-    
-  <div class="back-to-top">
-    <i class="fa fa-arrow-up"></i>
-    <span>0%</span>
-  </div>
-
-
-    <main class="main">
-      <div class="main-inner">
-        <div class="content-wrap">
-          
-
-          <div class="content post posts-expand">
-            
-
-    
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://www.bluexiii.com/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Python使用cx_Oracle的几个小坑
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-            </span>
-
-          
-            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">Views: </span>
-              <span id="busuanzi_value_page_pv"></span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>cx_Oracle是Python环境下的一个（好像也是唯一的一个）用于操作Oracle的第三方模块。<br>最近在写某个对帐程序时，不得已要连接一台Oracle库，于是用到了cx_Oracle，总的来说还是比较顺利的，期间遇到几个有意思的小坑写出来分享一下。</p>
-<h2 id="RHEL-6-4下安装cx-Oracle"><a href="#RHEL-6-4下安装cx-Oracle" class="headerlink" title="RHEL 6.4下安装cx_Oracle"></a>RHEL 6.4下安装cx_Oracle</h2><p>RHEL6.4和cx_Oracle比较搭，安装时应该不会遇到什么挫折，使用RPM安装好instantclient后，直接用pip3安装cx_Oracle即可。</p>
-<p>需要注意地方：</p>
-<ol>
-<li>尽量使用RPM方式安装instantclient，安装更方便，而且比zip更好管理。  </li>
-<li>instantclient的版本选择的是11.2.0.4.0，没有选择12。对于Oracle/WebLogic这类闭源的东西，还是选择次最新版本的比较稳妥。  </li>
-</ol>
-<p>安装步骤：</p>
-<ol>
-<li><p>下载Linux版本的instantclient<br>这里是 <a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/cn/database/features/instant-client/index-097480.html">Oracle官网 instantclient下载页面</a> ，下载以下3个RPM包：<br>oracle-instantclient11.2-basic-11.2.0.4.0-1.x86_64.rpm<br>oracle-instantclient11.2-devel-11.2.0.4.0-1.x86_64.rpm<br>oracle-instantclient11.2-sqlplus-11.2.0.4.0-1.x86_64.rpm  </p>
-</li>
-<li><p>安装instantclient并设置环境变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum -y install libaio bc flex</span><br><span class="line">rpm -ivh oracle-instantclient11.2-basic-11.2.0.4.0-1.x86_64.rpm</span><br><span class="line">rpm -ivh oracle-instantclient11.2-devel-11.2.0.4.0-1.x86_64.rpm</span><br><span class="line">rpm -ivh oracle-instantclient11.2-sqlplus-11.2.0.4.0-1.x86_64.rpm</span><br></pre></td></tr></table></figure></li>
-<li><p>设置环境变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">echo &#39;export ORACLE_VERSION&#x3D;&quot;11.2&quot;&#39; &gt;&gt; $HOME&#x2F;.bashrc</span><br><span class="line">echo &#39;export ORACLE_HOME&#x3D;&quot;&#x2F;usr&#x2F;lib&#x2F;oracle&#x2F;$ORACLE_VERSION&#x2F;client64&#x2F;&quot;&#39; &gt;&gt; $HOME&#x2F;.bashrc</span><br><span class="line">echo &#39;export PATH&#x3D;$PATH:&quot;$ORACLE_HOME&#x2F;bin&quot;&#39; &gt;&gt; $HOME&#x2F;.bashrc</span><br><span class="line">echo &#39;export LD_LIBRARY_PATH&#x3D;$LD_LIBRARY_PATH:&quot;$ORACLE_HOME&#x2F;lib&quot;&#39; &gt;&gt; $HOME&#x2F;.bashrc</span><br><span class="line">source $HOME&#x2F;.bashrc</span><br></pre></td></tr></table></figure></li>
-<li><p>使用pip安装cx_Oracle</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
-<h2 id="macOS-12下安装cx-Oracle"><a href="#macOS-12下安装cx-Oracle" class="headerlink" title="macOS 12下安装cx_Oracle"></a>macOS 12下安装cx_Oracle</h2><p>macOS下，安装cx_Oracle后的编译过程有可能会报错，一般是因为instantclient安装有误造成的。</p>
-</li>
-</ol>
-<p>需要注意的地方：</p>
-<ol>
-<li>mac下的instantclient只有zip包一种安装方式，要注意手工建两个软链接。  </li>
-<li>pip安装前，注意导入LD_LIBRARY_PATH与DYLD_LIBRARY_PATH两个环境变量。  </li>
-</ol>
-<p>安装过程：</p>
-<ol>
-<li><p>下载Mac版本的instantclient<br>下载以下3个zip包，并<code>unzip</code>解压至同一目录：<br>instantclient-basic-macos.x64-11.2.0.4.0.zip<br>instantclient-sdk-macos.x64-11.2.0.4.0.zip<br>instantclient-sqlplus-macos.x64-11.2.0.4.0.zip</p>
-</li>
-<li><p>建立软链接</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;path&#x2F;to&#x2F;instant</span><br><span class="line">ln -s libclntsh.dylib.11.2 libclntsh.dylib</span><br><span class="line">ln -s libocci.dylib.11.2 libocci.dylib</span><br></pre></td></tr></table></figure></li>
-<li><p>设置环境变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export ORACLE_VERSION&#x3D;&quot;11.2&quot;</span><br><span class="line">export ORACLE_HOME&#x3D;&quot;&#x2F;path&#x2F;to&#x2F;instantclient_11_2&quot;</span><br><span class="line">export PATH&#x3D;$PATH:&quot;$ORACLE_HOME&quot;</span><br></pre></td></tr></table></figure></li>
-<li><p>使用pip安装cx_Oracle，注意提前导入DYLD_LIBRARY_PATH与LD_LIBRARY_PATH</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export DYLD_LIBRARY_PATH&#x3D;&quot;$ORACLE_HOME&quot;</span><br><span class="line">export LD_LIBRARY_PATH&#x3D;&quot;$ORACLE_HOME&quot;</span><br><span class="line">pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
-<h2 id="中文乱码问题"><a href="#中文乱码问题" class="headerlink" title="中文乱码问题"></a>中文乱码问题</h2><p>Oracle中文乱码问题存在已久，使用cx_Oracle时也不例外，解决方法还是设置NLS_LANG环境变量。<br>有两种方式，一是在系统中设置永久环境变量，二是直接在代码中使用<code>os.environ</code>设置环境变量，这里推荐后者。  </p>
-</li>
-<li><p>方法一：在Shell中设置环境变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export NLS_LANG&#x3D;&quot;SIMPLIFIED CHINESE_CHINA.UTF8&quot;</span><br></pre></td></tr></table></figure></li>
-<li><p>方法二：直接在代码中加入：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import os</span><br><span class="line">os.environ[&#39;NLS_LANG&#39;] &#x3D; &#39;SIMPLIFIED CHINESE_CHINA.UTF8&#39;</span><br></pre></td></tr></table></figure>
-
-</li>
-</ol>
-<h3 id="PyCharm下不识别cx-Oracle问题"><a href="#PyCharm下不识别cx-Oracle问题" class="headerlink" title="PyCharm下不识别cx_Oracle问题"></a>PyCharm下不识别cx_Oracle问题</h3><p>安装安成后，在python的console中已经可以<code>import cx_Oracle</code>了，但在PyCharm中却提示找不到cx_Oracle。这是一个比较大的坑，可以详细讲一下处理过程。  </p>
-<p>首先初步定位到原因，是由于PyCharm中没有定义LD_LIBRARY_PATH与DYLD_LIBRARY_PATH两个环境变量造成的。<br>PyCharm会自动读取系统中的环境变量设置并导入，但唯独这两个没有导进来。不深究原因，先尝试手工在PyCharm中配置这两个环境变量，总共有两处可以配置：</p>
-<p>第一处：<br><code>CMD+,</code>打开Preference，找到 Build,Execution,Deployment -&gt; Console -&gt; Python Console -&gt;Enviroment Variables<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/r61vs.jpg"><br>此处的配置会修复PyCharm中的Console。</p>
-<p>第二处：<br>右上角 Run -&gt; Edit Configurations，添加两条环境变量<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/09u0q.jpg"><br>此处的配置会修复PyCharm中<code>Ctrl+Shift+R</code>运行代码时的报错。</p>
-<p>在以上两处手工添加环境变量：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DYLD_LIBRARY_PATH&#x3D;&#x2F;path&#x2F;to&#x2F;instantclient</span><br><span class="line">LD_LIBRARY_PATH&#x2F;path&#x2F;to&#x2F;instantclient</span><br></pre></td></tr></table></figure>
-<p>两处的环境变量配置完成后，虽然console中可以正常使用cx_Oracle了，代码也可以正常运行了，但编辑界面中的inspection还是有问题的，提示有Error，并且不能使用自动完成功能。</p>
-<p>于是回到之前的问题，为什么明明已经定义了，但PyCharm却没有找到LD_LIBRARY_PATH与DYLD_LIBRARY_PATH？<br>同时偶然发现，在执行<code>env</code>命令查看已定义的环境变量时，也是找不到LD_LIBRARY_PATH与DYLD_LIBRARY_PATH的。<br>这貌似已经不是PyCharm自身的问题了，需要从macOS系统来着手了。  </p>
-<p>于是在stackoverflow上找到了这么一段话：  </p>
-<blockquote>
-<p>El Capitan added system integrity protection (SIP), and one side effect of that is that exporting DYLD_LIBRARY_PATH doesn’t work. That could affect running SQL*Plus from a shell script, for example. There are workarounds for the 11g instant client. The installation notes at the bottom of the download page have changed since I last did this, and it now says to hard link the library files to the user’s ~/lib directory to avoid that issue. Fortunately it looks like you don’t need to worry about that with the 12c client - they’ve fixed the way it’s built.</p>
-</blockquote>
-<p>看来根本原因是OSX 10.11之后加入的这个SIP引发的了。  </p>
-<p>首先想到的最简单的方法，将所有的<code>.dylib</code>和<code>.h</code>都拷贝到系统默认的目录就可以了。<br>但很杯具，<code>/usr/lib</code>和<code>/user/include</code>这两个目录也被SIP保护了。因为不想强制关闭SIP，继续再想别的办法。<br>接着发现<code>/usr/local/lib</code>和<code>/user/local/include</code>目录还是可以操作的，于是拷到这两个目录：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;path&#x2F;to&#x2F;instantclient</span><br><span class="line">cp *.dylib &#x2F;usr&#x2F;local&#x2F;lib</span><br><span class="line">cp .&#x2F;sdk&#x2F;include&#x2F;*.h &#x2F;usr&#x2F;local&#x2F;include</span><br></pre></td></tr></table></figure>
-<p>再将cx_Oracle卸载后重新编译安装：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 uninstall cx_Oracle</span><br><span class="line">sudo pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
-<p>重启PyCharm后，问题解决。</p>
-<h2 id="cx-Oracle的简单使用"><a href="#cx-Oracle的简单使用" class="headerlink" title="cx_Oracle的简单使用"></a>cx_Oracle的简单使用</h2><p>cx_Oracle的使用上没有什么问题，一切按套路来写就可以了。贴一个简单的示例：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">import cx_Oracle</span><br><span class="line">conn &#x3D; cx_Oracle.connect(&#39;username&#39;, &#39;password&#39;,&#39;host:port&#x2F;sid&#39;)</span><br><span class="line">cursor &#x3D; conn.cursor()</span><br><span class="line">cursor.execute(&#39;select column from table&#39;)</span><br><span class="line">result &#x3D; cursor.fetchall()</span><br><span class="line">for row in result:</span><br><span class="line">    print(row)</span><br><span class="line">cursor.close()</span><br><span class="line">conn.close()</span><br></pre></td></tr></table></figure>
-<p>更加详细的内容请参考官方文档：<br><a target="_blank" rel="noopener" href="https://cx-oracle.readthedocs.io/en/latest/">https://cx-oracle.readthedocs.io/en/latest/</a><br><a target="_blank" rel="noopener" href="https://oracle.github.io/python-cx_Oracle/">https://oracle.github.io/python-cx_Oracle/</a>  </p>
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://gist.github.com/thom-nic/6011715">https://gist.github.com/thom-nic/6011715</a><br><a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/37711482/how-to-install-oracle-instant-client-on-a-mac">http://stackoverflow.com/questions/37711482/how-to-install-oracle-instant-client-on-a-mac</a>  </p>
-
-    </div>
-
-    
-    
-    
-
-      <footer class="post-footer">
-
+</header>
         
-
-
-        
-    <div class="post-nav">
-      <div class="post-nav-item">
-    <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91RDS&DRDS%E5%88%9D%E6%8E%A2/" rel="prev" title="阿里云RDS&DRDS初探">
-      <i class="fa fa-chevron-left"></i> 阿里云RDS&DRDS初探
-    </a></div>
-      <div class="post-nav-item">
-    <a href="/201704/flask-adminlte-handler/" rel="next" title="flask-adminlte-handler">
-      flask-adminlte-handler <i class="fa fa-chevron-right"></i>
-    </a></div>
-    </div>
-      </footer>
-    
-  </article>
   
-  
-  
-
-
-
-          </div>
-          
-
-<script>
-  window.addEventListener('tabs:register', () => {
-    let { activeClass } = CONFIG.comments;
-    if (CONFIG.comments.storage) {
-      activeClass = localStorage.getItem('comments_active') || activeClass;
-    }
-    if (activeClass) {
-      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
-      if (activeTab) {
-        activeTab.click();
-      }
-    }
-  });
-  if (CONFIG.comments.storage) {
-    window.addEventListener('tabs:click', event => {
-      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
-      let commentClass = event.target.classList[1];
-      localStorage.setItem('comments_active', commentClass);
-    });
-  }
-</script>
-
-        </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line toggle-line-first"></span>
-    <span class="toggle-line toggle-line-middle"></span>
-    <span class="toggle-line toggle-line-last"></span>
-  </div>
-
   <aside class="sidebar">
-    <div class="sidebar-inner">
 
-      <ul class="sidebar-nav motion-element">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           Table of Contents
         </li>
@@ -342,73 +122,245 @@
         </li>
       </ul>
 
-      <!--noindex-->
-      <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RHEL-6-4%E4%B8%8B%E5%AE%89%E8%A3%85cx-Oracle"><span class="nav-number">2.</span> <span class="nav-text">RHEL 6.4下安装cx_Oracle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#macOS-12%E4%B8%8B%E5%AE%89%E8%A3%85cx-Oracle"><span class="nav-number">3.</span> <span class="nav-text">macOS 12下安装cx_Oracle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E6%96%87%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">中文乱码问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PyCharm%E4%B8%8B%E4%B8%8D%E8%AF%86%E5%88%ABcx-Oracle%E9%97%AE%E9%A2%98"><span class="nav-number">4.1.</span> <span class="nav-text">PyCharm下不识别cx_Oracle问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cx-Oracle%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">cx_Oracle的简单使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">6.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
-      </div>
-      <!--/noindex-->
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RHEL-6-4%E4%B8%8B%E5%AE%89%E8%A3%85cx-Oracle"><span class="nav-number">2.</span> <span class="nav-text">RHEL 6.4下安装cx_Oracle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#macOS-12%E4%B8%8B%E5%AE%89%E8%A3%85cx-Oracle"><span class="nav-number">3.</span> <span class="nav-text">macOS 12下安装cx_Oracle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E6%96%87%E4%B9%B1%E7%A0%81%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">中文乱码问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PyCharm%E4%B8%8B%E4%B8%8D%E8%AF%86%E5%88%ABcx-Oracle%E9%97%AE%E9%A2%98"><span class="nav-number">4.1.</span> <span class="nav-text">PyCharm下不识别cx_Oracle问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cx-Oracle%E7%9A%84%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">cx_Oracle的简单使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">6.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
 
-      <div class="site-overview-wrap sidebar-panel">
-        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
   <p class="site-author-name" itemprop="name">BlueXIII</p>
   <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
 </div>
-<div class="site-state-wrap motion-element">
+<div class="site-state-wrap animated">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
-          <a href="/archives/">
-        
+        <a href="/archives/">
           <span class="site-state-item-count">273</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
   </nav>
 </div>
-  <div class="links-of-author motion-element">
+  <div class="links-of-author animated">
       <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
       </span>
       <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
       </span>
   </div>
 
-
-
+        </div>
       </div>
+    </div>
+
+    
+  </aside>
+
 
     </div>
-  </aside>
-  <div id="sidebar-dimmer"></div>
+
+    <div class="main-inner post posts-expand">
 
 
-      </div>
-    </main>
+  
 
-    <footer class="footer">
-      <div class="footer-inner">
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201704/python%E4%BD%BF%E7%94%A8cx_Oracle%E7%9A%84%E4%B8%80%E4%BA%9B%E5%B0%8F%E5%9D%91/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="BlueXIII">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BlueXIII's Blog">
+      <meta itemprop="description" content="IT技术类文章、笔记分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Python使用cx_Oracle的几个小坑 | BlueXIII's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Python使用cx_Oracle的几个小坑
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>cx_Oracle是Python环境下的一个（好像也是唯一的一个）用于操作Oracle的第三方模块。<br>最近在写某个对帐程序时，不得已要连接一台Oracle库，于是用到了cx_Oracle，总的来说还是比较顺利的，期间遇到几个有意思的小坑写出来分享一下。</p>
+<h2 id="RHEL-6-4下安装cx-Oracle"><a href="#RHEL-6-4下安装cx-Oracle" class="headerlink" title="RHEL 6.4下安装cx_Oracle"></a>RHEL 6.4下安装cx_Oracle</h2><p>RHEL6.4和cx_Oracle比较搭，安装时应该不会遇到什么挫折，使用RPM安装好instantclient后，直接用pip3安装cx_Oracle即可。</p>
+<p>需要注意地方：</p>
+<ol>
+<li>尽量使用RPM方式安装instantclient，安装更方便，而且比zip更好管理。  </li>
+<li>instantclient的版本选择的是11.2.0.4.0，没有选择12。对于Oracle&#x2F;WebLogic这类闭源的东西，还是选择次最新版本的比较稳妥。</li>
+</ol>
+<p>安装步骤：</p>
+<ol>
+<li><p>下载Linux版本的instantclient<br>这里是 <a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/cn/database/features/instant-client/index-097480.html">Oracle官网 instantclient下载页面</a> ，下载以下3个RPM包：<br>oracle-instantclient11.2-basic-11.2.0.4.0-1.x86_64.rpm<br>oracle-instantclient11.2-devel-11.2.0.4.0-1.x86_64.rpm<br>oracle-instantclient11.2-sqlplus-11.2.0.4.0-1.x86_64.rpm  </p>
+</li>
+<li><p>安装instantclient并设置环境变量</p>
+</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">yum -y install libaio bc flex</span><br><span class="line">rpm -ivh oracle-instantclient11.2-basic-11.2.0.4.0-1.x86_64.rpm</span><br><span class="line">rpm -ivh oracle-instantclient11.2-devel-11.2.0.4.0-1.x86_64.rpm</span><br><span class="line">rpm -ivh oracle-instantclient11.2-sqlplus-11.2.0.4.0-1.x86_64.rpm</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>设置环境变量</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export ORACLE_VERSION=&quot;11.2&quot;&#x27; &gt;&gt; $HOME/.bashrc</span><br><span class="line">echo &#x27;export ORACLE_HOME=&quot;/usr/lib/oracle/$ORACLE_VERSION/client64/&quot;&#x27; &gt;&gt; $HOME/.bashrc</span><br><span class="line">echo &#x27;export PATH=$PATH:&quot;$ORACLE_HOME/bin&quot;&#x27; &gt;&gt; $HOME/.bashrc</span><br><span class="line">echo &#x27;export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:&quot;$ORACLE_HOME/lib&quot;&#x27; &gt;&gt; $HOME/.bashrc</span><br><span class="line">source $HOME/.bashrc</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>使用pip安装cx_Oracle</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
+
+<h2 id="macOS-12下安装cx-Oracle"><a href="#macOS-12下安装cx-Oracle" class="headerlink" title="macOS 12下安装cx_Oracle"></a>macOS 12下安装cx_Oracle</h2><p>macOS下，安装cx_Oracle后的编译过程有可能会报错，一般是因为instantclient安装有误造成的。</p>
+<p>需要注意的地方：</p>
+<ol>
+<li>mac下的instantclient只有zip包一种安装方式，要注意手工建两个软链接。  </li>
+<li>pip安装前，注意导入LD_LIBRARY_PATH与DYLD_LIBRARY_PATH两个环境变量。</li>
+</ol>
+<p>安装过程：</p>
+<ol>
+<li><p>下载Mac版本的instantclient<br>下载以下3个zip包，并<code>unzip</code>解压至同一目录：<br>instantclient-basic-macos.x64-11.2.0.4.0.zip<br>instantclient-sdk-macos.x64-11.2.0.4.0.zip<br>instantclient-sqlplus-macos.x64-11.2.0.4.0.zip</p>
+</li>
+<li><p>建立软链接</p>
+</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /path/to/instant</span><br><span class="line">ln -s libclntsh.dylib.11.2 libclntsh.dylib</span><br><span class="line">ln -s libocci.dylib.11.2 libocci.dylib</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>设置环境变量</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export ORACLE_VERSION=&quot;11.2&quot;</span><br><span class="line">export ORACLE_HOME=&quot;/path/to/instantclient_11_2&quot;</span><br><span class="line">export PATH=$PATH:&quot;$ORACLE_HOME&quot;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>使用pip安装cx_Oracle，注意提前导入DYLD_LIBRARY_PATH与LD_LIBRARY_PATH</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export DYLD_LIBRARY_PATH=&quot;$ORACLE_HOME&quot;</span><br><span class="line">export LD_LIBRARY_PATH=&quot;$ORACLE_HOME&quot;</span><br><span class="line">pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
+
+<h2 id="中文乱码问题"><a href="#中文乱码问题" class="headerlink" title="中文乱码问题"></a>中文乱码问题</h2><p>Oracle中文乱码问题存在已久，使用cx_Oracle时也不例外，解决方法还是设置NLS_LANG环境变量。<br>有两种方式，一是在系统中设置永久环境变量，二是直接在代码中使用<code>os.environ</code>设置环境变量，这里推荐后者。  </p>
+<ol>
+<li>方法一：在Shell中设置环境变量</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export NLS_LANG=&quot;SIMPLIFIED CHINESE_CHINA.UTF8&quot;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>方法二：直接在代码中加入：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import os</span><br><span class="line">os.environ[&#x27;NLS_LANG&#x27;] = &#x27;SIMPLIFIED CHINESE_CHINA.UTF8&#x27;</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="PyCharm下不识别cx-Oracle问题"><a href="#PyCharm下不识别cx-Oracle问题" class="headerlink" title="PyCharm下不识别cx_Oracle问题"></a>PyCharm下不识别cx_Oracle问题</h3><p>安装安成后，在python的console中已经可以<code>import cx_Oracle</code>了，但在PyCharm中却提示找不到cx_Oracle。这是一个比较大的坑，可以详细讲一下处理过程。  </p>
+<p>首先初步定位到原因，是由于PyCharm中没有定义LD_LIBRARY_PATH与DYLD_LIBRARY_PATH两个环境变量造成的。<br>PyCharm会自动读取系统中的环境变量设置并导入，但唯独这两个没有导进来。不深究原因，先尝试手工在PyCharm中配置这两个环境变量，总共有两处可以配置：</p>
+<p>第一处：<br><code>CMD+,</code>打开Preference，找到 Build,Execution,Deployment -&gt; Console -&gt; Python Console -&gt;Enviroment Variables<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/r61vs.jpg"><br>此处的配置会修复PyCharm中的Console。</p>
+<p>第二处：<br>右上角 Run -&gt; Edit Configurations，添加两条环境变量<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/09u0q.jpg"><br>此处的配置会修复PyCharm中<code>Ctrl+Shift+R</code>运行代码时的报错。</p>
+<p>在以上两处手工添加环境变量：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DYLD_LIBRARY_PATH=/path/to/instantclient</span><br><span class="line">LD_LIBRARY_PATH/path/to/instantclient</span><br></pre></td></tr></table></figure>
+
+<p>两处的环境变量配置完成后，虽然console中可以正常使用cx_Oracle了，代码也可以正常运行了，但编辑界面中的inspection还是有问题的，提示有Error，并且不能使用自动完成功能。</p>
+<p>于是回到之前的问题，为什么明明已经定义了，但PyCharm却没有找到LD_LIBRARY_PATH与DYLD_LIBRARY_PATH？<br>同时偶然发现，在执行<code>env</code>命令查看已定义的环境变量时，也是找不到LD_LIBRARY_PATH与DYLD_LIBRARY_PATH的。<br>这貌似已经不是PyCharm自身的问题了，需要从macOS系统来着手了。  </p>
+<p>于是在stackoverflow上找到了这么一段话：  </p>
+<blockquote>
+<p>El Capitan added system integrity protection (SIP), and one side effect of that is that exporting DYLD_LIBRARY_PATH doesn’t work. That could affect running SQL*Plus from a shell script, for example. There are workarounds for the 11g instant client. The installation notes at the bottom of the download page have changed since I last did this, and it now says to hard link the library files to the user’s ~&#x2F;lib directory to avoid that issue. Fortunately it looks like you don’t need to worry about that with the 12c client - they’ve fixed the way it’s built.</p>
+</blockquote>
+<p>看来根本原因是OSX 10.11之后加入的这个SIP引发的了。  </p>
+<p>首先想到的最简单的方法，将所有的<code>.dylib</code>和<code>.h</code>都拷贝到系统默认的目录就可以了。<br>但很杯具，<code>/usr/lib</code>和<code>/user/include</code>这两个目录也被SIP保护了。因为不想强制关闭SIP，继续再想别的办法。<br>接着发现<code>/usr/local/lib</code>和<code>/user/local/include</code>目录还是可以操作的，于是拷到这两个目录：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd /path/to/instantclient</span><br><span class="line">cp *.dylib /usr/local/lib</span><br><span class="line">cp ./sdk/include/*.h /usr/local/include</span><br></pre></td></tr></table></figure>
+
+<p>再将cx_Oracle卸载后重新编译安装：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 uninstall cx_Oracle</span><br><span class="line">sudo pip3 install cx_Oracle</span><br></pre></td></tr></table></figure>
+
+<p>重启PyCharm后，问题解决。</p>
+<h2 id="cx-Oracle的简单使用"><a href="#cx-Oracle的简单使用" class="headerlink" title="cx_Oracle的简单使用"></a>cx_Oracle的简单使用</h2><p>cx_Oracle的使用上没有什么问题，一切按套路来写就可以了。贴一个简单的示例：  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">import cx_Oracle</span><br><span class="line">conn = cx_Oracle.connect(&#x27;username&#x27;, &#x27;password&#x27;,&#x27;host:port/sid&#x27;)</span><br><span class="line">cursor = conn.cursor()</span><br><span class="line">cursor.execute(&#x27;select column from table&#x27;)</span><br><span class="line">result = cursor.fetchall()</span><br><span class="line">for row in result:</span><br><span class="line">    print(row)</span><br><span class="line">cursor.close()</span><br><span class="line">conn.close()</span><br></pre></td></tr></table></figure>
+
+<p>更加详细的内容请参考官方文档：<br><a target="_blank" rel="noopener" href="https://cx-oracle.readthedocs.io/en/latest/">https://cx-oracle.readthedocs.io/en/latest/</a><br><a target="_blank" rel="noopener" href="https://oracle.github.io/python-cx_Oracle/">https://oracle.github.io/python-cx_Oracle&#x2F;</a>  </p>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://gist.github.com/thom-nic/6011715">https://gist.github.com/thom-nic/6011715</a><br><a target="_blank" rel="noopener" href="http://stackoverflow.com/questions/37711482/how-to-install-oracle-instant-client-on-a-mac">http://stackoverflow.com/questions/37711482/how-to-install-oracle-instant-client-on-a-mac</a>  </p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
         
 
-        
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/201612/AIX%E4%B8%8B%E9%9D%9Eroot%E5%AE%89%E8%A3%85sqlplus%E5%8F%8Amysql%E5%AE%A2%E6%88%B7%E7%AB%AF/" rel="prev" title="AIX下非root安装sqlplus及mysql客户端">
+                  <i class="fa fa-angle-left"></i> AIX下非root安装sqlplus及mysql客户端
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/201704/flask-adminlte-handler/" rel="next" title="flask-adminlte-handler">
+                  flask-adminlte-handler <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
   <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
   </div>
-
-<div class="copyright">
-  
-  &copy; 
-  <span itemprop="copyrightYear">2024</span>
-  <span class="with-love">
-    <i class="fa fa-heart"></i>
-  </span>
-  <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
   </div>
-
-        
 <div class="busuanzi-count">
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
       <span class="post-meta-item-icon">
         <i class="fa fa-user"></i>
       </span>
@@ -416,8 +368,7 @@
         <span id="busuanzi_value_site_uv"></span>
       </span>
     </span>
-    <span class="post-meta-divider">|</span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
       <span class="post-meta-item-icon">
         <i class="fa fa-eye"></i>
       </span>
@@ -426,55 +377,27 @@
       </span>
     </span>
 </div>
-
-
-
-
-
-
-
-
-      </div>
-    </footer>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
   </div>
 
-  
-  <script src="/lib/anime.min.js"></script>
-  <script src="/lib/velocity/velocity.min.js"></script>
-  <script src="/lib/velocity/velocity.ui.min.js"></script>
-
-<script src="/js/utils.js"></script>
-
-<script src="/js/motion.js"></script>
-
-
-<script src="/js/schemes/muse.js"></script>
-
-
-<script src="/js/next-boot.js"></script>
-
-
-
+    </div>
+  </footer>
 
   
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-  
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
 
 </body>
 </html>
