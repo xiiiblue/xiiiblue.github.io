@@ -268,8 +268,8 @@
 <thead>
 <tr>
 <th>模型</th>
-<th align="right"><a href="mailto:&#x6d;&#65;&#80;&#64;&#48;&#x2e;&#x35;">mAP@0.5</a></th>
-<th align="right"><a href="mailto:&#109;&#x41;&#80;&#64;&#x30;&#46;&#x35;">mAP@0.5</a>:0.95</th>
+<th align="right"><a href="mailto:&#x6d;&#65;&#x50;&#64;&#48;&#x2e;&#x35;">mAP@0.5</a></th>
+<th align="right"><a href="mailto:&#109;&#x41;&#80;&#x40;&#x30;&#46;&#x35;">mAP@0.5</a>:0.95</th>
 <th align="right">Precision</th>
 <th align="right">Recall</th>
 <th align="right">F1</th>
@@ -328,7 +328,7 @@
 <td align="right">86.6</td>
 </tr>
 </tbody></table>
-<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的<a href="mailto:&#x6d;&#65;&#80;&#64;&#48;&#46;&#x35;">mAP@0.5</a>为0.9242，比F16低0.0198；F1只低0.0028。</p>
+<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的<a href="mailto:&#109;&#x41;&#80;&#64;&#x30;&#x2e;&#x35;">mAP@0.5</a>为0.9242，比F16低0.0198；F1只低0.0028。</p>
 <p>方案A和方案B对应两次混精度调整，但当时没有把具体qtable差异记录下来，无法从结果反推出是哪几层带来了改善。自动pattern与方案B得到相同精度，说明在这个模型上没有必要仅为了“手工调过”而保留更复杂的配置。</p>
 <p>现有结果足以支持继续使用F16，并把INT8作为有条件的优化选项。真正上线INT8之前，还需要在目标板卡上用真实图片复查预处理、后处理和检测结果；这部分当时没有完成，不能把转换成功直接当成部署验证通过。</p>
 
@@ -483,8 +483,8 @@
 <thead>
 <tr>
 <th>模型</th>
-<th align="right"><a href="mailto:&#x6d;&#x41;&#x50;&#64;&#48;&#46;&#x35;">mAP@0.5</a></th>
-<th align="right"><a href="mailto:&#x6d;&#x41;&#x50;&#64;&#48;&#x2e;&#x35;">mAP@0.5</a>:0.95</th>
+<th align="right"><a href="mailto:&#x6d;&#65;&#x50;&#x40;&#48;&#x2e;&#53;">mAP@0.5</a></th>
+<th align="right"><a href="mailto:&#109;&#x41;&#80;&#x40;&#x30;&#x2e;&#53;">mAP@0.5</a>:0.95</th>
 <th align="right">Precision</th>
 <th align="right">Recall</th>
 <th align="right">F1</th>
@@ -564,7 +564,7 @@
 </tr>
 </tbody></table>
 <p>FP32和FP16的精度几乎没有变化，TensorRTEngine的耗时更低。其中FP16Engine相对PyTorch基线降低了41.2%的推理耗时，mAP和F1仍在同一水平，是这组模型里更稳妥的部署选择。</p>
-<p>INT8Engine虽然最快，但代价很明显。它的<a href="mailto:&#x6d;&#65;&#x50;&#x40;&#48;&#46;&#x35;">mAP@0.5</a>比PyTorch基线低0.1590，Recall低0.1611；Precision升至0.9782，并不能说明模型整体更准，而是漏检增加后留下的预测更保守。对检测任务来说，这种变化不能只靠更高的FPS抵消。</p>
+<p>INT8Engine虽然最快，但代价很明显。它的<a href="mailto:&#109;&#65;&#80;&#64;&#x30;&#46;&#53;">mAP@0.5</a>比PyTorch基线低0.1590，Recall低0.1611；Precision升至0.9782，并不能说明模型整体更准，而是漏检增加后留下的预测更保守。对检测任务来说，这种变化不能只靠更高的FPS抵消。</p>
 <h2 id="ONNX-INT8结果不能直接采用"><a href="#ONNX-INT8结果不能直接采用" class="headerlink" title="ONNX INT8结果不能直接采用"></a>ONNX INT8结果不能直接采用</h2><p>ONNX INT8在单图测试中的平均耗时是13.33ms，在完整数据集测试中却变成91.4ms，同时精度也远低于其他格式。两次测试不是同一测量路径，差异已经大到不能当作普通波动处理。</p>
 <p>重新导出后数据仍然异常，但当时没有继续定位到具体原因。因此这项结果只能标记为异常，不能据此得出“ONNX INT8天然更慢”或“ONNXRuntime不适合INT8”的结论。继续排查时至少需要固定以下条件：</p>
 <ul>

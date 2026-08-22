@@ -235,6 +235,9 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
+
 <p>同一个YOLOv8检测模型导出为ONNX和TensorRTEngine后，在RTX 2080 Ti上比较了FP32、FP16和INT8。结果基本确认了TensorRT的速度优势，但也暴露出两个不能忽略的问题：INT8Engine的精度损失较大，ONNX INT8在两套测试中的耗时相差悬殊。</p>
 <p>这组数据只适用于当时的模型和环境。测试使用CUDA11.8、cuDNN8.9.7和ONNXRuntimeGPU1.16.3，TensorRT版本、输入尺寸和完整硬件状态没有记录，因此不适合拿这些数字预测其他机器的性能。</p>
 <h2 id="单图推理耗时"><a href="#单图推理耗时" class="headerlink" title="单图推理耗时"></a>单图推理耗时</h2><p>性能脚本对同一张图片预热10轮，再执行100轮。表中的FPS是按平均推理耗时换算的数值，不是包含图片读取、预处理和后处理的端到端吞吐量。</p>
@@ -312,8 +315,8 @@
 <thead>
 <tr>
 <th>模型</th>
-<th align="right"><a href="mailto:&#x6d;&#x41;&#x50;&#64;&#48;&#46;&#x35;">mAP@0.5</a></th>
-<th align="right"><a href="mailto:&#x6d;&#x41;&#x50;&#64;&#48;&#x2e;&#x35;">mAP@0.5</a>:0.95</th>
+<th align="right"><a href="mailto:&#x6d;&#65;&#x50;&#x40;&#48;&#x2e;&#53;">mAP@0.5</a></th>
+<th align="right"><a href="mailto:&#109;&#x41;&#80;&#x40;&#x30;&#x2e;&#53;">mAP@0.5</a>:0.95</th>
 <th align="right">Precision</th>
 <th align="right">Recall</th>
 <th align="right">F1</th>
@@ -393,7 +396,7 @@
 </tr>
 </tbody></table>
 <p>FP32和FP16的精度几乎没有变化，TensorRTEngine的耗时更低。其中FP16Engine相对PyTorch基线降低了41.2%的推理耗时，mAP和F1仍在同一水平，是这组模型里更稳妥的部署选择。</p>
-<p>INT8Engine虽然最快，但代价很明显。它的<a href="mailto:&#x6d;&#65;&#x50;&#x40;&#48;&#46;&#x35;">mAP@0.5</a>比PyTorch基线低0.1590，Recall低0.1611；Precision升至0.9782，并不能说明模型整体更准，而是漏检增加后留下的预测更保守。对检测任务来说，这种变化不能只靠更高的FPS抵消。</p>
+<p>INT8Engine虽然最快，但代价很明显。它的<a href="mailto:&#109;&#65;&#80;&#64;&#x30;&#46;&#53;">mAP@0.5</a>比PyTorch基线低0.1590，Recall低0.1611；Precision升至0.9782，并不能说明模型整体更准，而是漏检增加后留下的预测更保守。对检测任务来说，这种变化不能只靠更高的FPS抵消。</p>
 <h2 id="ONNX-INT8结果不能直接采用"><a href="#ONNX-INT8结果不能直接采用" class="headerlink" title="ONNX INT8结果不能直接采用"></a>ONNX INT8结果不能直接采用</h2><p>ONNX INT8在单图测试中的平均耗时是13.33ms，在完整数据集测试中却变成91.4ms，同时精度也远低于其他格式。两次测试不是同一测量路径，差异已经大到不能当作普通波动处理。</p>
 <p>重新导出后数据仍然异常，但当时没有继续定位到具体原因。因此这项结果只能标记为异常，不能据此得出“ONNX INT8天然更慢”或“ONNXRuntime不适合INT8”的结论。继续排查时至少需要固定以下条件：</p>
 <ul>

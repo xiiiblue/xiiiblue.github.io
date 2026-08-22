@@ -235,6 +235,9 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
+
 <p>为了把YOLOv8部署到BM1684X，这次使用TPU-MLIR完成了从ONNX到BModel的转换。F16模型可以直接编译，INT8则要多做一次校准；全INT8精度不理想时，再用qtable把敏感层保留为浮点计算。</p>
 <p>这次只转换了少量模型，目标是跑通工具链并比较F16和INT8，没有覆盖其他检测、跟踪和人脸模型。TPU-MLIR版本当时没有记录，命令中的参数应以所用SDK附带的文档为准。</p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
@@ -279,8 +282,8 @@
 <thead>
 <tr>
 <th>模型</th>
-<th align="right"><a href="mailto:&#x6d;&#65;&#80;&#64;&#48;&#x2e;&#x35;">mAP@0.5</a></th>
-<th align="right"><a href="mailto:&#109;&#x41;&#80;&#64;&#x30;&#46;&#x35;">mAP@0.5</a>:0.95</th>
+<th align="right"><a href="mailto:&#x6d;&#65;&#x50;&#64;&#48;&#x2e;&#x35;">mAP@0.5</a></th>
+<th align="right"><a href="mailto:&#109;&#x41;&#80;&#x40;&#x30;&#46;&#x35;">mAP@0.5</a>:0.95</th>
 <th align="right">Precision</th>
 <th align="right">Recall</th>
 <th align="right">F1</th>
@@ -339,7 +342,7 @@
 <td align="right">86.6</td>
 </tr>
 </tbody></table>
-<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的<a href="mailto:&#x6d;&#65;&#80;&#64;&#48;&#46;&#x35;">mAP@0.5</a>为0.9242，比F16低0.0198；F1只低0.0028。</p>
+<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的<a href="mailto:&#109;&#x41;&#80;&#64;&#x30;&#x2e;&#x35;">mAP@0.5</a>为0.9242，比F16低0.0198；F1只低0.0028。</p>
 <p>方案A和方案B对应两次混精度调整，但当时没有把具体qtable差异记录下来，无法从结果反推出是哪几层带来了改善。自动pattern与方案B得到相同精度，说明在这个模型上没有必要仅为了“手工调过”而保留更复杂的配置。</p>
 <p>现有结果足以支持继续使用F16，并把INT8作为有条件的优化选项。真正上线INT8之前，还需要在目标板卡上用真实图片复查预处理、后处理和检测结果；这部分当时没有完成，不能把转换成功直接当成部署验证通过。</p>
 
