@@ -1,337 +1,149 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="官网文档https:&#x2F;&#x2F;www.influxdata.com&#x2F;time-series-platform&#x2F;telegraf&#x2F;https:&#x2F;&#x2F;github.com&#x2F;influxdata&#x2F;telegrafhttps:&#x2F;&#x2F;docs.influxdata.com&#x2F;telegraf&#x2F;v1.7&#x2F;concepts&#x2F;data_formats_input&#x2F; 安装macOS1brew install telegraf">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Telegraf学习笔记">
-<meta property="og:url" content="https://www.bluexiii.com/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="官网文档https:&#x2F;&#x2F;www.influxdata.com&#x2F;time-series-platform&#x2F;telegraf&#x2F;https:&#x2F;&#x2F;github.com&#x2F;influxdata&#x2F;telegrafhttps:&#x2F;&#x2F;docs.influxdata.com&#x2F;telegraf&#x2F;v1.7&#x2F;concepts&#x2F;data_formats_input&#x2F; 安装macOS1brew install telegraf">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071448.png">
-<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071538.png">
-<meta property="article:published_time" content="2021-01-26T01:44:33.000Z">
-<meta property="article:modified_time" content="2021-01-26T01:44:33.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071448.png">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/","path":"201811/Telegraf学习笔记/","title":"Telegraf学习笔记"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Telegraf学习笔记 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E7%BD%91%E6%96%87%E6%A1%A3"><span class="nav-number">1.</span> <span class="nav-text">官网文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#macOS"><span class="nav-number">2.1.</span> <span class="nav-text">macOS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Linux"><span class="nav-number">2.2.</span> <span class="nav-text">Linux</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E6%9C%BA%E5%99%A8%E5%90%8D"><span class="nav-number">3.</span> <span class="nav-text">修改机器名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85InfluxDB"><span class="nav-number">4.</span> <span class="nav-text">安装InfluxDB</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E9%85%8D%E7%BD%AE"><span class="nav-number">5.</span> <span class="nav-text">修改配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0Dashboard%E6%A8%A1%E6%9D%BF"><span class="nav-number">6.</span> <span class="nav-text">添加Dashboard模板</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Telegraf学习笔记 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Telegraf学习笔记
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="官网文档"><a href="#官网文档" class="headerlink" title="官网文档"></a>官网文档</h2><p><a target="_blank" rel="noopener" href="https://www.influxdata.com/time-series-platform/telegraf/">https://www.influxdata.com/time-series-platform/telegraf/</a><br><a target="_blank" rel="noopener" href="https://github.com/influxdata/telegraf">https://github.com/influxdata/telegraf</a><br><a target="_blank" rel="noopener" href="https://docs.influxdata.com/telegraf/v1.7/concepts/data_formats_input/">https://docs.influxdata.com/telegraf/v1.7/concepts/data_formats_input/</a></p>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="macOS"><a href="#macOS" class="headerlink" title="macOS"></a>macOS</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install telegraf</span><br></pre></td></tr></table></figure>
-
-<h3 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a>Linux</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.influxdata.com/telegraf/releases/telegraf-1.7.1_linux_amd64.tar.gz</span><br><span class="line">tar xf telegraf-1.7.1_linux_amd64.tar.gz</span><br></pre></td></tr></table></figure>
-
-<h2 id="修改机器名"><a href="#修改机器名" class="headerlink" title="修改机器名"></a>修改机器名</h2><p>hostnamectl set-hostname smrz133</p>
-<h2 id="安装InfluxDB"><a href="#安装InfluxDB" class="headerlink" title="安装InfluxDB"></a>安装InfluxDB</h2><p>不再赘述</p>
-<h2 id="修改配置"><a href="#修改配置" class="headerlink" title="修改配置"></a>修改配置</h2><p>vi &#x2F;etc&#x2F;telegraf&#x2F;telegraf.conf</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Global tags can be specified here in key=&quot;value&quot; format.</span></span><br><span class="line">[global_tags]</span><br><span class="line">  <span class="comment"># dc = &quot;us-east-1&quot; # will tag all metrics with dc=us-east-1</span></span><br><span class="line">  <span class="comment"># rack = &quot;1a&quot;</span></span><br><span class="line">  <span class="comment">## Environment variables can be used as tags, and throughout the config file</span></span><br><span class="line">  <span class="comment"># user = &quot;$USER&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Configuration for telegraf agent</span></span><br><span class="line">[agent]</span><br><span class="line">  interval = <span class="string">&quot;10s&quot;</span></span><br><span class="line">  round_interval = <span class="literal">true</span></span><br><span class="line">  metric_batch_size = 1000</span><br><span class="line">  metric_buffer_limit = 10000</span><br><span class="line">  collection_jitter = <span class="string">&quot;0s&quot;</span></span><br><span class="line">  flush_interval = <span class="string">&quot;10s&quot;</span></span><br><span class="line">  flush_jitter = <span class="string">&quot;0s&quot;</span></span><br><span class="line">  precision = <span class="string">&quot;&quot;</span></span><br><span class="line">  debug = <span class="literal">false</span></span><br><span class="line">  quiet = <span class="literal">false</span></span><br><span class="line">  hostname = <span class="string">&quot;&quot;</span></span><br><span class="line">  omit_hostname = <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">### OUTPUT</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Configuration for influxdb server to send metrics to</span></span><br><span class="line">[[outputs.influxdb]]</span><br><span class="line">  urls = [<span class="string">&quot;http://172.172.172.96:8086&quot;</span>]</span><br><span class="line">  database = <span class="string">&quot;telegraf_metrics&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">## Retention policy to write to. Empty string writes to the default rp.</span></span><br><span class="line">  retention_policy = <span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="comment">## Write consistency (clusters only), can be: &quot;any&quot;, &quot;one&quot;, &quot;quorum&quot;, &quot;all&quot;</span></span><br><span class="line">  write_consistency = <span class="string">&quot;any&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">## Write timeout (for the InfluxDB client), formatted as a string.</span></span><br><span class="line">  <span class="comment">## If not provided, will default to 5s. 0s means no timeout (not recommended).</span></span><br><span class="line">  <span class="built_in">timeout</span> = <span class="string">&quot;5s&quot;</span></span><br><span class="line">  <span class="comment"># username = &quot;telegraf&quot;</span></span><br><span class="line">  <span class="comment"># password = &quot;2bmpiIeSWd63a7ew&quot;</span></span><br><span class="line">  <span class="comment">## Set the user agent for HTTP POSTs (can be useful for log differentiation)</span></span><br><span class="line">  <span class="comment"># user_agent = &quot;telegraf&quot;</span></span><br><span class="line">  <span class="comment">## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)</span></span><br><span class="line">  <span class="comment"># udp_payload = 512</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about cpu usage</span></span><br><span class="line">[[inputs.cpu]]</span><br><span class="line">  <span class="comment">## Whether to report per-cpu stats or not</span></span><br><span class="line">  percpu = <span class="literal">true</span></span><br><span class="line">  <span class="comment">## Whether to report total system cpu stats or not</span></span><br><span class="line">  totalcpu = <span class="literal">true</span></span><br><span class="line">  <span class="comment">## Comment this line if you want the raw CPU time metrics</span></span><br><span class="line">  fielddrop = [<span class="string">&quot;time_*&quot;</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about disk usage by mount point</span></span><br><span class="line">[[inputs.disk]]</span><br><span class="line">  <span class="comment">## By default, telegraf gather stats for all mountpoints.</span></span><br><span class="line">  <span class="comment">## Setting mountpoints will restrict the stats to the specified mountpoints.</span></span><br><span class="line">  <span class="comment"># mount_points = [&quot;/&quot;]</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">## Ignore some mountpoints by filesystem type. For example (dev)tmpfs (usually</span></span><br><span class="line">  <span class="comment">## present on /run, /var/run, /dev/shm or /dev).</span></span><br><span class="line">  ignore_fs = [<span class="string">&quot;tmpfs&quot;</span>, <span class="string">&quot;devtmpfs&quot;</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about disk IO by device</span></span><br><span class="line">[[inputs.diskio]]</span><br><span class="line">  <span class="comment">## By default, telegraf will gather stats for all devices including</span></span><br><span class="line">  <span class="comment">## disk partitions.</span></span><br><span class="line">  <span class="comment">## Setting devices will restrict the stats to the specified devices.</span></span><br><span class="line">  <span class="comment"># devices = [&quot;sda&quot;, &quot;sdb&quot;]</span></span><br><span class="line">  <span class="comment">## Uncomment the following line if you need disk serial numbers.</span></span><br><span class="line">  <span class="comment"># skip_serial_number = false</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get kernel statistics from /proc/stat</span></span><br><span class="line">[[inputs.kernel]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about memory usage</span></span><br><span class="line">[[inputs.mem]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Get the number of processes and group them by status</span></span><br><span class="line">[[inputs.processes]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about swap memory usage</span></span><br><span class="line">[[inputs.swap]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about system load &amp; uptime</span></span><br><span class="line">[[inputs.system]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Read metrics about network interface usage</span></span><br><span class="line">[[inputs.net]]</span><br><span class="line">  <span class="comment"># collect data only about specific interfaces</span></span><br><span class="line">  interfaces = [<span class="string">&quot;ens192&quot;</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[[inputs.netstat]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line">[[inputs.interrupts]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br><span class="line"></span><br><span class="line">[[inputs.linux_sysctl_fs]]</span><br><span class="line">  <span class="comment"># no configuration</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="添加Dashboard模板"><a href="#添加Dashboard模板" class="headerlink" title="添加Dashboard模板"></a>添加Dashboard模板</h2><p>Dashboard 928:<br><a target="_blank" rel="noopener" href="https://grafana.com/dashboards/928">https://grafana.com/dashboards/928</a></p>
-<p>左上加号-&gt;Import<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071448.png"></p>
-<p>Grafana.com Dashboard处，输入928编码<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071538.png"></p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201907/20190731CentOS7%E4%B8%8Bnmtui%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="prev" title="CentOS7下nmtui网络配置">
-                  <i class="fa fa-angle-left"></i> CentOS7下nmtui网络配置
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201803/Hadoop%E5%AE%89%E8%A3%85/" rel="next" title="Ubuntu16.04下Hadoop3.0.0安装笔记">
-                  Ubuntu16.04下Hadoop3.0.0安装笔记 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="官网文档 https://www.influxdata.com/time series platform/telegraf/ https://github.com/influxdata/telegraf https://docs.influxdata.com/telegraf/v1.7/concepts/da…"><link rel="canonical" href="https://www.bluexiii.com/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Telegraf学习笔记｜BlueXIII's Blog"><meta property="og:description" content="官网文档 https://www.influxdata.com/time series platform/telegraf/ https://github.com/influxdata/telegraf https://docs.influxdata.com/telegraf/v1.7/concepts/da…"><meta property="og:url" content="https://www.bluexiii.com/201811/Telegraf%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Telegraf学习笔记｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Telegraf学习笔记</h1><div class="article-meta"><time datetime="2021-01-26T01:44:33.000Z">发布于2021-01-26</time></div><div class="badges"><a class="badge" href="/tags/%E7%9B%91%E6%8E%A7/">监控</a></div></header><div class="prose"><h2 id="官网文档">官网文档</h2>
+<p><a href="https://www.influxdata.com/time-series-platform/telegraf/">https://www.influxdata.com/time-series-platform/telegraf/</a>
+<a href="https://github.com/influxdata/telegraf">https://github.com/influxdata/telegraf</a>
+<a href="https://docs.influxdata.com/telegraf/v1.7/concepts/data_formats_input/">https://docs.influxdata.com/telegraf/v1.7/concepts/data_formats_input/</a></p>
+<h2 id="安装">安装</h2>
+<h3 id="macos">macOS</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>brew install telegraf</span></span></code></pre>
+<h3 id="linux">Linux</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>wget https://dl.influxdata.com/telegraf/releases/telegraf-1.7.1_linux_amd64.tar.gz</span></span>
+<span class="line"><span>tar xf telegraf-1.7.1_linux_amd64.tar.gz</span></span></code></pre>
+<h2 id="修改机器名">修改机器名</h2>
+<p>hostnamectl set-hostname smrz133</p>
+<h2 id="安装influxdb">安装InfluxDB</h2>
+<p>不再赘述</p>
+<h2 id="修改配置">修改配置</h2>
+<p>vi /etc/telegraf/telegraf.conf</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Global tags can be specified here in key="value" format.</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[global_tags]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # dc = "us-east-1" # will tag all metrics with dc=us-east-1</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # rack = "1a"</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Environment variables can be used as tags, and throughout the config file</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # user = "$USER"</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Configuration for telegraf agent</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[agent]</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  interval</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "10s"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  round_interval</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> true</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  metric_batch_size</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1000</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  metric_buffer_limit</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10000</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  collection_jitter</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "0s"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  flush_interval</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "10s"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  flush_jitter</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "0s"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  precision</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ""</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  debug</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> false</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  quiet</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> false</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  hostname</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ""</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  omit_hostname</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> false</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">### OUTPUT</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Configuration for influxdb server to send metrics to</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[outputs.influxdb]]</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  urls</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"http://172.172.172.96:8086"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  database</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "telegraf_metrics"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Retention policy to write to. Empty string writes to the default rp.</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  retention_policy</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ""</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Write consistency (clusters only), can be: "any", "one", "quorum", "all"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  write_consistency</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "any"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Write timeout (for the InfluxDB client), formatted as a string.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## If not provided, will default to 5s. 0s means no timeout (not recommended).</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  timeout</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "5s"</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # username = "telegraf"</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # password = "2bmpiIeSWd63a7ew"</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Set the user agent for HTTP POSTs (can be useful for log differentiation)</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # user_agent = "telegraf"</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Set UDP payload size, defaults to InfluxDB UDP Client default (512 bytes)</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # udp_payload = 512</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Read metrics about cpu usage</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.cpu]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Whether to report per-cpu stats or not</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  percpu</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> true</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Whether to report total system cpu stats or not</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  totalcpu</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> true</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Comment this line if you want the raw CPU time metrics</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  fielddrop</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"time_*"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Read metrics about disk usage by mount point</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.disk]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## By default, telegraf gather stats for all mountpoints.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Setting mountpoints will restrict the stats to the specified mountpoints.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # mount_points = ["/"]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Ignore some mountpoints by filesystem type. For example (dev)tmpfs (usually</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## present on /run, /var/run, /dev/shm or /dev).</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  ignore_fs</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"tmpfs"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"devtmpfs"]</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Read metrics about disk IO by device</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.diskio]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## By default, telegraf will gather stats for all devices including</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## disk partitions.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Setting devices will restrict the stats to the specified devices.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # devices = ["sda", "sdb"]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  ## Uncomment the following line if you need disk serial numbers.</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # skip_serial_number = false</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Get kernel statistics from /proc/stat</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.kernel]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # no configuration</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Read metrics about memory usage</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.mem]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # no configuration</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Get the number of processes and group them by status</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.processes]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # no configuration</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Read metrics about swap memory usage</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.swap]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # no configuration</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Read metrics about system load &#x26; uptime</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.system]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # no configuration</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># Read metrics about network interface usage</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.net]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # collect data only about specific interfaces</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  interfaces</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"ens192"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.netstat]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # no configuration</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.interrupts]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # no configuration</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[[inputs.linux_sysctl_fs]]</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">  # no configuration</span></span></code></pre>
+<h2 id="添加dashboard模板">添加Dashboard模板</h2>
+<p>Dashboard 928:<br>
+<a href="https://grafana.com/dashboards/928">https://grafana.com/dashboards/928</a></p>
+<p>左上加号->Import
+<img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071448.png" alt=""></p>
+<p>Grafana.com Dashboard处，输入928编码
+<img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/2018-11-05-071538.png" alt=""></p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#官网文档">官网文档</a></li><li class="depth-2"><a href="#安装">安装</a></li><li class="depth-3"><a href="#macos">macOS</a></li><li class="depth-3"><a href="#linux">Linux</a></li><li class="depth-2"><a href="#修改机器名">修改机器名</a></li><li class="depth-2"><a href="#安装influxdb">安装InfluxDB</a></li><li class="depth-2"><a href="#修改配置">修改配置</a></li><li class="depth-2"><a href="#添加dashboard模板">添加Dashboard模板</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

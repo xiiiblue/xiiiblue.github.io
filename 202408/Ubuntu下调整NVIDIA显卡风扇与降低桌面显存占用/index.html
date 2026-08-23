@@ -1,46 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="这台Ubuntu桌面机同时承担GPU计算任务，需要单独调节风扇，并让核显负责桌面输出，尽量减少独立显卡上的常驻显存。下面的操作只对应这台机器当时的硬件和驱动版本。 环境 项目 版本 系统 Ubuntu22.04 显卡 GeForceRTX2080Ti 驱动 535.86.05 CUDA 11.8.89 使用N…"><link rel="canonical" href="https://www.bluexiii.com/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用｜BlueXIII's Blog"><meta property="og:description" content="这台Ubuntu桌面机同时承担GPU计算任务，需要单独调节风扇，并让核显负责桌面输出，尽量减少独立显卡上的常驻显存。下面的操作只对应这台机器当时的硬件和驱动版本。 环境 项目 版本 系统 Ubuntu22.04 显卡 GeForceRTX2080Ti 驱动 535.86.05 CUDA 11.8.89 使用N…"><meta property="og:url" content="https://www.bluexiii.com/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用</h1><div class="article-meta"><time datetime="2024-08-16T16:00:00.000Z">发布于2024-08-17</time><time datetime="2026-08-22T15:27:03.000Z">更新于2026-08-22</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/Linux/">Linux</a><a class="badge" href="/tags/%E7%A1%AC%E4%BB%B6/">硬件</a></div></header><div class="prose"><p>这台Ubuntu桌面机同时承担GPU计算任务，需要单独调节风扇，并让核显负责桌面输出，尽量减少独立显卡上的常驻显存。下面的操作只对应这台机器当时的硬件和驱动版本。</p>
+<h2 id="环境">环境</h2>
 
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-<link rel="stylesheet" href="/css/main.css">
 
 
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="这台Ubuntu桌面机同时承担GPU计算任务，需要单独调节风扇，并让核显负责桌面输出，尽量减少独立显卡上的常驻显存。下面的操作只对应这台机器当时的硬件和驱动版本。 环境   项目 版本    系统 Ubuntu22.04   显卡 GeForceRTX2080Ti   驱动 535.86.05   CUDA 11.8.89   使用NVIDIASettings调整风扇先生成Xorg配置： 123s">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用">
-<meta property="og:url" content="https://www.bluexiii.com/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="这台Ubuntu桌面机同时承担GPU计算任务，需要单独调节风扇，并让核显负责桌面输出，尽量减少独立显卡上的常驻显存。下面的操作只对应这台机器当时的硬件和驱动版本。 环境   项目 版本    系统 Ubuntu22.04   显卡 GeForceRTX2080Ti   驱动 535.86.05   CUDA 11.8.89   使用NVIDIASettings调整风扇先生成Xorg配置： 123s">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2024-08-16T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-22T15:27:03.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://www.bluexiii.com/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/","path":"202408/Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用/","title":"Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用"}</script>
 
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用 | BlueXIII's Blog</title>
-  
 
 
 
@@ -49,350 +24,75 @@
 
 
 
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
 
-  
 
 
 
 
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83"><span class="nav-number">1.</span> <span class="nav-text">环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8NVIDIASettings%E8%B0%83%E6%95%B4%E9%A3%8E%E6%89%87"><span class="nav-number">2.</span> <span class="nav-text">使用NVIDIASettings调整风扇</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%A0%B8%E6%98%BE%E8%BE%93%E5%87%BA%E6%A1%8C%E9%9D%A2"><span class="nav-number">3.</span> <span class="nav-text">使用核显输出桌面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E5%B7%A5%E5%85%B7"><span class="nav-number">4.</span> <span class="nav-text">其他工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202408/Ubuntu%E4%B8%8B%E8%B0%83%E6%95%B4NVIDIA%E6%98%BE%E5%8D%A1%E9%A3%8E%E6%89%87%E4%B8%8E%E9%99%8D%E4%BD%8E%E6%A1%8C%E9%9D%A2%E6%98%BE%E5%AD%98%E5%8D%A0%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Ubuntu下调整NVIDIA显卡风扇与降低桌面显存占用
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-08-17 00:00:00" itemprop="dateCreated datePublished" datetime="2024-08-17T00:00:00+08:00">2024-08-17</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<p>这台Ubuntu桌面机同时承担GPU计算任务，需要单独调节风扇，并让核显负责桌面输出，尽量减少独立显卡上的常驻显存。下面的操作只对应这台机器当时的硬件和驱动版本。</p>
-<h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><table>
-<thead>
-<tr>
-<th>项目</th>
-<th>版本</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>系统</td>
-<td>Ubuntu22.04</td>
-</tr>
-<tr>
-<td>显卡</td>
-<td>GeForceRTX2080Ti</td>
-</tr>
-<tr>
-<td>驱动</td>
-<td>535.86.05</td>
-</tr>
-<tr>
-<td>CUDA</td>
-<td>11.8.89</td>
-</tr>
-</tbody></table>
-<h2 id="使用NVIDIASettings调整风扇"><a href="#使用NVIDIASettings调整风扇" class="headerlink" title="使用NVIDIASettings调整风扇"></a>使用NVIDIASettings调整风扇</h2><p>先生成Xorg配置：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> nvidia-xconfig \</span><br><span class="line">  --allow-empty-initial-configuration \</span><br><span class="line">  --cool-bits=4</span><br></pre></td></tr></table></figure>
-
+<table><thead><tr><th>项目</th><th>版本</th></tr></thead><tbody><tr><td>系统</td><td>Ubuntu22.04</td></tr><tr><td>显卡</td><td>GeForceRTX2080Ti</td></tr><tr><td>驱动</td><td>535.86.05</td></tr><tr><td>CUDA</td><td>11.8.89</td></tr></tbody></table>
+<h2 id="使用nvidiasettings调整风扇">使用NVIDIASettings调整风扇</h2>
+<p>先生成Xorg配置：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nvidia-xconfig</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --allow-empty-initial-configuration</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --cool-bits=4</span></span></code></pre>
 <p>也可以手工增加<code>/etc/X11/xorg.conf.d/20-nvidia.conf</code>：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Section &quot;Device&quot;</span><br><span class="line">    Identifier &quot;Device0&quot;</span><br><span class="line">    Driver &quot;nvidia&quot;</span><br><span class="line">    Option &quot;Coolbits&quot; &quot;4&quot;</span><br><span class="line">EndSection</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>Section "Device"</span></span>
+<span class="line"><span>    Identifier "Device0"</span></span>
+<span class="line"><span>    Driver "nvidia"</span></span>
+<span class="line"><span>    Option "Coolbits" "4"</span></span>
+<span class="line"><span>EndSection</span></span></code></pre>
 <p>重启后，在Xorg桌面中打开：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-settings</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">nvidia-settings</span></span></code></pre>
 <p>只控制风扇时，Coolbits使用<code>4</code>即可。<code>28</code>虽然也能打开风扇控制，但同时启用了频率偏移和超压，没有必要。这个配置属于NVIDIA驱动的高级功能，改完先观察温度和稳定性：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">watch -n 1 nvidia-smi</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">watch</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -n</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nvidia-smi</span></span></code></pre>
 <p>当时还出现过<code>nvidia settings failed to set fan speed</code>。通过放宽<code>Xwrapper.config</code>权限可以绕过去，但这个处理范围过大，不建议照抄。先检查当前会话是否为Xorg、<code>DISPLAY</code>是否正确，以及独立显卡是否属于当前XScreen：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$XDG_SESSION_TYPE</span>&quot;</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$DISPLAY</span>&quot;</span></span><br><span class="line">nvidia-settings -q gpus</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$XDG_SESSION_TYPE</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$DISPLAY</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">nvidia-settings</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -q</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gpus</span></span></code></pre>
 <p>较新的驱动不一定继续提供相同的Coolbits能力，具体以当前驱动的README和<code>nvidia-settings</code>实际显示为准。</p>
-<h2 id="使用核显输出桌面"><a href="#使用核显输出桌面" class="headerlink" title="使用核显输出桌面"></a>使用核显输出桌面</h2><p>这台机器还有核显。让核显负责桌面输出后，独立显卡只保留计算任务，<code>nvidia-smi</code>中桌面进程占用的显存可以降到几MB。</p>
+<h2 id="使用核显输出桌面">使用核显输出桌面</h2>
+<p>这台机器还有核显。让核显负责桌面输出后，独立显卡只保留计算任务，<code>nvidia-smi</code>中桌面进程占用的显存可以降到几MB。</p>
 <p>操作顺序如下：</p>
 <ol>
 <li>在BIOS中将核显设为首选显示设备。</li>
 <li>把显示器接到主板视频接口。</li>
 <li>将Ubuntu切换到核显模式并重启。</li>
 </ol>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prime-select query</span><br><span class="line"><span class="built_in">sudo</span> prime-select intel</span><br><span class="line"><span class="built_in">sudo</span> reboot</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">prime-select</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> query</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> prime-select</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> intel</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> reboot</span></span></code></pre>
 <p>重启后检查桌面渲染设备和独立显卡占用：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">glxinfo -B | sed -n <span class="string">&#x27;1,12p&#x27;</span></span><br><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">glxinfo</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -B</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> sed</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -n</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '1,12p'</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">nvidia-smi</span></span></code></pre>
 <p>还尝试过在<code>NVIDIASettings</code>中将Profile改为<code>On-Demand</code>。这台机器重启后本地没有正常显示，不过SSH仍能登录，独立显卡显存也确实只占了几MB。台式机的BIOS、视频接口和PRIME组合差异比较大，这一步不能直接当作通用配置。</p>
 <p>如果修改Xorg配置后进不了桌面，可以从TTY或SSH禁用新增文件：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">mv</span> /etc/X11/xorg.conf.d/20-nvidia.conf \</span><br><span class="line">  /etc/X11/xorg.conf.d/20-nvidia.conf.disabled</span><br><span class="line"><span class="built_in">sudo</span> reboot</span><br></pre></td></tr></table></figure>
-
-<h2 id="其他工具"><a href="#其他工具" class="headerlink" title="其他工具"></a>其他工具</h2><p><a target="_blank" rel="noopener" href="https://github.com/andyljones/coolgpus">coolgpus</a>可以直接设置转速或温度曲线。使用前仍要保证驱动已经开放风扇控制：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pip install coolgpus</span><br><span class="line"></span><br><span class="line">coolgpus --speed 99 99</span><br><span class="line">coolgpus --temp 20 55 80 --speed 5 30 99</span><br></pre></td></tr></table></figure>
-
-<p>使用<a target="_blank" rel="noopener" href="https://github.com/wilicc/gpu-burn">gpu-burn</a>测试时，可以限制时间、显存占用和显卡编号：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 运行1小时</span></span><br><span class="line">./gpu_burn -d 3600</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用50%显存</span></span><br><span class="line">./gpu_burn -m 50%</span><br><span class="line"></span><br><span class="line"><span class="comment"># 只测试GPU2</span></span><br><span class="line">./gpu_burn -i 2</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://download.nvidia.com/XFree86/Linux-x86_64/535.86.05/README/xconfigoptions.html">535.86.05驱动的X配置选项</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/latest/">NVIDIALinux驱动安装指南</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/canonical/nvidia-prime">Ubuntu的nvidia-prime项目</a></li>
-</ul>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202406/%E8%AF%AD%E9%9F%B3%E5%8A%A9%E6%89%8B%E9%80%89%E5%9E%8B/" rel="prev" title="语音助手选型">
-                  <i class="fa fa-angle-left"></i> 语音助手选型
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202409/Git%E5%AD%90%E6%A8%A1%E5%9D%97%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" rel="next" title="Git子模块常用操作">
-                  Git子模块常用操作 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> mv</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/X11/xorg.conf.d/20-nvidia.conf</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  /etc/X11/xorg.conf.d/20-nvidia.conf.disabled</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> reboot</span></span></code></pre>
+<h2 id="其他工具">其他工具</h2>
+<p><a href="https://github.com/andyljones/coolgpus">coolgpus</a>可以直接设置转速或温度曲线。使用前仍要保证驱动已经开放风扇控制：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> coolgpus</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">coolgpus</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --speed</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 99</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 99</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">coolgpus</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --temp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 20</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 55</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 80</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --speed</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 5</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 30</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 99</span></span></code></pre>
+<p>使用<a href="https://github.com/wilicc/gpu-burn">gpu-burn</a>测试时，可以限制时间、显存占用和显卡编号：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 运行1小时</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./gpu_burn</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -d</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 3600</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 使用50%显存</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./gpu_burn</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 50%</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 只测试GPU2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./gpu_burn</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -i</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span></span></code></pre>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="https://download.nvidia.com/XFree86/Linux-x86_64/535.86.05/README/xconfigoptions.html">535.86.05驱动的X配置选项</a></li>
+<li><a href="https://docs.nvidia.com/datacenter/tesla/driver-installation-guide/latest/">NVIDIALinux驱动安装指南</a></li>
+<li><a href="https://github.com/canonical/nvidia-prime">Ubuntu的nvidia-prime项目</a></li>
+</ul></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#环境">环境</a></li><li class="depth-2"><a href="#使用nvidiasettings调整风扇">使用NVIDIASettings调整风扇</a></li><li class="depth-2"><a href="#使用核显输出桌面">使用核显输出桌面</a></li><li class="depth-2"><a href="#其他工具">其他工具</a></li><li class="depth-2"><a href="#参考资料">参考资料</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

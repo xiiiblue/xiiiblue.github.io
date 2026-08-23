@@ -1,377 +1,402 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="GUIelasticvue chrome插件 查询 + 管理  elasticsearch-headhttps:&#x2F;&#x2F;github.com&#x2F;mobz&#x2F;elasticsearch-head  chrome插件 查询 + 管理  Kaizenhttps:&#x2F;&#x2F;www.elastic-kaizen.com&#x2F;  java桌面版 纯查询  elasticsearch-hqhttps:&#x2F;&#x2F;github.com&#x2F;E">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Elasticsearch学习笔记">
-<meta property="og:url" content="https://www.bluexiii.com/202106/Elasticsearch%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="GUIelasticvue chrome插件 查询 + 管理  elasticsearch-headhttps:&#x2F;&#x2F;github.com&#x2F;mobz&#x2F;elasticsearch-head  chrome插件 查询 + 管理  Kaizenhttps:&#x2F;&#x2F;www.elastic-kaizen.com&#x2F;  java桌面版 纯查询  elasticsearch-hqhttps:&#x2F;&#x2F;github.com&#x2F;E">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-11-02T09:13:39.000Z">
-<meta property="article:modified_time" content="2022-11-02T09:13:39.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202106/Elasticsearch%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202106/Elasticsearch%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/","path":"202106/Elasticsearch学习笔记/","title":"Elasticsearch学习笔记"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Elasticsearch学习笔记 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GUI"><span class="nav-number">1.</span> <span class="nav-text">GUI</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#elasticvue"><span class="nav-number">1.1.</span> <span class="nav-text">elasticvue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#elasticsearch-head"><span class="nav-number">1.2.</span> <span class="nav-text">elasticsearch-head</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kaizen"><span class="nav-number">1.3.</span> <span class="nav-text">Kaizen</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#elasticsearch-hq"><span class="nav-number">1.4.</span> <span class="nav-text">elasticsearch-hq</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#djavu"><span class="nav-number">1.5.</span> <span class="nav-text">djavu</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">2.</span> <span class="nav-text">参考文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kibana%E6%95%99%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">Kibana教程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KibanaDevTool"><span class="nav-number">4.</span> <span class="nav-text">KibanaDevTool</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A2"><span class="nav-number">4.1.</span> <span class="nav-text">查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A22"><span class="nav-number">4.2.</span> <span class="nav-text">查询2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E8%AF%A23"><span class="nav-number">4.3.</span> <span class="nav-text">查询3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E6%9F%A5%E8%AF%A2"><span class="nav-number">4.4.</span> <span class="nav-text">日志查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%A1%E7%90%86"><span class="nav-number">4.5.</span> <span class="nav-text">管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%AB%E5%90%8D"><span class="nav-number">4.6.</span> <span class="nav-text">别名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E5%A4%8D%E5%88%B6"><span class="nav-number">4.7.</span> <span class="nav-text">索引复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mapping"><span class="nav-number">4.8.</span> <span class="nav-text">mapping</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%85%E7%A9%BA%E6%95%B0%E6%8D%AE"><span class="nav-number">4.9.</span> <span class="nav-text">清空数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Curl%E8%AF%B7%E6%B1%82%E7%A4%BA%E4%BE%8B"><span class="nav-number">4.10.</span> <span class="nav-text">Curl请求示例</span></a></li></ol></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202106/Elasticsearch%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Elasticsearch学习笔记 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Elasticsearch学习笔记
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2022-11-02 17:13:39" itemprop="dateCreated datePublished" datetime="2022-11-02T17:13:39+08:00">2022-11-02</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="GUI"><a href="#GUI" class="headerlink" title="GUI"></a>GUI</h2><h3 id="elasticvue"><a href="#elasticvue" class="headerlink" title="elasticvue"></a>elasticvue</h3><ul>
-<li>chrome插件</li>
-<li>查询 + 管理</li>
-</ul>
-<h3 id="elasticsearch-head"><a href="#elasticsearch-head" class="headerlink" title="elasticsearch-head"></a>elasticsearch-head</h3><p><a target="_blank" rel="noopener" href="https://github.com/mobz/elasticsearch-head">https://github.com/mobz/elasticsearch-head</a></p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="GUI elasticvue chrome插件 查询 + 管理 elasticsearch head https://github.com/mobz/elasticsearch head chrome插件 查询 + 管理 Kaizen https://www.elastic kaizen.com/ java桌…"><link rel="canonical" href="https://www.bluexiii.com/202106/Elasticsearch%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Elasticsearch学习笔记｜BlueXIII's Blog"><meta property="og:description" content="GUI elasticvue chrome插件 查询 + 管理 elasticsearch head https://github.com/mobz/elasticsearch head chrome插件 查询 + 管理 Kaizen https://www.elastic kaizen.com/ java桌…"><meta property="og:url" content="https://www.bluexiii.com/202106/Elasticsearch%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Elasticsearch学习笔记｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Elasticsearch学习笔记</h1><div class="article-meta"><time datetime="2022-11-02T09:13:39.000Z">发布于2022-11-02</time></div><div class="badges"><a class="badge" href="/tags/Elasticsearch/">Elasticsearch</a><a class="badge" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></div></header><div class="prose"><h2 id="gui">GUI</h2>
+<h3 id="elasticvue">elasticvue</h3>
 <ul>
 <li>chrome插件</li>
 <li>查询 + 管理</li>
 </ul>
-<h3 id="Kaizen"><a href="#Kaizen" class="headerlink" title="Kaizen"></a>Kaizen</h3><p><a target="_blank" rel="noopener" href="https://www.elastic-kaizen.com/">https://www.elastic-kaizen.com/</a></p>
+<h3 id="elasticsearch-head">elasticsearch-head</h3>
+<p><a href="https://github.com/mobz/elasticsearch-head">https://github.com/mobz/elasticsearch-head</a></p>
+<ul>
+<li>chrome插件</li>
+<li>查询 + 管理</li>
+</ul>
+<h3 id="kaizen">Kaizen</h3>
+<p><a href="https://www.elastic-kaizen.com/">https://www.elastic-kaizen.com/</a></p>
 <ul>
 <li>java桌面版</li>
 <li>纯查询</li>
 </ul>
-<h3 id="elasticsearch-hq"><a href="#elasticsearch-hq" class="headerlink" title="elasticsearch-hq"></a>elasticsearch-hq</h3><p><a target="_blank" rel="noopener" href="https://github.com/ElasticHQ/elasticsearch-HQ">https://github.com/ElasticHQ/elasticsearch-HQ</a></p>
-<p>docker run -p 5000:5000 elastichq&#x2F;elasticsearch-hq<br>open <a target="_blank" rel="noopener" href="http://localhost:5000/">http://localhost:5000/</a></p>
+<h3 id="elasticsearch-hq">elasticsearch-hq</h3>
+<p><a href="https://github.com/ElasticHQ/elasticsearch-HQ">https://github.com/ElasticHQ/elasticsearch-HQ</a></p>
+<p>docker run -p 5000:5000 elastichq/elasticsearch-hq
+open <a href="http://localhost:5000/">http://localhost:5000/</a></p>
 <ul>
 <li>docker run</li>
 <li>监控 + 简单查询</li>
 </ul>
-<h3 id="djavu"><a href="#djavu" class="headerlink" title="djavu"></a>djavu</h3><p><a target="_blank" rel="noopener" href="https://github.com/appbaseio/dejavu/">https://github.com/appbaseio/dejavu/</a></p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker run -p 1358:1358 -d appbaseio/dejavu</span><br><span class="line">open http://localhost:1358/</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2017/08/elasticsearch.html">https://www.ruanyifeng.com/blog/2017/08/elasticsearch.html</a><br><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1547867">https://cloud.tencent.com/developer/article/1547867</a><br><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903919013855240">https://juejin.cn/post/6844903919013855240</a><br><a target="_blank" rel="noopener" href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/query-dsl-intro.html">https://www.elastic.co/guide/cn/elasticsearch/guide/current/query-dsl-intro.html</a><br><a target="_blank" rel="noopener" href="https://n3xtchen.github.io/n3xtchen/elasticsearch/2017/07/05/elasticsearch-23-useful-query-example">https://n3xtchen.github.io/n3xtchen/elasticsearch/2017/07/05/elasticsearch-23-useful-query-example</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/eb30eee13923">https://www.jianshu.com/p/eb30eee13923</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/34240906">https://zhuanlan.zhihu.com/p/34240906</a><br><a target="_blank" rel="noopener" href="https://feifeiyum.github.io/2020/02/27/es-mapping/">https://feifeiyum.github.io/2020/02/27/es-mapping/</a><br><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1189279">https://cloud.tencent.com/developer/article/1189279</a></p>
-<h2 id="Kibana教程"><a href="#Kibana教程" class="headerlink" title="Kibana教程"></a>Kibana教程</h2><p><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2017/08/elasticsearch.html">https://www.ruanyifeng.com/blog/2017/08/elasticsearch.html</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7ca9e5b02ef6">https://www.jianshu.com/p/7ca9e5b02ef6</a><br><a target="_blank" rel="noopener" href="https://www.elastic.co/guide/cn/kibana/current/setup.html">https://www.elastic.co/guide/cn/kibana/current/setup.html</a></p>
-<h2 id="KibanaDevTool"><a href="#KibanaDevTool" class="headerlink" title="KibanaDevTool"></a>KibanaDevTool</h2><h3 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看</span></span><br><span class="line">GET /_cat</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看Index</span></span><br><span class="line">GET /_cat/indices?v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看健康</span></span><br><span class="line">GET /_cat/health?v</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看全部mapping</span></span><br><span class="line">GET /_mapping?pretty=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建索引</span></span><br><span class="line">PUT /customer?pretty</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建文档</span></span><br><span class="line">PUT /customer/_doc/1?pretty</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;name&quot;</span>: <span class="string">&quot;John Doe&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 根据ID查询文档</span></span><br><span class="line">GET /customer/_doc/1?pretty</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查询所有文档</span></span><br><span class="line">GET /customer/_search?q=*&amp;<span class="built_in">sort</span>=name:asc&amp;pretty</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看索引的mapping</span></span><br><span class="line">GET /customer/_mapping?pretty=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看索引的settings</span></span><br><span class="line">GET /customer/_settings?pretty=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">GET /bookdb_index/book/_search?q=guide</span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;multi_match&quot;</span> : &#123;</span><br><span class="line">            <span class="string">&quot;query&quot;</span> : <span class="string">&quot;guide&quot;</span>,</span><br><span class="line">            <span class="string">&quot;fields&quot;</span> : [<span class="string">&quot;_all&quot;</span>]</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="查询2"><a href="#查询2" class="headerlink" title="查询2"></a>查询2</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查询</span></span><br><span class="line">GET /crawl_log/_search/</span><br><span class="line">&#123; </span><br><span class="line">  <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;match_all&quot;</span>: &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 基本匹配</span></span><br><span class="line">GET /bookdb_index/book/_search?q=guide</span><br><span class="line"></span><br><span class="line">GET /bookdb_index/book/_search</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;multi_match&quot;</span> : &#123;</span><br><span class="line">            <span class="string">&quot;query&quot;</span> : <span class="string">&quot;guide&quot;</span>,</span><br><span class="line">            <span class="string">&quot;fields&quot;</span> : [<span class="string">&quot;_all&quot;</span>]</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 词条查询</span></span><br><span class="line">POST /bookdb_index/book/_search</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;term&quot;</span> : &#123;</span><br><span class="line">            <span class="string">&quot;publisher&quot;</span>: <span class="string">&quot;manning&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;_source&quot;</span> : [<span class="string">&quot;title&quot;</span>,<span class="string">&quot;publish_date&quot;</span>,<span class="string">&quot;publisher&quot;</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 多词条查询</span></span><br><span class="line">POST /bookdb_index/book/_search</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;terms&quot;</span> : &#123;</span><br><span class="line">            <span class="string">&quot;publisher&quot;</span>: [<span class="string">&quot;oreilly&quot;</span>, <span class="string">&quot;packt&quot;</span>]</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="comment"># 排序</span></span><br><span class="line">POST /bookdb_index/book/_search</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;term&quot;</span> : &#123;</span><br><span class="line">            <span class="string">&quot;publisher&quot;</span>: <span class="string">&quot;manning&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;_source&quot;</span> : [<span class="string">&quot;title&quot;</span>,<span class="string">&quot;publish_date&quot;</span>,<span class="string">&quot;publisher&quot;</span>],</span><br><span class="line">    <span class="string">&quot;sort&quot;</span>: [</span><br><span class="line">        &#123; <span class="string">&quot;publish_date&quot;</span>: &#123;<span class="string">&quot;order&quot;</span>:<span class="string">&quot;desc&quot;</span>&#125;&#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 范围查询</span></span><br><span class="line">POST /bookdb_index/book/_search</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;range&quot;</span> : &#123;</span><br><span class="line">            <span class="string">&quot;publish_date&quot;</span>: &#123;</span><br><span class="line">                <span class="string">&quot;gte&quot;</span>: <span class="string">&quot;2015-01-01&quot;</span>,</span><br><span class="line">                <span class="string">&quot;lte&quot;</span>: <span class="string">&quot;2015-12-31&quot;</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;_source&quot;</span> : [<span class="string">&quot;title&quot;</span>,<span class="string">&quot;publish_date&quot;</span>,<span class="string">&quot;publisher&quot;</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-<h3 id="查询3"><a href="#查询3" class="headerlink" title="查询3"></a>查询3</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># match_all</span></span><br><span class="line">POST /crawl_log/_search</span><br><span class="line">&#123; </span><br><span class="line">  <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;match_all&quot;</span>: &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># term</span></span><br><span class="line">POST /crawl_log/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;query&quot;</span>:&#123;</span><br><span class="line">    <span class="string">&quot;term&quot;</span>:&#123;</span><br><span class="line">        <span class="string">&quot;task_id&quot;</span>:1</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># from size</span></span><br><span class="line">POST /crawl_log/_search</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;query&quot;</span>:&#123;</span><br><span class="line">    <span class="string">&quot;term&quot;</span>:&#123;</span><br><span class="line">        <span class="string">&quot;task_id&quot;</span>:1</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;from&quot;</span>: 10,</span><br><span class="line">  <span class="string">&quot;size&quot;</span>: 10</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># match</span></span><br><span class="line">POST /crawl_log/_search</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;match&quot;</span>: &#123;</span><br><span class="line">            <span class="string">&quot;message&quot;</span>: <span class="string">&quot;中埃建交五十周年&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># match_phase</span></span><br><span class="line">POST /crawl_log/_search</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;match_phase&quot;</span>: &#123;</span><br><span class="line">            <span class="string">&quot;message&quot;</span>: <span class="string">&quot;中埃建交五十周年&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="日志查询"><a href="#日志查询" class="headerlink" title="日志查询"></a>日志查询</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">GET /crawl_log</span><br><span class="line"></span><br><span class="line">GET /crawl_log/_search</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">POST /crawl_log/_search</span><br><span class="line">&#123; </span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;match_all&quot;: &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">POST /crawl_log/_search</span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot;: &#123;</span><br><span class="line">    &quot;bool&quot;: &#123;</span><br><span class="line">      &quot;must&quot;: [&#123;</span><br><span class="line">          &quot;term&quot;: &#123;</span><br><span class="line">            &quot;task_id&quot;: &quot;1&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          &quot;match&quot;: &#123;</span><br><span class="line">            &quot;level_name&quot;: &quot;INFO&quot;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      ],</span><br><span class="line">      &quot;must_not&quot;: [],</span><br><span class="line">      &quot;should&quot;: []</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;from&quot;: 0,</span><br><span class="line">  &quot;size&quot;: 10,</span><br><span class="line">  &quot;sort&quot;: [],</span><br><span class="line">  &quot;aggs&quot;: &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="管理"><a href="#管理" class="headerlink" title="管理"></a>管理</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建一个索引</span></span><br><span class="line">PUT twitte</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;settings&quot;</span> : &#123;</span><br><span class="line">        <span class="string">&quot;number_of_shards&quot;</span> : 3,</span><br><span class="line">        <span class="string">&quot;number_of_replicas&quot;</span> : 2</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建mapping映射</span></span><br><span class="line">PUT twitte</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;settings&quot;</span> : &#123;</span><br><span class="line">        <span class="string">&quot;index&quot;</span> : &#123;</span><br><span class="line">            <span class="string">&quot;number_of_shards&quot;</span> : 3,</span><br><span class="line">            <span class="string">&quot;number_of_replicas&quot;</span> : 2</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">   <span class="string">&quot;mappings&quot;</span> : &#123;</span><br><span class="line">        <span class="string">&quot;type1&quot;</span> : &#123;</span><br><span class="line">            <span class="string">&quot;properties&quot;</span> : &#123;</span><br><span class="line">                <span class="string">&quot;field1&quot;</span> : &#123; <span class="string">&quot;type&quot;</span> : <span class="string">&quot;text&quot;</span> &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看索引的定义信息</span></span><br><span class="line">GET /twitte</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除索引</span></span><br><span class="line">DELETE /twitte</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-<h3 id="别名"><a href="#别名" class="headerlink" title="别名"></a>别名</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看别名</span></span><br><span class="line">GET /_cat/aliases</span><br><span class="line"></span><br><span class="line"><span class="comment"># 增加一个别名</span></span><br><span class="line">POST /_aliases</span><br><span class="line">&#123;<span class="string">&quot;actions&quot;</span>: [&#123;<span class="string">&quot;add&quot;</span>: &#123;<span class="string">&quot;index&quot;</span>: <span class="string">&quot;twitte&quot;</span>, <span class="string">&quot;alias&quot;</span>: <span class="string">&quot;alias1&quot;</span>&#125;&#125;]&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除别名</span></span><br><span class="line">POST /_aliases</span><br><span class="line">&#123;<span class="string">&quot;actions&quot;</span>: [&#123;<span class="string">&quot;remove&quot;</span>: &#123;<span class="string">&quot;index&quot;</span>: <span class="string">&quot;twitte&quot;</span>, <span class="string">&quot;alias&quot;</span>: <span class="string">&quot;alias1&quot;</span>&#125;&#125;]&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 一个别名对应多个索引</span></span><br><span class="line">POST /_aliases</span><br><span class="line">&#123;<span class="string">&quot;actions&quot;</span>: &#123;<span class="string">&quot;add&quot;</span>: &#123;<span class="string">&quot;indices&quot;</span>: [<span class="string">&quot;twitte&quot;</span>, <span class="string">&quot;twitte2&quot;</span>], <span class="string">&quot;alias&quot;</span>: <span class="string">&quot;alias1&quot;</span>&#125;&#125;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 一个别名对应多个索引(通配符)</span></span><br><span class="line">POST /_aliases</span><br><span class="line">&#123;<span class="string">&quot;actions&quot;</span>: [&#123;<span class="string">&quot;add&quot;</span>: &#123;<span class="string">&quot;index&quot;</span>: <span class="string">&quot;twitte*&quot;</span>, <span class="string">&quot;alias&quot;</span>: <span class="string">&quot;alias1&quot;</span>&#125;&#125;]&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="索引复制"><a href="#索引复制" class="headerlink" title="索引复制"></a>索引复制</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">POST /_reindex?slices=<span class="number">9</span>&amp;refresh&amp;wait_for_completion=<span class="literal"><span class="keyword">false</span></span></span><br><span class="line"></span><br><span class="line">POST _reindex?wait_for_completion=<span class="literal"><span class="keyword">false</span></span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;index&quot;</span><span class="punctuation">:</span> <span class="string">&quot;crawl_log&quot;</span> </span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;dest&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;index&quot;</span><span class="punctuation">:</span> <span class="string">&quot;crawl_log_bak&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="mapping"><a href="#mapping" class="headerlink" title="mapping"></a>mapping</h3><ul>
+<h3 id="djavu">djavu</h3>
+<p><a href="https://github.com/appbaseio/dejavu/">https://github.com/appbaseio/dejavu/</a></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 1358:1358</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> appbaseio/dejavu</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">open</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> http://localhost:1358/</span></span></code></pre>
+<h2 id="参考文档">参考文档</h2>
+<p><a href="https://www.ruanyifeng.com/blog/2017/08/elasticsearch.html">https://www.ruanyifeng.com/blog/2017/08/elasticsearch.html</a>
+<a href="https://cloud.tencent.com/developer/article/1547867">https://cloud.tencent.com/developer/article/1547867</a>
+<a href="https://juejin.cn/post/6844903919013855240">https://juejin.cn/post/6844903919013855240</a>
+<a href="https://www.elastic.co/guide/cn/elasticsearch/guide/current/query-dsl-intro.html">https://www.elastic.co/guide/cn/elasticsearch/guide/current/query-dsl-intro.html</a>
+<a href="https://n3xtchen.github.io/n3xtchen/elasticsearch/2017/07/05/elasticsearch-23-useful-query-example">https://n3xtchen.github.io/n3xtchen/elasticsearch/2017/07/05/elasticsearch-23-useful-query-example</a>
+<a href="https://www.jianshu.com/p/eb30eee13923">https://www.jianshu.com/p/eb30eee13923</a>
+<a href="https://zhuanlan.zhihu.com/p/34240906">https://zhuanlan.zhihu.com/p/34240906</a>
+<a href="https://feifeiyum.github.io/2020/02/27/es-mapping/">https://feifeiyum.github.io/2020/02/27/es-mapping/</a>
+<a href="https://cloud.tencent.com/developer/article/1189279">https://cloud.tencent.com/developer/article/1189279</a></p>
+<h2 id="kibana教程">Kibana教程</h2>
+<p><a href="https://www.ruanyifeng.com/blog/2017/08/elasticsearch.html">https://www.ruanyifeng.com/blog/2017/08/elasticsearch.html</a>
+<a href="https://www.jianshu.com/p/7ca9e5b02ef6">https://www.jianshu.com/p/7ca9e5b02ef6</a>
+<a href="https://www.elastic.co/guide/cn/kibana/current/setup.html">https://www.elastic.co/guide/cn/kibana/current/setup.html</a></p>
+<h2 id="kibanadevtool">KibanaDevTool</h2>
+<h3 id="查询">查询</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /_cat</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看Index</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /_cat/indices?v</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看健康</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /_cat/health?v</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看全部mapping</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /_mapping?pretty=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建索引</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">PUT</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /customer?pretty</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建文档</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">PUT</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /customer/_doc/1?pretty</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  "name"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "John Doe"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 根据ID查询文档</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /customer/_doc/1?pretty</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查询所有文档</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /customer/_search?q=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x26;sort</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">name:asc</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x26;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pretty</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看索引的mapping</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /customer/_mapping?pretty=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看索引的settings</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /customer/_settings?pretty=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bookdb_index/book/_search?q=guide</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "multi_match"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "query"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "guide",</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "fields"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"_all"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre>
+<h3 id="查询2">查询2</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查询</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /crawl_log/_search/</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{ </span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "match_all"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {}</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 基本匹配</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bookdb_index/book/_search?q=guide</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bookdb_index/book/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "multi_match"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "query"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "guide",</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "fields"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"_all"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 词条查询</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bookdb_index/book/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "term"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "publisher"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "manning"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "_source"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"title"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"publish_date"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"publisher"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 多词条查询</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bookdb_index/book/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "terms"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "publisher"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"oreilly"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"packt"]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">} </span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 排序</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bookdb_index/book/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "term"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "publisher"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "manning"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "_source"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"title"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"publish_date"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"publisher"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">],</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "sort"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        { </span><span style="color:#6F42C1;--shiki-dark:#B392F0">"publish_date"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"order":"desc"}}</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 范围查询</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bookdb_index/book/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "range"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "publish_date"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                "gte"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "2015-01-01",</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                "lte"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "2015-12-31"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "_source"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"title"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"publish_date"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"publisher"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<h3 id="查询3">查询3</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># match_all</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /crawl_log/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{ </span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "match_all"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {}</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># term</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /crawl_log/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "term"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "task_id"</span><span style="color:#6F42C1;--shiki-dark:#B392F0">:1</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># from size</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /crawl_log/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "term"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "task_id"</span><span style="color:#6F42C1;--shiki-dark:#B392F0">:1</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  },</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  "from"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 10,</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  "size"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># match</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /crawl_log/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "match"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "message"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "中埃建交五十周年"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># match_phase</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /crawl_log/_search</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "match_phase"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "message"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "中埃建交五十周年"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre>
+<h3 id="日志查询">日志查询</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>GET /crawl_log</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>GET /crawl_log/_search</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>POST /crawl_log/_search</span></span>
+<span class="line"><span>{ </span></span>
+<span class="line"><span>  "query": {</span></span>
+<span class="line"><span>    "match_all": {}</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>POST /crawl_log/_search</span></span>
+<span class="line"><span>{</span></span>
+<span class="line"><span>  "query": {</span></span>
+<span class="line"><span>    "bool": {</span></span>
+<span class="line"><span>      "must": [{</span></span>
+<span class="line"><span>          "term": {</span></span>
+<span class="line"><span>            "task_id": "1"</span></span>
+<span class="line"><span>          }</span></span>
+<span class="line"><span>        },</span></span>
+<span class="line"><span>        {</span></span>
+<span class="line"><span>          "match": {</span></span>
+<span class="line"><span>            "level_name": "INFO"</span></span>
+<span class="line"><span>          }</span></span>
+<span class="line"><span>        }</span></span>
+<span class="line"><span>      ],</span></span>
+<span class="line"><span>      "must_not": [],</span></span>
+<span class="line"><span>      "should": []</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>  },</span></span>
+<span class="line"><span>  "from": 0,</span></span>
+<span class="line"><span>  "size": 10,</span></span>
+<span class="line"><span>  "sort": [],</span></span>
+<span class="line"><span>  "aggs": {}</span></span>
+<span class="line"><span>}</span></span></code></pre>
+<h3 id="管理">管理</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建一个索引</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">PUT</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> twitte</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "settings"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "number_of_shards"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 3,</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "number_of_replicas"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建mapping映射</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">PUT</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> twitte</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "settings"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "index"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "number_of_shards"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 3,</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "number_of_replicas"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">   "mappings"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "type1"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "properties"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">                "field1"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "type"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> :</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "text"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">            }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看索引的定义信息</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /twitte</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 删除索引</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">DELETE</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /twitte</span></span>
+<span class="line"></span></code></pre>
+<h3 id="别名">别名</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看别名</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">GET</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /_cat/aliases</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 增加一个别名</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /_aliases</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span><span style="color:#6F42C1;--shiki-dark:#B392F0">"actions"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [{</span><span style="color:#6F42C1;--shiki-dark:#B392F0">"add"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"index":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "twitte",</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "alias":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "alias1"}}]}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 删除别名</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /_aliases</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span><span style="color:#6F42C1;--shiki-dark:#B392F0">"actions"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [{</span><span style="color:#6F42C1;--shiki-dark:#B392F0">"remove"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"index":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "twitte",</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "alias":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "alias1"}}]}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 一个别名对应多个索引</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /_aliases</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span><span style="color:#6F42C1;--shiki-dark:#B392F0">"actions"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"add":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"indices":</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"twitte"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"twitte2"],</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "alias":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "alias1"}}}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 一个别名对应多个索引(通配符)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /_aliases</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span><span style="color:#6F42C1;--shiki-dark:#B392F0">"actions"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [{</span><span style="color:#6F42C1;--shiki-dark:#B392F0">"add"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"index":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "twitte*",</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "alias":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "alias1"}}]}</span></span></code></pre>
+<h3 id="索引复制">索引复制</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">POST /_reindex?slices=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">9</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x26;refresh&#x26;wait_for_completion=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">POST _reindex?wait_for_completion=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "source"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      "index"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"crawl_log"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> </span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  },</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "dest"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: {</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">      "index"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"crawl_log_bak"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre>
+<h3 id="mapping">mapping</h3>
+<ul>
 <li>字符串: text和keyword</li>
 <li>整数 : byte, short, integer, long</li>
 <li>浮点数: float, double</li>
 <li>布尔型: boolean</li>
 <li>日期: date</li>
 </ul>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建索引</span></span><br><span class="line">PUT /my-index</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;mappings&quot;</span> &#123;</span><br><span class="line">        <span class="string">&quot;properties&quot;</span>: &#123;</span><br><span class="line">            <span class="string">&quot;age&quot;</span>: &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;integer&quot;</span>&#125;,</span><br><span class="line">            <span class="string">&quot;email&quot;</span>: &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;keyword&quot;</span>&#125;,</span><br><span class="line">            <span class="string">&quot;name&quot;</span>: &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>&#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加字段</span></span><br><span class="line">PUT /my-index/_mapping</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;properties&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;content&quot;</span>: &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span>&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-<h3 id="清空数据"><a href="#清空数据" class="headerlink" title="清空数据"></a>清空数据</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 清空索引</span></span><br><span class="line">POST /policies_hydrabot/_delete_by_query?refresh&amp;slices=5&amp;pretty</span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;query&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;match_all&quot;</span>: &#123;&#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="Curl请求示例"><a href="#Curl请求示例" class="headerlink" title="Curl请求示例"></a>Curl请求示例</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">curl -X GET &#x27;http://localhost:9200/_cat/indices?v&#x27;</span><br><span class="line">curl -X GET &#x27;http://localhost:9200/_mapping?pretty=true&#x27;</span><br><span class="line">curl -X GET &#x27;http://localhost:9200/crawl_log/_mapping?pretty=true&#x27;</span><br><span class="line"></span><br><span class="line">curl -X PUT &#x27;localhost:9200/weather&#x27;</span><br><span class="line"></span><br><span class="line">curl -X DELETE &#x27;localhost:9200/weather&#x27;</span><br><span class="line"></span><br><span class="line">curl -X PUT &#x27;http://localhost:9200/accounts/person/1&#x27; \</span><br><span class="line">-H &#x27;Content-Type: application/json&#x27; \</span><br><span class="line">-d &#x27;&#123;</span><br><span class="line">  &quot;user&quot;: &quot;张三&quot;,</span><br><span class="line">  &quot;title&quot;: &quot;工程师&quot;,</span><br><span class="line">  &quot;desc&quot;: &quot;数据库管理&quot;</span><br><span class="line">&#125;&#x27; </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">curl -X POST &#x27;http://localhost:9200/accounts/person&#x27; \</span><br><span class="line">-H &#x27;Content-Type: application/json&#x27; \</span><br><span class="line">-d &#x27;&#123;</span><br><span class="line">  &quot;user&quot;: &quot;李四&quot;,</span><br><span class="line">  &quot;title&quot;: &quot;工程师&quot;,</span><br><span class="line">  &quot;desc&quot;: &quot;系统管理&quot;</span><br><span class="line">&#125;&#x27;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">curl &#x27;localhost:9200/accounts/person/1?pretty=true&#x27;</span><br><span class="line">curl &#x27;localhost:9200/weather/beijing/abc?pretty=true&#x27;</span><br><span class="line"></span><br><span class="line">curl -X DELETE &#x27;localhost:9200/accounts/person/1&#x27;</span><br><span class="line"></span><br><span class="line">curl &#x27;localhost:9200/accounts/person/_search&#x27;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">curl &#x27;localhost:9200/accounts/person/_search&#x27;  \</span><br><span class="line">-H &#x27;Content-Type: application/json&#x27; \</span><br><span class="line">-d &#x27; </span><br><span class="line">&#123;</span><br><span class="line">  &quot;query&quot; : &#123; &quot;match&quot; : &#123; &quot;desc&quot; : &quot;软件&quot; &#125;&#125;</span><br><span class="line">&#125;&#x27;</span><br></pre></td></tr></table></figure>
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202110/MySQL5.6JSON%E8%A7%A3%E6%9E%90/" rel="prev" title="MySQL5.6JSON解析">
-                  <i class="fa fa-angle-left"></i> MySQL5.6JSON解析
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202106/%E7%88%AC%E8%99%AB%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="next" title="爬虫入门学习笔记">
-                  爬虫入门学习笔记 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建索引</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">PUT</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /my-index</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "mappings"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "properties"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "age"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"type":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "integer"},</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "email"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"type":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "keyword"},</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            "name"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"type":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "text"}</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 添加字段</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">PUT</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /my-index/_mapping</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "properties"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">        "content"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {"type":</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "text"}</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<h3 id="清空数据">清空数据</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 清空索引</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">POST</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /policies_hydrabot/_delete_by_query?refresh</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x26;slices</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">5</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x26;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pretty</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  "query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    "match_all"</span><span style="color:#005CC5;--shiki-dark:#79B8FF">:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> {}</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span></code></pre>
+<h3 id="curl请求示例">Curl请求示例</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>curl -X GET 'http://localhost:9200/_cat/indices?v'</span></span>
+<span class="line"><span>curl -X GET 'http://localhost:9200/_mapping?pretty=true'</span></span>
+<span class="line"><span>curl -X GET 'http://localhost:9200/crawl_log/_mapping?pretty=true'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl -X PUT 'localhost:9200/weather'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl -X DELETE 'localhost:9200/weather'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl -X PUT 'http://localhost:9200/accounts/person/1' \</span></span>
+<span class="line"><span>-H 'Content-Type: application/json' \</span></span>
+<span class="line"><span>-d '{</span></span>
+<span class="line"><span>  "user": "张三",</span></span>
+<span class="line"><span>  "title": "工程师",</span></span>
+<span class="line"><span>  "desc": "数据库管理"</span></span>
+<span class="line"><span>}' </span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl -X POST 'http://localhost:9200/accounts/person' \</span></span>
+<span class="line"><span>-H 'Content-Type: application/json' \</span></span>
+<span class="line"><span>-d '{</span></span>
+<span class="line"><span>  "user": "李四",</span></span>
+<span class="line"><span>  "title": "工程师",</span></span>
+<span class="line"><span>  "desc": "系统管理"</span></span>
+<span class="line"><span>}'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl 'localhost:9200/accounts/person/1?pretty=true'</span></span>
+<span class="line"><span>curl 'localhost:9200/weather/beijing/abc?pretty=true'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl -X DELETE 'localhost:9200/accounts/person/1'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl 'localhost:9200/accounts/person/_search'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl 'localhost:9200/accounts/person/_search'  \</span></span>
+<span class="line"><span>-H 'Content-Type: application/json' \</span></span>
+<span class="line"><span>-d ' </span></span>
+<span class="line"><span>{</span></span>
+<span class="line"><span>  "query" : { "match" : { "desc" : "软件" }}</span></span>
+<span class="line"><span>}'</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#gui">GUI</a></li><li class="depth-3"><a href="#elasticvue">elasticvue</a></li><li class="depth-3"><a href="#elasticsearch-head">elasticsearch-head</a></li><li class="depth-3"><a href="#kaizen">Kaizen</a></li><li class="depth-3"><a href="#elasticsearch-hq">elasticsearch-hq</a></li><li class="depth-3"><a href="#djavu">djavu</a></li><li class="depth-2"><a href="#参考文档">参考文档</a></li><li class="depth-2"><a href="#kibana教程">Kibana教程</a></li><li class="depth-2"><a href="#kibanadevtool">KibanaDevTool</a></li><li class="depth-3"><a href="#查询">查询</a></li><li class="depth-3"><a href="#查询2">查询2</a></li><li class="depth-3"><a href="#查询3">查询3</a></li><li class="depth-3"><a href="#日志查询">日志查询</a></li><li class="depth-3"><a href="#管理">管理</a></li><li class="depth-3"><a href="#别名">别名</a></li><li class="depth-3"><a href="#索引复制">索引复制</a></li><li class="depth-3"><a href="#mapping">mapping</a></li><li class="depth-3"><a href="#清空数据">清空数据</a></li><li class="depth-3"><a href="#curl请求示例">Curl请求示例</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

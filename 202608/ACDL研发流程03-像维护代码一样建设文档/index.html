@@ -1,242 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="ACDL研发流程系列第3篇，共15篇。 上一篇：ACDL研发流程02：从想法到项目骨架 下一篇：ACDL研发流程04：需求怎样走完整个ACDL  1.项目变大以后，代码本身讲不完整个项目项目还小时，Director往往可以在一次对话中向Agent讲清大部分背景。实现方向即使有偏差，返工成本也有限。 规模上来以后，Agent虽然仍然可以快速读取代码，却不一定知道：  某个行为是刻意设计，还是尚未修">
-<meta property="og:type" content="article">
-<meta property="og:title" content="ACDL研发流程03：像维护代码一样建设文档">
-<meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B03-%E5%83%8F%E7%BB%B4%E6%8A%A4%E4%BB%A3%E7%A0%81%E4%B8%80%E6%A0%B7%E5%BB%BA%E8%AE%BE%E6%96%87%E6%A1%A3/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="ACDL研发流程系列第3篇，共15篇。 上一篇：ACDL研发流程02：从想法到项目骨架 下一篇：ACDL研发流程04：需求怎样走完整个ACDL  1.项目变大以后，代码本身讲不完整个项目项目还小时，Director往往可以在一次对话中向Agent讲清大部分背景。实现方向即使有偏差，返工成本也有限。 规模上来以后，Agent虽然仍然可以快速读取代码，却不一定知道：  某个行为是刻意设计，还是尚未修">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:modified_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B03-%E5%83%8F%E7%BB%B4%E6%8A%A4%E4%BB%A3%E7%A0%81%E4%B8%80%E6%A0%B7%E5%BB%BA%E8%AE%BE%E6%96%87%E6%A1%A3/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B03-%E5%83%8F%E7%BB%B4%E6%8A%A4%E4%BB%A3%E7%A0%81%E4%B8%80%E6%A0%B7%E5%BB%BA%E8%AE%BE%E6%96%87%E6%A1%A3/","path":"202608/ACDL研发流程03-像维护代码一样建设文档/","title":"ACDL研发流程03：像维护代码一样建设文档"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>ACDL研发流程03：像维护代码一样建设文档 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%A1%B9%E7%9B%AE%E5%8F%98%E5%A4%A7%E4%BB%A5%E5%90%8E%EF%BC%8C%E4%BB%A3%E7%A0%81%E6%9C%AC%E8%BA%AB%E8%AE%B2%E4%B8%8D%E5%AE%8C%E6%95%B4%E4%B8%AA%E9%A1%B9%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">1.项目变大以后，代码本身讲不完整个项目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%96%87%E6%A1%A3%E6%98%AF%E4%BB%A3%E7%A0%81%E7%9A%84%E2%80%9C%E6%BA%90%E7%A0%81%E2%80%9D"><span class="nav-number">2.</span> <span class="nav-text">2.文档是代码的“源码”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%90%8C%E4%B8%80%E7%B1%BB%E4%BF%A1%E6%81%AF%E5%8F%AA%E5%9C%A8%E4%B8%80%E4%B8%AA%E4%BD%8D%E7%BD%AE%E5%AE%8C%E6%95%B4%E7%BB%B4%E6%8A%A4"><span class="nav-number">3.</span> <span class="nav-text">3.同一类信息只在一个位置完整维护</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%BC%96%E5%8F%B7%E8%A7%A3%E5%86%B3%E2%80%9C%E8%BF%99%E6%98%AF%E8%B0%81%E2%80%9D%EF%BC%8C%E7%8A%B6%E6%80%81%E8%A7%A3%E5%86%B3%E2%80%9C%E7%8E%B0%E5%9C%A8%E8%83%BD%E4%B8%8D%E8%83%BD%E7%94%A8%E2%80%9D"><span class="nav-number">4.</span> <span class="nav-text">4.编号解决“这是谁”，状态解决“现在能不能用”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E9%93%BE%E6%8E%A5%E8%AE%A9%E5%90%8E%E6%9D%A5%E7%9A%84%E4%BA%BA%E8%83%BD%E5%A4%9F%E4%BB%8E%E4%BB%BB%E4%BD%95%E5%85%A5%E5%8F%A3%E7%BB%A7%E7%BB%AD%E8%BF%BD%E8%B8%AA"><span class="nav-number">5.</span> <span class="nav-text">5.链接让后来的人能够从任何入口继续追踪</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Git%E4%BF%9D%E5%AD%98%E6%96%87%E6%A1%A3%E7%BB%93%E8%AE%BA%E6%80%8E%E6%A0%B7%E5%8F%98%E5%8C%96"><span class="nav-number">6.</span> <span class="nav-text">6.Git保存文档结论怎样变化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-%E8%87%AA%E7%84%B6%E8%AF%AD%E8%A8%80%E8%B4%9F%E8%B4%A3%E8%A7%A3%E9%87%8A%EF%BC%8C%E7%BB%9F%E4%B8%80%E5%AD%97%E6%AE%B5%E8%B4%9F%E8%B4%A3%E8%AE%A9%E5%B7%A5%E5%85%B7%E6%A3%80%E6%9F%A5"><span class="nav-number">7.</span> <span class="nav-text">7.自然语言负责解释，统一字段负责让工具检查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E6%8A%8A%E6%9C%BA%E6%A2%B0%E6%A3%80%E6%9F%A5%E4%BA%A4%E7%BB%99%E4%BB%93%E5%BA%93%E5%B7%A5%E5%85%B7"><span class="nav-number">8.</span> <span class="nav-text">8.把机械检查交给仓库工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E6%96%87%E6%A1%A3%E5%92%8C%E4%BB%A3%E7%A0%81%E5%9C%A8%E5%90%8C%E4%B8%80%E9%A1%B9%E5%B7%A5%E4%BD%9C%E4%B8%AD%E4%BF%9D%E6%8C%81%E4%B8%80%E8%87%B4"><span class="nav-number">9.</span> <span class="nav-text">9.文档和代码在同一项工作中保持一致</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-%E7%94%A8%E2%80%9C%E6%94%B6%E8%97%8F%E4%BC%9A%E8%AF%9D%E2%80%9D%E7%9C%8B%E8%BF%99%E4%BA%9B%E6%96%87%E6%A1%A3%E6%80%8E%E6%A0%B7%E9%85%8D%E5%90%88"><span class="nav-number">10.</span> <span class="nav-text">10.用“收藏会话”看这些文档怎样配合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-%E6%96%87%E6%A1%A3%E5%BB%BA%E8%AE%BE%E6%98%AF%E4%B8%80%E9%A1%B9%E6%8C%81%E7%BB%AD%E5%B7%A5%E7%A8%8B"><span class="nav-number">11.</span> <span class="nav-text">11.文档建设是一项持续工程</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B03-%E5%83%8F%E7%BB%B4%E6%8A%A4%E4%BB%A3%E7%A0%81%E4%B8%80%E6%A0%B7%E5%BB%BA%E8%AE%BE%E6%96%87%E6%A1%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="ACDL研发流程03：像维护代码一样建设文档 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          ACDL研发流程03：像维护代码一样建设文档
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<blockquote>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="ACDL研发流程系列第3篇，共15篇。 上一篇：ACDL研发流程02：从想法到项目骨架 下一篇：ACDL研发流程04：需求怎样走完整个ACDL 1.项目变大以后，代码本身讲不完整个项目 项目还小时，Director往往可以在一次对话中向Agent讲清大部分背景。实现方向即使有偏差，返工成本也有限。 规模上来以…"><link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B03-%E5%83%8F%E7%BB%B4%E6%8A%A4%E4%BB%A3%E7%A0%81%E4%B8%80%E6%A0%B7%E5%BB%BA%E8%AE%BE%E6%96%87%E6%A1%A3/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="ACDL研发流程03：像维护代码一样建设文档｜BlueXIII's Blog"><meta property="og:description" content="ACDL研发流程系列第3篇，共15篇。 上一篇：ACDL研发流程02：从想法到项目骨架 下一篇：ACDL研发流程04：需求怎样走完整个ACDL 1.项目变大以后，代码本身讲不完整个项目 项目还小时，Director往往可以在一次对话中向Agent讲清大部分背景。实现方向即使有偏差，返工成本也有限。 规模上来以…"><meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B03-%E5%83%8F%E7%BB%B4%E6%8A%A4%E4%BB%A3%E7%A0%81%E4%B8%80%E6%A0%B7%E5%BB%BA%E8%AE%BE%E6%96%87%E6%A1%A3/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>ACDL研发流程03：像维护代码一样建设文档｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>ACDL研发流程03：像维护代码一样建设文档</h1><div class="article-meta"><time datetime="2026-08-17T08:53:44.000Z">发布于2026-08-17</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ACDL/">ACDL</a><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B/">研发流程</a></div></header><div class="prose"><blockquote>
 <p>ACDL研发流程系列第3篇，共15篇。</p>
 <p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B02-%E4%BB%8E%E6%83%B3%E6%B3%95%E5%88%B0%E9%A1%B9%E7%9B%AE%E9%AA%A8%E6%9E%B6/">ACDL研发流程02：从想法到项目骨架</a></p>
 <p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B04-%E9%9C%80%E6%B1%82%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C%E6%95%B4%E4%B8%AAACDL/">ACDL研发流程04：需求怎样走完整个ACDL</a></p>
 </blockquote>
-<h2 id="1-项目变大以后，代码本身讲不完整个项目"><a href="#1-项目变大以后，代码本身讲不完整个项目" class="headerlink" title="1.项目变大以后，代码本身讲不完整个项目"></a>1.项目变大以后，代码本身讲不完整个项目</h2><p>项目还小时，Director往往可以在一次对话中向Agent讲清大部分背景。实现方向即使有偏差，返工成本也有限。</p>
+<h2 id="1项目变大以后代码本身讲不完整个项目">1.项目变大以后，代码本身讲不完整个项目</h2>
+<p>项目还小时，Director往往可以在一次对话中向Agent讲清大部分背景。实现方向即使有偏差，返工成本也有限。</p>
 <p>规模上来以后，Agent虽然仍然可以快速读取代码，却不一定知道：</p>
 <ul>
 <li>某个行为是刻意设计，还是尚未修复的实现偏差；</li>
@@ -248,49 +20,69 @@
 </ul>
 <p>如果这些信息只保存在人的记忆、聊天记录和提交标题里，每次换会话、换Agent或隔一段时间继续工作，都需要重新猜测。更危险的是，Agent通常不会因为缺少背景自动停止，它很可能会沿着一组错误假设继续完成一份逻辑自洽的实现。</p>
 <p>代码规模只是一个提醒。即使项目不大，只要涉及多任务并行、安全、生产数据、环境发布或长期交付，也需要更早把重要上下文写进仓库。</p>
-<h2 id="2-文档是代码的“源码”"><a href="#2-文档是代码的“源码”" class="headerlink" title="2.文档是代码的“源码”"></a>2.文档是代码的“源码”</h2><p>在当前项目中，文档不只是代码完成后的使用说明。需求记录为什么要改，已经确认的设计定义系统应该怎样工作。Agent先读取需求和已经确认的设计，再把它们变成代码和测试。<strong>从这个意义上说，文档是代码的“源码”。</strong></p>
+<h2 id="2文档是代码的源码">2.文档是代码的“源码”</h2>
+<p>在当前项目中，文档不只是代码完成后的使用说明。需求记录为什么要改，已经确认的设计定义系统应该怎样工作。Agent先读取需求和已经确认的设计，再把它们变成代码和测试。<strong>从这个意义上说，文档是代码的“源码”。</strong></p>
 <p>这个说法不表示所有文档都要在编码前写完。不同文档承担不同职责：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">REQ</span><br><span class="line">  →说明为什么改变、希望得到什么结果</span><br><span class="line"></span><br><span class="line">已经确认的设计</span><br><span class="line">  →说明系统现在应该怎样工作</span><br><span class="line"></span><br><span class="line">代码和测试</span><br><span class="line">  →实现并验证已经确认的行为</span><br><span class="line"></span><br><span class="line">实施记录</span><br><span class="line">  →保存这一轮实际做了什么、失败了什么、结果怎样</span><br><span class="line"></span><br><span class="line">环境记录</span><br><span class="line">  →保存环境现在运行什么</span><br><span class="line"></span><br><span class="line">版本记录</span><br><span class="line">  →保存正式交付最后纳入什么</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>REQ</span></span>
+<span class="line"><span>  →说明为什么改变、希望得到什么结果</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>已经确认的设计</span></span>
+<span class="line"><span>  →说明系统现在应该怎样工作</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>代码和测试</span></span>
+<span class="line"><span>  →实现并验证已经确认的行为</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>实施记录</span></span>
+<span class="line"><span>  →保存这一轮实际做了什么、失败了什么、结果怎样</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>环境记录</span></span>
+<span class="line"><span>  →保存环境现在运行什么</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>版本记录</span></span>
+<span class="line"><span>  →保存正式交付最后纳入什么</span></span></code></pre>
 <p>设计可以指导后续实现；实施记录不能反过来因为代码已经写出来，就悄悄改变设计；环境记录也不能因为服务器当前恰好这样配置，就自动成为长期架构规则。</p>
 <p>当前项目中文档和代码的规模约为<strong>1:2</strong>。这不是要求项目为了凑比例而增加文字，而是一个经验观察：一个能够长期交给Agent建设的项目，通常需要写下与代码规模相匹配的产品目标、工程规则、实际修改和验证结果。过期、重复或没有实际用途的文档同样应该整理，文档数量从来不是目标。</p>
-<h2 id="3-同一类信息只在一个位置完整维护"><a href="#3-同一类信息只在一个位置完整维护" class="headerlink" title="3.同一类信息只在一个位置完整维护"></a>3.同一类信息只在一个位置完整维护</h2><p>文档变多以后，真正危险的问题往往不是“没有文档”，而是“有两份都像正确答案的文档”。</p>
+<h2 id="3同一类信息只在一个位置完整维护">3.同一类信息只在一个位置完整维护</h2>
+<p>文档变多以后，真正危险的问题往往不是“没有文档”，而是“有两份都像正确答案的文档”。</p>
 <p>因此先明确每类信息由哪里负责：</p>
-<table>
-<thead>
-<tr>
-<th>想知道什么</th>
-<th>先到哪里找</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>发现了什么问题、现在准备怎样处理</td>
-<td>ISSUE台账和必要的问题详情</td>
-</tr>
-<tr>
-<td>为什么要改变产品、想得到什么结果</td>
-<td>REQ</td>
-</tr>
-<tr>
-<td>系统现在应该怎样工作</td>
-<td>系统、能力和横切设计</td>
-</tr>
-<tr>
-<td>这一轮准备做什么、实际发生了什么</td>
-<td>对应ACL、DFL或ERL记录</td>
-</tr>
-<tr>
-<td>某个正式版本实际交付了什么</td>
-<td>版本与发布说明</td>
-</tr>
-<tr>
-<td>环境现在运行什么、怎样恢复</td>
-<td>环境记录</td>
-</tr>
-</tbody></table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>想知道什么</th><th>先到哪里找</th></tr></thead><tbody><tr><td>发现了什么问题、现在准备怎样处理</td><td>ISSUE台账和必要的问题详情</td></tr><tr><td>为什么要改变产品、想得到什么结果</td><td>REQ</td></tr><tr><td>系统现在应该怎样工作</td><td>系统、能力和横切设计</td></tr><tr><td>这一轮准备做什么、实际发生了什么</td><td>对应ACL、DFL或ERL记录</td></tr><tr><td>某个正式版本实际交付了什么</td><td>版本与发布说明</td></tr><tr><td>环境现在运行什么、怎样恢复</td><td>环境记录</td></tr></tbody></table>
 <p>其它文档需要这些信息时，只保留帮助当前读者理解的摘要，再链接到负责该信息的位置。不要复制一份长期需要手工同步的第二正文。</p>
 <p>如果代码和已经确认的设计不一致，也不能简单地说“代码才是真相”。先判断是实现没有做到设计，还是设计已经需要改变，然后走对应流程。</p>
-<h2 id="4-编号解决“这是谁”，状态解决“现在能不能用”"><a href="#4-编号解决“这是谁”，状态解决“现在能不能用”" class="headerlink" title="4.编号解决“这是谁”，状态解决“现在能不能用”"></a>4.编号解决“这是谁”，状态解决“现在能不能用”</h2><p>标题和文件路径会变化，长期对象需要稳定身份。当前项目使用例如：</p>
+<h2 id="4编号解决这是谁状态解决现在能不能用">4.编号解决“这是谁”，状态解决“现在能不能用”</h2>
+<p>标题和文件路径会变化，长期对象需要稳定身份。当前项目使用例如：</p>
 <ul>
 <li><code>STD-</code>：规范；</li>
 <li><code>REQ-</code>：需求；</li>
@@ -309,16 +101,24 @@
 <li><code>Superseded</code>：已经被更新内容替代，保留用于追溯。</li>
 </ul>
 <p>不同对象还可能有自己的业务状态，例如REQ有<code>候选</code>、<code>已选中</code>、<code>已排期</code>，Loop有<code>Ready</code>、<code>In Progress</code>、<code>Review</code>、<code>Completed</code>。不要把文档状态和对象状态混成一个字段，也不要从<code>Completed</code>推断结果一定没有遗留问题。</p>
-<h2 id="5-链接让后来的人能够从任何入口继续追踪"><a href="#5-链接让后来的人能够从任何入口继续追踪" class="headerlink" title="5.链接让后来的人能够从任何入口继续追踪"></a>5.链接让后来的人能够从任何入口继续追踪</h2><p>编号告诉我们“是哪一项”，状态告诉我们“现在能不能采用”，链接则告诉我们“为什么出现、由什么实现、后来去了哪里”。</p>
+<h2 id="5链接让后来的人能够从任何入口继续追踪">5.链接让后来的人能够从任何入口继续追踪</h2>
+<p>编号告诉我们“是哪一项”，状态告诉我们“现在能不能采用”，链接则告诉我们“为什么出现、由什么实现、后来去了哪里”。</p>
 <p>一项产品变化常见的关系是：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">问题或反馈</span><br><span class="line">  →REQ</span><br><span class="line">    →受影响的设计和必要ADR</span><br><span class="line">      →ACL、DFL或ERL</span><br><span class="line">        →实施和验证证据</span><br><span class="line">          →产品版本</span><br><span class="line">            →Git标签</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>问题或反馈</span></span>
+<span class="line"><span>  →REQ</span></span>
+<span class="line"><span>    →受影响的设计和必要ADR</span></span>
+<span class="line"><span>      →ACL、DFL或ERL</span></span>
+<span class="line"><span>        →实施和验证证据</span></span>
+<span class="line"><span>          →产品版本</span></span>
+<span class="line"><span>            →Git标签</span></span></code></pre>
 <p>这不是要求所有工作都必须经过这些对象，而是说明一旦对象存在，它们之间应该能互相找到。</p>
 <p>链接也能减少重复。例如发布说明只需要概括用户能感知的变化，并链接版本总览和实施入口；它不需要再次复制几十条测试输出。</p>
-<h2 id="6-Git保存文档结论怎样变化"><a href="#6-Git保存文档结论怎样变化" class="headerlink" title="6.Git保存文档结论怎样变化"></a>6.Git保存文档结论怎样变化</h2><p>当前项目把文档和代码放在同一个Git仓库中。设计、实现和测试在同一项工作中变化时，它们能够通过提交和差异保持对应。</p>
+<h2 id="6git保存文档结论怎样变化">6.Git保存文档结论怎样变化</h2>
+<p>当前项目把文档和代码放在同一个Git仓库中。设计、实现和测试在同一项工作中变化时，它们能够通过提交和差异保持对应。</p>
 <p>当前设计文档应直接表达<strong>现在应该怎样工作</strong>，不要不断在正文中堆叠“之前如何、后来又如何”。普通变化由Git历史保留；一项重要决定被替代时，才使用ADR或历史记录解释为什么变化。</p>
 <p>实施记录和环境证据则不同。它们保存的是当时真实发生的事情，失败候选、跳过项和实际限制不能为了让最终故事更漂亮而回头改写。</p>
-<h2 id="7-自然语言负责解释，统一字段负责让工具检查"><a href="#7-自然语言负责解释，统一字段负责让工具检查" class="headerlink" title="7.自然语言负责解释，统一字段负责让工具检查"></a>7.自然语言负责解释，统一字段负责让工具检查</h2><p>背景、取舍和原因适合用普通中文说明；编号、状态和关系如果完全依靠工具从自然语言猜测，很容易出错。</p>
+<h2 id="7自然语言负责解释统一字段负责让工具检查">7.自然语言负责解释，统一字段负责让工具检查</h2>
+<p>背景、取舍和原因适合用普通中文说明；编号、状态和关系如果完全依靠工具从自然语言猜测，很容易出错。</p>
 <p>所以当前项目同时保留：</p>
 <ul>
 <li>面向人的正文；</li>
@@ -328,7 +128,8 @@
 <li>由结构化数据生成的可读视图。</li>
 </ul>
 <p>结构化不等于把所有文档改成表格和JSON。只有需要自动检查、同步或长期引用的信息才进入结构化字段；真正的背景、规则和理由仍然应该写成正常正文。</p>
-<h2 id="8-把机械检查交给仓库工具"><a href="#8-把机械检查交给仓库工具" class="headerlink" title="8.把机械检查交给仓库工具"></a>8.把机械检查交给仓库工具</h2><p>当编号、状态和链接已经成为项目规则，重复检查适合交给工具：</p>
+<h2 id="8把机械检查交给仓库工具">8.把机械检查交给仓库工具</h2>
+<p>当编号、状态和链接已经成为项目规则，重复检查适合交给工具：</p>
 <ul>
 <li><code>pnpm docs:check</code>检查文档结构、编号、状态、路径、链接和追踪关系；</li>
 <li><code>pnpm trace:render</code>根据设计要求账本重建设计要求视图；</li>
@@ -336,103 +137,28 @@
 <li>Loop工具负责创建ACL记录，并按允许的状态变化同步登记表和文档。</li>
 </ul>
 <p>工具只能判断格式和关系是否一致，不能决定需求值不值得做、设计是不是合理，也不能代替Director确认Loop结论。</p>
-<h2 id="9-文档和代码在同一项工作中保持一致"><a href="#9-文档和代码在同一项工作中保持一致" class="headerlink" title="9.文档和代码在同一项工作中保持一致"></a>9.文档和代码在同一项工作中保持一致</h2><p>文档不应该总在代码完成几周以后再补。更可靠的做法是：</p>
-<p>1.实施前，REQ和已经确认的设计已经能说明目标和边界；<br>2.实施中发现设计与现实冲突时，先说明差异，再决定修实现还是回到设计；<br>3.接口、事务、迁移、错误或其它长期技术约定发生变化时，同步更新负责该结论的能力设计或横切设计；<br>4.实际提交、测试、失败、跳过和剩余问题随工作写入实施记录；<br>5.环境发生变化时更新环境记录；<br>6.得到需要的确认以后，再修改相应状态；<br>7.提交前运行文档和差异检查。</p>
+<h2 id="9文档和代码在同一项工作中保持一致">9.文档和代码在同一项工作中保持一致</h2>
+<p>文档不应该总在代码完成几周以后再补。更可靠的做法是：</p>
+<p>1.实施前，REQ和已经确认的设计已经能说明目标和边界；
+2.实施中发现设计与现实冲突时，先说明差异，再决定修实现还是回到设计；
+3.接口、事务、迁移、错误或其它长期技术约定发生变化时，同步更新负责该结论的能力设计或横切设计；
+4.实际提交、测试、失败、跳过和剩余问题随工作写入实施记录；
+5.环境发生变化时更新环境记录；
+6.得到需要的确认以后，再修改相应状态；
+7.提交前运行文档和差异检查。</p>
 <p>这不要求每改一行代码都新建文档。修复已经确认设计的局部缺陷，可以直接引用现有设计；不改变含义的错字和链接修正，也不需要制造REQ或Loop。更新哪些文档，只看这项工作真正改变了什么。</p>
-<h2 id="10-用“收藏会话”看这些文档怎样配合"><a href="#10-用“收藏会话”看这些文档怎样配合" class="headerlink" title="10.用“收藏会话”看这些文档怎样配合"></a>10.用“收藏会话”看这些文档怎样配合</h2><p>假设Director确认员工需要一种方式重新找到重要会话。</p>
+<h2 id="10用收藏会话看这些文档怎样配合">10.用“收藏会话”看这些文档怎样配合</h2>
+<p>假设Director确认员工需要一种方式重新找到重要会话。</p>
 <p>REQ先说明员工当前遇到的问题、期望结果、非目标和验收场景。设计再说明收藏属于谁、员工如何操作、失去访问权时怎样处理，以及数据、接口和权限如何实现。</p>
 <p>ACL启动时引用这些已经确认的内容，保存本轮起点、范围和验证方法。实施过程中，代码和测试证明实现结果，实施记录保存真实修改和失败。需要实机验证时，环境记录说明当时到底部署了什么。最后如果这项变化进入正式版本，版本记录保存实际纳入范围并由Git标签固定。</p>
 <p>这个例子说明的不是“一个功能必须写多少份文档”，而是<strong>不同问题由不同文档回答，并且可以沿链接互相追踪</strong>。</p>
-<h2 id="11-文档建设是一项持续工程"><a href="#11-文档建设是一项持续工程" class="headerlink" title="11.文档建设是一项持续工程"></a>11.文档建设是一项持续工程</h2><p>第一次整理文档时，需要建立入口、明确职责并处理明显冲突。之后每项工作只在真正受影响的位置持续维护，而不是几个月以后再集中补写、重新猜测当时发生了什么。</p>
+<h2 id="11文档建设是一项持续工程">11.文档建设是一项持续工程</h2>
+<p>第一次整理文档时，需要建立入口、明确职责并处理明显冲突。之后每项工作只在真正受影响的位置持续维护，而不是几个月以后再集中补写、重新猜测当时发生了什么。</p>
 <p>一套文档真正可用的标准很简单：新的Director或Agent从总入口开始，能够找到当前需求和设计，区分进行中与已结束的工作，看到环境当前状态，并追溯正式版本和验证依据。</p>
-<p>这些是ACDL能够长期运行的基础。下一章将进一步说明，一项需求怎样从这里进入完整研发流程。</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B04-%E9%9C%80%E6%B1%82%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C%E6%95%B4%E4%B8%AAACDL/" rel="prev" title="ACDL研发流程04：需求怎样走完整个ACDL">
-                  <i class="fa fa-angle-left"></i> ACDL研发流程04：需求怎样走完整个ACDL
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B02-%E4%BB%8E%E6%83%B3%E6%B3%95%E5%88%B0%E9%A1%B9%E7%9B%AE%E9%AA%A8%E6%9E%B6/" rel="next" title="ACDL研发流程02：从想法到项目骨架">
-                  ACDL研发流程02：从想法到项目骨架 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<p>这些是ACDL能够长期运行的基础。下一章将进一步说明，一项需求怎样从这里进入完整研发流程。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#1项目变大以后代码本身讲不完整个项目">1.项目变大以后，代码本身讲不完整个项目</a></li><li class="depth-2"><a href="#2文档是代码的源码">2.文档是代码的“源码”</a></li><li class="depth-2"><a href="#3同一类信息只在一个位置完整维护">3.同一类信息只在一个位置完整维护</a></li><li class="depth-2"><a href="#4编号解决这是谁状态解决现在能不能用">4.编号解决“这是谁”，状态解决“现在能不能用”</a></li><li class="depth-2"><a href="#5链接让后来的人能够从任何入口继续追踪">5.链接让后来的人能够从任何入口继续追踪</a></li><li class="depth-2"><a href="#6git保存文档结论怎样变化">6.Git保存文档结论怎样变化</a></li><li class="depth-2"><a href="#7自然语言负责解释统一字段负责让工具检查">7.自然语言负责解释，统一字段负责让工具检查</a></li><li class="depth-2"><a href="#8把机械检查交给仓库工具">8.把机械检查交给仓库工具</a></li><li class="depth-2"><a href="#9文档和代码在同一项工作中保持一致">9.文档和代码在同一项工作中保持一致</a></li><li class="depth-2"><a href="#10用收藏会话看这些文档怎样配合">10.用“收藏会话”看这些文档怎样配合</a></li><li class="depth-2"><a href="#11文档建设是一项持续工程">11.文档建设是一项持续工程</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

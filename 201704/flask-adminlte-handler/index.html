@@ -1,260 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="引言继续接着上次的话题，上周整理出来的flask-rest脚手架，用于快速构建Restful API。虽然后端的代码量很少，但前端会变得很重，所以总体开发速度并不算太快，不太适合小型项目。于是又整理了一套flask-adminlte脚手架，目标是用较传统的方式，减少整体的代码量，加快开发速度，以应对一些比较极端的需求。大体估算，开发时间可以做到SpringBoot全家桶的30%左右。   源码ht">
-<meta property="og:type" content="article">
-<meta property="og:title" content="flask-adminlte-handler">
-<meta property="og:url" content="https://www.bluexiii.com/201704/flask-adminlte-handler/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="引言继续接着上次的话题，上周整理出来的flask-rest脚手架，用于快速构建Restful API。虽然后端的代码量很少，但前端会变得很重，所以总体开发速度并不算太快，不太适合小型项目。于是又整理了一套flask-adminlte脚手架，目标是用较传统的方式，减少整体的代码量，加快开发速度，以应对一些比较极端的需求。大体估算，开发时间可以做到SpringBoot全家桶的30%左右。   源码ht">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/0ot1s.jpg">
-<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/644d6.jpg">
-<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/fojv1.jpg">
-<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/vvelb.jpg">
-<meta property="og:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/963uh.jpg">
-<meta property="article:published_time" content="2021-01-26T01:44:33.000Z">
-<meta property="article:modified_time" content="2021-01-26T01:44:33.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://bluexiii.oss-cn-beijing.aliyuncs.com/0ot1s.jpg">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201704/flask-adminlte-handler/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201704/flask-adminlte-handler/","path":"201704/flask-adminlte-handler/","title":"flask-adminlte-handler"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>flask-adminlte-handler | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BA%90%E7%A0%81"><span class="nav-number">2.</span> <span class="nav-text">源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">3.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E6%88%AA%E5%9B%BE"><span class="nav-number">4.</span> <span class="nav-text">系统截图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E6%96%B9%E4%BE%9D%E8%B5%96"><span class="nav-number">5.</span> <span class="nav-text">第三方依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="nav-number">6.</span> <span class="nav-text">环境配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#venv%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE"><span class="nav-number">6.1.</span> <span class="nav-text">venv虚拟环境安装配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E6%96%B9%E4%BE%9D%E8%B5%96%E5%AE%89%E8%A3%85"><span class="nav-number">6.2.</span> <span class="nav-text">第三方依赖安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E5%8F%82%E6%95%B0%E9%85%8D%E7%BD%AE"><span class="nav-number">6.3.</span> <span class="nav-text">系统参数配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">6.4.</span> <span class="nav-text">数据库初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E5%BA%94%E7%94%A8"><span class="nav-number">6.5.</span> <span class="nav-text">启动应用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="nav-number">7.</span> <span class="nav-text">项目目录结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%AD%A6%E4%B9%A0%E6%96%87%E6%A1%A3"><span class="nav-number">8.</span> <span class="nav-text">相关学习文档</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201704/flask-adminlte-handler/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="flask-adminlte-handler | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          flask-adminlte-handler
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-26 09:44:33" itemprop="dateCreated datePublished" datetime="2021-01-26T09:44:33+08:00">2021-01-26</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>继续接着上次的话题，上周整理出来的flask-rest脚手架，用于快速构建Restful API。虽然后端的代码量很少，但前端会变得很重，所以总体开发速度并不算太快，不太适合小型项目。<br>于是又整理了一套flask-adminlte脚手架，目标是用较传统的方式，减少整体的代码量，加快开发速度，以应对一些比较极端的需求。大体估算，开发时间可以做到SpringBoot全家桶的30%左右。  </p>
-<h2 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h2><p><a target="_blank" rel="noopener" href="http://git.si-tech.com.cn/guolei/flask-adminlte-handler">http://git.si-tech.com.cn/guolei/flask-adminlte-handler</a><br><a target="_blank" rel="noopener" href="https://github.com/xiiiblue/flask-adminlte-handler">https://github.com/xiiiblue/flask-rest-sample</a>  </p>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>flask-adminlte-handler是一个Python环境下的WEB后台管理系统脚手架，目标是用极少量的代码，快速构建小型WEB应用。请勿在大中型项目中进行尝试。  </p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="引言 继续接着上次的话题，上周整理出来的flask rest脚手架，用于快速构建Restful API。虽然后端的代码量很少，但前端会变得很重，所以总体开发速度并不算太快，不太适合小型项目。 于是又整理了一套flask adminlte脚手架，目标是用较传统的方式，减少整体的代码量，加快开发速度，以应对一些比…"><link rel="canonical" href="https://www.bluexiii.com/201704/flask-adminlte-handler/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="flask-adminlte-handler｜BlueXIII's Blog"><meta property="og:description" content="引言 继续接着上次的话题，上周整理出来的flask rest脚手架，用于快速构建Restful API。虽然后端的代码量很少，但前端会变得很重，所以总体开发速度并不算太快，不太适合小型项目。 于是又整理了一套flask adminlte脚手架，目标是用较传统的方式，减少整体的代码量，加快开发速度，以应对一些比…"><meta property="og:url" content="https://www.bluexiii.com/201704/flask-adminlte-handler/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>flask-adminlte-handler｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>flask-adminlte-handler</h1><div class="article-meta"><time datetime="2021-01-26T01:44:33.000Z">发布于2021-01-26</time></div><div class="badges"><a class="badge" href="/tags/Python/">Python</a><a class="badge" href="/tags/%E5%89%8D%E7%AB%AF/">前端</a></div></header><div class="prose"><h2 id="引言">引言</h2>
+<p>继续接着上次的话题，上周整理出来的flask-rest脚手架，用于快速构建Restful API。虽然后端的代码量很少，但前端会变得很重，所以总体开发速度并不算太快，不太适合小型项目。<br>
+于是又整理了一套flask-adminlte脚手架，目标是用较传统的方式，减少整体的代码量，加快开发速度，以应对一些比较极端的需求。大体估算，开发时间可以做到SpringBoot全家桶的30%左右。</p>
+<h2 id="源码">源码</h2>
+<p><a href="http://git.si-tech.com.cn/guolei/flask-adminlte-handler">http://git.si-tech.com.cn/guolei/flask-adminlte-handler</a><br>
+<a href="https://github.com/xiiiblue/flask-adminlte-handler">https://github.com/xiiiblue/flask-rest-sample</a></p>
+<h2 id="简介">简介</h2>
+<p>flask-adminlte-handler是一个Python环境下的WEB后台管理系统脚手架，目标是用极少量的代码，快速构建小型WEB应用。请勿在大中型项目中进行尝试。</p>
 <ol>
 <li>使用较传统的重后端+轻前端的方式，降低总体代码量</li>
 <li>Web框架使用Flask，默认Jinja模版</li>
 <li>ORM框架使用Peewee</li>
 <li>前端套用基于BootStrap的AdminLTE模板</li>
 </ol>
-<h2 id="系统截图"><a href="#系统截图" class="headerlink" title="系统截图"></a>系统截图</h2><ul>
-<li><p>登录页<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/0ot1s.jpg"></p>
+<h2 id="系统截图">系统截图</h2>
+<ul>
+<li>
+<p>登录页<br>
+<img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/0ot1s.jpg" alt=""></p>
 </li>
-<li><p>主页<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/644d6.jpg"></p>
+<li>
+<p>主页<br>
+<img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/644d6.jpg" alt=""></p>
 </li>
-<li><p>编辑界面<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/fojv1.jpg">  </p>
+<li>
+<p>编辑界面<br>
+<img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/fojv1.jpg" alt=""></p>
 </li>
-<li><p>查询界面<br><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/vvelb.jpg"></p>
+<li>
+<p>查询界面<br>
+<img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/vvelb.jpg" alt=""></p>
 </li>
 </ul>
-<h2 id="第三方依赖"><a href="#第三方依赖" class="headerlink" title="第三方依赖"></a>第三方依赖</h2><ul>
+<h2 id="第三方依赖">第三方依赖</h2>
+<ul>
 <li>peewee</li>
 <li>pymysql</li>
 <li>flask</li>
@@ -262,135 +44,67 @@
 <li>flask-wtf</li>
 <li>flask-login</li>
 </ul>
-<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><h3 id="venv虚拟环境安装配置"><a href="#venv虚拟环境安装配置" class="headerlink" title="venv虚拟环境安装配置"></a>venv虚拟环境安装配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo pip3 install virtualenv</span><br><span class="line">virtualenv venv</span><br><span class="line">. venv/bin/activate</span><br></pre></td></tr></table></figure>
-
-<h3 id="第三方依赖安装"><a href="#第三方依赖安装" class="headerlink" title="第三方依赖安装"></a>第三方依赖安装</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip3 install -r requirements.txt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h3 id="系统参数配置"><a href="#系统参数配置" class="headerlink" title="系统参数配置"></a>系统参数配置</h3><ol>
+<h2 id="环境配置">环境配置</h2>
+<h3 id="venv虚拟环境安装配置">venv虚拟环境安装配置</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>sudo pip3 install virtualenv</span></span>
+<span class="line"><span>virtualenv venv</span></span>
+<span class="line"><span>. venv/bin/activate</span></span></code></pre>
+<h3 id="第三方依赖安装">第三方依赖安装</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>pip3 install -r requirements.txt</span></span>
+<span class="line"><span></span></span></code></pre>
+<h3 id="系统参数配置">系统参数配置</h3>
+<ol>
 <li>编辑<code>config.py</code>， 修改SECRET_KEY及MySQL数据库相关参数</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SECRET_KEY = os.environ.get(&#x27;SECRET_KEY&#x27;) or &#x27;your-secret&#x27;</span><br><span class="line">DB_HOST = &#x27;127.0.0.1&#x27;</span><br><span class="line">DB_USER = &#x27;foobar&#x27;</span><br><span class="line">DB_PASSWD = &#x27;foobar&#x27;</span><br><span class="line">DB_DATABASE = &#x27;foobar&#x27;</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret'</span></span>
+<span class="line"><span>DB_HOST = '127.0.0.1'</span></span>
+<span class="line"><span>DB_USER = 'foobar'</span></span>
+<span class="line"><span>DB_PASSWD = 'foobar'</span></span>
+<span class="line"><span>DB_DATABASE = 'foobar'</span></span></code></pre>
 <ol start="2">
 <li>编辑log-app.conf，修改日志路径</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">args=(&#x27;/path/to/log/flask-rest-sample.log&#x27;,&#x27;a&#x27;,&#x27;utf8&#x27;)</span><br></pre></td></tr></table></figure>
-
-<h3 id="数据库初始化"><a href="#数据库初始化" class="headerlink" title="数据库初始化"></a>数据库初始化</h3><ol>
-<li><p>自动建表<br>直接运行<code>python3 models.py</code></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>args=('/path/to/log/flask-rest-sample.log','a','utf8')</span></span></code></pre>
+<h3 id="数据库初始化">数据库初始化</h3>
+<ol>
+<li>
+<p>自动建表
+直接运行<code>python3 models.py</code></p>
 </li>
-<li><p>插入管理员用户（默认admin&#x2F;admin)</p>
+<li>
+<p>插入管理员用户（默认admin/admin)</p>
 </li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">INSERT INTO `user` (`id`, `username`, `password`, `fullname`, `email`, `phone`, `status`)</span><br><span class="line">VALUES</span><br><span class="line">	(1, &#x27;admin&#x27;, &#x27;pbkdf2:sha1:1000$Km1vdx3W$9aa07d3b79ab88aae53e45d26d0d4d4e097a6cd3&#x27;, &#x27;管理员&#x27;, &#x27;admin@admin.com&#x27;, &#x27;18612341234&#x27;, 1);</span><br></pre></td></tr></table></figure>
-
-<h3 id="启动应用"><a href="#启动应用" class="headerlink" title="启动应用"></a>启动应用</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nohup ./manage.py runserver 2&gt;&amp;1 &amp;</span><br><span class="line">或</span><br><span class="line">./run_app_dev.py (仅限测试)</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="项目目录结构"><a href="#项目目录结构" class="headerlink" title="项目目录结构"></a>项目目录结构</h2><p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/963uh.jpg">  </p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>INSERT INTO `user` (`id`, `username`, `password`, `fullname`, `email`, `phone`, `status`)</span></span>
+<span class="line"><span>VALUES</span></span>
+<span class="line"><span>	(1, 'admin', 'pbkdf2:sha1:1000$Km1vdx3W$9aa07d3b79ab88aae53e45d26d0d4d4e097a6cd3', '管理员', 'admin@admin.com', '18612341234', 1);</span></span></code></pre>
+<h3 id="启动应用">启动应用</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>nohup ./manage.py runserver 2>&#x26;1 &#x26;</span></span>
+<span class="line"><span>或</span></span>
+<span class="line"><span>./run_app_dev.py (仅限测试)</span></span></code></pre>
+<h2 id="项目目录结构">项目目录结构</h2>
+<p><img src="https://bluexiii.oss-cn-beijing.aliyuncs.com/963uh.jpg" alt=""></p>
 <ul>
-<li>&#x2F;app&#x2F;auth  用户认证相关代码</li>
-<li>&#x2F;app&#x2F;main  主要功能点相关代码</li>
-<li>&#x2F;app&#x2F;static  JS、CSS等静态文件</li>
-<li>&#x2F;app&#x2F;template  页面模版</li>
-<li>&#x2F;app&#x2F;models.py  Peewee模型</li>
-<li>&#x2F;app&#x2F;utils.py  工具模块</li>
-<li>&#x2F;conf  系统参数及日志配置</li>
+<li>/app/auth  用户认证相关代码</li>
+<li>/app/main  主要功能点相关代码</li>
+<li>/app/static  JS、CSS等静态文件</li>
+<li>/app/template  页面模版</li>
+<li>/app/models.py  Peewee模型</li>
+<li>/app/utils.py  工具模块</li>
+<li>/conf  系统参数及日志配置</li>
 </ul>
-<h2 id="相关学习文档"><a href="#相关学习文档" class="headerlink" title="相关学习文档"></a>相关学习文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://flask.pocoo.org/">http://flask.pocoo.org</a></li>
-<li><a target="_blank" rel="noopener" href="https://flask-login.readthedocs.io/">https://flask-login.readthedocs.io</a></li>
-<li><a target="_blank" rel="noopener" href="https://flask-script.readthedocs.io/">https://flask-script.readthedocs.io</a></li>
-<li><a target="_blank" rel="noopener" href="https://flask-wtf.readthedocs.io/">https://flask-wtf.readthedocs.io</a></li>
-<li><a target="_blank" rel="noopener" href="http://docs.peewee-orm.com/">http://docs.peewee-orm.com</a></li>
-<li><a target="_blank" rel="noopener" href="https://almsaeedstudio.com/preview">https://almsaeedstudio.com/preview</a></li>
-</ul>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201710/ZipKin%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8%E9%93%BE%E8%B7%9F%E8%B8%AA%E5%B7%A5%E5%85%B7%E9%85%8D%E7%BD%AE/" rel="prev" title="Zipkin微服务调用链跟踪工具配置">
-                  <i class="fa fa-angle-left"></i> Zipkin微服务调用链跟踪工具配置
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201710/Swagger%E9%85%8D%E7%BD%AE%E5%85%A8%E5%B1%80ResponseModel/" rel="next" title="Swagger配置全局Response Model">
-                  Swagger配置全局Response Model <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="相关学习文档">相关学习文档</h2>
+<ul>
+<li><a href="http://flask.pocoo.org">http://flask.pocoo.org</a></li>
+<li><a href="https://flask-login.readthedocs.io">https://flask-login.readthedocs.io</a></li>
+<li><a href="https://flask-script.readthedocs.io">https://flask-script.readthedocs.io</a></li>
+<li><a href="https://flask-wtf.readthedocs.io">https://flask-wtf.readthedocs.io</a></li>
+<li><a href="http://docs.peewee-orm.com">http://docs.peewee-orm.com</a></li>
+<li><a href="https://almsaeedstudio.com/preview">https://almsaeedstudio.com/preview</a></li>
+</ul></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#引言">引言</a></li><li class="depth-2"><a href="#源码">源码</a></li><li class="depth-2"><a href="#简介">简介</a></li><li class="depth-2"><a href="#系统截图">系统截图</a></li><li class="depth-2"><a href="#第三方依赖">第三方依赖</a></li><li class="depth-2"><a href="#环境配置">环境配置</a></li><li class="depth-3"><a href="#venv虚拟环境安装配置">venv虚拟环境安装配置</a></li><li class="depth-3"><a href="#第三方依赖安装">第三方依赖安装</a></li><li class="depth-3"><a href="#系统参数配置">系统参数配置</a></li><li class="depth-3"><a href="#数据库初始化">数据库初始化</a></li><li class="depth-3"><a href="#启动应用">启动应用</a></li><li class="depth-2"><a href="#项目目录结构">项目目录结构</a></li><li class="depth-2"><a href="#相关学习文档">相关学习文档</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

@@ -1,368 +1,74 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="以下大部分内容非原创，整理自阿里云官方文档  SQL大类限制 暂不支持用户自定义数据类型、自定义函数。 暂不支持视图、存储过程、触发器、游标。 暂不支持 BEGIN…END、LOOP…END LOOP、REPEAT…UNTIL…END REPEAT、WHILE…DO…END WHILE 等复合语句。 暂不支类似 IF ，WHILE 等流程控制类语句。  DDL限制 CREATE TABLE tb">
-<meta property="og:type" content="article">
-<meta property="og:title" content="阿里云DRDS使用限制">
-<meta property="og:url" content="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="以下大部分内容非原创，整理自阿里云官方文档  SQL大类限制 暂不支持用户自定义数据类型、自定义函数。 暂不支持视图、存储过程、触发器、游标。 暂不支持 BEGIN…END、LOOP…END LOOP、REPEAT…UNTIL…END REPEAT、WHILE…DO…END WHILE 等复合语句。 暂不支类似 IF ，WHILE 等流程控制类语句。  DDL限制 CREATE TABLE tb">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2018-11-06T07:36:05.000Z">
-<meta property="article:modified_time" content="2018-11-06T07:36:05.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6/","path":"201707/阿里云DRDS使用限制/","title":"阿里云DRDS使用限制"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>阿里云DRDS使用限制 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SQL%E5%A4%A7%E7%B1%BB%E9%99%90%E5%88%B6"><span class="nav-number">1.</span> <span class="nav-text">SQL大类限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DDL%E9%99%90%E5%88%B6"><span class="nav-number">2.</span> <span class="nav-text">DDL限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E7%AE%A1%E7%90%86%E9%99%90%E5%88%B6"><span class="nav-number">3.</span> <span class="nav-text">数据库管理限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DML%E9%99%90%E5%88%B6"><span class="nav-number">4.</span> <span class="nav-text">DML限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">5.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DML%E9%94%99%E8%AF%AF%E7%A4%BA%E4%BE%8B"><span class="nav-number">6.</span> <span class="nav-text">DML错误示例</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="阿里云DRDS使用限制 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          阿里云DRDS使用限制
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:36:05" itemprop="dateCreated datePublished" datetime="2018-11-06T15:36:05+08:00">2018-11-06</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<blockquote>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="以下大部分内容非原创，整理自阿里云官方文档 SQL大类限制 暂不支持用户自定义数据类型、自定义函数。 暂不支持视图、存储过程、触发器、游标。 暂不支持 BEGIN…END、LOOP…END LOOP、REPEAT…UNTIL…END REPEAT、WHILE…DO…END WHILE 等复合语句。 暂不支类似…"><link rel="canonical" href="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="阿里云DRDS使用限制｜BlueXIII's Blog"><meta property="og:description" content="以下大部分内容非原创，整理自阿里云官方文档 SQL大类限制 暂不支持用户自定义数据类型、自定义函数。 暂不支持视图、存储过程、触发器、游标。 暂不支持 BEGIN…END、LOOP…END LOOP、REPEAT…UNTIL…END REPEAT、WHILE…DO…END WHILE 等复合语句。 暂不支类似…"><meta property="og:url" content="https://www.bluexiii.com/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E4%BD%BF%E7%94%A8%E9%99%90%E5%88%B6/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>阿里云DRDS使用限制｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>阿里云DRDS使用限制</h1><div class="article-meta"><time datetime="2018-11-06T07:36:05.000Z">发布于2018-11-06</time></div><div class="badges"><a class="badge" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="badge" href="/tags/%E4%BA%91%E6%9C%8D%E5%8A%A1/">云服务</a></div></header><div class="prose"><blockquote>
 <p>以下大部分内容非原创，整理自阿里云官方文档</p>
 </blockquote>
-<h2 id="SQL大类限制"><a href="#SQL大类限制" class="headerlink" title="SQL大类限制"></a>SQL大类限制</h2><ul>
+<h2 id="sql大类限制">SQL大类限制</h2>
+<ul>
 <li>暂不支持用户自定义数据类型、自定义函数。</li>
 <li>暂不支持视图、存储过程、触发器、游标。</li>
 <li>暂不支持 BEGIN…END、LOOP…END LOOP、REPEAT…UNTIL…END REPEAT、WHILE…DO…END WHILE 等复合语句。</li>
 <li>暂不支类似 IF ，WHILE 等流程控制类语句。</li>
 </ul>
-<h2 id="DDL限制"><a href="#DDL限制" class="headerlink" title="DDL限制"></a>DDL限制</h2><ul>
+<h2 id="ddl限制">DDL限制</h2>
+<ul>
 <li>CREATE TABLE tbl_name LIKE old_tbl_name 不支持拆分表。</li>
 <li>CREATE TABLE tbl_name SELECT statement 不支持拆分表。</li>
 </ul>
-<h2 id="数据库管理限制"><a href="#数据库管理限制" class="headerlink" title="数据库管理限制"></a>数据库管理限制</h2><ul>
-<li>SHOW WARNINGS Syntax 不支持 LIMIT&#x2F;COUNT 的组合。</li>
-<li>SHOW ERRORS Syntax 不支持 LIMIT&#x2F;COUNT 的组合。</li>
+<h2 id="数据库管理限制">数据库管理限制</h2>
+<ul>
+<li>SHOW WARNINGS Syntax 不支持 LIMIT/COUNT 的组合。</li>
+<li>SHOW ERRORS Syntax 不支持 LIMIT/COUNT 的组合。</li>
 </ul>
-<h2 id="DML限制"><a href="#DML限制" class="headerlink" title="DML限制"></a>DML限制</h2><ul>
-<li>暂不支持 SELECT INTO OUTFILE&#x2F;INTO DUMPFILE&#x2F;INTO var_name。</li>
+<h2 id="dml限制">DML限制</h2>
+<ul>
+<li>暂不支持 SELECT INTO OUTFILE/INTO DUMPFILE/INTO var_name。</li>
 <li>暂不支持 INSERT DELAYED Syntax。</li>
 <li>暂不支持非 WHERE 条件的 Correlate Subquery。</li>
 <li>暂不支持 SQL 中带聚合条件的 Correlate Subquery。</li>
-<li>暂不支持 SQL 中对于变量的引用和操作，比如 SET @c&#x3D;1, @d&#x3D;@c+1; SELECT @c, @d。</li>
+<li>暂不支持 SQL 中对于变量的引用和操作，比如 SET @c=1, @d=@c+1; SELECT @c, @d。</li>
 </ul>
 <blockquote>
-<p>关于 Correlated Subquery 的解释：<br>Correlated Subquery is a sub-query that uses values from the outer query. In this case the inner query has to be executed for every row of outer query.<br>See example here <a target="_blank" rel="noopener" href="http://en.wikipedia.org/wiki/Correlated_subquery">http://en.wikipedia.org/wiki/Correlated_subquery</a><br>Simple subquery doesn’t use values from the outer query and is being calculated only once:  </p>
+<p>关于 Correlated Subquery 的解释：<br>
+Correlated Subquery is a sub-query that uses values from the outer query. In this case the inner query has to be executed for every row of outer query.<br>
+See example here <a href="http://en.wikipedia.org/wiki/Correlated_subquery">http://en.wikipedia.org/wiki/Correlated_subquery</a><br>
+Simple subquery doesn’t use values from the outer query and is being calculated only once:</p>
 </blockquote>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> id, first_name</span><br><span class="line"><span class="keyword">FROM</span> student_details</span><br><span class="line"><span class="keyword">WHERE</span> id <span class="keyword">IN</span> (<span class="keyword">SELECT</span> student_id</span><br><span class="line"><span class="keyword">FROM</span> student_subjects</span><br><span class="line"><span class="keyword">WHERE</span> subject<span class="operator">=</span> <span class="string">&#x27;Science&#x27;</span>);</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>DDL限制、数据库管理限制，由于与应用关系不大，编码时无须特别关心。<br>SQL大类限制，如视图、存储过程、触发器、游标等，通常是不被提倡的坏味道，如果有的话，直接改方式实现即可。<br>DML限制，需要特别注意。如果使用ORM，应该不会有太大问题，但用jdbcTemplate写原生SQL的话（如实时报表类的功能点）有可能会踩坑。<br>另外默认不支持跨实例事务，私有云貌似也没有GTS选项，需要在代码层面进行优化。</p>
-<h2 id="DML错误示例"><a href="#DML错误示例" class="headerlink" title="DML错误示例"></a>DML错误示例</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> (<span class="keyword">select</span> id,name <span class="keyword">from</span> normal_tables) t</span><br></pre></td></tr></table></figure>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">SELECT</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> id, first_name</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">FROM</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> student_details</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">WHERE</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> id </span><span style="color:#D73A49;--shiki-dark:#F97583">IN</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">SELECT</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> student_id</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">FROM</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> student_subjects</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">WHERE</span><span style="color:#D73A49;--shiki-dark:#F97583"> subject=</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Science'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span></code></pre>
+<h2 id="分析">分析</h2>
+<p>DDL限制、数据库管理限制，由于与应用关系不大，编码时无须特别关心。<br>
+SQL大类限制，如视图、存储过程、触发器、游标等，通常是不被提倡的坏味道，如果有的话，直接改方式实现即可。<br>
+DML限制，需要特别注意。如果使用ORM，应该不会有太大问题，但用jdbcTemplate写原生SQL的话（如实时报表类的功能点）有可能会踩坑。<br>
+另外默认不支持跨实例事务，私有云貌似也没有GTS选项，需要在代码层面进行优化。</p>
+<h2 id="dml错误示例">DML错误示例</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#D73A49;--shiki-dark:#F97583"> *</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> id,</span><span style="color:#D73A49;--shiki-dark:#F97583">name</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> normal_tables) t</span></span></code></pre>
 <blockquote>
-<p>[b8040ac9f401000][192.168.2.47:3306][dev_sc_dmanage]ERR-CODE: [TDDL-4007][ERR_CANNOT_FETCH_TABLE_META] Table ‘normal_tables’ metadata cannot be fetched because Table ‘dev_sc_dmanage_ssiu_0000.normal_tables’ doesn’t exist. More: [<a target="_blank" rel="noopener" href="http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007%5D">http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007]</a></p>
+<p>[b8040ac9f401000][192.168.2.47:3306][dev_sc_dmanage]ERR-CODE: [TDDL-4007][ERR_CANNOT_FETCH_TABLE_META] Table ‘normal_tables’ metadata cannot be fetched because Table ‘dev_sc_dmanage_ssiu_0000.normal_tables’ doesn’t exist. More: [<a href="http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007">http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007</a>]</p>
 </blockquote>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> a,<span class="operator">*</span>,b.<span class="operator">*</span> <span class="keyword">from</span> shard_table a</span><br><span class="line"><span class="keyword">left</span> <span class="keyword">join</span> (<span class="keyword">select</span> id,name <span class="keyword">from</span> normal_table) b <span class="keyword">on</span> b.id<span class="operator">=</span>a.id;</span><br></pre></td></tr></table></figure>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a,</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,b.</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> shard_table a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">left join</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> id,</span><span style="color:#D73A49;--shiki-dark:#F97583">name</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> normal_table) b </span><span style="color:#D73A49;--shiki-dark:#F97583">on</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> b</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">id</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">a</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">id</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span></code></pre>
 <blockquote>
 <p>[b80405010801000][192.168.2.47:3306][dev_sc_dmanage]column: a is not existed in either null or select clause</p>
 </blockquote>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> a,<span class="operator">*</span>,b.<span class="operator">*</span> <span class="keyword">from</span> normal_tables a</span><br><span class="line"><span class="keyword">left</span> <span class="keyword">join</span> (<span class="keyword">select</span> id,name <span class="keyword">from</span> shard_table) b <span class="keyword">on</span> b.id<span class="operator">=</span>a.id;</span><br></pre></td></tr></table></figure>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> a,</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,b.</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> normal_tables a</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">left join</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">select</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> id,</span><span style="color:#D73A49;--shiki-dark:#F97583">name</span><span style="color:#D73A49;--shiki-dark:#F97583"> from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> shard_table) b </span><span style="color:#D73A49;--shiki-dark:#F97583">on</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> b</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">id</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">a</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">id</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span></code></pre>
 <blockquote>
-<p>[b8040692c001000][192.168.2.47:3306][dev_sc_dmanage]ERR-CODE: [TDDL-4007][ERR_CANNOT_FETCH_TABLE_META] Table ‘normal_tables’ metadata cannot be fetched because Table ‘dev_sc_dmanage_ssiu_0000.normal_tables’ doesn’t exist. More: [<a target="_blank" rel="noopener" href="http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007%5D">http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007]</a></p>
+<p>[b8040692c001000][192.168.2.47:3306][dev_sc_dmanage]ERR-CODE: [TDDL-4007][ERR_CANNOT_FETCH_TABLE_META] Table ‘normal_tables’ metadata cannot be fetched because Table ‘dev_sc_dmanage_ssiu_0000.normal_tables’ doesn’t exist. More: [<a href="http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007">http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4007</a>]</p>
 </blockquote>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">insert into</span> group_seq_tbl (name) <span class="keyword">values</span> (<span class="string">&#x27;hello&#x27;</span>);</span><br><span class="line"><span class="keyword">insert into</span> group_seq_tbl (name) <span class="keyword">values</span> (<span class="string">&#x27;hello&#x27;</span>);</span><br></pre></td></tr></table></figure>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sql"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">insert into</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> group_seq_tbl (</span><span style="color:#D73A49;--shiki-dark:#F97583">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">values</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'hello'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">insert into</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> group_seq_tbl (</span><span style="color:#D73A49;--shiki-dark:#F97583">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">values</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'hello'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span></code></pre>
 <blockquote>
-<p>[b807dfe12c01000-24][192.168.2.47:3306][dev_sc_dmanage]ERR-CODE: [TDDL-4603][ERR_ACCROSS_DB_TRANSACTION] Transaction accross db is not supported in current transaction policy, transaction node is: DEV_SC_DMANAGE_1501040729564NYQSDEV_SC_DMANAGE_SSIU_0003_RDS, but this sql execute on: DEV_SC_DMANAGE_1501040729564NYQSDEV_SC_DMANAGE_SSIU_0006_RDS. More: [<a target="_blank" rel="noopener" href="http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4603%5D">http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4603]</a></p>
-</blockquote>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%20Sequence/" rel="prev" title="阿里云DRDS Sequence">
-                  <i class="fa fa-angle-left"></i> 阿里云DRDS Sequence
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201707/%E9%98%BF%E9%87%8C%E4%BA%91DRDS%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E6%93%8D%E4%BD%9C/" rel="next" title="阿里云DRDS分库分表">
-                  阿里云DRDS分库分表 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<p>[b807dfe12c01000-24][192.168.2.47:3306][dev_sc_dmanage]ERR-CODE: [TDDL-4603][ERR_ACCROSS_DB_TRANSACTION] Transaction accross db is not supported in current transaction policy, transaction node is: DEV_SC_DMANAGE_1501040729564NYQSDEV_SC_DMANAGE_SSIU_0003_RDS, but this sql execute on: DEV_SC_DMANAGE_1501040729564NYQSDEV_SC_DMANAGE_SSIU_0006_RDS. More: [<a href="http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4603">http://middleware.alibaba-inc.com/faq/faqByFaqCode.html?faqCode=TDDL-4603</a>]</p>
+</blockquote></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#sql大类限制">SQL大类限制</a></li><li class="depth-2"><a href="#ddl限制">DDL限制</a></li><li class="depth-2"><a href="#数据库管理限制">数据库管理限制</a></li><li class="depth-2"><a href="#dml限制">DML限制</a></li><li class="depth-2"><a href="#分析">分析</a></li><li class="depth-2"><a href="#dml错误示例">DML错误示例</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

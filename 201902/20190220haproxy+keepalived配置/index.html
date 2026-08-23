@@ -1,357 +1,107 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="防火墙配置1234firewall-cmd --direct --permanent --add-rule ipv4 filter INPUT 0 --in-interface ens33 --destination 224.0.0.18 --protocol vrrp -j ACCEPTfirewall-cmd --zone&#x3D;public --add-port&#x3D;8080&#x2F;tcp --perman">
-<meta property="og:type" content="article">
-<meta property="og:title" content="haproxy+keepalived配置">
-<meta property="og:url" content="https://www.bluexiii.com/201902/20190220haproxy+keepalived%E9%85%8D%E7%BD%AE/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="防火墙配置1234firewall-cmd --direct --permanent --add-rule ipv4 filter INPUT 0 --in-interface ens33 --destination 224.0.0.18 --protocol vrrp -j ACCEPTfirewall-cmd --zone&#x3D;public --add-port&#x3D;8080&#x2F;tcp --perman">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2019-02-20T01:00:00.000Z">
-<meta property="article:modified_time" content="2019-02-20T01:00:00.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201902/20190220haproxy+keepalived%E9%85%8D%E7%BD%AE/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201902/20190220haproxy+keepalived%E9%85%8D%E7%BD%AE/","path":"201902/20190220haproxy+keepalived配置/","title":"haproxy+keepalived配置"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>haproxy+keepalived配置 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%98%B2%E7%81%AB%E5%A2%99%E9%85%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">防火墙配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%97%ADselinux"><span class="nav-number">2.</span> <span class="nav-text">关闭selinux</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E6%B5%8B%E8%AF%95WEB%E6%9C%8D%E5%8A%A1"><span class="nav-number">3.</span> <span class="nav-text">启动测试WEB服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85haproxy"><span class="nav-number">4.</span> <span class="nav-text">安装haproxy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEhaproxy"><span class="nav-number">5.</span> <span class="nav-text">配置haproxy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8haproxy"><span class="nav-number">6.</span> <span class="nav-text">启动haproxy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85keepalived"><span class="nav-number">7.</span> <span class="nav-text">安装keepalived</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEkeepalived"><span class="nav-number">8.</span> <span class="nav-text">配置keepalived</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8keepalived"><span class="nav-number">9.</span> <span class="nav-text">启动keepalived</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%97%A5%E5%BF%97"><span class="nav-number">10.</span> <span class="nav-text">查看日志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">11.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201902/20190220haproxy+keepalived%E9%85%8D%E7%BD%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="haproxy+keepalived配置 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          haproxy+keepalived配置
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2019-02-20 09:00:00" itemprop="dateCreated datePublished" datetime="2019-02-20T09:00:00+08:00">2019-02-20</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="防火墙配置"><a href="#防火墙配置" class="headerlink" title="防火墙配置"></a>防火墙配置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --direct --permanent --add-rule ipv4 filter INPUT 0 --in-interface ens33 --destination 224.0.0.18 --protocol vrrp -j ACCEPT</span><br><span class="line">firewall-cmd --zone=public --add-port=8080/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=18010/tcp --permanent</span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="防火墙配置 或 关闭selinux 启动测试WEB服务 vi index.html 安装haproxy 配置haproxy 启动haproxy 安装keepalived 配置keepalived vi /etc/keepalived/keepalived.conf 启动keepalived 查看日志 参考文档…"><link rel="canonical" href="https://www.bluexiii.com/201902/20190220haproxy+keepalived%E9%85%8D%E7%BD%AE/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="haproxy+keepalived配置｜BlueXIII's Blog"><meta property="og:description" content="防火墙配置 或 关闭selinux 启动测试WEB服务 vi index.html 安装haproxy 配置haproxy 启动haproxy 安装keepalived 配置keepalived vi /etc/keepalived/keepalived.conf 启动keepalived 查看日志 参考文档…"><meta property="og:url" content="https://www.bluexiii.com/201902/20190220haproxy+keepalived%E9%85%8D%E7%BD%AE/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>haproxy+keepalived配置｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>haproxy+keepalived配置</h1><div class="article-meta"><time datetime="2019-02-20T01:00:00.000Z">发布于2019-02-20</time></div><div class="badges"><a class="badge" href="/tags/%E7%BD%91%E7%BB%9C/">网络</a></div></header><div class="prose"><h2 id="防火墙配置">防火墙配置</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>firewall-cmd --direct --permanent --add-rule ipv4 filter INPUT 0 --in-interface ens33 --destination 224.0.0.18 --protocol vrrp -j ACCEPT</span></span>
+<span class="line"><span>firewall-cmd --zone=public --add-port=8080/tcp --permanent</span></span>
+<span class="line"><span>firewall-cmd --zone=public --add-port=18010/tcp --permanent</span></span>
+<span class="line"><span>firewall-cmd --reload</span></span></code></pre>
 <p>或</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl disable firewalld </span><br><span class="line">systemctl stop firewalld </span><br></pre></td></tr></table></figure>
-
-<h2 id="关闭selinux"><a href="#关闭selinux" class="headerlink" title="关闭selinux"></a>关闭selinux</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/sysconfig/selinux</span><br><span class="line">SELINUX=disabled</span><br><span class="line">setenforce 0</span><br><span class="line">getenforce</span><br></pre></td></tr></table></figure>
-
-<h2 id="启动测试WEB服务"><a href="#启动测试WEB服务" class="headerlink" title="启动测试WEB服务"></a>启动测试WEB服务</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install nc</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>systemctl disable firewalld </span></span>
+<span class="line"><span>systemctl stop firewalld </span></span></code></pre>
+<h2 id="关闭selinux">关闭selinux</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>vi /etc/sysconfig/selinux</span></span>
+<span class="line"><span>SELINUX=disabled</span></span>
+<span class="line"><span>setenforce 0</span></span>
+<span class="line"><span>getenforce</span></span></code></pre>
+<h2 id="启动测试web服务">启动测试WEB服务</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>yum install nc</span></span></code></pre>
 <p>vi index.html</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!doctype <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;utf-8&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">title</span>&gt;</span>Test Page<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">h1</span>&gt;</span>It Works!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">while true;do &#123; printf &#x27;%b\r\n&#x27; &#x27;HTTP/1.1 200 OK&#x27; &#x27;%b\r\n&#x27;;cat index.html; &#125;|nc -l 8080;done</span><br></pre></td></tr></table></figure>
-
-<h2 id="安装haproxy"><a href="#安装haproxy" class="headerlink" title="安装haproxy"></a>安装haproxy</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y haproxy</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置haproxy"><a href="#配置haproxy" class="headerlink" title="配置haproxy"></a>配置haproxy</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/haproxy/haproxy.cfg </span><br><span class="line"></span><br><span class="line">global</span><br><span class="line">        user haproxy</span><br><span class="line">        group haproxy</span><br><span class="line">        daemon</span><br><span class="line">        maxconn 4096</span><br><span class="line">defaults</span><br><span class="line">        mode    tcp</span><br><span class="line">        balance roundrobin #leastconn</span><br><span class="line">        timeout client      30000ms</span><br><span class="line">        timeout server      30000ms</span><br><span class="line">        timeout connect      3000ms</span><br><span class="line">        retries 3</span><br><span class="line">frontend fr_server1</span><br><span class="line">        bind 0.0.0.0:18010</span><br><span class="line">        default_backend bk_server1</span><br><span class="line">backend bk_server1</span><br><span class="line">    server  srv1 10.211.55.11:8080</span><br><span class="line">    server  srv2 10.211.55.12:8080</span><br><span class="line">listen stats</span><br><span class="line">    mode http</span><br><span class="line">    bind *:9090</span><br><span class="line">    stats enable</span><br><span class="line">    stats refresh 3s</span><br><span class="line">    stats uri     /</span><br><span class="line">    stats auth    admin:123456</span><br><span class="line">    stats admin if TRUE</span><br></pre></td></tr></table></figure>
-
-<h2 id="启动haproxy"><a href="#启动haproxy" class="headerlink" title="启动haproxy"></a>启动haproxy</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable haproxy</span><br><span class="line">systemctl start haproxy</span><br></pre></td></tr></table></figure>
-
-<h2 id="安装keepalived"><a href="#安装keepalived" class="headerlink" title="安装keepalived"></a>安装keepalived</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install keepalived ipset-libs libnl3-devel psmisc</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置keepalived"><a href="#配置keepalived" class="headerlink" title="配置keepalived"></a>配置keepalived</h2><p>vi &#x2F;etc&#x2F;keepalived&#x2F;keepalived.conf</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">vrrp_script chk_proc &#123;</span><br><span class="line">  script &quot;killall -0 haproxy&quot; # check the haproxy process</span><br><span class="line">  interval 2 # every 2 seconds</span><br><span class="line">  weight 2 # add 2 points if OK</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">vrrp_instance VI_1 &#123;</span><br><span class="line">  interface eth0 # interface to monitor</span><br><span class="line">  state MASTER # MASTER on haproxy1, BACKUP on haproxy2</span><br><span class="line">  virtual_router_id 51</span><br><span class="line">  priority 101 # 101 on haproxy1, 100 on haproxy2</span><br><span class="line">  virtual_ipaddress &#123;</span><br><span class="line">    10.211.55.100/24 # virtual ip address </span><br><span class="line">  &#125;</span><br><span class="line">  track_script &#123;</span><br><span class="line">    chk_proc</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="启动keepalived"><a href="#启动keepalived" class="headerlink" title="启动keepalived"></a>启动keepalived</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable keepalived</span><br><span class="line">systemctl start keepalived</span><br></pre></td></tr></table></figure>
-
-<h2 id="查看日志"><a href="#查看日志" class="headerlink" title="查看日志"></a>查看日志</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tail -f /var/log/messages</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://www.keepalived.org/manpage.html">http://www.keepalived.org/manpage.html</a></li>
-<li><a target="_blank" rel="noopener" href="http://seanlook.com/2015/05/18/nginx-keepalived-ha/">http://seanlook.com/2015/05/18/nginx-keepalived-ha/</a></li>
-<li><a target="_blank" rel="noopener" href="https://qizhanming.com/blog/2018/05/17/how-to-config-keepalived-on-centos-7">https://qizhanming.com/blog/2018/05/17/how-to-config-keepalived-on-centos-7</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.certdepot.net/rhel7-configure-high-available-load-balancer/">https://www.certdepot.net/rhel7-configure-high-available-load-balancer/</a></li>
-<li><a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/39016291/haproxy-loadbalancing-tcp-traffic">https://stackoverflow.com/questions/39016291/haproxy-loadbalancing-tcp-traffic</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/c9f6d55288c0">https://www.jianshu.com/p/c9f6d55288c0</a></li>
-</ul>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201902/20190217systemd%E4%B8%8Bulimit%E8%B0%83%E6%95%B4/" rel="prev" title="systemd下ulimit调整">
-                  <i class="fa fa-angle-left"></i> systemd下ulimit调整
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201903/20190307CentOS7%E9%85%8D%E7%BD%AEVNC/" rel="next" title="CentOS7配置TigerVNC">
-                  CentOS7配置TigerVNC <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;!</span><span style="color:#22863A;--shiki-dark:#85E89D">doctype</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">head</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">meta</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> charset</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"utf-8"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">title</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>Test Page&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">title</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">head</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">body</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      &#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">h1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>It Works!&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">h1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    &#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">body</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="shell"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">while</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span><span style="color:#D73A49;--shiki-dark:#F97583">do</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="color:#005CC5;--shiki-dark:#79B8FF">printf</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '%b\r\n'</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'HTTP/1.1 200 OK'</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '%b\r\n'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span><span style="color:#6F42C1;--shiki-dark:#B392F0">cat</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> index.html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; }</span><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0">nc</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -l</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 8080</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span><span style="color:#D73A49;--shiki-dark:#F97583">done</span></span></code></pre>
+<h2 id="安装haproxy">安装haproxy</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>yum install -y haproxy</span></span></code></pre>
+<h2 id="配置haproxy">配置haproxy</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>vi /etc/haproxy/haproxy.cfg </span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>global</span></span>
+<span class="line"><span>        user haproxy</span></span>
+<span class="line"><span>        group haproxy</span></span>
+<span class="line"><span>        daemon</span></span>
+<span class="line"><span>        maxconn 4096</span></span>
+<span class="line"><span>defaults</span></span>
+<span class="line"><span>        mode    tcp</span></span>
+<span class="line"><span>        balance roundrobin #leastconn</span></span>
+<span class="line"><span>        timeout client      30000ms</span></span>
+<span class="line"><span>        timeout server      30000ms</span></span>
+<span class="line"><span>        timeout connect      3000ms</span></span>
+<span class="line"><span>        retries 3</span></span>
+<span class="line"><span>frontend fr_server1</span></span>
+<span class="line"><span>        bind 0.0.0.0:18010</span></span>
+<span class="line"><span>        default_backend bk_server1</span></span>
+<span class="line"><span>backend bk_server1</span></span>
+<span class="line"><span>    server  srv1 10.211.55.11:8080</span></span>
+<span class="line"><span>    server  srv2 10.211.55.12:8080</span></span>
+<span class="line"><span>listen stats</span></span>
+<span class="line"><span>    mode http</span></span>
+<span class="line"><span>    bind *:9090</span></span>
+<span class="line"><span>    stats enable</span></span>
+<span class="line"><span>    stats refresh 3s</span></span>
+<span class="line"><span>    stats uri     /</span></span>
+<span class="line"><span>    stats auth    admin:123456</span></span>
+<span class="line"><span>    stats admin if TRUE</span></span></code></pre>
+<h2 id="启动haproxy">启动haproxy</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>systemctl enable haproxy</span></span>
+<span class="line"><span>systemctl start haproxy</span></span></code></pre>
+<h2 id="安装keepalived">安装keepalived</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>yum install keepalived ipset-libs libnl3-devel psmisc</span></span></code></pre>
+<h2 id="配置keepalived">配置keepalived</h2>
+<p>vi /etc/keepalived/keepalived.conf</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>vrrp_script chk_proc {</span></span>
+<span class="line"><span>  script "killall -0 haproxy" # check the haproxy process</span></span>
+<span class="line"><span>  interval 2 # every 2 seconds</span></span>
+<span class="line"><span>  weight 2 # add 2 points if OK</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>vrrp_instance VI_1 {</span></span>
+<span class="line"><span>  interface eth0 # interface to monitor</span></span>
+<span class="line"><span>  state MASTER # MASTER on haproxy1, BACKUP on haproxy2</span></span>
+<span class="line"><span>  virtual_router_id 51</span></span>
+<span class="line"><span>  priority 101 # 101 on haproxy1, 100 on haproxy2</span></span>
+<span class="line"><span>  virtual_ipaddress {</span></span>
+<span class="line"><span>    10.211.55.100/24 # virtual ip address </span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>  track_script {</span></span>
+<span class="line"><span>    chk_proc</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>}</span></span></code></pre>
+<h2 id="启动keepalived">启动keepalived</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>systemctl enable keepalived</span></span>
+<span class="line"><span>systemctl start keepalived</span></span></code></pre>
+<h2 id="查看日志">查看日志</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>tail -f /var/log/messages</span></span></code></pre>
+<h2 id="参考文档">参考文档</h2>
+<ul>
+<li><a href="http://www.keepalived.org/manpage.html">http://www.keepalived.org/manpage.html</a></li>
+<li><a href="http://seanlook.com/2015/05/18/nginx-keepalived-ha/">http://seanlook.com/2015/05/18/nginx-keepalived-ha/</a></li>
+<li><a href="https://qizhanming.com/blog/2018/05/17/how-to-config-keepalived-on-centos-7">https://qizhanming.com/blog/2018/05/17/how-to-config-keepalived-on-centos-7</a></li>
+<li><a href="https://www.certdepot.net/rhel7-configure-high-available-load-balancer/">https://www.certdepot.net/rhel7-configure-high-available-load-balancer/</a></li>
+<li><a href="https://stackoverflow.com/questions/39016291/haproxy-loadbalancing-tcp-traffic">https://stackoverflow.com/questions/39016291/haproxy-loadbalancing-tcp-traffic</a></li>
+<li><a href="https://www.jianshu.com/p/c9f6d55288c0">https://www.jianshu.com/p/c9f6d55288c0</a></li>
+</ul></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#防火墙配置">防火墙配置</a></li><li class="depth-2"><a href="#关闭selinux">关闭selinux</a></li><li class="depth-2"><a href="#启动测试web服务">启动测试WEB服务</a></li><li class="depth-2"><a href="#安装haproxy">安装haproxy</a></li><li class="depth-2"><a href="#配置haproxy">配置haproxy</a></li><li class="depth-2"><a href="#启动haproxy">启动haproxy</a></li><li class="depth-2"><a href="#安装keepalived">安装keepalived</a></li><li class="depth-2"><a href="#配置keepalived">配置keepalived</a></li><li class="depth-2"><a href="#启动keepalived">启动keepalived</a></li><li class="depth-2"><a href="#查看日志">查看日志</a></li><li class="depth-2"><a href="#参考文档">参考文档</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

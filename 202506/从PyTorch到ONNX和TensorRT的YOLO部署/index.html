@@ -1,392 +1,128 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="在NVIDIAGPU上部署YOLO时，最终采用了TensorRTEngine加Ultralytics推理。作出选择之前，需要先弄清.pt、.onnx和.engine分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。 参考 Ultralytics模型导出 ONNXRuntime安装 CUDAExecutionProvider TensorRTExecutionProvide">
-<meta property="og:type" content="article">
-<meta property="og:title" content="从PyTorch到ONNX和TensorRT的YOLO部署">
-<meta property="og:url" content="https://www.bluexiii.com/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="在NVIDIAGPU上部署YOLO时，最终采用了TensorRTEngine加Ultralytics推理。作出选择之前，需要先弄清.pt、.onnx和.engine分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。 参考 Ultralytics模型导出 ONNXRuntime安装 CUDAExecutionProvider TensorRTExecutionProvide">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2025-06-29T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-22T15:27:03.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/","path":"202506/从PyTorch到ONNX和TensorRT的YOLO部署/","title":"从PyTorch到ONNX和TensorRT的YOLO部署"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>从PyTorch到ONNX和TensorRT的YOLO部署 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E7%A7%8D%E6%A8%A1%E5%9E%8B%E6%96%87%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">三种模型文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%87%BAONNX"><span class="nav-number">3.</span> <span class="nav-text">导出ONNX</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8ONNXRuntime"><span class="nav-number">4.</span> <span class="nav-text">使用ONNXRuntime</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TensorRTExecutionProvider"><span class="nav-number">4.1.</span> <span class="nav-text">TensorRTExecutionProvider</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%87%BATensorRTEngine"><span class="nav-number">5.</span> <span class="nav-text">导出TensorRTEngine</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85TensorRT%E8%BF%90%E8%A1%8C%E6%97%B6"><span class="nav-number">6.</span> <span class="nav-text">安装TensorRT运行时</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8Ultralytics%E7%BB%9F%E4%B8%80%E8%B0%83%E7%94%A8"><span class="nav-number">7.</span> <span class="nav-text">使用Ultralytics统一调用</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="从PyTorch到ONNX和TensorRT的YOLO部署 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          从PyTorch到ONNX和TensorRT的YOLO部署
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2025-06-30 00:00:00" itemprop="dateCreated datePublished" datetime="2025-06-30T00:00:00+08:00">2025-06-30</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<p>在NVIDIAGPU上部署YOLO时，最终采用了TensorRTEngine加Ultralytics推理。作出选择之前，需要先弄清<code>.pt</code>、<code>.onnx</code>和<code>.engine</code>分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.ultralytics.com/modes/export/">Ultralytics模型导出</a></li>
-<li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/install/">ONNXRuntime安装</a></li>
-<li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html">CUDAExecutionProvider</a></li>
-<li><a target="_blank" rel="noopener" href="https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html">TensorRTExecutionProvider</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/tensorrt/latest/installing-tensorrt/installing.html">TensorRT安装指南</a></li>
-<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/support-matrix.html">TensorRT支持矩阵</a></li>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="在NVIDIAGPU上部署YOLO时，最终采用了TensorRTEngine加Ultralytics推理。作出选择之前，需要先弄清 .pt 、 .onnx 和 .engine 分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。 参考 Ultralytics模型导出 ONNXRunti…"><link rel="canonical" href="https://www.bluexiii.com/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="从PyTorch到ONNX和TensorRT的YOLO部署｜BlueXIII's Blog"><meta property="og:description" content="在NVIDIAGPU上部署YOLO时，最终采用了TensorRTEngine加Ultralytics推理。作出选择之前，需要先弄清 .pt 、 .onnx 和 .engine 分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。 参考 Ultralytics模型导出 ONNXRunti…"><meta property="og:url" content="https://www.bluexiii.com/202506/%E4%BB%8EPyTorch%E5%88%B0ONNX%E5%92%8CTensorRT%E7%9A%84YOLO%E9%83%A8%E7%BD%B2/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>从PyTorch到ONNX和TensorRT的YOLO部署｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>从PyTorch到ONNX和TensorRT的YOLO部署</h1><div class="article-meta"><time datetime="2025-06-29T16:00:00.000Z">发布于2025-06-30</time><time datetime="2026-08-22T15:27:03.000Z">更新于2026-08-22</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/AI/">AI</a></div></header><div class="prose"><p>在NVIDIAGPU上部署YOLO时，最终采用了TensorRTEngine加Ultralytics推理。作出选择之前，需要先弄清<code>.pt</code>、<code>.onnx</code>和<code>.engine</code>分别解决什么问题，以及ONNXRuntime和TensorRT对环境的要求。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://docs.ultralytics.com/modes/export/">Ultralytics模型导出</a></li>
+<li><a href="https://onnxruntime.ai/docs/install/">ONNXRuntime安装</a></li>
+<li><a href="https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html">CUDAExecutionProvider</a></li>
+<li><a href="https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html">TensorRTExecutionProvider</a></li>
+<li><a href="https://docs.nvidia.com/deeplearning/tensorrt/latest/installing-tensorrt/installing.html">TensorRT安装指南</a></li>
+<li><a href="https://docs.nvidia.com/deeplearning/tensorrt/latest/getting-started/support-matrix.html">TensorRT支持矩阵</a></li>
 </ul>
-<h2 id="三种模型文件"><a href="#三种模型文件" class="headerlink" title="三种模型文件"></a>三种模型文件</h2><p><code>.pt</code>是PyTorch检查点，也是训练阶段最方便保留的格式。使用Ultralytics加载时，模型结构、权重和任务相关信息都由原来的Python环境处理，适合继续训练、验证和直接推理。</p>
+<h2 id="三种模型文件">三种模型文件</h2>
+<p><code>.pt</code>是PyTorch检查点，也是训练阶段最方便保留的格式。使用Ultralytics加载时，模型结构、权重和任务相关信息都由原来的Python环境处理，适合继续训练、验证和直接推理。</p>
 <p><code>.onnx</code>保存的是标准化计算图，不依赖原来的PyTorch执行过程。它可以交给ONNXRuntime的CPU、CUDA或TensorRTExecutionProvider，也方便接入其他支持ONNX的推理引擎。</p>
 <p>这里的<code>.engine</code>专指TensorRT序列化引擎，也叫plan。它已经针对TensorRT版本、平台和GPU进行编译，启动时不再重新解析完整的ONNX图，但兼容范围比ONNX窄。默认生成的engine不能随意换到另一种GPU、操作系统或TensorRT版本上运行，部署环境变化后通常需要重新构建。</p>
 <p>选择TensorRTEngine加Ultralytics推理，主要是为了保持调用代码一致。这个选择不代表engine在所有环境都更快；脱离目标硬件、输入尺寸、批量大小和精度谈固定的性能百分比没有意义，延迟和吞吐量还是要在实际部署环境中比较。</p>
-<h2 id="导出ONNX"><a href="#导出ONNX" class="headerlink" title="导出ONNX"></a>导出ONNX</h2><p>先在训练环境安装Ultralytics和ONNX依赖：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m pip install --upgrade ultralytics onnx</span><br></pre></td></tr></table></figure>
-
+<h2 id="导出onnx">导出ONNX</h2>
+<p>先在训练环境安装Ultralytics和ONNX依赖：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">python</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --upgrade</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ultralytics</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> onnx</span></span></code></pre>
 <p>使用Python导出：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ultralytics <span class="keyword">import</span> YOLO</span><br><span class="line"></span><br><span class="line">model = YOLO(<span class="string">&quot;best.pt&quot;</span>)</span><br><span class="line">model.export(</span><br><span class="line">    <span class="built_in">format</span>=<span class="string">&quot;onnx&quot;</span>,</span><br><span class="line">    imgsz=<span class="number">640</span>,</span><br><span class="line">    dynamic=<span class="literal">False</span>,</span><br><span class="line">    simplify=<span class="literal">True</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="py"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ultralytics </span><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> YOLO</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">model </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> YOLO(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"best.pt"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">model.export(</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    format</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"onnx"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    imgsz</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">640</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    dynamic</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">False</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    simplify</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">True</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span></code></pre>
 <p>输入尺寸固定时保持<code>dynamic=False</code>，部署配置更简单；确实需要接受多种尺寸时再启用动态形状。<code>opset</code>不指定时由Ultralytics选择当前支持的版本，只有目标运行时有明确限制时才固定。</p>
 <p>导出后先检查模型格式：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnx</span><br><span class="line"></span><br><span class="line">model = onnx.load(<span class="string">&quot;best.onnx&quot;</span>)</span><br><span class="line">onnx.checker.check_model(model)</span><br></pre></td></tr></table></figure>
-
-<h2 id="使用ONNXRuntime"><a href="#使用ONNXRuntime" class="headerlink" title="使用ONNXRuntime"></a>使用ONNXRuntime</h2><p>CPU和GPU包二选一安装，不要同时留在同一个环境中：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># CPU</span></span><br><span class="line">python -m pip install onnxruntime</span><br><span class="line"></span><br><span class="line"><span class="comment"># NVIDIAGPU</span></span><br><span class="line">python -m pip install onnxruntime-gpu</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="py"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> onnx</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">model </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> onnx.load(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"best.onnx"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onnx.checker.check_model(model)</span></span></code></pre>
+<h2 id="使用onnxruntime">使用ONNXRuntime</h2>
+<p>CPU和GPU包二选一安装，不要同时留在同一个环境中：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># CPU</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">python</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> onnxruntime</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># NVIDIAGPU</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">python</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> onnxruntime-gpu</span></span></code></pre>
 <p>PyPI上的<code>onnxruntime-gpu</code>默认对应CUDA12.x。实际安装前还要根据ONNXRuntime的CUDAExecutionProvider兼容表核对CUDA和cuDNN主版本，不能只看<code>nvidia-smi</code>显示的CUDA上限。</p>
 <p>确认当前环境真正加载了哪些ExecutionProvider：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnxruntime <span class="keyword">as</span> ort</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(ort.__version__)</span><br><span class="line"><span class="built_in">print</span>(ort.get_available_providers())</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="py"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> onnxruntime </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ort</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">print</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(ort.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">__version__</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">print</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(ort.get_available_providers())</span></span></code></pre>
 <p>创建CUDA推理会话时把CPU放在后面作为回退：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnxruntime <span class="keyword">as</span> ort</span><br><span class="line"></span><br><span class="line">session = ort.InferenceSession(</span><br><span class="line">    <span class="string">&quot;best.onnx&quot;</span>,</span><br><span class="line">    providers=[<span class="string">&quot;CUDAExecutionProvider&quot;</span>, <span class="string">&quot;CPUExecutionProvider&quot;</span>],</span><br><span class="line">)</span><br><span class="line"><span class="built_in">print</span>(session.get_providers())</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="py"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> onnxruntime </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ort</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">session </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ort.InferenceSession(</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "best.onnx"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    providers</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"CUDAExecutionProvider"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"CPUExecutionProvider"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">],</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">print</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(session.get_providers())</span></span></code></pre>
 <p><code>get_available_providers()</code>只能说明当前安装包包含哪些Provider，<code>session.get_providers()</code>用来确认这个Session接受了哪些Provider。两者都不能单独证明每个节点实际分配到了GPU，还要留意启动日志中是否有CUDA或cuDNN动态库加载失败。</p>
-<h3 id="TensorRTExecutionProvider"><a href="#TensorRTExecutionProvider" class="headerlink" title="TensorRTExecutionProvider"></a>TensorRTExecutionProvider</h3><p>ONNXRuntime也可以把支持的子图交给TensorRT，不支持的节点继续交给CUDA。Provider顺序要把TensorRT放在CUDA前面：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> onnxruntime <span class="keyword">as</span> ort</span><br><span class="line"></span><br><span class="line">providers = [</span><br><span class="line">    (</span><br><span class="line">        <span class="string">&quot;TensorrtExecutionProvider&quot;</span>,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="string">&quot;device_id&quot;</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="string">&quot;trt_fp16_enable&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">            <span class="string">&quot;trt_engine_cache_enable&quot;</span>: <span class="literal">True</span>,</span><br><span class="line">            <span class="string">&quot;trt_engine_cache_path&quot;</span>: <span class="string">&quot;./trt-cache&quot;</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">    ),</span><br><span class="line">    (<span class="string">&quot;CUDAExecutionProvider&quot;</span>, &#123;<span class="string">&quot;device_id&quot;</span>: <span class="number">0</span>&#125;),</span><br><span class="line">    <span class="string">&quot;CPUExecutionProvider&quot;</span>,</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line">session = ort.InferenceSession(<span class="string">&quot;best.onnx&quot;</span>, providers=providers)</span><br><span class="line"><span class="built_in">print</span>(session.get_providers())</span><br></pre></td></tr></table></figure>
-
+<h3 id="tensorrtexecutionprovider">TensorRTExecutionProvider</h3>
+<p>ONNXRuntime也可以把支持的子图交给TensorRT，不支持的节点继续交给CUDA。Provider顺序要把TensorRT放在CUDA前面：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="py"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> onnxruntime </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ort</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">providers </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    (</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "TensorrtExecutionProvider"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">            "device_id"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">            "trt_fp16_enable"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">True</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">            "trt_engine_cache_enable"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">True</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">            "trt_engine_cache_path"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"./trt-cache"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        },</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    ),</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    (</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"CUDAExecutionProvider"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, {</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"device_id"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">}),</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "CPUExecutionProvider"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">session </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ort.InferenceSession(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"best.onnx"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">providers</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">providers)</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">print</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(session.get_providers())</span></span></code></pre>
 <p>第一次创建Session会编译TensorRT子图，冷启动可能很慢。启用engine缓存后，后续启动可以直接复用；模型、ONNXRuntime、TensorRT、构建参数或GPU发生变化时应清理旧缓存重新生成。</p>
-<h2 id="导出TensorRTEngine"><a href="#导出TensorRTEngine" class="headerlink" title="导出TensorRTEngine"></a>导出TensorRTEngine</h2><p>Ultralytics可以从<code>.pt</code>直接生成engine：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ultralytics <span class="keyword">import</span> YOLO</span><br><span class="line"></span><br><span class="line">model = YOLO(<span class="string">&quot;best.pt&quot;</span>)</span><br><span class="line">model.export(</span><br><span class="line">    <span class="built_in">format</span>=<span class="string">&quot;engine&quot;</span>,</span><br><span class="line">    imgsz=<span class="number">640</span>,</span><br><span class="line">    quantize=<span class="number">16</span>,</span><br><span class="line">    workspace=<span class="number">4</span>,</span><br><span class="line">    verbose=<span class="literal">True</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-
+<h2 id="导出tensorrtengine">导出TensorRTEngine</h2>
+<p>Ultralytics可以从<code>.pt</code>直接生成engine：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="py"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ultralytics </span><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> YOLO</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">model </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> YOLO(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"best.pt"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">model.export(</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    format</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"engine"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    imgsz</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">640</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    quantize</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">16</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    workspace</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">4</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">    verbose</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">True</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span></code></pre>
 <p>当前Ultralytics文档使用<code>quantize=16</code>表示FP16。旧版本常见的<code>half=True</code>仍可能可用，但已经属于兼容参数。<code>workspace=4</code>表示最多使用4GiB工作空间；显存不紧张时也可以省略，让TensorRT自动决定。</p>
 <p>engine会针对构建时的GPU和TensorRT环境选择内核，最好直接在最终部署机器上导出。若需要跨机器分发，先根据TensorRT的版本兼容和硬件兼容选项确认边界，不能把普通engine当成ONNX一样复制使用。</p>
-<h2 id="安装TensorRT运行时"><a href="#安装TensorRT运行时" class="headerlink" title="安装TensorRT运行时"></a>安装TensorRT运行时</h2><p>TensorRT提供PyPI、Debian&#x2F;RPM、Tar包和容器等安装方式。Python项目只使用API时，PyPI最省事；需要<code>trtexec</code>、C++头文件或同时保留多个系统版本时，再选择系统包或Tar包。</p>
+<h2 id="安装tensorrt运行时">安装TensorRT运行时</h2>
+<p>TensorRT提供PyPI、Debian/RPM、Tar包和容器等安装方式。Python项目只使用API时，PyPI最省事；需要<code>trtexec</code>、C++头文件或同时保留多个系统版本时，再选择系统包或Tar包。</p>
 <p>例如现有环境是CUDA12.x，可以明确安装对应的Python包：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m pip install --upgrade tensorrt-cu12</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">python</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --upgrade</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> tensorrt-cu12</span></span></code></pre>
 <p>验证Python接口和CUDA初始化：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorrt <span class="keyword">as</span> trt</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(trt.__version__)</span><br><span class="line"><span class="keyword">assert</span> trt.Builder(trt.Logger())</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="py"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tensorrt </span><span style="color:#D73A49;--shiki-dark:#F97583">as</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> trt</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">print</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(trt.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">__version__</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">assert</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> trt.Builder(trt.Logger())</span></span></code></pre>
 <p>PyPI安装不包含<code>trtexec</code>。如果使用Debian、RPM、Tar包或容器安装，再用下面的命令检查CLI：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trtexec --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">trtexec</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --help</span></span></code></pre>
 <p>TensorRT、CUDA、驱动、Python和GPU的支持范围变化很快，安装时直接从支持矩阵选择一组匹配版本，不要把某一组TensorRT、CUDA和Python版本当作长期安装规则。</p>
 <p>自己编写CUDA扩展时，<code>CUDA_HOME</code>应指向Toolkit根目录，而不是它的<code>bin</code>目录：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> CUDA_HOME=/usr/local/cuda-X.Y</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> CUDA_HOME</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">/usr/local/cuda-X.Y</span></span></code></pre>
 <p>上面的Ultralytics、ONNXRuntime和TensorRTPython路径没有直接使用PyCUDA，不需要为了运行engine额外安装。只有自己的推理代码明确<code>import pycuda</code>时，再按该项目的依赖补上。</p>
-<h2 id="使用Ultralytics统一调用"><a href="#使用Ultralytics统一调用" class="headerlink" title="使用Ultralytics统一调用"></a>使用Ultralytics统一调用</h2><p>如果不想分别维护ONNXRuntime和TensorRT推理代码，可以继续用Ultralytics加载三种文件。模型路径变化，预测接口基本一致：</p>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ultralytics <span class="keyword">import</span> YOLO</span><br><span class="line"></span><br><span class="line">pt_model = YOLO(<span class="string">&quot;best.pt&quot;</span>)</span><br><span class="line">onnx_model = YOLO(<span class="string">&quot;best.onnx&quot;</span>)</span><br><span class="line">engine_model = YOLO(<span class="string">&quot;best.engine&quot;</span>)</span><br><span class="line"></span><br><span class="line">pt_model.predict(source=<span class="string">&quot;image.jpg&quot;</span>, device=<span class="number">0</span>)</span><br><span class="line">onnx_model.predict(source=<span class="string">&quot;image.jpg&quot;</span>, device=<span class="number">0</span>)</span><br><span class="line">engine_model.predict(source=<span class="string">&quot;image.jpg&quot;</span>, device=<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
-
-<p>这种方式部署简单，但运行环境仍要安装Ultralytics及其依赖。追求更小的运行环境或需要C++集成时，直接使用ONNXRuntime或TensorRT原生API更合适。</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" rel="prev" title="uv常用操作：Python、脚本、工具与项目管理">
-                  <i class="fa fa-angle-left"></i> uv常用操作：Python、脚本、工具与项目管理
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202509/PVE%E4%B8%AD%E5%AE%89%E8%A3%85RouterOSCHR%E5%B9%B6%E5%AE%8C%E6%88%90%E5%9F%BA%E7%A1%80%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE/" rel="next" title="PVE中安装RouterOS CHR并完成基础网络配置">
-                  PVE中安装RouterOS CHR并完成基础网络配置 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="使用ultralytics统一调用">使用Ultralytics统一调用</h2>
+<p>如果不想分别维护ONNXRuntime和TensorRT推理代码，可以继续用Ultralytics加载三种文件。模型路径变化，预测接口基本一致：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="py"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ultralytics </span><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> YOLO</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">pt_model </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> YOLO(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"best.pt"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onnx_model </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> YOLO(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"best.onnx"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">engine_model </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> YOLO(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"best.engine"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">pt_model.predict(</span><span style="color:#E36209;--shiki-dark:#FFAB70">source</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"image.jpg"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">device</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">onnx_model.predict(</span><span style="color:#E36209;--shiki-dark:#FFAB70">source</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"image.jpg"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">device</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">engine_model.predict(</span><span style="color:#E36209;--shiki-dark:#FFAB70">source</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"image.jpg"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">device</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span></code></pre>
+<p>这种方式部署简单，但运行环境仍要安装Ultralytics及其依赖。追求更小的运行环境或需要C++集成时，直接使用ONNXRuntime或TensorRT原生API更合适。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#参考">参考</a></li><li class="depth-2"><a href="#三种模型文件">三种模型文件</a></li><li class="depth-2"><a href="#导出onnx">导出ONNX</a></li><li class="depth-2"><a href="#使用onnxruntime">使用ONNXRuntime</a></li><li class="depth-3"><a href="#tensorrtexecutionprovider">TensorRTExecutionProvider</a></li><li class="depth-2"><a href="#导出tensorrtengine">导出TensorRTEngine</a></li><li class="depth-2"><a href="#安装tensorrt运行时">安装TensorRT运行时</a></li><li class="depth-2"><a href="#使用ultralytics统一调用">使用Ultralytics统一调用</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

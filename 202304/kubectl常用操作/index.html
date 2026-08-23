@@ -1,348 +1,167 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="参考 https:&#x2F;&#x2F;docs.ethanshen.cn&#x2F;kubernetes&#x2F;kubectl_common.html https:&#x2F;&#x2F;kubernetes.io&#x2F;zh-cn&#x2F;docs&#x2F;reference&#x2F;kubectl&#x2F;cheatsheet&#x2F; https:&#x2F;&#x2F;kubernetes.io&#x2F;zh-cn&#x2F;docs&#x2F;reference&#x2F;kubectl&#x2F;docker-cli-to-kubectl&#x2F;  配置">
-<meta property="og:type" content="article">
-<meta property="og:title" content="kubectl常用操作">
-<meta property="og:url" content="https://www.bluexiii.com/202304/kubectl%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="参考 https:&#x2F;&#x2F;docs.ethanshen.cn&#x2F;kubernetes&#x2F;kubectl_common.html https:&#x2F;&#x2F;kubernetes.io&#x2F;zh-cn&#x2F;docs&#x2F;reference&#x2F;kubectl&#x2F;cheatsheet&#x2F; https:&#x2F;&#x2F;kubernetes.io&#x2F;zh-cn&#x2F;docs&#x2F;reference&#x2F;kubectl&#x2F;docker-cli-to-kubectl&#x2F;  配置">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-06-01T02:42:12.000Z">
-<meta property="article:modified_time" content="2023-06-01T02:42:12.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202304/kubectl%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202304/kubectl%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/","path":"202304/kubectl常用操作/","title":"kubectl常用操作"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>kubectl常用操作 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8"><span class="nav-number">2.</span> <span class="nav-text">配置自动补全</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#docker%E8%BD%ACkubectl%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">docker转kubectl操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C"><span class="nav-number">4.</span> <span class="nav-text">运行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B"><span class="nav-number">5.</span> <span class="nav-text">查看</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4"><span class="nav-number">6.</span> <span class="nav-text">集群</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA"><span class="nav-number">7.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%B8%E7%BC%A9"><span class="nav-number">8.</span> <span class="nav-text">伸缩</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E9%99%A4"><span class="nav-number">9.</span> <span class="nav-text">删除</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%A4%E4%BA%92"><span class="nav-number">10.</span> <span class="nav-text">交互</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%8D%E5%88%B6%E6%96%87%E4%BB%B6"><span class="nav-number">11.</span> <span class="nav-text">复制文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E9%85%8D%E7%BD%AE"><span class="nav-number">12.</span> <span class="nav-text">调度配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DEBUG"><span class="nav-number">13.</span> <span class="nav-text">DEBUG</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202304/kubectl%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="kubectl常用操作 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          kubectl常用操作
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-06-01 10:42:12" itemprop="dateCreated datePublished" datetime="2023-06-01T10:42:12+08:00">2023-06-01</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.ethanshen.cn/kubernetes/kubectl_common.html">https://docs.ethanshen.cn/kubernetes/kubectl_common.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/reference/kubectl/cheatsheet/">https://kubernetes.io/zh-cn/docs/reference/kubectl/cheatsheet/</a></li>
-<li><a target="_blank" rel="noopener" href="https://kubernetes.io/zh-cn/docs/reference/kubectl/docker-cli-to-kubectl/">https://kubernetes.io/zh-cn/docs/reference/kubectl/docker-cli-to-kubectl/</a></li>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="参考 https://docs.ethanshen.cn/kubernetes/kubectl common.html https://kubernetes.io/zh cn/docs/reference/kubectl/cheatsheet/ https://kubernetes.io/zh cn/docs…"><link rel="canonical" href="https://www.bluexiii.com/202304/kubectl%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="kubectl常用操作｜BlueXIII's Blog"><meta property="og:description" content="参考 https://docs.ethanshen.cn/kubernetes/kubectl common.html https://kubernetes.io/zh cn/docs/reference/kubectl/cheatsheet/ https://kubernetes.io/zh cn/docs…"><meta property="og:url" content="https://www.bluexiii.com/202304/kubectl%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>kubectl常用操作｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>kubectl常用操作</h1><div class="article-meta"><time datetime="2023-06-01T02:42:12.000Z">发布于2023-06-01</time></div><div class="badges"><a class="badge" href="/tags/Kubernetes/">Kubernetes</a></div></header><div class="prose"><h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://docs.ethanshen.cn/kubernetes/kubectl_common.html">https://docs.ethanshen.cn/kubernetes/kubectl_common.html</a></li>
+<li><a href="https://kubernetes.io/zh-cn/docs/reference/kubectl/cheatsheet/">https://kubernetes.io/zh-cn/docs/reference/kubectl/cheatsheet/</a></li>
+<li><a href="https://kubernetes.io/zh-cn/docs/reference/kubectl/docker-cli-to-kubectl/">https://kubernetes.io/zh-cn/docs/reference/kubectl/docker-cli-to-kubectl/</a></li>
 </ul>
-<h2 id="配置自动补全"><a href="#配置自动补全" class="headerlink" title="配置自动补全"></a>配置自动补全</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># bash</span></span><br><span class="line"><span class="built_in">source</span> &lt;(kubectl completion bash) <span class="comment"># 在 bash 中设置当前 shell 的自动补全，要先安装 bash-completion 包。</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;source &lt;(kubectl completion bash)&quot;</span> &gt;&gt; ~/.bashrc <span class="comment"># 在你的 bash shell 中永久地添加自动补全</span></span><br><span class="line"><span class="comment"># zsh</span></span><br><span class="line"><span class="built_in">source</span> &lt;(kubectl completion zsh)  <span class="comment"># 在 zsh 中设置当前 shell 的自动补全</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;[[ $commands[kubectl] ]] &amp;&amp; source &lt;(kubectl completion zsh)&#x27;</span> &gt;&gt; ~/.zshrc <span class="comment"># 在你的 zsh shell 中永久地添加自动补全</span></span><br><span class="line"><span class="comment"># alias</span></span><br><span class="line"><span class="built_in">alias</span> k=kubectl</span><br><span class="line">complete -o default -F __start_kubectl k</span><br></pre></td></tr></table></figure>
-
-<h2 id="docker转kubectl操作"><a href="#docker转kubectl操作" class="headerlink" title="docker转kubectl操作"></a>docker转kubectl操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 测试容器</span></span><br><span class="line">kubectl run test-postfix --restart=<span class="string">&#x27;Never&#x27;</span> --image postfix:1.1 --<span class="built_in">command</span> -- <span class="built_in">sleep</span> infinity</span><br><span class="line">kubectl <span class="built_in">exec</span> -it test-postfix -- bash</span><br><span class="line">kubectl delete pod test-postfix --force</span><br><span class="line"></span><br><span class="line"><span class="comment"># run</span></span><br><span class="line">docker run -d --restart=always -e DOMAIN=cluster --name nginx-app -p 80:80 nginx</span><br><span class="line">kubectl run --image=nginx nginx-app --port=80 --<span class="built_in">env</span>=<span class="string">&quot;DOMAIN=cluster&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># exec</span></span><br><span class="line">docker <span class="built_in">exec</span> nginx-app <span class="built_in">cat</span> /etc/hostname</span><br><span class="line">kubectl <span class="built_in">exec</span> nginx-app -- <span class="built_in">cat</span> /etc/hostname</span><br><span class="line"></span><br><span class="line"><span class="comment"># exec shell</span></span><br><span class="line">docker <span class="built_in">exec</span> -it nginx-app /bin/sh</span><br><span class="line">kubectl <span class="built_in">exec</span> -it nginx-app -- /bin/sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># log</span></span><br><span class="line">docker logs -f --<span class="built_in">tail</span> 100 nginx-app</span><br><span class="line">kubectl logs -f --<span class="built_in">tail</span> 100 nginx-app</span><br><span class="line"></span><br><span class="line"><span class="comment"># delete</span></span><br><span class="line">docker stop nginx-app &amp;&amp; docker <span class="built_in">rm</span> -f nginx-app</span><br><span class="line">kubectl delete pod nginx-app --force</span><br><span class="line"></span><br><span class="line"><span class="comment"># 复杂run</span></span><br><span class="line">docker run -itd --name redis \</span><br><span class="line">-p 6379:6379 \</span><br><span class="line">-v /tmp/data:/data \</span><br><span class="line">--<span class="built_in">env</span> foo=bar \</span><br><span class="line">redis:5.0.14-alpine --requirepass <span class="string">&quot;123456&quot;</span></span><br><span class="line"></span><br><span class="line">kubectl run test-redis \</span><br><span class="line">--image=redis:5.0.14-alpine \</span><br><span class="line">--restart=Never \</span><br><span class="line">--port=6379 \</span><br><span class="line">--<span class="built_in">env</span>=<span class="string">&quot;foo=bar&quot;</span> \</span><br><span class="line">-- --requirepass <span class="string">&quot;123456&quot;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 命令行</span></span><br><span class="line">kubectl run myterminal --image=busybox:1.28 --restart=Never -- bash</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成pod</span></span><br><span class="line">kubectl run test-pod --image=nginx --restart=Never <span class="comment"># Always/OnFailure/Never</span></span><br><span class="line"><span class="comment"># 创建Job</span></span><br><span class="line">kubectl create job test-job --image=busybox:1.28 -- <span class="built_in">echo</span> <span class="string">&quot;Hello World&quot;</span> </span><br><span class="line"><span class="comment"># 创建Cronjob</span></span><br><span class="line">kubectl create cronjob test-cron --image=busybox:1.28 --schedule=<span class="string">&quot;*/1 * * * *&quot;</span> -- <span class="built_in">echo</span> <span class="string">&quot;Hello World&quot;</span>   </span><br><span class="line"><span class="comment"># 生成deploy</span></span><br><span class="line">kubectl create deployment test-dp --image=nginx --replicas=2</span><br><span class="line"><span class="comment"># 生成svc</span></span><br><span class="line">kubectl expose deployment test-dp --<span class="built_in">type</span>=ClusterIP --port=80 --target-port=8000 --name=test-svc</span><br><span class="line">kubectl delete svc test-svc</span><br><span class="line"><span class="comment"># 生成名称空间</span></span><br><span class="line">kubectl create ns test-ns</span><br><span class="line"><span class="comment"># 生成configmap</span></span><br><span class="line">kubectl create configmap test-cm --from-literal=key1=value1 --from-literal=key2=value2</span><br></pre></td></tr></table></figure>
-
-<h2 id="查看"><a href="#查看" class="headerlink" title="查看"></a>查看</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看所有namespace的pod</span></span><br><span class="line">kubectl get pods -A  <span class="comment"># 或--all-namespaces</span></span><br><span class="line">kubectl get pods test-pod -o wide  <span class="comment"># 展示更多列</span></span><br><span class="line"><span class="comment"># 获取所有deployment</span></span><br><span class="line">kubectl get deployment</span><br><span class="line"><span class="comment"># 查看deployment和servers</span></span><br><span class="line">kubectl get deployment,services</span><br><span class="line"><span class="comment"># 查看pod详情</span></span><br><span class="line">kubectl describe pods test-pod --namespace=default</span><br><span class="line"><span class="comment"># 查看pod日志</span></span><br><span class="line">kubectl logs -f --<span class="built_in">tail</span> 100 test-pod</span><br><span class="line"><span class="comment"># 查看pod环境变量</span></span><br><span class="line">kubectl <span class="built_in">exec</span> test-pod -- <span class="built_in">printenv</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 集群核心组件运行情况</span></span><br><span class="line">kubectl cluster-info</span><br><span class="line"><span class="comment"># 命名空间</span></span><br><span class="line">kubectl get namespaces</span><br><span class="line"><span class="comment"># 版本</span></span><br><span class="line">kubectl version</span><br><span class="line"><span class="comment"># api</span></span><br><span class="line">kubectl api-versions</span><br><span class="line"><span class="comment"># 查看事件</span></span><br><span class="line">kubectl get events</span><br><span class="line"><span class="comment"># 获取全部节点</span></span><br><span class="line">kubectl get nodes</span><br></pre></td></tr></table></figure>
-
-<h2 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建资源</span></span><br><span class="line">kubectl create -f ./nginx.yaml</span><br><span class="line"><span class="comment"># 创建当前目录下的所有yaml资源</span></span><br><span class="line">kubectl create -f ./</span><br><span class="line"><span class="comment"># 使用多个文件创建资源</span></span><br><span class="line">kubectl create -f ./nginx1.yaml -f ./mysql2.yaml</span><br><span class="line"><span class="comment"># 使用目录下的所有文件夹的yaml来创建资源</span></span><br><span class="line">kubectl create -f ./dir</span><br><span class="line"><span class="comment"># 使用 url 来创建资源</span></span><br><span class="line">kubectl create -f https://xxxx/xxx</span><br><span class="line"><span class="comment"># 获取api文档</span></span><br><span class="line">kubectl explain pods</span><br><span class="line">kubectl explain service</span><br></pre></td></tr></table></figure>
-
-<h2 id="伸缩"><a href="#伸缩" class="headerlink" title="伸缩"></a>伸缩</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 自动伸缩</span></span><br><span class="line">kubectl autoscale deployment test-dp --min=2 --max=5</span><br><span class="line"><span class="comment"># 修改副本数</span></span><br><span class="line">kubectl scale --replicas=3 deployment/test-dp</span><br><span class="line"><span class="comment"># 变更多个控制器的数量</span></span><br><span class="line">kubectl scale --replicas=5 rc/foo rc/bar rc/baz</span><br></pre></td></tr></table></figure>
-
-<h2 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 根据yaml删除</span></span><br><span class="line">kubectl delete -f ./pod.yaml</span><br><span class="line"><span class="comment"># 根据名称删除，强制删除</span></span><br><span class="line">kubectl delete pods test-pod --force</span><br></pre></td></tr></table></figure>
-
-<h2 id="交互"><a href="#交互" class="headerlink" title="交互"></a>交互</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 交互式 shell 的方式运行 pod</span></span><br><span class="line">kubectl run -it busybox --image=busybox -- sh</span><br><span class="line">kubectl run -it busybox --image=busybox:1.28 --namespace=dubhe-uat -- sh</span><br><span class="line">kubectl <span class="built_in">exec</span> -it busybox --namespace=dubhe-uat -- sh</span><br><span class="line"><span class="comment"># 在已存在的pod单容器中执行命令</span></span><br><span class="line">kubectl <span class="built_in">exec</span> nginx-pod -- <span class="built_in">ls</span> /</span><br><span class="line"><span class="comment"># 在已存在的pod中的容器执行命令</span></span><br><span class="line">kubectl <span class="built_in">exec</span> nginx-pod -c my-container -- <span class="built_in">ls</span> /</span><br><span class="line"><span class="comment">## 端口转发，本地监听5000</span></span><br><span class="line">kubectl port-forward test-pod 5000:80  </span><br></pre></td></tr></table></figure>
-
-<h2 id="复制文件"><a href="#复制文件" class="headerlink" title="复制文件"></a>复制文件</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl <span class="built_in">cp</span> /tmp/foo_dir my-pod:/tmp/bar_dir            <span class="comment"># 将 /tmp/foo_dir 本地目录复制到远程当前命名空间中 Pod 中的 /tmp/bar_dir</span></span><br><span class="line">kubectl <span class="built_in">cp</span> /tmp/foo my-pod:/tmp/bar -c my-container    <span class="comment"># 将 /tmp/foo 本地文件复制到远程 Pod 中特定容器的 /tmp/bar 下</span></span><br><span class="line">kubectl <span class="built_in">cp</span> /tmp/foo my-namespace/my-pod:/tmp/bar       <span class="comment"># 将 /tmp/foo 本地文件复制到远程 “my-namespace” 命名空间内指定 Pod 中的 /tmp/bar</span></span><br><span class="line">kubectl <span class="built_in">cp</span> my-namespace/my-pod:/tmp/foo /tmp/bar       <span class="comment"># 将 /tmp/foo 从远程 Pod 复制到本地 /tmp/bar</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="调度配置"><a href="#调度配置" class="headerlink" title="调度配置"></a>调度配置</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 标记my-node不可调度</span></span><br><span class="line">kubectl cordon k8s-node</span><br><span class="line"><span class="comment"># 驱逐my-node上的pod以待维护</span></span><br><span class="line">kubectl drain k8s-node</span><br><span class="line"><span class="comment"># 标记my-node可调度</span></span><br><span class="line">kubectl uncordon k8s-node</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="DEBUG"><a href="#DEBUG" class="headerlink" title="DEBUG"></a>DEBUG</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">kubectl run -it debug-pod --image=bluexiii/ubuntu:22.04 --image-pull-policy=<span class="string">&#x27;Always&#x27;</span> -n dubhe-dev  -- bash</span><br><span class="line">kubectl run -it chart-update --image=bluexiii/chart-update:latest --image-pull-policy=<span class="string">&#x27;Always&#x27;</span> -n dubhe-dev  -- bash</span><br><span class="line"></span><br><span class="line">kubectl <span class="built_in">exec</span> -it chart-update --namespace=dubhe-dev -- bash</span><br><span class="line">kubectl delete pod chart-update --namespace=dubhe-dev --force</span><br></pre></td></tr></table></figure>
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202305/Rancher%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" rel="prev" title="Rancher离线部署">
-                  <i class="fa fa-angle-left"></i> Rancher离线部署
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202306/K8S%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE/" rel="next" title="K8S常用配置">
-                  K8S常用配置 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="配置自动补全">配置自动补全</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># bash</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> completion bash)</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # 在 bash 中设置当前 shell 的自动补全，要先安装 bash-completion 包。</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "source &#x3C;(kubectl completion bash)"</span><span style="color:#D73A49;--shiki-dark:#F97583"> >></span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ~/.bashrc</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # 在你的 bash shell 中永久地添加自动补全</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># zsh</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">source</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> &#x3C;(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> completion zsh)</span><span style="color:#6A737D;--shiki-dark:#6A737D">  # 在 zsh 中设置当前 shell 的自动补全</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '[[ $commands[kubectl] ]] &#x26;&#x26; source &#x3C;(kubectl completion zsh)'</span><span style="color:#D73A49;--shiki-dark:#F97583"> >></span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ~/.zshrc</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # 在你的 zsh shell 中永久地添加自动补全</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># alias</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">alias</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> k</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">kubectl</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">complete</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> default</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -F</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> __start_kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> k</span></span></code></pre>
+<h2 id="docker转kubectl操作">docker转kubectl操作</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 测试容器</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-postfix</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --restart=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Never'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> postfix:1.1</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --command</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sleep</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> infinity</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-postfix</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bash</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> delete</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pod</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-postfix</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --force</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># run</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -d</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --restart=always</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -e</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> DOMAIN=cluster</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --name</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 80:80</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=nginx</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --port=80</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --env=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"DOMAIN=cluster"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># exec</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cat</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/hostname</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cat</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/hostname</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># exec shell</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bin/sh</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /bin/sh</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># log</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> logs</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --tail</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 100</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> logs</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --tail</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 100</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># delete</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> stop</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;&#x26; </span><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> delete</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pod</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-app</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --force</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 复杂run</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -itd</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --name</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> redis</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-p </span><span style="color:#032F62;--shiki-dark:#9ECBFF">6379:6379</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-v </span><span style="color:#032F62;--shiki-dark:#9ECBFF">/tmp/data:/data</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">--env </span><span style="color:#032F62;--shiki-dark:#9ECBFF">foo=bar</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">redis:5.0.14-alpine </span><span style="color:#005CC5;--shiki-dark:#79B8FF">--requirepass</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "123456"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-redis</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">--image=redis:5.0.14-alpine </span><span style="color:#005CC5;--shiki-dark:#79B8FF">\</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">--restart=Never </span><span style="color:#005CC5;--shiki-dark:#79B8FF">\</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">--port=6379 </span><span style="color:#005CC5;--shiki-dark:#79B8FF">\</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">--env=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"foo=bar"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">-- </span><span style="color:#005CC5;--shiki-dark:#79B8FF">--requirepass</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "123456"</span></span></code></pre>
+<h2 id="运行">运行</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 命令行</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> myterminal</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=busybox:1.28</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --restart=Never</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bash</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 生成pod</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-pod</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=nginx</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --restart=Never</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # Always/OnFailure/Never</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建Job</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> job</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-job</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=busybox:1.28</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Hello World"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> </span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建Cronjob</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cronjob</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-cron</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=busybox:1.28</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --schedule=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"*/1 * * * *"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Hello World"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">   </span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 生成deploy</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> deployment</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-dp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=nginx</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --replicas=2</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 生成svc</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> expose</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> deployment</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-dp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --type=ClusterIP</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --port=80</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --target-port=8000</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --name=test-svc</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> delete</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> svc</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-svc</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 生成名称空间</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ns</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-ns</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 生成configmap</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> configmap</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-cm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --from-literal=key1=value1</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --from-literal=key2=value2</span></span></code></pre>
+<h2 id="查看">查看</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看所有namespace的pod</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> get</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pods</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -A</span><span style="color:#6A737D;--shiki-dark:#6A737D">  # 或--all-namespaces</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> get</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pods</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-pod</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> wide</span><span style="color:#6A737D;--shiki-dark:#6A737D">  # 展示更多列</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 获取所有deployment</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> get</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> deployment</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看deployment和servers</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> get</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> deployment,services</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看pod详情</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> describe</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pods</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-pod</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --namespace=default</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看pod日志</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> logs</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --tail</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 100</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-pod</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看pod环境变量</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-pod</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> printenv</span></span></code></pre>
+<h2 id="集群">集群</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 集群核心组件运行情况</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cluster-info</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 命名空间</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> get</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> namespaces</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 版本</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> version</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># api</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> api-versions</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看事件</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> get</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> events</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 获取全部节点</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> get</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nodes</span></span></code></pre>
+<h2 id="创建">创建</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建资源</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./nginx.yaml</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建当前目录下的所有yaml资源</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 使用多个文件创建资源</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./nginx1.yaml</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./mysql2.yaml</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 使用目录下的所有文件夹的yaml来创建资源</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./dir</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 使用 url 来创建资源</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://xxxx/xxx</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 获取api文档</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> explain</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pods</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> explain</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> service</span></span></code></pre>
+<h2 id="伸缩">伸缩</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 自动伸缩</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> autoscale</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> deployment</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-dp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --min=2</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --max=5</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 修改副本数</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scale</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --replicas=3</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> deployment/test-dp</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 变更多个控制器的数量</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scale</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --replicas=5</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rc/foo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rc/bar</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rc/baz</span></span></code></pre>
+<h2 id="删除">删除</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 根据yaml删除</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> delete</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./pod.yaml</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 根据名称删除，强制删除</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> delete</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pods</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-pod</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --force</span></span></code></pre>
+<h2 id="交互">交互</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 交互式 shell 的方式运行 pod</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> busybox</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=busybox</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sh</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> busybox</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=busybox:1.28</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --namespace=dubhe-uat</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sh</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> busybox</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --namespace=dubhe-uat</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sh</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 在已存在的pod单容器中执行命令</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-pod</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ls</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 在已存在的pod中的容器执行命令</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-pod</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -c</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> my-container</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ls</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">## 端口转发，本地监听5000</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> port-forward</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> test-pod</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 5000:80</span><span style="color:#24292E;--shiki-dark:#E1E4E8">  </span></span></code></pre>
+<h2 id="复制文件">复制文件</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cp</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /tmp/foo_dir</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> my-pod:/tmp/bar_dir</span><span style="color:#6A737D;--shiki-dark:#6A737D">            # 将 /tmp/foo_dir 本地目录复制到远程当前命名空间中 Pod 中的 /tmp/bar_dir</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cp</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /tmp/foo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> my-pod:/tmp/bar</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -c</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> my-container</span><span style="color:#6A737D;--shiki-dark:#6A737D">    # 将 /tmp/foo 本地文件复制到远程 Pod 中特定容器的 /tmp/bar 下</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cp</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /tmp/foo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> my-namespace/my-pod:/tmp/bar</span><span style="color:#6A737D;--shiki-dark:#6A737D">       # 将 /tmp/foo 本地文件复制到远程 “my-namespace” 命名空间内指定 Pod 中的 /tmp/bar</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cp</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> my-namespace/my-pod:/tmp/foo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /tmp/bar</span><span style="color:#6A737D;--shiki-dark:#6A737D">       # 将 /tmp/foo 从远程 Pod 复制到本地 /tmp/bar</span></span></code></pre>
+<h2 id="调度配置">调度配置</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 标记my-node不可调度</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cordon</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> k8s-node</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 驱逐my-node上的pod以待维护</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> drain</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> k8s-node</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 标记my-node可调度</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> uncordon</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> k8s-node</span></span>
+<span class="line"></span></code></pre>
+<h2 id="debug">DEBUG</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> debug-pod</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=bluexiii/ubuntu:22.04</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image-pull-policy=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Always'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -n</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> dubhe-dev</span><span style="color:#005CC5;--shiki-dark:#79B8FF">  --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bash</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> chart-update</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image=bluexiii/chart-update:latest</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --image-pull-policy=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Always'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -n</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> dubhe-dev</span><span style="color:#005CC5;--shiki-dark:#79B8FF">  --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bash</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> exec</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> chart-update</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --namespace=dubhe-dev</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bash</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> delete</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pod</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> chart-update</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --namespace=dubhe-dev</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --force</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#参考">参考</a></li><li class="depth-2"><a href="#配置自动补全">配置自动补全</a></li><li class="depth-2"><a href="#docker转kubectl操作">docker转kubectl操作</a></li><li class="depth-2"><a href="#运行">运行</a></li><li class="depth-2"><a href="#查看">查看</a></li><li class="depth-2"><a href="#集群">集群</a></li><li class="depth-2"><a href="#创建">创建</a></li><li class="depth-2"><a href="#伸缩">伸缩</a></li><li class="depth-2"><a href="#删除">删除</a></li><li class="depth-2"><a href="#交互">交互</a></li><li class="depth-2"><a href="#复制文件">复制文件</a></li><li class="depth-2"><a href="#调度配置">调度配置</a></li><li class="depth-2"><a href="#debug">DEBUG</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

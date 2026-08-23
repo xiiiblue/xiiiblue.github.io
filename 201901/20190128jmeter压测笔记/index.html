@@ -1,382 +1,76 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="官网下载http:&#x2F;&#x2F;jmeter.apache.org&#x2F;download_jmeter.cgi 配置修改 停止防火墙服务器部署时，可临时停止防火墙  1systemctl stop firewalld.service    编辑bin&#x2F;jmeter，新增HEAP参数如压测文件较大，例如报文中包含BASE64图片或视频，则需调大HEAP参数vi jmeter  1HEAP&#x3D;&quot;-">
-<meta property="og:type" content="article">
-<meta property="og:title" content="jmeter压测笔记">
-<meta property="og:url" content="https://www.bluexiii.com/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="官网下载http:&#x2F;&#x2F;jmeter.apache.org&#x2F;download_jmeter.cgi 配置修改 停止防火墙服务器部署时，可临时停止防火墙  1systemctl stop firewalld.service    编辑bin&#x2F;jmeter，新增HEAP参数如压测文件较大，例如报文中包含BASE64图片或视频，则需调大HEAP参数vi jmeter  1HEAP&#x3D;&quot;-">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2019-01-27T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-01-27T16:00:00.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/","path":"201901/20190128jmeter压测笔记/","title":"jmeter压测笔记"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>jmeter压测笔记 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%98%E7%BD%91%E4%B8%8B%E8%BD%BD"><span class="nav-number">1.</span> <span class="nav-text">官网下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E4%BF%AE%E6%94%B9"><span class="nav-number">2.</span> <span class="nav-text">配置修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E6%9C%BA%E6%B5%8B%E8%AF%95"><span class="nav-number">3.</span> <span class="nav-text">单机测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%B5%8B%E8%AF%95"><span class="nav-number">4.</span> <span class="nav-text">分布式测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E5%90%AFX11"><span class="nav-number">4.1.</span> <span class="nav-text">开启X11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Master%E4%BF%AE%E6%94%B9"><span class="nav-number">4.2.</span> <span class="nav-text">Master修改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Slave%E4%BF%AE%E6%94%B9"><span class="nav-number">4.3.</span> <span class="nav-text">Slave修改</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">5.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="jmeter压测笔记 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          jmeter压测笔记
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2019-01-28 00:00:00" itemprop="dateCreated datePublished" datetime="2019-01-28T00:00:00+08:00">2019-01-28</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="官网下载"><a href="#官网下载" class="headerlink" title="官网下载"></a>官网下载</h2><p><a target="_blank" rel="noopener" href="http://jmeter.apache.org/download_jmeter.cgi">http://jmeter.apache.org/download_jmeter.cgi</a></p>
-<h2 id="配置修改"><a href="#配置修改" class="headerlink" title="配置修改"></a>配置修改</h2><ol>
-<li>停止防火墙<br>服务器部署时，可临时停止防火墙</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop firewalld.service </span><br></pre></td></tr></table></figure>
-
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="官网下载 http://jmeter.apache.org/download jmeter.cgi 配置修改 1. 停止防火墙 服务器部署时，可临时停止防火墙 1. 编辑bin/jmeter，新增HEAP参数 如压测文件较大，例如报文中包含BASE64图片或视频，则需调大HEAP参数 vi jmeter 单机…"><link rel="canonical" href="https://www.bluexiii.com/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="jmeter压测笔记｜BlueXIII's Blog"><meta property="og:description" content="官网下载 http://jmeter.apache.org/download jmeter.cgi 配置修改 1. 停止防火墙 服务器部署时，可临时停止防火墙 1. 编辑bin/jmeter，新增HEAP参数 如压测文件较大，例如报文中包含BASE64图片或视频，则需调大HEAP参数 vi jmeter 单机…"><meta property="og:url" content="https://www.bluexiii.com/201901/20190128jmeter%E5%8E%8B%E6%B5%8B%E7%AC%94%E8%AE%B0/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>jmeter压测笔记｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>jmeter压测笔记</h1><div class="article-meta"><time datetime="2019-01-27T16:00:00.000Z">发布于2019-01-28</time></div><div class="badges"><a class="badge" href="/tags/%E6%B5%8B%E8%AF%95/">测试</a></div></header><div class="prose"><h2 id="官网下载">官网下载</h2>
+<p><a href="http://jmeter.apache.org/download_jmeter.cgi">http://jmeter.apache.org/download_jmeter.cgi</a></p>
+<h2 id="配置修改">配置修改</h2>
 <ol>
-<li>编辑bin&#x2F;jmeter，新增HEAP参数<br>如压测文件较大，例如报文中包含BASE64图片或视频，则需调大HEAP参数<br>vi jmeter</li>
+<li>停止防火墙
+服务器部署时，可临时停止防火墙</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HEAP=&quot;-Xms4096m -Xmx4096m&quot;</span><br></pre></td></tr></table></figure>
-
-<h2 id="单机测试"><a href="#单机测试" class="headerlink" title="单机测试"></a>单机测试</h2><p>图形模式仅用来配置.jmx文件，正式压测时需要在服务器中使用命令行方式启动</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">../bin/jmeter.sh -n -t test.jmx -l result.jtl</span><br></pre></td></tr></table></figure>
-
-<h2 id="分布式测试"><a href="#分布式测试" class="headerlink" title="分布式测试"></a>分布式测试</h2><h3 id="开启X11"><a href="#开启X11" class="headerlink" title="开启X11"></a>开启X11</h3><p>Master需要和Slave在同一网段下，如果条件受限，则需要将Master部署在服务器中，并开启X11转发</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>systemctl stop firewalld.service </span></span></code></pre>
+<ol>
+<li>编辑bin/jmeter，新增HEAP参数
+如压测文件较大，例如报文中包含BASE64图片或视频，则需调大HEAP参数
+vi jmeter</li>
+</ol>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>HEAP="-Xms4096m -Xmx4096m"</span></span></code></pre>
+<h2 id="单机测试">单机测试</h2>
+<p>图形模式仅用来配置.jmx文件，正式压测时需要在服务器中使用命令行方式启动</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>../bin/jmeter.sh -n -t test.jmx -l result.jtl</span></span></code></pre>
+<h2 id="分布式测试">分布式测试</h2>
+<h3 id="开启x11">开启X11</h3>
+<p>Master需要和Slave在同一网段下，如果条件受限，则需要将Master部署在服务器中，并开启X11转发</p>
 <ol>
 <li>安装依赖</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y xorg-x11-server-Xorg xorg-x11-xauth xorg-x11-apps</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>yum install -y xorg-x11-server-Xorg xorg-x11-xauth xorg-x11-apps</span></span></code></pre>
 <ol start="2">
 <li>sshd_config</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep -i X11Forwarding /etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>grep -i X11Forwarding /etc/ssh/sshd_config</span></span></code></pre>
 <p>保证值为YES</p>
 <ol start="3">
 <li>SSH登录并测试</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh -Y user@host  # -Y参数开启信任的X11转发</span><br><span class="line">xclock #测试X11转发是否成功</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>ssh -Y user@host  # -Y参数开启信任的X11转发</span></span>
+<span class="line"><span>xclock #测试X11转发是否成功</span></span></code></pre>
 <ol start="4">
 <li>解决英文X11方块字乱码</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install fontforge</span><br></pre></td></tr></table></figure>
-
-<h3 id="Master修改"><a href="#Master修改" class="headerlink" title="Master修改"></a>Master修改</h3><ol>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>yum -y install fontforge</span></span></code></pre>
+<h3 id="master修改">Master修改</h3>
+<ol>
 <li>vi jmeter.properties</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">remote_hosts=172.20.100.127:1099,172.20.100.128:1099,172.20.100.129:1099,172.20.100.130:1099,172.20.100.131:1099</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>remote_hosts=172.20.100.127:1099,172.20.100.128:1099,172.20.100.129:1099,172.20.100.130:1099,172.20.100.131:1099</span></span></code></pre>
 <ol start="2">
 <li>启动GUI</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./jmeter.sh</span><br></pre></td></tr></table></figure>
-
-<h3 id="Slave修改"><a href="#Slave修改" class="headerlink" title="Slave修改"></a>Slave修改</h3><ol>
-<li>修改bin&#x2F;jmeter.properties<br>vi jmeter.properties</li>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>./jmeter.sh</span></span></code></pre>
+<h3 id="slave修改">Slave修改</h3>
+<ol>
+<li>修改bin/jmeter.properties
+vi jmeter.properties</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">server_port=1099</span><br><span class="line">server.rmi.ssl.disable=true 　　  </span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>server_port=1099</span></span>
+<span class="line"><span>server.rmi.ssl.disable=true 　　  </span></span></code></pre>
 <ol start="2">
-<li>启动bin&#x2F;jmeter-server</li>
+<li>启动bin/jmeter-server</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export RMI_HOST_DEF=-Djava.rmi.server.hostname=172.20.100.130 #本机IP</span><br><span class="line">./jmeter-server</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://rtfmp.com/2015/10/08/how-configure-x11-forwarding-in-rhel7-centos7/">https://rtfmp.com/2015/10/08/how-configure-x11-forwarding-in-rhel7-centos7/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.bbsmax.com/A/6pdD4xNGdw/">https://www.bbsmax.com/A/6pdD4xNGdw/</a></li>
-<li><a target="_blank" rel="noopener" href="http://jmeter.apache.org/usermanual/remote-test.html#setup_ssl">http://jmeter.apache.org/usermanual/remote-test.html#setup_ssl</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/jzhg/p/9099118.html">https://www.cnblogs.com/jzhg/p/9099118.html</a></li>
-</ul>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201901/20190128nmon%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/" rel="prev" title="nmon常用操作">
-                  <i class="fa fa-angle-left"></i> nmon常用操作
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201901/20190128iostat%E4%BD%BF%E7%94%A8%E7%AC%94%E8%AE%B0/" rel="next" title="iostat使用笔记">
-                  iostat使用笔记 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>export RMI_HOST_DEF=-Djava.rmi.server.hostname=172.20.100.130 #本机IP</span></span>
+<span class="line"><span>./jmeter-server</span></span></code></pre>
+<h2 id="参考文档">参考文档</h2>
+<ul>
+<li><a href="https://rtfmp.com/2015/10/08/how-configure-x11-forwarding-in-rhel7-centos7/">https://rtfmp.com/2015/10/08/how-configure-x11-forwarding-in-rhel7-centos7/</a></li>
+<li><a href="https://www.bbsmax.com/A/6pdD4xNGdw/">https://www.bbsmax.com/A/6pdD4xNGdw/</a></li>
+<li><a href="http://jmeter.apache.org/usermanual/remote-test.html#setup_ssl">http://jmeter.apache.org/usermanual/remote-test.html#setup_ssl</a></li>
+<li><a href="https://www.cnblogs.com/jzhg/p/9099118.html">https://www.cnblogs.com/jzhg/p/9099118.html</a></li>
+</ul></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#官网下载">官网下载</a></li><li class="depth-2"><a href="#配置修改">配置修改</a></li><li class="depth-2"><a href="#单机测试">单机测试</a></li><li class="depth-2"><a href="#分布式测试">分布式测试</a></li><li class="depth-3"><a href="#开启x11">开启X11</a></li><li class="depth-3"><a href="#master修改">Master修改</a></li><li class="depth-3"><a href="#slave修改">Slave修改</a></li><li class="depth-2"><a href="#参考文档">参考文档</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

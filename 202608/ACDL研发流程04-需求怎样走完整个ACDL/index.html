@@ -1,283 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="ACDL研发流程系列第4篇，共15篇。 上一篇：ACDL研发流程03：像维护代码一样建设文档 下一篇：ACDL研发流程05：决定为什么要改变产品  多项工作同时发生时，需要共同的事实入口当需求、实现缺陷、环境问题和评审发现同时存在，或者多个Agent并行工作时，Director面对的已经不是“怎样让Agent写完一个功能”这一个问题。此时，任何参与者都需要知道当前依据是什么、哪项工作正在改变什么">
-<meta property="og:type" content="article">
-<meta property="og:title" content="ACDL研发流程04：需求怎样走完整个ACDL">
-<meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B04-%E9%9C%80%E6%B1%82%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C%E6%95%B4%E4%B8%AAACDL/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="ACDL研发流程系列第4篇，共15篇。 上一篇：ACDL研发流程03：像维护代码一样建设文档 下一篇：ACDL研发流程05：决定为什么要改变产品  多项工作同时发生时，需要共同的事实入口当需求、实现缺陷、环境问题和评审发现同时存在，或者多个Agent并行工作时，Director面对的已经不是“怎样让Agent写完一个功能”这一个问题。此时，任何参与者都需要知道当前依据是什么、哪项工作正在改变什么">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:modified_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B04-%E9%9C%80%E6%B1%82%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C%E6%95%B4%E4%B8%AAACDL/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B04-%E9%9C%80%E6%B1%82%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C%E6%95%B4%E4%B8%AAACDL/","path":"202608/ACDL研发流程04-需求怎样走完整个ACDL/","title":"ACDL研发流程04：需求怎样走完整个ACDL"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>ACDL研发流程04：需求怎样走完整个ACDL | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E9%A1%B9%E5%B7%A5%E4%BD%9C%E5%90%8C%E6%97%B6%E5%8F%91%E7%94%9F%E6%97%B6%EF%BC%8C%E9%9C%80%E8%A6%81%E5%85%B1%E5%90%8C%E7%9A%84%E4%BA%8B%E5%AE%9E%E5%85%A5%E5%8F%A3"><span class="nav-number">1.</span> <span class="nav-text">多项工作同时发生时，需要共同的事实入口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E8%AE%A4%E8%AF%86REQ-Requirement-%E3%80%81ISSUE%E5%92%8C%E4%B8%89%E7%A7%8DLoop"><span class="nav-number">2.</span> <span class="nav-text">先认识REQ(Requirement)、ISSUE和三种Loop</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#REQ-Requirement-%E8%AE%B0%E5%BD%95%E4%B8%80%E9%A1%B9%E9%9C%80%E6%B1%82"><span class="nav-number">2.1.</span> <span class="nav-text">REQ(Requirement)记录一项需求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ISSUE%E8%AE%B0%E5%BD%95%E4%B8%80%E4%B8%AA%E5%BE%85%E5%A4%84%E7%90%86%E9%97%AE%E9%A2%98"><span class="nav-number">2.2.</span> <span class="nav-text">ISSUE记录一个待处理问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ACL-Agentic-Coding-Loop-%E3%80%81DFL-Developer-Feedback-Loop-%E5%92%8CERL-Engineering-Review-Loop-%E6%98%AF%E4%B8%89%E7%A7%8DLoop"><span class="nav-number">2.3.</span> <span class="nav-text">ACL(Agentic Coding Loop)、DFL(Developer Feedback Loop)和ERL(Engineering Review Loop)是三种Loop</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E7%9C%8B%E5%AE%8C%E6%95%B4%E8%B7%AF%E7%BA%BF"><span class="nav-number">3.</span> <span class="nav-text">先看完整路线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E9%98%B6%E6%AE%B5%EF%BC%9A%E9%9C%80%E6%B1%82%E7%AE%A1%E7%90%86%EF%BC%8C%E5%85%88%E5%86%B3%E5%AE%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%94%B9"><span class="nav-number">4.</span> <span class="nav-text">第一阶段：需求管理，先决定为什么要改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E9%98%B6%E6%AE%B5%EF%BC%9A%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%EF%BC%8C%E6%89%BE%E5%88%B0%E8%B4%9F%E8%B4%A3%E5%BD%93%E5%89%8D%E7%AD%94%E6%A1%88%E7%9A%84%E6%96%87%E6%A1%A3"><span class="nav-number">5.</span> <span class="nav-text">第二阶段：产品与架构设计，找到负责当前答案的文档</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E%E5%BD%93%E5%89%8D%E9%A1%B9%E7%9B%AE%E6%95%B4%E4%BD%93%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">5.1.</span> <span class="nav-text">系统设计说明当前项目整体是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%BD%E5%8A%9B%E8%AE%BE%E8%AE%A1%E6%8A%8A%E7%94%A8%E6%88%B7%E8%A1%8C%E4%B8%BA%E5%92%8C%E5%AE%9E%E7%8E%B0%E8%BE%B9%E7%95%8C%E6%94%BE%E5%9C%A8%E4%B8%80%E8%B5%B7"><span class="nav-number">5.2.</span> <span class="nav-text">能力设计把用户行为和实现边界放在一起</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%AA%E5%88%87%E8%AE%BE%E8%AE%A1%E4%BF%9D%E5%AD%98%E5%A4%9A%E4%B8%AA%E8%83%BD%E5%8A%9B%E5%85%B1%E5%90%8C%E9%81%B5%E5%AE%88%E7%9A%84%E8%A7%84%E5%88%99"><span class="nav-number">5.3.</span> <span class="nav-text">横切设计保存多个能力共同遵守的规则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8E%E8%AE%BE%E8%AE%A1%E8%BF%9B%E5%85%A5%E5%AE%9E%E6%96%BD%EF%BC%9A%E7%A1%AE%E5%AE%9A%E7%9B%AE%E6%A0%87%E7%89%88%E6%9C%AC"><span class="nav-number">6.</span> <span class="nav-text">从设计进入实施：确定目标版本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E9%98%B6%E6%AE%B5%EF%BC%9A%E5%AE%9E%E6%96%BD%EF%BC%8C%E6%8C%89%E5%BD%93%E5%89%8D%E7%9B%AE%E7%9A%84%E9%80%89%E6%8B%A9%E4%B8%80%E7%A7%8DLoop"><span class="nav-number">7.</span> <span class="nav-text">第三阶段：实施，按当前目的选择一种Loop</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ACL-Agentic-Coding-Loop-%EF%BC%9A%E5%AE%9E%E6%96%BD%E5%B7%B2%E7%BB%8F%E7%A1%AE%E8%AE%A4%E7%9A%84%E6%94%B9%E5%8F%98"><span class="nav-number">7.1.</span> <span class="nav-text">ACL(Agentic Coding Loop)：实施已经确认的改变</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DFL-Developer-Feedback-Loop-%EF%BC%9A%E5%9C%A8%E7%9C%9F%E5%AE%9E%E4%BD%BF%E7%94%A8%E4%B8%AD%E5%8F%91%E7%8E%B0%E9%97%AE%E9%A2%98"><span class="nav-number">7.2.</span> <span class="nav-text">DFL(Developer Feedback Loop)：在真实使用中发现问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ERL-Engineering-Review-Loop-%EF%BC%9A%E7%8B%AC%E7%AB%8B%E6%A3%80%E6%9F%A5%E5%9B%BA%E5%AE%9A%E7%9A%84%E6%8F%90%E4%BA%A4%E3%80%81%E5%B7%AE%E5%BC%82%E6%88%96%E7%89%88%E6%9C%AC"><span class="nav-number">7.3.</span> <span class="nav-text">ERL(Engineering Review Loop)：独立检查固定的提交、差异或版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%89%E7%A7%8DLoop%E5%90%84%E8%87%AA%E7%BB%93%E6%9D%9F%EF%BC%8C%E5%8F%91%E7%8E%B0%E7%9A%84%E9%97%AE%E9%A2%98%E5%8F%A6%E8%A1%8C%E5%A4%84%E7%90%86"><span class="nav-number">7.4.</span> <span class="nav-text">三种Loop各自结束，发现的问题另行处理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E9%98%B6%E6%AE%B5%EF%BC%9A%E7%89%88%E6%9C%AC%E9%AA%8C%E6%94%B6%E4%B8%8E%E5%86%BB%E7%BB%93%EF%BC%8C%E5%8F%AA%E7%BA%B3%E5%85%A5%E5%B7%B2%E7%BB%8F%E7%A1%AE%E8%AE%A4%E7%9A%84%E7%BB%93%E6%9E%9C"><span class="nav-number">8.</span> <span class="nav-text">第四阶段：版本验收与冻结，只纳入已经确认的结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4ACDL-Agent-Collaborative-Development-Lifecycle-%E4%B8%8D%E7%AD%89%E4%BA%8E%E6%89%80%E6%9C%89%E5%B7%A5%E4%BD%9C%E9%83%BD%E8%B5%B0%E5%85%A8%E5%A5%97"><span class="nav-number">9.</span> <span class="nav-text">完整ACDL(Agent Collaborative Development Lifecycle)不等于所有工作都走全套</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B04-%E9%9C%80%E6%B1%82%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C%E6%95%B4%E4%B8%AAACDL/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="ACDL研发流程04：需求怎样走完整个ACDL | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          ACDL研发流程04：需求怎样走完整个ACDL
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<blockquote>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="ACDL研发流程系列第4篇，共15篇。 上一篇：ACDL研发流程03：像维护代码一样建设文档 下一篇：ACDL研发流程05：决定为什么要改变产品 多项工作同时发生时，需要共同的事实入口 当需求、实现缺陷、环境问题和评审发现同时存在，或者多个Agent并行工作时，Director面对的已经不是“怎样让Agent…"><link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B04-%E9%9C%80%E6%B1%82%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C%E6%95%B4%E4%B8%AAACDL/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="ACDL研发流程04：需求怎样走完整个ACDL｜BlueXIII's Blog"><meta property="og:description" content="ACDL研发流程系列第4篇，共15篇。 上一篇：ACDL研发流程03：像维护代码一样建设文档 下一篇：ACDL研发流程05：决定为什么要改变产品 多项工作同时发生时，需要共同的事实入口 当需求、实现缺陷、环境问题和评审发现同时存在，或者多个Agent并行工作时，Director面对的已经不是“怎样让Agent…"><meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B04-%E9%9C%80%E6%B1%82%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C%E6%95%B4%E4%B8%AAACDL/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>ACDL研发流程04：需求怎样走完整个ACDL｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>ACDL研发流程04：需求怎样走完整个ACDL</h1><div class="article-meta"><time datetime="2026-08-17T08:53:44.000Z">发布于2026-08-17</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ACDL/">ACDL</a><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B/">研发流程</a></div></header><div class="prose"><blockquote>
 <p>ACDL研发流程系列第4篇，共15篇。</p>
 <p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B03-%E5%83%8F%E7%BB%B4%E6%8A%A4%E4%BB%A3%E7%A0%81%E4%B8%80%E6%A0%B7%E5%BB%BA%E8%AE%BE%E6%96%87%E6%A1%A3/">ACDL研发流程03：像维护代码一样建设文档</a></p>
 <p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B05-%E5%86%B3%E5%AE%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%94%B9%E5%8F%98%E4%BA%A7%E5%93%81/">ACDL研发流程05：决定为什么要改变产品</a></p>
 </blockquote>
-<h2 id="多项工作同时发生时，需要共同的事实入口"><a href="#多项工作同时发生时，需要共同的事实入口" class="headerlink" title="多项工作同时发生时，需要共同的事实入口"></a>多项工作同时发生时，需要共同的事实入口</h2><p>当需求、实现缺陷、环境问题和评审发现同时存在，或者多个Agent并行工作时，Director面对的已经不是“怎样让Agent写完一个功能”这一个问题。此时，任何参与者都需要知道当前依据是什么、哪项工作正在改变什么，以及结果最终进入了哪里。</p>
+<h2 id="多项工作同时发生时需要共同的事实入口">多项工作同时发生时，需要共同的事实入口</h2>
+<p>当需求、实现缺陷、环境问题和评审发现同时存在，或者多个Agent并行工作时，Director面对的已经不是“怎样让Agent写完一个功能”这一个问题。此时，任何参与者都需要知道当前依据是什么、哪项工作正在改变什么，以及结果最终进入了哪里。</p>
 <p>每个任务单独看都可能很小，组合起来却容易出现更大的问题：一项修改使用了过期设计，两个并行任务改变了同一个接口或数据规则，已经部署的代码没有经过真实使用，或者一个看似完成的版本仍然遗留阻断问题。</p>
 <p>完整ACDL要解决的，是一项需求如何在这样的项目中保持方向、留下证据，并最终成为Director可以确认并负责的交付结果。是否需要完整流程取决于工作能否在一次短任务中可靠结束、风险大小和是否准备正式交付，不由代码行数机械决定。</p>
 <p>本章继续使用“收藏会话”这个虚构例子。它只用于讲解流程，不是当前项目的实际开发记录。</p>
-<h2 id="先认识REQ-Requirement-、ISSUE和三种Loop"><a href="#先认识REQ-Requirement-、ISSUE和三种Loop" class="headerlink" title="先认识REQ(Requirement)、ISSUE和三种Loop"></a>先认识REQ(Requirement)、ISSUE和三种Loop</h2><p>完整路线中会反复出现REQ、ISSUE、ACL、DFL和ERL。先说清它们各自保存什么，后面再看这些对象怎样连在一起。</p>
-<h3 id="REQ-Requirement-记录一项需求"><a href="#REQ-Requirement-记录一项需求" class="headerlink" title="REQ(Requirement)记录一项需求"></a>REQ(Requirement)记录一项需求</h3><p>REQ是Requirement的缩写，中文称为“需求”。在ACDL中，它特指一项需要持续追踪的需求，记录为什么要改变产品、希望得到什么结果，以及怎样判断需求已经满足。它不提前决定数据库、接口和代码结构。</p>
-<h3 id="ISSUE记录一个待处理问题"><a href="#ISSUE记录一个待处理问题" class="headerlink" title="ISSUE记录一个待处理问题"></a>ISSUE记录一个待处理问题</h3><p>ISSUE与REQ不是同一件事。ISSUE保存一个需要跨会话处理的问题，记录问题从哪里发现、当前状态和下一步去向。它可以是实现缺陷、环境问题、尚未复核清楚的反馈，也可以是DFL或ERL中发现的问题。</p>
+<h2 id="先认识reqrequirementissue和三种loop">先认识REQ(Requirement)、ISSUE和三种Loop</h2>
+<p>完整路线中会反复出现REQ、ISSUE、ACL、DFL和ERL。先说清它们各自保存什么，后面再看这些对象怎样连在一起。</p>
+<h3 id="reqrequirement记录一项需求">REQ(Requirement)记录一项需求</h3>
+<p>REQ是Requirement的缩写，中文称为“需求”。在ACDL中，它特指一项需要持续追踪的需求，记录为什么要改变产品、希望得到什么结果，以及怎样判断需求已经满足。它不提前决定数据库、接口和代码结构。</p>
+<h3 id="issue记录一个待处理问题">ISSUE记录一个待处理问题</h3>
+<p>ISSUE与REQ不是同一件事。ISSUE保存一个需要跨会话处理的问题，记录问题从哪里发现、当前状态和下一步去向。它可以是实现缺陷、环境问题、尚未复核清楚的反馈，也可以是DFL或ERL中发现的问题。</p>
 <p>如果已经可以确认要改变产品，可以直接登记REQ；如果还需要调查是实现缺陷还是新需求，先使用ISSUE保留问题。调查清楚后，恢复已经确认行为的实现缺陷可以进入ACL，需要改变产品的问题则进入REQ和设计。</p>
-<h3 id="ACL-Agentic-Coding-Loop-、DFL-Developer-Feedback-Loop-和ERL-Engineering-Review-Loop-是三种Loop"><a href="#ACL-Agentic-Coding-Loop-、DFL-Developer-Feedback-Loop-和ERL-Engineering-Review-Loop-是三种Loop" class="headerlink" title="ACL(Agentic Coding Loop)、DFL(Developer Feedback Loop)和ERL(Engineering Review Loop)是三种Loop"></a>ACL(Agentic Coding Loop)、DFL(Developer Feedback Loop)和ERL(Engineering Review Loop)是三种Loop</h3><p>一轮Loop是一个有明确准备、执行、证据和结论的工作单元，不是指Agent在同一个Prompt里反复循环。ACDL在实施阶段使用三种Loop：</p>
-<table>
-<thead>
-<tr>
-<th>简称</th>
-<th>全称</th>
-<th>主导者</th>
-<th>主要回答的问题</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ACL</td>
-<td>Agentic Coding Loop</td>
-<td>Agent</td>
-<td>是否已经把确认的设计变成代码，并通过相应的自动化验证</td>
-</tr>
-<tr>
-<td>DFL</td>
-<td>Developer Feedback Loop</td>
-<td>负责人</td>
-<td>负责人使用固定候选完成真实任务后，这项变化是否真的好用</td>
-</tr>
-<tr>
-<td>ERL</td>
-<td>Engineering Review Loop</td>
-<td>独立Agent</td>
-<td>检查固定提交、差异或版本后，是否发现正确性、安全、数据、测试或发布风险</td>
-</tr>
-</tbody></table>
+<h3 id="aclagentic-coding-loopdfldeveloper-feedback-loop和erlengineering-review-loop是三种loop">ACL(Agentic Coding Loop)、DFL(Developer Feedback Loop)和ERL(Engineering Review Loop)是三种Loop</h3>
+<p>一轮Loop是一个有明确准备、执行、证据和结论的工作单元，不是指Agent在同一个Prompt里反复循环。ACDL在实施阶段使用三种Loop：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>简称</th><th>全称</th><th>主导者</th><th>主要回答的问题</th></tr></thead><tbody><tr><td>ACL</td><td>Agentic Coding Loop</td><td>Agent</td><td>是否已经把确认的设计变成代码，并通过相应的自动化验证</td></tr><tr><td>DFL</td><td>Developer Feedback Loop</td><td>负责人</td><td>负责人使用固定候选完成真实任务后，这项变化是否真的好用</td></tr><tr><td>ERL</td><td>Engineering Review Loop</td><td>独立Agent</td><td>检查固定提交、差异或版本后，是否发现正确性、安全、数据、测试或发布风险</td></tr></tbody></table>
 <p>“主导”表示谁负责推动这轮工作的主要过程，不表示由它独自完成，也不改变Director的决定权。Agent主导ACL中的实施和验证；负责人主导DFL中的真实使用和反馈；没有参与被评内容实施的Agent主导ERL中的独立检查。三种Loop都有自己的编号、范围、起点、记录和结束条件，都要保留实际发生的事，并由负责人确认结论。</p>
 <p>每一种Loop都可以单独启动和结束，不要求另外两种Loop在之前已经完成或之后继续开展。Loop只是ACDL组织实施、真实使用和独立评审的方式，不是ACDL的同义词。</p>
-<h2 id="先看完整路线"><a href="#先看完整路线" class="headerlink" title="先看完整路线"></a>先看完整路线</h2><p>一项需求进入正式版本时，主路线可以先简化为四个阶段：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">真实问题或新想法</span><br><span class="line">  →1.需求管理：决定要不要改变产品</span><br><span class="line">    →2.产品与架构设计：决定改成什么样</span><br><span class="line">      →确定目标版本</span><br><span class="line">        →3.实施：按当前目的单独启动ACL、DFL或ERL</span><br><span class="line">          →4.版本验收与冻结：确认实际范围并创建Git标签</span><br></pre></td></tr></table></figure>
-
+<h2 id="先看完整路线">先看完整路线</h2>
+<p>一项需求进入正式版本时，主路线可以先简化为四个阶段：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>真实问题或新想法</span></span>
+<span class="line"><span>  →1.需求管理：决定要不要改变产品</span></span>
+<span class="line"><span>    →2.产品与架构设计：决定改成什么样</span></span>
+<span class="line"><span>      →确定目标版本</span></span>
+<span class="line"><span>        →3.实施：按当前目的单独启动ACL、DFL或ERL</span></span>
+<span class="line"><span>          →4.版本验收与冻结：确认实际范围并创建Git标签</span></span></code></pre>
 <p>这条路线只是建立全局印象，不是一条只能向前的传送带。实施发现设计无法落地时，工作要回到设计；真实使用发现用户需要不同的行为时，工作要回到需求；独立评审发现实现缺陷时，则建立新的实施工作。</p>
 <p>还有三个边界需要先记住：</p>
 <ul>
@@ -285,7 +68,8 @@
 <li>路线图只在多个候选需求需要比较顺序和依赖时使用，不是每项工作都要先写一份路线图。</li>
 <li>部署可以发生在实施中、真实使用前或正式版本完成后，因此环境发布可能出现在多个阶段，不单独算成一个主阶段。</li>
 </ul>
-<h2 id="第一阶段：需求管理，先决定为什么要改"><a href="#第一阶段：需求管理，先决定为什么要改" class="headerlink" title="第一阶段：需求管理，先决定为什么要改"></a>第一阶段：需求管理，先决定为什么要改</h2><p>Director发现，员工的会话越来越多，重要内容很难再次找到。此时已经可以确认需要一项新的用户行为，因此这个例子可以直接登记REQ，不为了让流程看起来完整而先制造一个ISSUE。</p>
+<h2 id="第一阶段需求管理先决定为什么要改">第一阶段：需求管理，先决定为什么要改</h2>
+<p>Director发现，员工的会话越来越多，重要内容很难再次找到。此时已经可以确认需要一项新的用户行为，因此这个例子可以直接登记REQ，不为了让流程看起来完整而先制造一个ISSUE。</p>
 <p>需求先说清四件事：</p>
 <ul>
 <li>问题：员工难以从大量会话中快速找回重要内容；</li>
@@ -294,18 +78,25 @@
 <li>验收场景：员工收藏会话后，刷新页面和重新登录仍能看到收藏状态，并能从列表中优先找到它；取消收藏后恢复普通显示。</li>
 </ul>
 <p>这时不决定数据库增加什么表，也不因为某个界面容易实现就提前限定产品答案。Director先判断这个问题是否值得保留，再确认需求进入设计。如果尚无足够证据，需求继续留在候选中，不过早确定目标版本，让尚未确认的需求看起来像已经承诺交付。</p>
-<h2 id="第二阶段：产品与架构设计，找到负责当前答案的文档"><a href="#第二阶段：产品与架构设计，找到负责当前答案的文档" class="headerlink" title="第二阶段：产品与架构设计，找到负责当前答案的文档"></a>第二阶段：产品与架构设计，找到负责当前答案的文档</h2><p>当前项目按系统设计、能力设计和横切设计组织长期设计。它们是三类事实职责，不是每项REQ必须依次经过的三个阶段。Director和Agent先找到真正负责当前事实的文档，再检查相关的共同规则。</p>
-<h3 id="系统设计说明当前项目整体是什么"><a href="#系统设计说明当前项目整体是什么" class="headerlink" title="系统设计说明当前项目整体是什么"></a>系统设计说明当前项目整体是什么</h3><p>系统设计回答产品面向谁、整体提供什么、哪些事情不做，以及核心进程、存储和外部边界怎样组成。</p>
+<h2 id="第二阶段产品与架构设计找到负责当前答案的文档">第二阶段：产品与架构设计，找到负责当前答案的文档</h2>
+<p>当前项目按系统设计、能力设计和横切设计组织长期设计。它们是三类事实职责，不是每项REQ必须依次经过的三个阶段。Director和Agent先找到真正负责当前事实的文档，再检查相关的共同规则。</p>
+<h3 id="系统设计说明当前项目整体是什么">系统设计说明当前项目整体是什么</h3>
+<p>系统设计回答产品面向谁、整体提供什么、哪些事情不做，以及核心进程、存储和外部边界怎样组成。</p>
 <p>“收藏会话”并不自动意味着系统设计需要修改。Director和Agent先检查这项需求是否改变产品整体范围或核心系统边界；没有改变时，就引用现有答案，不为了形式完整而重写。</p>
-<h3 id="能力设计把用户行为和实现边界放在一起"><a href="#能力设计把用户行为和实现边界放在一起" class="headerlink" title="能力设计把用户行为和实现边界放在一起"></a>能力设计把用户行为和实现边界放在一起</h3><p>收藏会话主要改变Conversation能力，因此从受影响的能力设计开始。它需要回答：谁可以收藏，关系属于谁，用户从哪里操作，收藏后如何显示，无权访问或会话已删除时看到什么结果，以及数据、接口、事务、迁移和测试从哪里进入。</p>
+<h3 id="能力设计把用户行为和实现边界放在一起">能力设计把用户行为和实现边界放在一起</h3>
+<p>收藏会话主要改变Conversation能力，因此从受影响的能力设计开始。它需要回答：谁可以收藏，关系属于谁，用户从哪里操作，收藏后如何显示，无权访问或会话已删除时看到什么结果，以及数据、接口、事务、迁移和测试从哪里进入。</p>
 <p>能力设计不按前端、后端或代码目录划分，也不是旧领域设计和模块设计的简单拼接。它围绕一项完整能力保存用户行为和长期实现约定，避免Agent在几份文档之间拼接同一个答案。</p>
-<h3 id="横切设计保存多个能力共同遵守的规则"><a href="#横切设计保存多个能力共同遵守的规则" class="headerlink" title="横切设计保存多个能力共同遵守的规则"></a>横切设计保存多个能力共同遵守的规则</h3><p>员工隔离、数据所有权、接口错误和审计等规则如果由多个能力共同遵守，就从相应横切设计读取。只有这项需求确实改变共同规则时才修改；单一能力特有的决定仍留在能力设计中。</p>
+<h3 id="横切设计保存多个能力共同遵守的规则">横切设计保存多个能力共同遵守的规则</h3>
+<p>员工隔离、数据所有权、接口错误和审计等规则如果由多个能力共同遵守，就从相应横切设计读取。只有这项需求确实改变共同规则时才修改；单一能力特有的决定仍留在能力设计中。</p>
 <p>设计目录还包括ADR和IDX。ADR保存重要选择的背景、方案比较和代价，IDX保存设计地图、旧编号迁移和要求追踪；它们都不代替当前设计正文。旧<code>PLAT / DOMAIN / MODULE</code>只用于历史追溯，活动设计使用<code>SYS / CAP / CRS</code>。</p>
 <p>设计的目的是让Agent有一份可以实施的当前答案，而不是在写代码前猜完所有细节。如果一项不确定性必须用代码证明，可以在明确范围内做可以清理的技术原型，但原型不能自动变成产品承诺。Agent可以调查代码、比较方案和指出风险，产品行为、权限、数据和长期技术边界仍然由Director确认。阻断问题解决之后，受影响的设计进入<code>Accepted</code>，才可以作为Agent按设计修改代码的依据。</p>
-<h2 id="从设计进入实施：确定目标版本"><a href="#从设计进入实施：确定目标版本" class="headerlink" title="从设计进入实施：确定目标版本"></a>从设计进入实施：确定目标版本</h2><p>当设计已经确认，Director准备将这项需求放入一次交付时，才为REQ确定目标版本并把它置为<code>已排期</code>。目标版本只表示当前准备为哪个版本工作，不表示这项功能已经交付。</p>
-<h2 id="第三阶段：实施，按当前目的选择一种Loop"><a href="#第三阶段：实施，按当前目的选择一种Loop" class="headerlink" title="第三阶段：实施，按当前目的选择一种Loop"></a>第三阶段：实施，按当前目的选择一种Loop</h2><p>ACL、DFL和ERL不是一条固定流水线，也没有谁必须放在谁后面。Director根据当前要解决的问题单独启动其中一种：把已经确认的设计变成代码时使用ACL，了解现有产品是否好用时使用DFL，独立检查一份固定代码或版本时使用ERL。</p>
+<h2 id="从设计进入实施确定目标版本">从设计进入实施：确定目标版本</h2>
+<p>当设计已经确认，Director准备将这项需求放入一次交付时，才为REQ确定目标版本并把它置为<code>已排期</code>。目标版本只表示当前准备为哪个版本工作，不表示这项功能已经交付。</p>
+<h2 id="第三阶段实施按当前目的选择一种loop">第三阶段：实施，按当前目的选择一种Loop</h2>
+<p>ACL、DFL和ERL不是一条固定流水线，也没有谁必须放在谁后面。Director根据当前要解决的问题单独启动其中一种：把已经确认的设计变成代码时使用ACL，了解现有产品是否好用时使用DFL，独立检查一份固定代码或版本时使用ERL。</p>
 <p>一项新需求通常会因为需要实施而启动ACL，但这不表示随后必须开展DFL和ERL。反过来，Director也可以直接对正在使用的产品启动DFL，或者直接对现有代码和版本启动ERL，无需先有一轮ACL。某种Loop发现问题后，先把问题作为REQ或ISSUE另行处理；原Loop不因此延长，三种Loop也不因此组成一条流程。</p>
-<h3 id="ACL-Agentic-Coding-Loop-：实施已经确认的改变"><a href="#ACL-Agentic-Coding-Loop-：实施已经确认的改变" class="headerlink" title="ACL(Agentic Coding Loop)：实施已经确认的改变"></a>ACL(Agentic Coding Loop)：实施已经确认的改变</h3><p>ACL由Agent主导。Agent依据已经确认的需求和设计推进编码、测试、记录和问题排查；Director负责确认目标、边界以及本轮最后是否可以结束。</p>
+<h3 id="aclagentic-coding-loop实施已经确认的改变">ACL(Agentic Coding Loop)：实施已经确认的改变</h3>
+<p>ACL由Agent主导。Agent依据已经确认的需求和设计推进编码、测试、记录和问题排查；Director负责确认目标、边界以及本轮最后是否可以结束。</p>
 <p>对“收藏会话”这项新需求，当前目的是把已经确认的设计变成代码，因此启动ACL。开始前，大目标被拆成能够独立完成和验证的任务，每项任务可以建立一轮ACL，由Agent完成实施和自动化验证。</p>
 <p>如果收藏功能的范围不大，最简单的做法是用一轮ACL完成从界面、接口到存储和测试的端到端结果。如果范围已经大到一轮难以检查，再按可以独立验证的用户结果拆分。例如：</p>
 <ul>
@@ -319,18 +110,32 @@
 <p>实施记录随着工作追加内容，保存实际提交、测试命令与结论、使用的环境、失败和跳过项、方案变化、证据位置和剩余问题。不用最后的成功结果反过来改写开始时的计划，也不删除中间出现的失败。</p>
 <p>如果实施只能通过改变已经确认的用户行为、权限、数据或架构边界继续，Agent要停下实现，说明冲突，回到受影响的设计进行评审。Agent不能为了让代码通过测试而自行重新定义产品。</p>
 <p>代码完成、自动化测试通过或部署到开发环境，都不会自动结束本轮ACL。本轮范围、候选提交、验证证据、失败和剩余问题整理清楚之后，实施记录先进入<code>Review</code>。负责人确认结论后，还要把结果合入目标分支并记录实际合入提交，这轮ACL才进入<code>Completed</code>。</p>
-<h3 id="DFL-Developer-Feedback-Loop-：在真实使用中发现问题"><a href="#DFL-Developer-Feedback-Loop-：在真实使用中发现问题" class="headerlink" title="DFL(Developer Feedback Loop)：在真实使用中发现问题"></a>DFL(Developer Feedback Loop)：在真实使用中发现问题</h3><p>DFL由Director主导。Director亲自操作和感受产品，判断它是否符合真实工作习惯；Agent可以帮助准备环境、记录过程和调查问题，但不能代替Director使用产品并给出反馈。</p>
+<h3 id="dfldeveloper-feedback-loop在真实使用中发现问题">DFL(Developer Feedback Loop)：在真实使用中发现问题</h3>
+<p>DFL由Director主导。Director亲自操作和感受产品，判断它是否符合真实工作习惯；Agent可以帮助准备环境、记录过程和调查问题，但不能代替Director使用产品并给出反馈。</p>
 <p>DFL用来了解产品在真实界面、账号、数据和操作过程中是否好用。它可以检查刚完成的变化，也可以单独检查已经运行很久的功能，不需要以某轮ACL为前提。</p>
 <p>以收藏功能为例，Director使用真实账号和已有会话完成收藏、刷新、重新登录、取消收藏和再次寻找。这种使用可能发现，功能都能操作，但收藏内容在真实列表中仍然很难找到。DFL需要记下实际环境、操作过程、观察和感受，不以“找到的问题越多越好”为目标。</p>
-<h3 id="ERL-Engineering-Review-Loop-：独立检查固定的提交、差异或版本"><a href="#ERL-Engineering-Review-Loop-：独立检查固定的提交、差异或版本" class="headerlink" title="ERL(Engineering Review Loop)：独立检查固定的提交、差异或版本"></a>ERL(Engineering Review Loop)：独立检查固定的提交、差异或版本</h3><p>ERL由没有参与被评内容实施的Agent主导。独立性来自固定评审对象、清楚范围和没有参与原实施过程，而不是来自某个模型等级。原来主导ACL的Agent可以提供背景，但不能代替这次检查。</p>
+<h3 id="erlengineering-review-loop独立检查固定的提交差异或版本">ERL(Engineering Review Loop)：独立检查固定的提交、差异或版本</h3>
+<p>ERL由没有参与被评内容实施的Agent主导。独立性来自固定评审对象、清楚范围和没有参与原实施过程，而不是来自某个模型等级。原来主导ACL的Agent可以提供背景，但不能代替这次检查。</p>
 <p>ERL用来检查产品与设计是否一致，以及代码在正确性、权限与数据、并发与恢复、测试和发布方面是否存在风险。它可以评审刚完成的代码，也可以单独审查现有提交或版本，不需要先完成ACL或DFL。</p>
 <p>开始ERL前，负责人和评审Agent先固定完整提交、差异范围或Git标签，并写清评审范围、问题等级和结束条件。Agent据此开展独立检查，不根据一句“帮我看看代码”无限扩展。Agent或辅助工具给出的发现还要回到代码、设计、测试和运行证据复核，未经复核的推测不能直接算作已经确认的问题。</p>
-<h3 id="三种Loop各自结束，发现的问题另行处理"><a href="#三种Loop各自结束，发现的问题另行处理" class="headerlink" title="三种Loop各自结束，发现的问题另行处理"></a>三种Loop各自结束，发现的问题另行处理</h3><p>ACL、DFL和ERL各有自己的结束条件。一轮Loop完成，只表示这一轮约定的实施、使用或评审范围已经走完，证据已经整理，发现也有了清楚去向；它不表示其它两种Loop也已经完成，更不表示三种Loop必须补齐。</p>
+<h3 id="三种loop各自结束发现的问题另行处理">三种Loop各自结束，发现的问题另行处理</h3>
+<p>ACL、DFL和ERL各有自己的结束条件。一轮Loop完成，只表示这一轮约定的实施、使用或评审范围已经走完，证据已经整理，发现也有了清楚去向；它不表示其它两种Loop也已经完成，更不表示三种Loop必须补齐。</p>
 <p>任何一种Loop发现的问题都需要先复核和分类，再决定去向：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">需要跨会话处理、用于恢复已经确认行为的实现缺陷</span><br><span class="line">  →ISSUE</span><br><span class="line"></span><br><span class="line">需要改变用户行为、权限、安全、数据或正式范围的发现</span><br><span class="line">  →REQ</span><br><span class="line">    →重新设计和确认</span><br><span class="line"></span><br><span class="line">环境或运行问题</span><br><span class="line">  →环境记录和必要的ISSUE</span><br><span class="line"></span><br><span class="line">重复发现或误报</span><br><span class="line">  →记录复核依据和不继续处理的原因</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>需要跨会话处理、用于恢复已经确认行为的实现缺陷</span></span>
+<span class="line"><span>  →ISSUE</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>需要改变用户行为、权限、安全、数据或正式范围的发现</span></span>
+<span class="line"><span>  →REQ</span></span>
+<span class="line"><span>    →重新设计和确认</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>环境或运行问题</span></span>
+<span class="line"><span>  →环境记录和必要的ISSUE</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>重复发现或误报</span></span>
+<span class="line"><span>  →记录复核依据和不继续处理的原因</span></span></code></pre>
 <p>DFL开始前先记下实际使用的环境、制品、提交、角色和账号，ERL开始前先记下实际检查的提交、差异或标签；检查过程中都不直接修改这些内容。需要修改时，先在原记录中写下局部发现，再建立ACL处理。只有问题需要跨工作单元、跨会话、跨责任人或跨版本继续时，才登记全局ISSUE。修复完成后，DFL固定新候选并开始下一次尝试，ERL继续保留原基线上的发现。</p>
-<h2 id="第四阶段：版本验收与冻结，只纳入已经确认的结果"><a href="#第四阶段：版本验收与冻结，只纳入已经确认的结果" class="headerlink" title="第四阶段：版本验收与冻结，只纳入已经确认的结果"></a>第四阶段：版本验收与冻结，只纳入已经确认的结果</h2><p>目标版本是工作目标，正式版本是已经验收的事实。两者之间不是等到日期后自动发生的状态变化。</p>
+<h2 id="第四阶段版本验收与冻结只纳入已经确认的结果">第四阶段：版本验收与冻结，只纳入已经确认的结果</h2>
+<p>目标版本是工作目标，正式版本是已经验收的事实。两者之间不是等到日期后自动发生的状态变化。</p>
 <p>准备版本验收时，Director核对本次实际准备纳入的REQ、ACL、DFL和ERL，而不是根据编号或早期关联关系自动把它们全部算进来。被选中的工作需要说清：</p>
 <ul>
 <li>需求的验收场景得到了什么结论；</li>
@@ -342,7 +147,8 @@
 </ul>
 <p>如果这些问题还没有可靠答案，版本继续保持<code>Review</code>。已经合并代码、部署到某个环境或者达到原定日期，都不能代替这次验收。</p>
 <p>Director确认实际范围、验收结论、未解决问题和发布说明后，才创建指向对应提交的Git标签。标签、版本记录和发布说明相互一致之后，版本进入<code>Completed</code>，实际纳入的REQ才进入<code>已完成</code>。</p>
-<h2 id="完整ACDL-Agent-Collaborative-Development-Lifecycle-不等于所有工作都走全套"><a href="#完整ACDL-Agent-Collaborative-Development-Lifecycle-不等于所有工作都走全套" class="headerlink" title="完整ACDL(Agent Collaborative Development Lifecycle)不等于所有工作都走全套"></a>完整ACDL(Agent Collaborative Development Lifecycle)不等于所有工作都走全套</h2><p>这个例子从新的产品需求一直走到正式版本，因此经过了四个主阶段。真实工作必须从它的实际起点进入：</p>
+<h2 id="完整acdlagent-collaborative-development-lifecycle不等于所有工作都走全套">完整ACDL(Agent Collaborative Development Lifecycle)不等于所有工作都走全套</h2>
+<p>这个例子从新的产品需求一直走到正式版本，因此经过了四个主阶段。真实工作必须从它的实际起点进入：</p>
 <ul>
 <li>代码没有做到已经确认的设计，可以从ISSUE和ACL开始，不重新制造一项需求；</li>
 <li>不改变产品行为的工程维护，可以建立计划版本为<code>未确定</code>的ACL；</li>
@@ -352,94 +158,10 @@
 <p>“完整处理一项工作”通常表示走到这项工作自己的Loop结束条件，不表示Agent可以自行开启版本验收、将REQ改为<code>已完成</code>或创建Git标签。形成正式版本是另一个需要Director明确决定的目标。</p>
 <p>完整ACDL表示项目知道每项工作应该从哪里开始，谁有权决定，Agent应该依据什么执行，怎样留下验证证据，以及在什么条件下可以结束。它不是用最长的路径处理所有小事。</p>
 <p>在这条路线中，Director始终负责从需求到正式版本的关键决定：决定值得解决的问题，确认产品和技术边界，决定什么可以实施，根据真实证据确认每轮结论，并对最终版本负责。Agent可以承担大量调查、设计、实施、验证和评审工作，但不会因此接管Director的决定和责任。</p>
-<p>后续章节将把这条完整路线拆开。下一章先讲一项真实问题怎样进入ISSUE或REQ，以及怎样走到能够指导Agent实施的已确认设计。</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/" rel="prev" title="ACDL研发流程07：把设计拆成可以独立验证的任务">
-                  <i class="fa fa-angle-left"></i> ACDL研发流程07：把设计拆成可以独立验证的任务
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B03-%E5%83%8F%E7%BB%B4%E6%8A%A4%E4%BB%A3%E7%A0%81%E4%B8%80%E6%A0%B7%E5%BB%BA%E8%AE%BE%E6%96%87%E6%A1%A3/" rel="next" title="ACDL研发流程03：像维护代码一样建设文档">
-                  ACDL研发流程03：像维护代码一样建设文档 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<p>后续章节将把这条完整路线拆开。下一章先讲一项真实问题怎样进入ISSUE或REQ，以及怎样走到能够指导Agent实施的已确认设计。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#多项工作同时发生时需要共同的事实入口">多项工作同时发生时，需要共同的事实入口</a></li><li class="depth-2"><a href="#先认识reqrequirementissue和三种loop">先认识REQ(Requirement)、ISSUE和三种Loop</a></li><li class="depth-3"><a href="#reqrequirement记录一项需求">REQ(Requirement)记录一项需求</a></li><li class="depth-3"><a href="#issue记录一个待处理问题">ISSUE记录一个待处理问题</a></li><li class="depth-3"><a href="#aclagentic-coding-loopdfldeveloper-feedback-loop和erlengineering-review-loop是三种loop">ACL(Agentic Coding Loop)、DFL(Developer Feedback Loop)和ERL(Engineering Review Loop)是三种Loop</a></li><li class="depth-2"><a href="#先看完整路线">先看完整路线</a></li><li class="depth-2"><a href="#第一阶段需求管理先决定为什么要改">第一阶段：需求管理，先决定为什么要改</a></li><li class="depth-2"><a href="#第二阶段产品与架构设计找到负责当前答案的文档">第二阶段：产品与架构设计，找到负责当前答案的文档</a></li><li class="depth-3"><a href="#系统设计说明当前项目整体是什么">系统设计说明当前项目整体是什么</a></li><li class="depth-3"><a href="#能力设计把用户行为和实现边界放在一起">能力设计把用户行为和实现边界放在一起</a></li><li class="depth-3"><a href="#横切设计保存多个能力共同遵守的规则">横切设计保存多个能力共同遵守的规则</a></li><li class="depth-2"><a href="#从设计进入实施确定目标版本">从设计进入实施：确定目标版本</a></li><li class="depth-2"><a href="#第三阶段实施按当前目的选择一种loop">第三阶段：实施，按当前目的选择一种Loop</a></li><li class="depth-3"><a href="#aclagentic-coding-loop实施已经确认的改变">ACL(Agentic Coding Loop)：实施已经确认的改变</a></li><li class="depth-3"><a href="#dfldeveloper-feedback-loop在真实使用中发现问题">DFL(Developer Feedback Loop)：在真实使用中发现问题</a></li><li class="depth-3"><a href="#erlengineering-review-loop独立检查固定的提交差异或版本">ERL(Engineering Review Loop)：独立检查固定的提交、差异或版本</a></li><li class="depth-3"><a href="#三种loop各自结束发现的问题另行处理">三种Loop各自结束，发现的问题另行处理</a></li><li class="depth-2"><a href="#第四阶段版本验收与冻结只纳入已经确认的结果">第四阶段：版本验收与冻结，只纳入已经确认的结果</a></li><li class="depth-2"><a href="#完整acdlagent-collaborative-development-lifecycle不等于所有工作都走全套">完整ACDL(Agent Collaborative Development Lifecycle)不等于所有工作都走全套</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

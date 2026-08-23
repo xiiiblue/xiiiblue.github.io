@@ -1,307 +1,99 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="有些网络对普通TCP连接没有限制，UDP却很不稳定，甚至完全不可用。WireGuard一类依赖UDP的服务遇到这种环境时，可以在外面再套一层传输。PhanTun、udp2raw和wstunnel都能做这件事，但它们模拟的层次不同，部署代价也不一样。 三种方案解决的是不同层次的问题。真正选择时不必纠结谁“性能最好”，先看中间网络能够识别到哪一层：只有普通NAT和四层防火墙时，FakeTCP已经够用；">
-<meta property="og:type" content="article">
-<meta property="og:title" content="PhanTun、udp2raw与wstunnel的UDP隧道选择">
-<meta property="og:url" content="https://www.bluexiii.com/202510/PhanTun%E3%80%81udp2raw%E4%B8%8Ewstunnel%E7%9A%84UDP%E9%9A%A7%E9%81%93%E9%80%89%E6%8B%A9/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="有些网络对普通TCP连接没有限制，UDP却很不稳定，甚至完全不可用。WireGuard一类依赖UDP的服务遇到这种环境时，可以在外面再套一层传输。PhanTun、udp2raw和wstunnel都能做这件事，但它们模拟的层次不同，部署代价也不一样。 三种方案解决的是不同层次的问题。真正选择时不必纠结谁“性能最好”，先看中间网络能够识别到哪一层：只有普通NAT和四层防火墙时，FakeTCP已经够用；">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2025-10-29T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-22T15:27:03.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202510/PhanTun%E3%80%81udp2raw%E4%B8%8Ewstunnel%E7%9A%84UDP%E9%9A%A7%E9%81%93%E9%80%89%E6%8B%A9/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202510/PhanTun%E3%80%81udp2raw%E4%B8%8Ewstunnel%E7%9A%84UDP%E9%9A%A7%E9%81%93%E9%80%89%E6%8B%A9/","path":"202510/PhanTun、udp2raw与wstunnel的UDP隧道选择/","title":"PhanTun、udp2raw与wstunnel的UDP隧道选择"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>PhanTun、udp2raw与wstunnel的UDP隧道选择 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E7%A7%8D%E6%96%B9%E6%A1%88%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">1.</span> <span class="nav-text">三种方案的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PhanTun%EF%BC%9A%E5%B0%BD%E9%87%8F%E5%B0%91%E6%94%B9%E5%8F%98UDP%E7%89%B9%E6%80%A7"><span class="nav-number">2.</span> <span class="nav-text">PhanTun：尽量少改变UDP特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#udp2raw%EF%BC%9A%E5%8A%9F%E8%83%BD%E5%A4%9A%EF%BC%8C%E4%BD%86%E7%BB%B4%E6%8A%A4%E7%97%95%E8%BF%B9%E6%9B%B4%E9%87%8D"><span class="nav-number">3.</span> <span class="nav-text">udp2raw：功能多，但维护痕迹更重</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wstunnel%EF%BC%9A%E9%9C%80%E8%A6%81%E7%9C%9F%E6%AD%A3%E7%9A%84WebSocket%E6%97%B6%E5%86%8D%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">wstunnel：需要真正的WebSocket时再用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E5%85%AC%E7%BD%91%E5%9C%B0%E5%9D%80%E7%9A%84%E5%A4%84%E7%90%86"><span class="nav-number">5.</span> <span class="nav-text">动态公网地址的处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E9%99%85%E9%80%89%E6%8B%A9"><span class="nav-number">6.</span> <span class="nav-text">实际选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">7.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202510/PhanTun%E3%80%81udp2raw%E4%B8%8Ewstunnel%E7%9A%84UDP%E9%9A%A7%E9%81%93%E9%80%89%E6%8B%A9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="PhanTun、udp2raw与wstunnel的UDP隧道选择 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          PhanTun、udp2raw与wstunnel的UDP隧道选择
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2025-10-30 00:00:00" itemprop="dateCreated datePublished" datetime="2025-10-30T00:00:00+08:00">2025-10-30</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<p>有些网络对普通TCP连接没有限制，UDP却很不稳定，甚至完全不可用。WireGuard一类依赖UDP的服务遇到这种环境时，可以在外面再套一层传输。PhanTun、udp2raw和wstunnel都能做这件事，但它们模拟的层次不同，部署代价也不一样。</p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="有些网络对普通TCP连接没有限制，UDP却很不稳定，甚至完全不可用。WireGuard一类依赖UDP的服务遇到这种环境时，可以在外面再套一层传输。PhanTun、udp2raw和wstunnel都能做这件事，但它们模拟的层次不同，部署代价也不一样。 三种方案解决的是不同层次的问题。真正选择时不必纠结谁“性能最…"><link rel="canonical" href="https://www.bluexiii.com/202510/PhanTun%E3%80%81udp2raw%E4%B8%8Ewstunnel%E7%9A%84UDP%E9%9A%A7%E9%81%93%E9%80%89%E6%8B%A9/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="PhanTun、udp2raw与wstunnel的UDP隧道选择｜BlueXIII's Blog"><meta property="og:description" content="有些网络对普通TCP连接没有限制，UDP却很不稳定，甚至完全不可用。WireGuard一类依赖UDP的服务遇到这种环境时，可以在外面再套一层传输。PhanTun、udp2raw和wstunnel都能做这件事，但它们模拟的层次不同，部署代价也不一样。 三种方案解决的是不同层次的问题。真正选择时不必纠结谁“性能最…"><meta property="og:url" content="https://www.bluexiii.com/202510/PhanTun%E3%80%81udp2raw%E4%B8%8Ewstunnel%E7%9A%84UDP%E9%9A%A7%E9%81%93%E9%80%89%E6%8B%A9/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>PhanTun、udp2raw与wstunnel的UDP隧道选择｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>PhanTun、udp2raw与wstunnel的UDP隧道选择</h1><div class="article-meta"><time datetime="2025-10-29T16:00:00.000Z">发布于2025-10-30</time><time datetime="2026-08-22T15:27:03.000Z">更新于2026-08-22</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/%E7%BD%91%E7%BB%9C/">网络</a></div></header><div class="prose"><p>有些网络对普通TCP连接没有限制，UDP却很不稳定，甚至完全不可用。WireGuard一类依赖UDP的服务遇到这种环境时，可以在外面再套一层传输。PhanTun、udp2raw和wstunnel都能做这件事，但它们模拟的层次不同，部署代价也不一样。</p>
 <p>三种方案解决的是不同层次的问题。真正选择时不必纠结谁“性能最好”，先看中间网络能够识别到哪一层：只有普通NAT和四层防火墙时，FakeTCP已经够用；必须经过HTTP代理或七层网关时，WebSocket才有意义。</p>
-<h2 id="三种方案的区别"><a href="#三种方案的区别" class="headerlink" title="三种方案的区别"></a>三种方案的区别</h2><table>
-<thead>
-<tr>
-<th>工具</th>
-<th>外层流量</th>
-<th>加密与认证</th>
-<th>额外要求</th>
-<th>更适合的情况</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>PhanTun</td>
-<td>伪装成TCP的UDP流</td>
-<td>不负责业务加密</td>
-<td>TUN、IP转发、NAT规则</td>
-<td>追求简单和较低封装开销，链路只检查三、四层</td>
-</tr>
-<tr>
-<td>udp2raw</td>
-<td>FakeTCP、UDP或ICMP</td>
-<td>自带对称加密与认证选项</td>
-<td>Raw Socket、配套防火墙规则</td>
-<td>需要多种伪装模式，或维护已有udp2raw部署</td>
-</tr>
-<tr>
-<td>wstunnel</td>
-<td>WebSocket或HTTP&#x2F;2，可配TLS</td>
-<td>由TLS保护外层连接</td>
-<td>证书或反向代理</td>
-<td>需要穿过HTTP代理、七层网关，或复用HTTPS入口</td>
-</tr>
-</tbody></table>
-<p>三者都不是VPN。它们只负责把一段UDP流量搬到另一端，内层仍然需要WireGuard或应用自身提供身份认证和数据保护。尤其PhanTun只是流量混淆层，不能因为外观看起来像TCP就把它当作加密隧道。</p>
-<h2 id="PhanTun：尽量少改变UDP特性"><a href="#PhanTun：尽量少改变UDP特性" class="headerlink" title="PhanTun：尽量少改变UDP特性"></a>PhanTun：尽量少改变UDP特性</h2><p>PhanTun把UDP数据包转换成能够通过常见防火墙和NAT的TCP外观，但不会引入真正TCP的重传和流量控制，因此仍保留UDP乱序到达等特性。当前官方发布版为<code>0.8.1</code>。</p>
-<p>它会在客户端和服务端创建TUN设备，需要先打开内核转发：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> sysctl -w net.ipv4.ip_forward=1</span><br></pre></td></tr></table></figure>
+<h2 id="三种方案的区别">三种方案的区别</h2>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>工具</th><th>外层流量</th><th>加密与认证</th><th>额外要求</th><th>更适合的情况</th></tr></thead><tbody><tr><td>PhanTun</td><td>伪装成TCP的UDP流</td><td>不负责业务加密</td><td>TUN、IP转发、NAT规则</td><td>追求简单和较低封装开销，链路只检查三、四层</td></tr><tr><td>udp2raw</td><td>FakeTCP、UDP或ICMP</td><td>自带对称加密与认证选项</td><td>Raw Socket、配套防火墙规则</td><td>需要多种伪装模式，或维护已有udp2raw部署</td></tr><tr><td>wstunnel</td><td>WebSocket或HTTP/2，可配TLS</td><td>由TLS保护外层连接</td><td>证书或反向代理</td><td>需要穿过HTTP代理、七层网关，或复用HTTPS入口</td></tr></tbody></table>
+<p>三者都不是VPN。它们只负责把一段UDP流量搬到另一端，内层仍然需要WireGuard或应用自身提供身份认证和数据保护。尤其PhanTun只是流量混淆层，不能因为外观看起来像TCP就把它当作加密隧道。</p>
+<h2 id="phantun尽量少改变udp特性">PhanTun：尽量少改变UDP特性</h2>
+<p>PhanTun把UDP数据包转换成能够通过常见防火墙和NAT的TCP外观，但不会引入真正TCP的重传和流量控制，因此仍保留UDP乱序到达等特性。当前官方发布版为<code>0.8.1</code>。</p>
+<p>它会在客户端和服务端创建TUN设备，需要先打开内核转发：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sysctl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -w</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> net.ipv4.ip_forward=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span></span></code></pre>
 <p>正式使用时应把配置写入<code>/etc/sysctl.d/</code>，而不是每次启动前临时执行。客户端还需要把TUN流量从物理网卡做源地址转换，服务端则要把监听的TCP端口转到PhanTun的TUN地址。规则应按官方README为当前接口和地址改写，不能直接照搬另一台机器的<code>eth0</code>和TUN网段。</p>
 <p>以本机UDP服务监听<code>127.0.0.1:51820</code>、PhanTun服务端对外监听TCP 4567为例，进程本身的参数很简单：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 服务端</span></span><br><span class="line">RUST_LOG=info phantun_server \</span><br><span class="line">  --<span class="built_in">local</span> 4567 \</span><br><span class="line">  --remote 127.0.0.1:51820</span><br><span class="line"></span><br><span class="line"><span class="comment"># 客户端</span></span><br><span class="line">RUST_LOG=info phantun_client \</span><br><span class="line">  --<span class="built_in">local</span> 127.0.0.1:51820 \</span><br><span class="line">  --remote tunnel.example.com:4567</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 服务端</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">RUST_LOG</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">info</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> phantun_server</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --local</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 4567</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --remote</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 127.0.0.1:51820</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 客户端</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">RUST_LOG</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">info</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> phantun_client</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --local</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 127.0.0.1:51820</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --remote</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> tunnel.example.com:4567</span></span></code></pre>
 <p>PhanTun需要管理TUN设备，但没有必要因此开放Root SSH或让网络进程长期以Root身份运行。官方给出的非Root方式是为二进制授予<code>cap_net_admin</code>：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> <span class="built_in">setcap</span> cap_net_admin=+pe /usr/local/bin/phantun_server</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">setcap</span> cap_net_admin=+pe /usr/local/bin/phantun_client</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> setcap</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cap_net_admin=+pe</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /usr/local/bin/phantun_server</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> setcap</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cap_net_admin=+pe</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /usr/local/bin/phantun_client</span></span></code></pre>
 <p>如果运行在PVE的非特权LXC里，还要让容器能够访问<code>/dev/net/tun</code>。这属于宿主机配置，容器编号和设备权限应以自己的环境为准，不能为了省事改成特权容器。</p>
 <p>PhanTun不做IP分片和重组，并设置DF位。套在WireGuard外面时要给新增的IP、TCP和WireGuard头部留出空间；官方以1500字节链路为例，IPv4建议从1428开始，IPv6从1408开始。实际链路如果还有PPPoE、VLAN或其他封装，需要继续下调并观察丢包。</p>
-<h2 id="udp2raw：功能多，但维护痕迹更重"><a href="#udp2raw：功能多，但维护痕迹更重" class="headerlink" title="udp2raw：功能多，但维护痕迹更重"></a>udp2raw：功能多，但维护痕迹更重</h2><p>udp2raw默认使用FakeTCP，也能切换为UDP或ICMP模式。它通过Raw Socket工作，并依赖一组防火墙规则阻止内核TCP栈干扰伪造连接。<code>-a</code>可以自动添加规则，<code>-g</code>则只打印所需规则，后者更适合先审阅再纳入自己的防火墙配置。</p>
+<h2 id="udp2raw功能多但维护痕迹更重">udp2raw：功能多，但维护痕迹更重</h2>
+<p>udp2raw默认使用FakeTCP，也能切换为UDP或ICMP模式。它通过Raw Socket工作，并依赖一组防火墙规则阻止内核TCP栈干扰伪造连接。<code>-a</code>可以自动添加规则，<code>-g</code>则只打印所需规则，后者更适合先审阅再纳入自己的防火墙配置。</p>
 <p>下面是一组最小结构，密钥必须换成随机生成且只用于这一条隧道的值：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 服务端：外层监听4096，内层交给本机UDP 51820</span></span><br><span class="line">udp2raw_amd64 -s \</span><br><span class="line">  -l 0.0.0.0:4096 \</span><br><span class="line">  -r 127.0.0.1:51820 \</span><br><span class="line">  --raw-mode faketcp \</span><br><span class="line">  -k <span class="string">&#x27;&lt;REPLACE_WITH_RANDOM_SHARED_KEY&gt;&#x27;</span> \</span><br><span class="line">  -a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 客户端：本机UDP 51820转到远端4096</span></span><br><span class="line">udp2raw_amd64 -c \</span><br><span class="line">  -l 127.0.0.1:51820 \</span><br><span class="line">  -r 192.0.2.10:4096 \</span><br><span class="line">  --raw-mode faketcp \</span><br><span class="line">  -k <span class="string">&#x27;&lt;REPLACE_WITH_RANDOM_SHARED_KEY&gt;&#x27;</span> \</span><br><span class="line">  -a</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 服务端：外层监听4096，内层交给本机UDP 51820</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">udp2raw_amd64</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -l</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 0.0.0.0:4096</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -r</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 127.0.0.1:51820</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --raw-mode</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> faketcp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -k</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '&#x3C;REPLACE_WITH_RANDOM_SHARED_KEY>'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -a</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 客户端：本机UDP 51820转到远端4096</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">udp2raw_amd64</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -c</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -l</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 127.0.0.1:51820</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -r</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 192.0.2.10:4096</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --raw-mode</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> faketcp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -k</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '&#x3C;REPLACE_WITH_RANDOM_SHARED_KEY>'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -a</span></span></code></pre>
 <p>客户端和服务端的<code>--raw-mode</code>、密钥、加密模式与认证模式必须一致。命令行里的共享密钥可能被同机用户从进程列表看到，服务文件和日志也可能泄露它，因此至少要限制配置文件权限，并避免把真实值提交到Git。</p>
 <p>udp2raw仍然可用，但官方Release页面显示最新正式发布停留在2023年。新部署应优先评估维护更活跃的方案；已有稳定链路则没有必要只为了“换新”而迁移。</p>
-<h2 id="wstunnel：需要真正的WebSocket时再用"><a href="#wstunnel：需要真正的WebSocket时再用" class="headerlink" title="wstunnel：需要真正的WebSocket时再用"></a>wstunnel：需要真正的WebSocket时再用</h2><p>wstunnel把TCP或UDP流量放进WebSocket或HTTP&#x2F;2连接，适合中间网络要求标准HTTP握手、必须经过HTTP代理，或者已经有HTTPS入口的情况。它的协议层次更高，部署时要同时考虑TLS证书、域名解析和反向代理超时。</p>
+<h2 id="wstunnel需要真正的websocket时再用">wstunnel：需要真正的WebSocket时再用</h2>
+<p>wstunnel把TCP或UDP流量放进WebSocket或HTTP/2连接，适合中间网络要求标准HTTP握手、必须经过HTTP代理，或者已经有HTTPS入口的情况。它的协议层次更高，部署时要同时考虑TLS证书、域名解析和反向代理超时。</p>
 <p>服务端限制只允许转发到本机WireGuard端口，避免把它变成任意目标的开放代理：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wstunnel server \</span><br><span class="line">  --restrict-to 127.0.0.1:51820 \</span><br><span class="line">  wss://0.0.0.0:443</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">wstunnel</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> server</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --restrict-to</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 127.0.0.1:51820</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  wss://0.0.0.0:443</span></span></code></pre>
 <p>客户端在本机开一个UDP入口：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wstunnel client \</span><br><span class="line">  -L <span class="string">&#x27;udp://127.0.0.1:51820:127.0.0.1:51820?timeout_sec=0&#x27;</span> \</span><br><span class="line">  wss://tunnel.example.com:443</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">wstunnel</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> client</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -L</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'udp://127.0.0.1:51820:127.0.0.1:51820?timeout_sec=0'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  wss://tunnel.example.com:443</span></span></code></pre>
 <p>WireGuard的<code>Endpoint</code>随后指向<code>127.0.0.1:51820</code>。如果WireGuard接管默认路由，还要为wstunnel服务端地址保留一条走物理网关的静态路由，否则会形成“wstunnel连接又被送回WireGuard”的循环。</p>
 <p><code>timeout_sec=0</code>用于关闭UDP映射默认的空闲超时，适合长期保持的WireGuard入口。吞吐异常时先检查MTU，不要一开始就把问题归咎于WebSocket。</p>
-<h2 id="动态公网地址的处理"><a href="#动态公网地址的处理" class="headerlink" title="动态公网地址的处理"></a>动态公网地址的处理</h2><p>三种客户端都可以把远端写成域名，但常驻进程通常只在启动时解析一次。服务端公网地址变化后，DNS记录即使已经更新，旧进程也可能继续连接原地址。</p>
+<h2 id="动态公网地址的处理">动态公网地址的处理</h2>
+<p>三种客户端都可以把远端写成域名，但常驻进程通常只在启动时解析一次。服务端公网地址变化后，DNS记录即使已经更新，旧进程也可能继续连接原地址。</p>
 <p>处理方式是让systemd管理进程，再用一个很小的定时任务比较当前解析结果和上次记录；只有地址变化时才执行<code>systemctl restart</code>。脚本至少要满足这几个条件：</p>
 <ul>
 <li>使用<code>getent ahostsv4</code>或明确的A记录查询，失败时不覆盖旧状态。</li>
@@ -310,100 +102,18 @@
 <li>由systemd负责重启和日志，不用<code>pkill -f</code>模糊匹配整条命令。</li>
 </ul>
 <p>如果地址很少变化，手工重启服务反而比维护一百多行监控脚本更可靠。</p>
-<h2 id="实际选择"><a href="#实际选择" class="headerlink" title="实际选择"></a>实际选择</h2><p>普通家庭网络和四层防火墙之间传输WireGuard时，可以先试PhanTun；它的职责单一，额外开销和配置都比较容易看清。只有中间链路明确要求WebSocket、HTTP代理或HTTPS入口时才换wstunnel。udp2raw更适合维护既有部署，或者确实需要它提供的多种Raw模式。</p>
+<h2 id="实际选择">实际选择</h2>
+<p>普通家庭网络和四层防火墙之间传输WireGuard时，可以先试PhanTun；它的职责单一，额外开销和配置都比较容易看清。只有中间链路明确要求WebSocket、HTTP代理或HTTPS入口时才换wstunnel。udp2raw更适合维护既有部署，或者确实需要它提供的多种Raw模式。</p>
 <p>无论选择哪一种，都应该先用前台命令确认两端参数和MTU，再写成systemd服务。隧道能建立只说明外层连通，最终还要检查内层握手、路由、DNS和持续丢包情况。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/dndx/phantun">PhanTun官方仓库</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/wangyu-/udp2raw">udp2raw官方仓库</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/erebe/wstunnel">wstunnel官方仓库</a></li>
-</ul>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202510/RouterOS7%E7%9A%84IPv4%E4%B8%8EIPv6%E9%98%B2%E7%81%AB%E5%A2%99%E5%9F%BA%E7%BA%BF/" rel="prev" title="RouterOS 7的IPv4与IPv6防火墙基线">
-                  <i class="fa fa-angle-left"></i> RouterOS 7的IPv4与IPv6防火墙基线
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202511/%E5%B0%86IP%E7%BD%91%E6%AE%B5%E6%89%B9%E9%87%8F%E8%BD%AC%E6%8D%A2%E4%B8%BARouterOSAddressList/" rel="next" title="将IP网段批量转换为RouterOS Address List">
-                  将IP网段批量转换为RouterOS Address List <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="https://github.com/dndx/phantun">PhanTun官方仓库</a></li>
+<li><a href="https://github.com/wangyu-/udp2raw">udp2raw官方仓库</a></li>
+<li><a href="https://github.com/erebe/wstunnel">wstunnel官方仓库</a></li>
+</ul></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#三种方案的区别">三种方案的区别</a></li><li class="depth-2"><a href="#phantun尽量少改变udp特性">PhanTun：尽量少改变UDP特性</a></li><li class="depth-2"><a href="#udp2raw功能多但维护痕迹更重">udp2raw：功能多，但维护痕迹更重</a></li><li class="depth-2"><a href="#wstunnel需要真正的websocket时再用">wstunnel：需要真正的WebSocket时再用</a></li><li class="depth-2"><a href="#动态公网地址的处理">动态公网地址的处理</a></li><li class="depth-2"><a href="#实际选择">实际选择</a></li><li class="depth-2"><a href="#参考资料">参考资料</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

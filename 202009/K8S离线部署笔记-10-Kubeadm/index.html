@@ -1,347 +1,161 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="RPM包安装1234567891011121314151617181920212223242526272829# 联网环境# 添加谷歌源(需扶墙)cat &lt;&lt;EOF &gt; &#x2F;etc&#x2F;yum.repos.d&#x2F;kubernetes.repo[kubernetes]name&#x3D;Kubernetesbaseurl&#x3D;https:&#x2F;&#x2F;packages.cloud.google.com&#x2F;yum&#x2F;r">
-<meta property="og:type" content="article">
-<meta property="og:title" content="K8S离线部署笔记-10-Kubeadm">
-<meta property="og:url" content="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-10-Kubeadm/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="RPM包安装1234567891011121314151617181920212223242526272829# 联网环境# 添加谷歌源(需扶墙)cat &lt;&lt;EOF &gt; &#x2F;etc&#x2F;yum.repos.d&#x2F;kubernetes.repo[kubernetes]name&#x3D;Kubernetesbaseurl&#x3D;https:&#x2F;&#x2F;packages.cloud.google.com&#x2F;yum&#x2F;r">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2021-01-05T06:05:57.000Z">
-<meta property="article:modified_time" content="2021-01-05T06:05:57.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-10-Kubeadm/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-10-Kubeadm/","path":"202009/K8S离线部署笔记-10-Kubeadm/","title":"K8S离线部署笔记-10-Kubeadm"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>K8S离线部署笔记-10-Kubeadm | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RPM%E5%8C%85%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">RPM包安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDK8S%E9%95%9C%E5%83%8F"><span class="nav-number">2.</span> <span class="nav-text">下载K8S镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDFlannel%E9%95%9C%E5%83%8F"><span class="nav-number">3.</span> <span class="nav-text">下载Flannel镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDIngressNginx%E9%95%9C%E5%83%8F"><span class="nav-number">4.</span> <span class="nav-text">下载IngressNginx镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E8%8A%82%E7%82%B9%E9%83%A8%E7%BD%B2"><span class="nav-number">5.</span> <span class="nav-text">主节点部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E8%8A%82%E7%82%B9%E9%83%A8%E7%BD%B2"><span class="nav-number">6.</span> <span class="nav-text">工作节点部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E5%AE%83%E5%B8%B8%E8%A7%84%E6%93%8D%E4%BD%9C"><span class="nav-number">7.</span> <span class="nav-text">其它常规操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%8A%A5%E9%94%99%E6%97%A5%E5%BF%97"><span class="nav-number">7.1.</span> <span class="nav-text">查看报错日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E8%8A%82%E7%82%B9"><span class="nav-number">7.2.</span> <span class="nav-text">删除节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E7%BD%AE"><span class="nav-number">7.3.</span> <span class="nav-text">重置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">8.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-10-Kubeadm/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="K8S离线部署笔记-10-Kubeadm | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          K8S离线部署笔记-10-Kubeadm
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2021-01-05 14:05:57" itemprop="dateCreated datePublished" datetime="2021-01-05T14:05:57+08:00">2021-01-05</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="RPM包安装"><a href="#RPM包安装" class="headerlink" title="RPM包安装"></a>RPM包安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 联网环境</span></span><br><span class="line"><span class="comment"># 添加谷歌源(需扶墙)</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">EOF &gt; /etc/yum.repos.d/kubernetes.repo</span></span><br><span class="line"><span class="string">[kubernetes]</span></span><br><span class="line"><span class="string">name=Kubernetes</span></span><br><span class="line"><span class="string">baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64</span></span><br><span class="line"><span class="string">enabled=1</span></span><br><span class="line"><span class="string">gpgcheck=1</span></span><br><span class="line"><span class="string">repo_gpgcheck=1</span></span><br><span class="line"><span class="string">gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加阿里源</span></span><br><span class="line"><span class="built_in">cat</span> &lt;&lt;<span class="string">EOF &gt; /etc/yum.repos.d/kubernetes.repo</span></span><br><span class="line"><span class="string">[kubernetes]</span></span><br><span class="line"><span class="string">name=Kubernetes</span></span><br><span class="line"><span class="string">baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64</span></span><br><span class="line"><span class="string">enabled=1</span></span><br><span class="line"><span class="string">gpgcheck=1</span></span><br><span class="line"><span class="string">repo_gpgcheck=1</span></span><br><span class="line"><span class="string">gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg</span></span><br><span class="line"><span class="string">EOF</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 准备RPM包</span></span><br><span class="line">yumdownloader --assumeyes --destdir=/root/pkg/k8s --resolve yum-utils kubeadm-1.18.* kubelet-1.18.* kubectl-1.18.* ebtables</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，安装RPM包。若提示缺少RPM包，按提示使用yum安装即可（需提前配置yum源）</span></span><br><span class="line">yum install -y libxml2-python python-kitchen</span><br><span class="line">yum install -y --cacheonly --disablerepo=* /root/pkg/k8s/*.rpm</span><br></pre></td></tr></table></figure>
-
-<h2 id="下载K8S镜像"><a href="#下载K8S镜像" class="headerlink" title="下载K8S镜像"></a>下载K8S镜像</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看镜像列表</span></span><br><span class="line">kubeadm config images list</span><br><span class="line">k8s.gcr.io/kube-apiserver:v1.18.4</span><br><span class="line">k8s.gcr.io/kube-controller-manager:v1.18.4</span><br><span class="line">k8s.gcr.io/kube-scheduler:v1.18.4</span><br><span class="line">k8s.gcr.io/kube-proxy:v1.18.4</span><br><span class="line">k8s.gcr.io/pause:3.2</span><br><span class="line">k8s.gcr.io/etcd:3.4.3-0</span><br><span class="line">k8s.gcr.io/coredns:1.6.7</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线环境，镜像下载脚本</span></span><br><span class="line">vi img_save.sh</span><br><span class="line">images=(</span><br><span class="line">    kube-apiserver:v1.18.4</span><br><span class="line">    kube-controller-manager:v1.18.4</span><br><span class="line">    kube-scheduler:v1.18.4</span><br><span class="line">    kube-proxy:v1.18.4</span><br><span class="line">    pause:3.2</span><br><span class="line">    etcd:3.4.3-0</span><br><span class="line">    coredns:1.6.7</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">    docker pull registry.aliyuncs.com/google_containers/<span class="variable">$imageName</span></span><br><span class="line">    docker tag  registry.aliyuncs.com/google_containers/<span class="variable">$imageName</span> k8s.gcr.io/<span class="variable">$imageName</span></span><br><span class="line">    docker rmi  registry.aliyuncs.com/google_containers/<span class="variable">$imageName</span></span><br><span class="line">    docker save k8s.gcr.io/<span class="variable">$imageName</span> &gt; <span class="variable">$imageName</span>.tar</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，镜像导入脚本</span></span><br><span class="line">vi img_load.sh</span><br><span class="line">images=(</span><br><span class="line">    kube-apiserver:v1.18.4</span><br><span class="line">    kube-controller-manager:v1.18.4</span><br><span class="line">    kube-scheduler:v1.18.4</span><br><span class="line">    kube-proxy:v1.18.4</span><br><span class="line">    pause:3.2</span><br><span class="line">    etcd:3.4.3-0</span><br><span class="line">    coredns:1.6.7</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> imageName <span class="keyword">in</span> <span class="variable">$&#123;images[@]&#125;</span> ; <span class="keyword">do</span></span><br><span class="line">    docker load &lt; <span class="variable">$imageName</span>.tar</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="下载Flannel镜像"><a href="#下载Flannel镜像" class="headerlink" title="下载Flannel镜像"></a>下载Flannel镜像</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下载yml(需翻墙)</span></span><br><span class="line">wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线环境，下载镜像</span></span><br><span class="line">docker pull quay.io/coreos/flannel:v0.13.0-rc2</span><br><span class="line">docker save quay.io/coreos/flannel:v0.13.0-rc2 &gt; flannel_v0.13.0-rc2.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，导入镜像</span></span><br><span class="line">docker load &lt; flannel_v0.13.0-rc2.tar</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="下载IngressNginx镜像"><a href="#下载IngressNginx镜像" class="headerlink" title="下载IngressNginx镜像"></a>下载IngressNginx镜像</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在线环境，下载yml</span></span><br><span class="line">wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/namespace.yaml</span><br><span class="line">wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/rbac.yaml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在线环境，下载镜像</span></span><br><span class="line">docker pull quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0</span><br><span class="line">docker save quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0 &gt; nginx-ingress-controller_0.30.0.tar</span><br><span class="line"></span><br><span class="line"><span class="comment"># 离线环境，导入镜像</span></span><br><span class="line">docker load &lt; nginx-ingress-controller_0.30.0.tar</span><br></pre></td></tr></table></figure>
-
-<h2 id="主节点部署"><a href="#主节点部署" class="headerlink" title="主节点部署"></a>主节点部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 注意版本号为之前下载镜像的版本 </span></span><br><span class="line">kubeadm init --pod-network-cidr=10.244.0.0/16 --kubernetes-version=v1.18.4</span><br><span class="line"></span><br><span class="line"><span class="comment"># 复制配置文件</span></span><br><span class="line"><span class="built_in">mkdir</span> -p <span class="variable">$HOME</span>/.kube</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">cp</span> -i /etc/kubernetes/admin.conf <span class="variable">$HOME</span>/.kube/config</span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">chown</span> $(<span class="built_in">id</span> -u):$(<span class="built_in">id</span> -g) <span class="variable">$HOME</span>/.kube/config</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装Flannel</span></span><br><span class="line">kubectl apply -f kube-flannel.yml</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解决Flannel NodePort网络慢问题</span></span><br><span class="line">ethtool --offload flannel.1 rx off tx off</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查节点状态</span></span><br><span class="line">kubectl get nodes -o wide</span><br><span class="line">kubectl get pods --all-namespaces</span><br><span class="line"></span><br><span class="line"><span class="comment"># 主节点允许部署pod(可选)</span></span><br><span class="line">kubectl taint nodes --all node-role.kubernetes.io/master-</span><br></pre></td></tr></table></figure>
-
-<h2 id="工作节点部署"><a href="#工作节点部署" class="headerlink" title="工作节点部署"></a>工作节点部署</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 加入集群</span></span><br><span class="line">kubeadm <span class="built_in">join</span> 10.10.51.78:6443 --token cb3tj7.fvnovftkepaghkeq \</span><br><span class="line">  --discovery-token-ca-cert-hash sha256:093dc747b9a22551ee029b325078e49170b680ee885e869ffbe665cdf53e4d8e</span><br><span class="line"></span><br><span class="line"><span class="comment"># 若token过期，需要在主节点重新生成</span></span><br><span class="line">kubeadm token create --print-join-command --ttl=0</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="其它常规操作"><a href="#其它常规操作" class="headerlink" title="其它常规操作"></a>其它常规操作</h2><h3 id="查看报错日志"><a href="#查看报错日志" class="headerlink" title="查看报错日志"></a>查看报错日志</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">journalctl -u kubelet</span><br></pre></td></tr></table></figure>
-
-<h3 id="删除节点"><a href="#删除节点" class="headerlink" title="删除节点"></a>删除节点</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kubectl delete node ubuntu103  <span class="comment">#on master</span></span><br><span class="line">kubeadm reset  <span class="comment">#on slave</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="重置"><a href="#重置" class="headerlink" title="重置"></a>重置</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 重置k8s</span></span><br><span class="line">kubeadm reset</span><br><span class="line"><span class="built_in">rm</span> -rf /etc/cni/net.d</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清理路由</span></span><br><span class="line">iptables -L</span><br><span class="line">iptables -F &amp;&amp; iptables -t nat -F &amp;&amp; iptables -t mangle -F &amp;&amp; iptables -X</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清理网卡</span></span><br><span class="line">modprobe -r ipip</span><br><span class="line">ip <span class="built_in">link</span> delete cni0</span><br><span class="line">ip <span class="built_in">link</span> delete flannel.1</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.genesys.com/Documentation/GCXI/9.0.0/Dep/DockerOffline">Installing Kubernetes and Docker in offline scenarios</a></li>
-<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/46341911">kubernetes安装（国内环境）</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/kubernetes/kubernetes/issues/88986">Bare Metal K8S 63 Second Service Routing Delay - when accessing service via ClusterIP, or ExternalIP #88986</a></li>
-</ul>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-9-Postgres%E5%8E%9F%E7%94%9F%E9%83%A8%E7%BD%B2/" rel="prev" title="K8S离线部署笔记-9-Postgres原生部署">
-                  <i class="fa fa-angle-left"></i> K8S离线部署笔记-9-Postgres原生部署
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-11-Dashboard/" rel="next" title="K8S离线部署笔记-11-Dashboard">
-                  K8S离线部署笔记-11-Dashboard <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="RPM包安装 下载K8S镜像 下载Flannel镜像 下载IngressNginx镜像 主节点部署 工作节点部署 其它常规操作 查看报错日志 删除节点 重置 参考文档 Installing Kubernetes and Docker in offline scenarios kubernetes安装（国内环境…"><link rel="canonical" href="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-10-Kubeadm/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="K8S离线部署笔记-10-Kubeadm｜BlueXIII's Blog"><meta property="og:description" content="RPM包安装 下载K8S镜像 下载Flannel镜像 下载IngressNginx镜像 主节点部署 工作节点部署 其它常规操作 查看报错日志 删除节点 重置 参考文档 Installing Kubernetes and Docker in offline scenarios kubernetes安装（国内环境…"><meta property="og:url" content="https://www.bluexiii.com/202009/K8S%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0-10-Kubeadm/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>K8S离线部署笔记-10-Kubeadm｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>K8S离线部署笔记-10-Kubeadm</h1><div class="article-meta"><time datetime="2021-01-05T06:05:57.000Z">发布于2021-01-05</time></div><div class="badges"><a class="badge" href="/tags/Kubernetes/">Kubernetes</a></div></header><div class="prose"><h2 id="rpm包安装">RPM包安装</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 联网环境</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 添加谷歌源(需扶墙)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">cat</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF">EOF</span><span style="color:#D73A49;--shiki-dark:#F97583"> ></span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/yum.repos.d/kubernetes.repo</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">[kubernetes]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">name=Kubernetes</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">enabled=1</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">gpgcheck=1</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">repo_gpgcheck=1</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">EOF</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 添加阿里源</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">cat</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;&#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF">EOF</span><span style="color:#D73A49;--shiki-dark:#F97583"> ></span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/yum.repos.d/kubernetes.repo</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">[kubernetes]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">name=Kubernetes</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">enabled=1</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">gpgcheck=1</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">repo_gpgcheck=1</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">EOF</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 准备RPM包</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">yumdownloader</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --assumeyes</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --destdir=/root/pkg/k8s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --resolve</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> yum-utils</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> kubeadm-1.18.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">*</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> kubelet-1.18.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">*</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> kubectl-1.18.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">*</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ebtables</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 离线环境，安装RPM包。若提示缺少RPM包，按提示使用yum安装即可（需提前配置yum源）</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">yum</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -y</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libxml2-python</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> python-kitchen</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">yum</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -y</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --cacheonly</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --disablerepo=</span><span style="color:#D73A49;--shiki-dark:#F97583">*</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /root/pkg/k8s/</span><span style="color:#005CC5;--shiki-dark:#79B8FF">*</span><span style="color:#032F62;--shiki-dark:#9ECBFF">.rpm</span></span></code></pre>
+<h2 id="下载k8s镜像">下载K8S镜像</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看镜像列表</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubeadm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> config</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> images</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> list</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">k8s.gcr.io/kube-apiserver:v1.18.4</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">k8s.gcr.io/kube-controller-manager:v1.18.4</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">k8s.gcr.io/kube-scheduler:v1.18.4</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">k8s.gcr.io/kube-proxy:v1.18.4</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">k8s.gcr.io/pause:3.2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">k8s.gcr.io/etcd:3.4.3-0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">k8s.gcr.io/coredns:1.6.7</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 在线环境，镜像下载脚本</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">vi</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> img_save.sh</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">images</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    kube-apiserver:v1.18.4</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    kube-controller-manager:v1.18.4</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    kube-scheduler:v1.18.4</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    kube-proxy:v1.18.4</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    pause:3.2</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    etcd:3.4.3-0</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    coredns:1.6.7</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> imageName </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ${images[</span><span style="color:#D73A49;--shiki-dark:#F97583">@</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]} ; </span><span style="color:#D73A49;--shiki-dark:#F97583">do</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pull</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> registry.aliyuncs.com/google_containers/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$imageName</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> tag</span><span style="color:#032F62;--shiki-dark:#9ECBFF">  registry.aliyuncs.com/google_containers/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$imageName </span><span style="color:#032F62;--shiki-dark:#9ECBFF">k8s.gcr.io/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$imageName</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rmi</span><span style="color:#032F62;--shiki-dark:#9ECBFF">  registry.aliyuncs.com/google_containers/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$imageName</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> save</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> k8s.gcr.io/</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$imageName </span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $imageName</span><span style="color:#032F62;--shiki-dark:#9ECBFF">.tar</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">done</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 离线环境，镜像导入脚本</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">vi</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> img_load.sh</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">images</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    kube-apiserver:v1.18.4</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    kube-controller-manager:v1.18.4</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    kube-scheduler:v1.18.4</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    kube-proxy:v1.18.4</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    pause:3.2</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    etcd:3.4.3-0</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    coredns:1.6.7</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> imageName </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ${images[</span><span style="color:#D73A49;--shiki-dark:#F97583">@</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]} ; </span><span style="color:#D73A49;--shiki-dark:#F97583">do</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> load</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $imageName</span><span style="color:#032F62;--shiki-dark:#9ECBFF">.tar</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">done</span></span></code></pre>
+<h2 id="下载flannel镜像">下载Flannel镜像</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 下载yml(需翻墙)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">wget</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 在线环境，下载镜像</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pull</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> quay.io/coreos/flannel:v0.13.0-rc2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> save</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> quay.io/coreos/flannel:v0.13.0-rc2</span><span style="color:#D73A49;--shiki-dark:#F97583"> ></span><span style="color:#032F62;--shiki-dark:#9ECBFF"> flannel_v0.13.0-rc2.tar</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 离线环境，导入镜像</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> load</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> flannel_v0.13.0-rc2.tar</span></span>
+<span class="line"></span></code></pre>
+<h2 id="下载ingressnginx镜像">下载IngressNginx镜像</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 在线环境，下载yml</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">wget</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/namespace.yaml</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">wget</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/rbac.yaml</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 在线环境，下载镜像</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pull</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> save</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0</span><span style="color:#D73A49;--shiki-dark:#F97583"> ></span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-ingress-controller_0.30.0.tar</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 离线环境，导入镜像</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> load</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nginx-ingress-controller_0.30.0.tar</span></span></code></pre>
+<h2 id="主节点部署">主节点部署</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 注意版本号为之前下载镜像的版本 </span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubeadm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> init</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --pod-network-cidr=10.244.0.0/16</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --kubernetes-version=v1.18.4</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 复制配置文件</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">mkdir</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.kube</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -i</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/kubernetes/admin.conf</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.kube/config</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> chown</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">id</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -u</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span><span style="color:#032F62;--shiki-dark:#9ECBFF">:</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">id</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -g</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) $HOME</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/.kube/config</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 安装Flannel</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> apply</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -f</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> kube-flannel.yml</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 解决Flannel NodePort网络慢问题</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">ethtool</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --offload</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> flannel.1</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rx</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> off</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> tx</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> off</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 检查节点状态</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> get</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nodes</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> wide</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> get</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pods</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --all-namespaces</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 主节点允许部署pod(可选)</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> taint</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nodes</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --all</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> node-role.kubernetes.io/master-</span></span></code></pre>
+<h2 id="工作节点部署">工作节点部署</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 加入集群</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubeadm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> join</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 10.10.51.78:6443</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --token</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cb3tj7.fvnovftkepaghkeq</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --discovery-token-ca-cert-hash</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sha256:093dc747b9a22551ee029b325078e49170b680ee885e869ffbe665cdf53e4d8e</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 若token过期，需要在主节点重新生成</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubeadm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> token</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --print-join-command</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --ttl=0</span></span></code></pre>
+<h2 id="其它常规操作">其它常规操作</h2>
+<h3 id="查看报错日志">查看报错日志</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">journalctl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -u</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> kubelet</span></span></code></pre>
+<h3 id="删除节点">删除节点</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubectl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> delete</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> node</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ubuntu103</span><span style="color:#6A737D;--shiki-dark:#6A737D">  #on master</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubeadm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> reset</span><span style="color:#6A737D;--shiki-dark:#6A737D">  #on slave</span></span></code></pre>
+<h3 id="重置">重置</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 重置k8s</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">kubeadm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> reset</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">rm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -rf</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/cni/net.d</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 清理路由</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -L</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -F</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;&#x26; </span><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nat</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -F</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;&#x26; </span><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> mangle</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -F</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;&#x26; </span><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 清理网卡</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">modprobe</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -r</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ipip</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">ip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> link</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> delete</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cni0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">ip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> link</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> delete</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> flannel.1</span></span></code></pre>
+<h2 id="参考文档">参考文档</h2>
+<ul>
+<li><a href="https://docs.genesys.com/Documentation/GCXI/9.0.0/Dep/DockerOffline">Installing Kubernetes and Docker in offline scenarios</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/46341911">kubernetes安装（国内环境）</a></li>
+<li><a href="https://github.com/kubernetes/kubernetes/issues/88986">Bare Metal K8S 63 Second Service Routing Delay - when accessing service via ClusterIP, or ExternalIP #88986</a></li>
+</ul></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#rpm包安装">RPM包安装</a></li><li class="depth-2"><a href="#下载k8s镜像">下载K8S镜像</a></li><li class="depth-2"><a href="#下载flannel镜像">下载Flannel镜像</a></li><li class="depth-2"><a href="#下载ingressnginx镜像">下载IngressNginx镜像</a></li><li class="depth-2"><a href="#主节点部署">主节点部署</a></li><li class="depth-2"><a href="#工作节点部署">工作节点部署</a></li><li class="depth-2"><a href="#其它常规操作">其它常规操作</a></li><li class="depth-3"><a href="#查看报错日志">查看报错日志</a></li><li class="depth-3"><a href="#删除节点">删除节点</a></li><li class="depth-3"><a href="#重置">重置</a></li><li class="depth-2"><a href="#参考文档">参考文档</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

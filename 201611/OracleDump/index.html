@@ -1,344 +1,118 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="导入前准备建立导入用户CREATE USER YYBS_IMP  IDENTIFIED BY YYBS_IMP  DEFAULT TABLESPACE USERS  TEMPORARY TABLESPACE TEMP  PROFILE DEFAULTACCOUNT UNLOCK;GRANT RESOURCE TO YYBS_IMP;GRANT CONNECT TO YYBS_IMP;GRANT I">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Oracle使用dump导入数据">
-<meta property="og:url" content="https://www.bluexiii.com/201611/OracleDump/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="导入前准备建立导入用户CREATE USER YYBS_IMP  IDENTIFIED BY YYBS_IMP  DEFAULT TABLESPACE USERS  TEMPORARY TABLESPACE TEMP  PROFILE DEFAULTACCOUNT UNLOCK;GRANT RESOURCE TO YYBS_IMP;GRANT CONNECT TO YYBS_IMP;GRANT I">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2018-11-06T07:51:27.000Z">
-<meta property="article:modified_time" content="2018-11-06T07:51:27.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201611/OracleDump/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201611/OracleDump/","path":"201611/OracleDump/","title":"Oracle使用dump导入数据"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Oracle使用dump导入数据 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5%E5%89%8D%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">导入前准备</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B%E5%AF%BC%E5%85%A5%E7%94%A8%E6%88%B7"><span class="nav-number">1.1.</span> <span class="nav-text">建立导入用户</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A1%AE%E8%AE%A4%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">1.2.</span> <span class="nav-text">确认数据库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%80%E8%BF%9B%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">杀进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E5%BA%93"><span class="nav-number">1.4.</span> <span class="nav-text">清库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BDirectory"><span class="nav-number">1.5.</span> <span class="nav-text">建立Directory</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5%E8%84%9A%E6%9C%AC"><span class="nav-number">1.6.</span> <span class="nav-text">导入脚本</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5%E8%BF%87%E7%A8%8B%E7%9B%91%E6%8E%A7"><span class="nav-number">2.</span> <span class="nav-text">导入过程监控</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%91%E6%8E%A7%E4%B8%BB%E6%9C%BA%E6%80%A7%E8%83%BD"><span class="nav-number">2.1.</span> <span class="nav-text">监控主机性能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E5%AF%BC%E5%85%A5%E8%BF%9B%E5%BA%A6"><span class="nav-number">2.2.</span> <span class="nav-text">查看导入进度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8BIMPDP%E8%BF%9B%E5%BA%A6"><span class="nav-number">2.3.</span> <span class="nav-text">查看IMPDP进度</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AF%BC%E5%85%A5%E5%90%8E%E5%B7%A5%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">导入后工作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E7%BD%AE%E5%AF%86%E7%A0%81"><span class="nav-number">3.1.</span> <span class="nav-text">重置密码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E9%94%81%E7%94%A8%E6%88%B7%EF%BC%9A"><span class="nav-number">3.2.</span> <span class="nav-text">解锁用户：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E7%AD%96%E7%95%A5%E4%BF%AE%E6%94%B9"><span class="nav-number">3.3.</span> <span class="nav-text">安全策略修改</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E5%AE%83"><span class="nav-number">4.</span> <span class="nav-text">其它</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E6%96%B0%E5%AF%BC%E5%85%A5%E5%90%8C%E4%B9%89%E8%AF%8D"><span class="nav-number">4.1.</span> <span class="nav-text">重新导入同义词</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E5%BB%BA%E5%90%8C%E4%B9%89%E8%AF%8D%EF%BC%9A"><span class="nav-number">4.2.</span> <span class="nav-text">重建同义词：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E6%9B%B4%E6%94%B9%E8%A1%A8%E7%A9%BA%E9%97%B4"><span class="nav-number">4.3.</span> <span class="nav-text">查看更改表空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%A5%E9%94%81"><span class="nav-number">4.4.</span> <span class="nav-text">查锁</span></a></li></ol></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201611/OracleDump/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Oracle使用dump导入数据 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Oracle使用dump导入数据
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:51:27" itemprop="dateCreated datePublished" datetime="2018-11-06T15:51:27+08:00">2018-11-06</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h1 id="导入前准备"><a href="#导入前准备" class="headerlink" title="导入前准备"></a>导入前准备</h1><h2 id="建立导入用户"><a href="#建立导入用户" class="headerlink" title="建立导入用户"></a>建立导入用户</h2><p>CREATE USER YYBS_IMP<br>  IDENTIFIED BY YYBS_IMP<br>  DEFAULT TABLESPACE USERS<br>  TEMPORARY TABLESPACE TEMP<br>  PROFILE DEFAULT<br>ACCOUNT UNLOCK;<br>GRANT RESOURCE TO YYBS_IMP;<br>GRANT CONNECT TO YYBS_IMP;<br>GRANT IMP_FULL_DATABASE TO YYBS_IMP;<br>ALTER USER YYBS_IMP DEFAULT ROLE ALL;<br>GRANT UNLIMITED TABLESPACE TO YYBS_IMP;</p>
-<h2 id="确认数据库"><a href="#确认数据库" class="headerlink" title="确认数据库"></a>确认数据库</h2><p>tnsping stakfdb<br>export ORACLE_SID&#x3D;stakfdb<br>sqlplus &#x2F; as sysdba<br>select name,log_mode from v$database;  –确认SID<br>select utl_inaddr.get_host_address from dual;   –确认IP地址</p>
-<h2 id="杀进程"><a href="#杀进程" class="headerlink" title="杀进程"></a>杀进程</h2><p>select sid,serial#,username,status,osuser,machine,terminal,program from v$session;<br>alter system kill session ‘861,21309’;<br>强杀进程：<br>select spid, osuser, s.program from v$session s,v$process p where s.paddr&#x3D;p.addr and s.sid&#x3D;144<br>kill -9 spid<br>锁用户：<br>select ‘alter user ‘||USERNAME||’ account lock;’ from dba_users where username like ‘U%’ and created&gt;to_date(‘20110926’,’yyyymmdd’) order by CREATED;<br>DEMO:alter user UCR_CEN1 ACCOUNT LOCK;</p>
-<h2 id="清库"><a href="#清库" class="headerlink" title="清库"></a>清库</h2><p>select user_id,USERNAME,ACCOUNT_STATUS,CREATED from dba_users  order by CREATED;<br>select ‘drop user ‘||USERNAME||’ cascade;’ from dba_users where username like ‘U%’ and created&gt;to_date(‘20110926’,’yyyymmdd’) order by CREATED;<br>demo:drop user UOP_UIF2 cascade;</p>
-<h2 id="建立Directory"><a href="#建立Directory" class="headerlink" title="建立Directory"></a>建立Directory</h2><p>sqlplus system&#x2F;oracle@STAKFDB<br>CREATE OR REPLACE DIRECTORY imp930sta_dir AS ‘&#x2F;app&#x2F;imp930&#x2F;sta’;<br>sqlplus system&#x2F;oracle@CRMKFDB<br>CREATE OR REPLACE DIRECTORY imp930crm_dir AS ‘&#x2F;app&#x2F;imp930&#x2F;crm’;<br>CREATE OR REPLACE DIRECTORY imp930cen_dir AS ‘&#x2F;app&#x2F;imp930&#x2F;center’;<br>CREATE OR REPLACE DIRECTORY imp930oth_dir AS ‘&#x2F;app&#x2F;imp930&#x2F;other’;</p>
-<h2 id="导入脚本"><a href="#导入脚本" class="headerlink" title="导入脚本"></a>导入脚本</h2><p>impdp system&#x2F;oracle@csngstat831 dumpfile&#x3D;Usta_full.dump logfile&#x3D;Usta_full.log job_name&#x3D;Usta_full full&#x3D;y directory&#x3D;imp930sta_dir TABLE_EXISTS_ACTION&#x3D;replace parallel&#x3D;1<br>impdp system&#x2F;oracle@csngstat831 dumpfile&#x3D;sUCR_STA4.dump logfile&#x3D;sUCR_STA4.log job_name&#x3D;sUCR_STA4 schemas&#x3D;UCR_STA4 directory&#x3D;imp930sta_dir TABLE_EXISTS_ACTION&#x3D;replace parallel&#x3D;1</p>
-<h1 id="导入过程监控"><a href="#导入过程监控" class="headerlink" title="导入过程监控"></a>导入过程监控</h1><h2 id="监控主机性能"><a href="#监控主机性能" class="headerlink" title="监控主机性能"></a>监控主机性能</h2><p>nmon<br>vmstat<br>iostat</p>
-<h2 id="查看导入进度"><a href="#查看导入进度" class="headerlink" title="查看导入进度"></a>查看导入进度</h2><p>select count(0) from all_objects where CREATED &gt; sysdate-1;<br>select * from tab where tname like ‘CRM_FULL’;</p>
-<h2 id="查看IMPDP进度"><a href="#查看IMPDP进度" class="headerlink" title="查看IMPDP进度"></a>查看IMPDP进度</h2><p>select * from dba_datapump_jobs;<br>impdp system&#x2F;oracle@crmkfdb attach&#x3D;UCR_CRM3<br>help<br>status<br>start_jo<br>stop_job<br>kill_job<br>parallel&#x3D;4</p>
-<h1 id="导入后工作"><a href="#导入后工作" class="headerlink" title="导入后工作"></a>导入后工作</h1><h2 id="重置密码"><a href="#重置密码" class="headerlink" title="重置密码"></a>重置密码</h2><p>select ‘alter user ‘||USERNAME||’ identified by test123456;’ from dba_users where username like ‘U%’ and created&gt;to_date(‘20110926’,’yyyymmdd’) order by CREATED;<br>alter user uif_act1_sta1 identified by test123456;</p>
-<h2 id="解锁用户："><a href="#解锁用户：" class="headerlink" title="解锁用户："></a>解锁用户：</h2><p>alter user UCR_CEN1 ACCOUNT UNLOCK;</p>
-<h2 id="安全策略修改"><a href="#安全策略修改" class="headerlink" title="安全策略修改"></a>安全策略修改</h2><p>select * from  dba_profiles   WHERE profile &#x3D; ‘DEFAULT’ AND resource_type &#x3D; ‘PASSWORD’;<br>alter profile DEFAULT limit password_verify_function null;<br>alter profile DEFAULT limit FAILED_LOGIN_ATTEMPTS UNLIMITED;<br>alter user XXXX profile DEFAULT;</p>
-<h1 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h1><h2 id="重新导入同义词"><a href="#重新导入同义词" class="headerlink" title="重新导入同义词"></a>重新导入同义词</h2><p>table_exists_action&#x3D;skip content&#x3D;metadata_only<br>impdp system&#x2F;oracle@csngcrm831 dumpfile&#x3D;cUCR_CRM3.dump logfile&#x3D;cUCR_CRM3.log job_name&#x3D;cUCR_CRM3 schemas&#x3D;UCR_CRM3 directory&#x3D;imp930crm_dir TABLE_EXISTS_ACTION&#x3D;skip content&#x3D;metadata_only parallel&#x3D;1</p>
-<h2 id="重建同义词："><a href="#重建同义词：" class="headerlink" title="重建同义词："></a>重建同义词：</h2><p>select  ‘create or replace synonym UCR_CRM3.’||synonym_name||’ for UCR_CEN1.’||table_name||’;’<br>from dba_synonyms where table_owner&#x3D;’UCR_CEN1’  and owner&#x3D;’UCR_CRM4’;</p>
-<h2 id="查看更改表空间"><a href="#查看更改表空间" class="headerlink" title="查看更改表空间"></a>查看更改表空间</h2><p>select tablespace_name, file_id, file_name,<br>round(bytes&#x2F;(1024*1024),0) total_space<br>from dba_data_files<br>where tablespace_name like ‘TBS_CRM_DUSR3’<br>order by tablespace_name;  –查看表空间</p>
-<p>CREATE TABLESPACE TBS_ACT_DEF<br>DATAFILE ‘&#x2F;csoradata&#x2F;csngcrm&#x2F;TBS_ACT_DEF.dbf’ SIZE 1024M<br>UNIFORM SIZE 128k;  –建立表空间</p>
-<p>CREATE TABLESPACE “TBS_ACT_HIACT07” DATAFILE ‘&#x2F;oradata&#x2F;ngcrm&#x2F;TBS_ACT_HIACT07.dbf’ SIZE 10485760 AUTOEXTEND ON NEXT 10485760 MAXSIZE 32767M LOGGING ONLINE PERMANENT BLOCKSIZE 8192 EXTENT MANAGEMENT LOCAL AUTOALLOCATE SEGMENT SPACE MANAGEMENT AUTO;  –建立表空间2</p>
-<p>ALTER TABLESPACE “TBS_CRM_IUSR5” ADD DATAFILE ‘&#x2F;oradata&#x2F;ngbil&#x2F;crm&#x2F;TBS_CRM_IUSR5_2.dbf’ SIZE 10485760 AUTOEXTEND ON NEXT 10485760 MAXSIZE 32767M ;   –增加表空间文件</p>
-<p>ALTER DATABASE DATAFILE ‘&#x2F;csoradata&#x2F;csngcrm&#x2F;TBS_ACT_DEF.dbf’<br>AUTOEXTEND ON NEXT 100M<br>MAXSIZE 24576M;  –设定自动扩展</p>
-<p>CREATE TEMPORARY TABLESPACE temp_data<br>TEMPFILE ‘&#x2F;oracle&#x2F;oradata&#x2F;db&#x2F;TEMP_DATA.dbf’ SIZE 50M  –建立临时表空间</p>
-<p>ALTER DATABASE DATAFILE ‘&#x2F;oradata&#x2F;ngcrm&#x2F;TBS_CRM_DUSR3.dbf’<br>RESIZE 12288M;  –调表空间<br>ALTER DATABASE TEMPFILE ‘&#x2F;oradata&#x2F;ngcrm&#x2F;temp1.dbf’<br>RESIZE 12288M;  –调临时表空间</p>
-<p>移动表空间：<br>alter tablespace TBS_ACT_DEF offline;<br>alter tablespace TBS_ACT_DEF rename datafile ‘&#x2F;oradata&#x2F;ngbil&#x2F;crm&#x2F;TBS_ACT_DEF_2.dbf’ to ‘&#x2F;oradata&#x2F;ngcrm&#x2F;TBS_ACT_DEF_2.dbf’;<br>alter tablespace TBS_ACT_DEF online;<br>select * from dba_tablespaces where tablespace_name&#x3D;’TBS_ACT_DEF’;<br>select * from dba_data_files where tablespace_name&#x3D;’TBS_CRM_DUSR1’;</p>
-<h2 id="查锁"><a href="#查锁" class="headerlink" title="查锁"></a>查锁</h2><p>select * from v$locked_object<br>select * from dba_objects where object_id&#x3D;286655<br>select * from v$session where sid&#x3D;822;<br>alter system kill session ‘822,94’;</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201611/Nginx%E9%85%8D%E7%BD%AESSL/" rel="prev" title="Nginx配置SSL">
-                  <i class="fa fa-angle-left"></i> Nginx配置SSL
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201611/Oracle%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86/" rel="next" title="Oracle用户管理">
-                  Oracle用户管理 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="导入前准备 建立导入用户 CREATE USER YYBS IMP IDENTIFIED BY YYBS IMP DEFAULT TABLESPACE USERS TEMPORARY TABLESPACE TEMP PROFILE DEFAULT ACCOUNT UNLOCK; GRANT RESOURCE…"><link rel="canonical" href="https://www.bluexiii.com/201611/OracleDump/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Oracle使用dump导入数据｜BlueXIII's Blog"><meta property="og:description" content="导入前准备 建立导入用户 CREATE USER YYBS IMP IDENTIFIED BY YYBS IMP DEFAULT TABLESPACE USERS TEMPORARY TABLESPACE TEMP PROFILE DEFAULT ACCOUNT UNLOCK; GRANT RESOURCE…"><meta property="og:url" content="https://www.bluexiii.com/201611/OracleDump/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Oracle使用dump导入数据｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Oracle使用dump导入数据</h1><div class="article-meta"><time datetime="2018-11-06T07:51:27.000Z">发布于2018-11-06</time></div><div class="badges"><a class="badge" href="/tags/Oracle/">Oracle</a><a class="badge" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="badge" href="/tags/%E5%AD%98%E5%82%A8/">存储</a></div></header><div class="prose"><h1 id="导入前准备">导入前准备</h1>
+<h2 id="建立导入用户">建立导入用户</h2>
+<p>CREATE USER YYBS_IMP
+IDENTIFIED BY YYBS_IMP
+DEFAULT TABLESPACE USERS
+TEMPORARY TABLESPACE TEMP
+PROFILE DEFAULT
+ACCOUNT UNLOCK;
+GRANT RESOURCE TO YYBS_IMP;
+GRANT CONNECT TO YYBS_IMP;
+GRANT IMP_FULL_DATABASE TO YYBS_IMP;
+ALTER USER YYBS_IMP DEFAULT ROLE ALL;
+GRANT UNLIMITED TABLESPACE TO YYBS_IMP;</p>
+<h2 id="确认数据库">确认数据库</h2>
+<p>tnsping stakfdb
+export ORACLE_SID=stakfdb
+sqlplus / as sysdba
+select name,log_mode from v$database;  —确认SID
+select utl_inaddr.get_host_address from dual;   —确认IP地址</p>
+<h2 id="杀进程">杀进程</h2>
+<p>select sid,serial#,username,status,osuser,machine,terminal,program from v$session;
+alter system kill session ‘861,21309’;
+强杀进程：
+select spid, osuser, s.program from v$session s,v$process p where s.paddr=p.addr and s.sid=144
+kill -9 spid
+锁用户：
+select ‘alter user ‘||USERNAME||’ account lock;’ from dba_users where username like ‘U%’ and created>to_date(‘20110926’,‘yyyymmdd’) order by CREATED;
+DEMO:alter user UCR_CEN1 ACCOUNT LOCK;</p>
+<h2 id="清库">清库</h2>
+<p>select user_id,USERNAME,ACCOUNT_STATUS,CREATED from dba_users  order by CREATED;
+select ‘drop user ‘||USERNAME||’ cascade;’ from dba_users where username like ‘U%’ and created>to_date(‘20110926’,‘yyyymmdd’) order by CREATED;
+demo:drop user UOP_UIF2 cascade;</p>
+<h2 id="建立directory">建立Directory</h2>
+<p>sqlplus system/oracle@STAKFDB
+CREATE OR REPLACE DIRECTORY imp930sta_dir AS ‘/app/imp930/sta’;
+sqlplus system/oracle@CRMKFDB
+CREATE OR REPLACE DIRECTORY imp930crm_dir AS ‘/app/imp930/crm’;
+CREATE OR REPLACE DIRECTORY imp930cen_dir AS ‘/app/imp930/center’;
+CREATE OR REPLACE DIRECTORY imp930oth_dir AS ‘/app/imp930/other’;</p>
+<h2 id="导入脚本">导入脚本</h2>
+<p>impdp system/oracle@csngstat831 dumpfile=Usta_full.dump logfile=Usta_full.log job_name=Usta_full full=y directory=imp930sta_dir TABLE_EXISTS_ACTION=replace parallel=1
+impdp system/oracle@csngstat831 dumpfile=sUCR_STA4.dump logfile=sUCR_STA4.log job_name=sUCR_STA4 schemas=UCR_STA4 directory=imp930sta_dir TABLE_EXISTS_ACTION=replace parallel=1</p>
+<h1 id="导入过程监控">导入过程监控</h1>
+<h2 id="监控主机性能">监控主机性能</h2>
+<p>nmon
+vmstat
+iostat</p>
+<h2 id="查看导入进度">查看导入进度</h2>
+<p>select count(0) from all_objects where CREATED > sysdate-1;
+select * from tab where tname like ‘CRM_FULL’;</p>
+<h2 id="查看impdp进度">查看IMPDP进度</h2>
+<p>select * from dba_datapump_jobs;
+impdp system/oracle@crmkfdb attach=UCR_CRM3
+help
+status
+start_jo
+stop_job
+kill_job
+parallel=4</p>
+<h1 id="导入后工作">导入后工作</h1>
+<h2 id="重置密码">重置密码</h2>
+<p>select ‘alter user ‘||USERNAME||’ identified by test123456;’ from dba_users where username like ‘U%’ and created>to_date(‘20110926’,‘yyyymmdd’) order by CREATED;
+alter user uif_act1_sta1 identified by test123456;</p>
+<h2 id="解锁用户">解锁用户：</h2>
+<p>alter user UCR_CEN1 ACCOUNT UNLOCK;</p>
+<h2 id="安全策略修改">安全策略修改</h2>
+<p>select * from  dba_profiles   WHERE profile = ‘DEFAULT’ AND resource_type = ‘PASSWORD’;
+alter profile DEFAULT limit password_verify_function null;
+alter profile DEFAULT limit FAILED_LOGIN_ATTEMPTS UNLIMITED;
+alter user XXXX profile DEFAULT;</p>
+<h1 id="其它">其它</h1>
+<h2 id="重新导入同义词">重新导入同义词</h2>
+<p>table_exists_action=skip content=metadata_only
+impdp system/oracle@csngcrm831 dumpfile=cUCR_CRM3.dump logfile=cUCR_CRM3.log job_name=cUCR_CRM3 schemas=UCR_CRM3 directory=imp930crm_dir TABLE_EXISTS_ACTION=skip content=metadata_only parallel=1</p>
+<h2 id="重建同义词">重建同义词：</h2>
+<p>select  ‘create or replace synonym UCR_CRM3.’||synonym_name||’ for UCR_CEN1.’||table_name||’;‘<br>
+from dba_synonyms where table_owner=‘UCR_CEN1’  and owner=‘UCR_CRM4’;</p>
+<h2 id="查看更改表空间">查看更改表空间</h2>
+<p>select tablespace_name, file_id, file_name,
+round(bytes/(1024*1024),0) total_space
+from dba_data_files
+where tablespace_name like ‘TBS_CRM_DUSR3’
+order by tablespace_name;  —查看表空间</p>
+<p>CREATE TABLESPACE TBS_ACT_DEF
+DATAFILE ‘/csoradata/csngcrm/TBS_ACT_DEF.dbf’ SIZE 1024M
+UNIFORM SIZE 128k;  —建立表空间</p>
+<p>CREATE TABLESPACE “TBS_ACT_HIACT07” DATAFILE ‘/oradata/ngcrm/TBS_ACT_HIACT07.dbf’ SIZE 10485760 AUTOEXTEND ON NEXT 10485760 MAXSIZE 32767M LOGGING ONLINE PERMANENT BLOCKSIZE 8192 EXTENT MANAGEMENT LOCAL AUTOALLOCATE SEGMENT SPACE MANAGEMENT AUTO;  —建立表空间2</p>
+<p>ALTER TABLESPACE “TBS_CRM_IUSR5” ADD DATAFILE ‘/oradata/ngbil/crm/TBS_CRM_IUSR5_2.dbf’ SIZE 10485760 AUTOEXTEND ON NEXT 10485760 MAXSIZE 32767M ;   —增加表空间文件</p>
+<p>ALTER DATABASE DATAFILE ‘/csoradata/csngcrm/TBS_ACT_DEF.dbf’
+AUTOEXTEND ON NEXT 100M
+MAXSIZE 24576M;  —设定自动扩展</p>
+<p>CREATE TEMPORARY TABLESPACE temp_data
+TEMPFILE ‘/oracle/oradata/db/TEMP_DATA.dbf’ SIZE 50M  —建立临时表空间</p>
+<p>ALTER DATABASE DATAFILE ‘/oradata/ngcrm/TBS_CRM_DUSR3.dbf’
+RESIZE 12288M;  —调表空间
+ALTER DATABASE TEMPFILE ‘/oradata/ngcrm/temp1.dbf’
+RESIZE 12288M;  —调临时表空间</p>
+<p>移动表空间：
+alter tablespace TBS_ACT_DEF offline;
+alter tablespace TBS_ACT_DEF rename datafile ‘/oradata/ngbil/crm/TBS_ACT_DEF_2.dbf’ to ‘/oradata/ngcrm/TBS_ACT_DEF_2.dbf’;
+alter tablespace TBS_ACT_DEF online;
+select * from dba_tablespaces where tablespace_name=‘TBS_ACT_DEF’;
+select * from dba_data_files where tablespace_name=‘TBS_CRM_DUSR1’;</p>
+<h2 id="查锁">查锁</h2>
+<p>select * from v$locked_object
+select * from dba_objects where object_id=286655
+select * from v$session where sid=822;
+alter system kill session ‘822,94’;</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#建立导入用户">建立导入用户</a></li><li class="depth-2"><a href="#确认数据库">确认数据库</a></li><li class="depth-2"><a href="#杀进程">杀进程</a></li><li class="depth-2"><a href="#清库">清库</a></li><li class="depth-2"><a href="#建立directory">建立Directory</a></li><li class="depth-2"><a href="#导入脚本">导入脚本</a></li><li class="depth-2"><a href="#监控主机性能">监控主机性能</a></li><li class="depth-2"><a href="#查看导入进度">查看导入进度</a></li><li class="depth-2"><a href="#查看impdp进度">查看IMPDP进度</a></li><li class="depth-2"><a href="#重置密码">重置密码</a></li><li class="depth-2"><a href="#解锁用户">解锁用户：</a></li><li class="depth-2"><a href="#安全策略修改">安全策略修改</a></li><li class="depth-2"><a href="#重新导入同义词">重新导入同义词</a></li><li class="depth-2"><a href="#重建同义词">重建同义词：</a></li><li class="depth-2"><a href="#查看更改表空间">查看更改表空间</a></li><li class="depth-2"><a href="#查锁">查锁</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

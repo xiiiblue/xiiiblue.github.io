@@ -1,713 +1,438 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="ACDL研发流程系列第14篇，共15篇。 上一篇：ACDL研发流程附录A：术语和对象关系 下一篇：ACDL研发流程附录C：设计要求与验证追踪  先找到唯一登记入口ACDL中的同一状态只在一个地方维护。开始实际工作时，先从docs&#x2F;README.md进入，再找到负责当前对象的登记表，不从聊天、提交标题或其它摘要反推状态。    要查的对象 当前状态由哪里维护 主要内容    REQ和路线图 doc">
-<meta property="og:type" content="article">
-<meta property="og:title" content="ACDL研发流程附录B：登记表、状态和常用命令">
-<meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="ACDL研发流程系列第14篇，共15篇。 上一篇：ACDL研发流程附录A：术语和对象关系 下一篇：ACDL研发流程附录C：设计要求与验证追踪  先找到唯一登记入口ACDL中的同一状态只在一个地方维护。开始实际工作时，先从docs&#x2F;README.md进入，再找到负责当前对象的登记表，不从聊天、提交标题或其它摘要反推状态。    要查的对象 当前状态由哪里维护 主要内容    REQ和路线图 doc">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:modified_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/","path":"202608/ACDL研发流程附录B-登记表状态和常用命令/","title":"ACDL研发流程附录B：登记表、状态和常用命令"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>ACDL研发流程附录B：登记表、状态和常用命令 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E6%89%BE%E5%88%B0%E5%94%AF%E4%B8%80%E7%99%BB%E8%AE%B0%E5%85%A5%E5%8F%A3"><span class="nav-number">1.</span> <span class="nav-text">先找到唯一登记入口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E5%8F%B7%E5%92%8C%E7%8A%B6%E6%80%81"><span class="nav-number">2.</span> <span class="nav-text">编号和状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E7%BC%96%E5%8F%B7%E5%92%8C%E6%96%87%E4%BB%B6%E5%90%8D"><span class="nav-number">2.1.</span> <span class="nav-text">常用编号和文件名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Markdown%E6%96%87%E6%A1%A3%E7%8A%B6%E6%80%81"><span class="nav-number">2.2.</span> <span class="nav-text">Markdown文档状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REQ%E7%8A%B6%E6%80%81"><span class="nav-number">2.3.</span> <span class="nav-text">REQ状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ISSUE%E7%8A%B6%E6%80%81%E5%92%8C%E4%B8%A5%E9%87%8D%E7%A8%8B%E5%BA%A6"><span class="nav-number">2.4.</span> <span class="nav-text">ISSUE状态和严重程度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Loop%E6%95%B4%E4%BD%93%E7%8A%B6%E6%80%81"><span class="nav-number">2.5.</span> <span class="nav-text">Loop整体状态</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">3.</span> <span class="nav-text">常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E5%91%BD%E4%BB%A4%E5%89%8D%E5%85%88%E6%A3%80%E6%9F%A5%E5%B7%A5%E5%85%B7%E7%89%88%E6%9C%AC%E3%80%81%E5%88%86%E6%94%AF%E5%92%8C%E5%B7%B2%E6%9C%89%E4%BF%AE%E6%94%B9"><span class="nav-number">3.1.</span> <span class="nav-text">运行命令前先检查工具版本、分支和已有修改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E6%A1%A3%E5%92%8C%E8%BF%BD%E8%B8%AA%E5%91%BD%E4%BB%A4"><span class="nav-number">3.2.</span> <span class="nav-text">文档和追踪命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ISSUE%E5%91%BD%E4%BB%A4"><span class="nav-number">3.3.</span> <span class="nav-text">ISSUE命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Loop%E5%91%BD%E4%BB%A4"><span class="nav-number">3.4.</span> <span class="nav-text">Loop命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E5%92%8C%E5%8F%91%E5%B8%83%E5%89%8D%E6%A3%80%E6%9F%A5%E5%91%BD%E4%BB%A4"><span class="nav-number">3.5.</span> <span class="nav-text">验证和发布前检查命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E8%BE%85%E5%8A%A9%E5%91%BD%E4%BB%A4%E7%9A%84%E7%8A%B6%E6%80%81%E6%80%8E%E6%A0%B7%E7%BB%B4%E6%8A%A4"><span class="nav-number">4.</span> <span class="nav-text">没有辅助命令的状态怎样维护</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="ACDL研发流程附录B：登记表、状态和常用命令 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          ACDL研发流程附录B：登记表、状态和常用命令
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<blockquote>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="ACDL研发流程系列第14篇，共15篇。 上一篇：ACDL研发流程附录A：术语和对象关系 下一篇：ACDL研发流程附录C：设计要求与验证追踪 先找到唯一登记入口 ACDL中的同一状态只在一个地方维护。开始实际工作时，先从 docs/README.md 进入，再找到负责当前对象的登记表，不从聊天、提交标题或其它…"><link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="ACDL研发流程附录B：登记表、状态和常用命令｜BlueXIII's Blog"><meta property="og:description" content="ACDL研发流程系列第14篇，共15篇。 上一篇：ACDL研发流程附录A：术语和对象关系 下一篇：ACDL研发流程附录C：设计要求与验证追踪 先找到唯一登记入口 ACDL中的同一状态只在一个地方维护。开始实际工作时，先从 docs/README.md 进入，再找到负责当前对象的登记表，不从聊天、提交标题或其它…"><meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>ACDL研发流程附录B：登记表、状态和常用命令｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>ACDL研发流程附录B：登记表、状态和常用命令</h1><div class="article-meta"><time datetime="2026-08-17T08:53:44.000Z">发布于2026-08-17</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ACDL/">ACDL</a><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B/">研发流程</a></div></header><div class="prose"><blockquote>
 <p>ACDL研发流程系列第14篇，共15篇。</p>
 <p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95A-%E6%9C%AF%E8%AF%AD%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB/">ACDL研发流程附录A：术语和对象关系</a></p>
 <p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/">ACDL研发流程附录C：设计要求与验证追踪</a></p>
 </blockquote>
-<h2 id="先找到唯一登记入口"><a href="#先找到唯一登记入口" class="headerlink" title="先找到唯一登记入口"></a>先找到唯一登记入口</h2><p>ACDL中的同一状态只在一个地方维护。开始实际工作时，先从<code>docs/README.md</code>进入，再找到负责当前对象的登记表，不从聊天、提交标题或其它摘要反推状态。</p>
-<table>
-<thead>
-<tr>
-<th>要查的对象</th>
-<th>当前状态由哪里维护</th>
-<th>主要内容</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>REQ和路线图</td>
-<td><code>docs/01-需求/README.md</code></td>
-<td>REQ编号、需求状态、优先级、目标版本和路线图入口</td>
-</tr>
-<tr>
-<td>当前设计</td>
-<td><code>docs/02-设计/README.md</code>及系统、能力、横切设计目录</td>
-<td>Accepted产品与架构结论、ADR、索引和稳定设计要求正文</td>
-</tr>
-<tr>
-<td>ISSUE</td>
-<td><code>docs/03-实施/ISSUE/README.md</code></td>
-<td>问题编号、状态、严重程度、来源和处理去向</td>
-</tr>
-<tr>
-<td>ACL</td>
-<td><code>docs/03-实施/ACL/README.md</code></td>
-<td>ACL编号、整体状态、版本关系、启动方案和记录入口</td>
-</tr>
-<tr>
-<td>DFL</td>
-<td><code>docs/03-实施/DFL/README.md</code></td>
-<td>DFL编号、整体状态、实际环境、执行基线（实际使用的提交、制品和配置）及记录入口</td>
-</tr>
-<tr>
-<td>ERL</td>
-<td><code>docs/03-实施/ERL/README.md</code></td>
-<td>ERL编号、整体状态、评审基线（实际检查的提交或Git标签）、计划和记录入口</td>
-</tr>
-<tr>
-<td>目标版本与正式版本</td>
-<td><code>docs/04-版本/产品版本总览.md</code></td>
-<td>实际纳入范围、验收结论、发布说明和Git标签</td>
-</tr>
-<tr>
-<td>环境</td>
-<td><code>docs/05-环境/README.md</code></td>
-<td>当前部署状态、环境变更记录和恢复入口</td>
-</tr>
-<tr>
-<td>设计要求追踪</td>
-<td><code>tests/traceability/design-requirements.json</code></td>
-<td>稳定要求的来源、产生原因、主题和验证关系</td>
-</tr>
-</tbody></table>
-<p>索引负责编号和当前状态，单项正文负责详细内容。不要在实施根索引复制每轮Loop状态，也不要在追踪账本复制REQ、ISSUE、Loop或版本状态。</p>
-<h2 id="编号和状态"><a href="#编号和状态" class="headerlink" title="编号和状态"></a>编号和状态</h2><h3 id="常用编号和文件名"><a href="#常用编号和文件名" class="headerlink" title="常用编号和文件名"></a>常用编号和文件名</h3><table>
-<thead>
-<tr>
-<th>对象</th>
-<th>形式</th>
-<th>编号范围</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>规范</td>
-<td><code>STD-三位编号-标题.md</code></td>
-<td>全局连续，不复用</td>
-</tr>
-<tr>
-<td>REQ</td>
-<td><code>REQ-六位编号-需求简称.md</code></td>
-<td>全局连续，不复用</td>
-</tr>
-<tr>
-<td>路线图</td>
-<td><code>RM-三位编号-标题.md</code></td>
-<td>全局连续，不复用</td>
-</tr>
-<tr>
-<td>系统设计</td>
-<td><code>SYS-三位编号-标题.md</code></td>
-<td>全局连续，不复用</td>
-</tr>
-<tr>
-<td>能力设计</td>
-<td><code>CAP-三位编号-标题.md</code>；专项设计可用<code>CAP-三位编号-两位子编号</code></td>
-<td>全局连续，不复用</td>
-</tr>
-<tr>
-<td>横切设计</td>
-<td><code>CRS-三位编号-标题.md</code></td>
-<td>全局连续，不复用</td>
-</tr>
-<tr>
-<td>ADR</td>
-<td><code>ADR-四位编号-决定名称.md</code></td>
-<td>全局连续，不复用</td>
-</tr>
-<tr>
-<td>设计索引</td>
-<td><code>IDX-三位编号-标题.md</code></td>
-<td>全局连续，不复用</td>
-</tr>
-<tr>
-<td>ISSUE</td>
-<td><code>ISSUE-六位编号-问题简称.md</code></td>
-<td>全局连续；详情文件按需建立</td>
-</tr>
-<tr>
-<td>ACL</td>
-<td><code>ACL-六位编号-主题实施记录.md</code></td>
-<td>全局连续；计划版本与身份分开</td>
-</tr>
-<tr>
-<td>DFL</td>
-<td><code>DFL-六位编号-主题实施记录.md</code>；独立计划按需建立</td>
-<td>全局连续</td>
-</tr>
-<tr>
-<td>ERL</td>
-<td><code>ERL-六位编号-主题评审记录.md</code>；独立计划按需建立</td>
-<td>全局连续</td>
-</tr>
-<tr>
-<td>发布说明</td>
-<td><code>V0.X-发布说明.md</code></td>
-<td>与真实正式版本对应</td>
-</tr>
-</tbody></table>
-<p>编号一经使用不回收。文件标题变化时保留原编号；工作停止时保留编号并更新状态，不用删除文件来制造连续编号。</p>
-<h3 id="Markdown文档状态"><a href="#Markdown文档状态" class="headerlink" title="Markdown文档状态"></a>Markdown文档状态</h3><table>
-<thead>
-<tr>
-<th>状态</th>
-<th>含义</th>
-<th>常见去向</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>Draft</code></td>
-<td>内容仍在整理</td>
-<td>继续编写，或者进入评审</td>
-</tr>
-<tr>
-<td><code>Proposed</code></td>
-<td>已经可以评审，等待决定</td>
-<td>进入<code>Accepted</code>，或者退回修改</td>
-</tr>
-<tr>
-<td><code>Review</code></td>
-<td>正在评审或等待确认</td>
-<td>进入<code>Accepted</code>或<code>Completed</code>，也可以继续修改</td>
-</tr>
-<tr>
-<td><code>Accepted</code></td>
-<td>负责人确认，可以在注明范围内采用</td>
-<td>规范、产品、设计、ADR、当前手册的常见最终状态</td>
-</tr>
-<tr>
-<td><code>Completed</code></td>
-<td>计划、记录、版本或材料已经执行结束</td>
-<td>Loop计划与记录、正式版本和发布说明的常见最终状态</td>
-</tr>
-<tr>
-<td><code>Withdrawn</code></td>
-<td>尚未确认的方案或计划已经停止</td>
-<td>保留原因和已发生事实</td>
-</tr>
-<tr>
-<td><code>Superseded</code></td>
-<td>已经被新文档或决定替代</td>
-<td>与替代入口建立双向关系</td>
-</tr>
-<tr>
-<td><code>Rejected</code></td>
-<td>ADR经过评审后明确不采用</td>
-<td>只用于ADR</td>
-</tr>
-</tbody></table>
-<p>产品、设计、ADR和规范持续表达当前结论，不使用<code>Completed</code>。环境状态随部署持续变化，使用<code>Review</code>记录环境当前状态，不用<code>Accepted</code>表示环境已经获得批准。</p>
-<h3 id="REQ状态"><a href="#REQ状态" class="headerlink" title="REQ状态"></a>REQ状态</h3><table>
-<thead>
-<tr>
-<th>需求状态</th>
-<th>含义</th>
-<th>目标版本</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>待评估</code></td>
-<td>刚登记，尚未判断是否值得保留</td>
-<td>不需要</td>
-</tr>
-<tr>
-<td><code>候选</code></td>
-<td>值得继续考虑，但当前不一定投入</td>
-<td>不需要</td>
-</tr>
-<tr>
-<td><code>已选中</code></td>
-<td>Director确认可以进入产品与架构设计</td>
-<td>不需要</td>
-</tr>
-<tr>
-<td><code>已排期</code></td>
-<td>设计已经确认，并确定交付顺序和目标版本</td>
-<td>必须填写</td>
-</tr>
-<tr>
-<td><code>已完成</code></td>
-<td>随实际正式版本通过验收</td>
-<td>填写实际版本</td>
-</tr>
-<tr>
-<td><code>不采纳</code></td>
-<td>拒绝、撤回、重复或由其它事项覆盖</td>
-<td>不需要，但保存原因和去向</td>
-</tr>
-</tbody></table>
-<p>“设计中”“开发中”和“测试中”不是REQ状态。设计进度从设计文档读取，开发和验证进度从Loop读取。</p>
-<h3 id="ISSUE状态和严重程度"><a href="#ISSUE状态和严重程度" class="headerlink" title="ISSUE状态和严重程度"></a>ISSUE状态和严重程度</h3><p>ISSUE可以按实际情况在调查、处理和验证之间变化，不把它强行简化成一条只能向前的流水线。</p>
-<table>
-<thead>
-<tr>
-<th>状态</th>
-<th>什么时候使用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>待确认</code></td>
-<td>来源和现象还需要复核</td>
-</tr>
-<tr>
-<td><code>待分流</code></td>
-<td>问题已经保留，但还不知道进入REQ、ACL、环境还是其它处理</td>
-</tr>
-<tr>
-<td><code>待处理</code></td>
-<td>去向已经确定，尚未开始</td>
-</tr>
-<tr>
-<td><code>处理中</code></td>
-<td>已经有正在进行的调查或处理</td>
-</tr>
-<tr>
-<td><code>待验证</code></td>
-<td>修复或处理已发生，尚未取得要求的验证结果</td>
-</tr>
-<tr>
-<td><code>已关闭</code></td>
-<td>结果已经验证并有明确结论</td>
-</tr>
-<tr>
-<td><code>不处理</code></td>
-<td>Director决定不继续处理，并保存理由</td>
-</tr>
-<tr>
-<td><code>重复</code></td>
-<td>已有其它ISSUE处理同一个问题</td>
-</tr>
-</tbody></table>
-<table>
-<thead>
-<tr>
-<th>严重程度</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>S0</code></td>
-<td>会造成Secret泄露、越权、跨员工访问、数据损坏、无法恢复或未批准业务写入等必须立即阻止交付的问题</td>
-</tr>
-<tr>
-<td><code>S1</code></td>
-<td>核心流程不可用或高概率造成严重业务影响</td>
-</tr>
-<tr>
-<td><code>S2</code></td>
-<td>存在明确缺陷，但仍有可用替代路径</td>
-</tr>
-<tr>
-<td><code>S3</code></td>
-<td>低影响交互、表达、文档或维护问题</td>
-</tr>
-</tbody></table>
-<p>严重程度表达影响，不等于处理顺序的全部答案。是否阻止某个版本，还要结合版本范围和ERL计划中事先确定的标准判断。</p>
-<h3 id="Loop整体状态"><a href="#Loop整体状态" class="headerlink" title="Loop整体状态"></a>Loop整体状态</h3><p>Loop在启动内容已经准备好、但还没有第一次真实执行时可以处于<code>Ready</code>；开始执行后进入<code>In Progress</code>。现行主要变化是：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Ready →In Progress →Review →Completed</span><br><span class="line">Ready →Withdrawn</span><br><span class="line">In Progress →Withdrawn</span><br><span class="line">Review →In Progress</span><br><span class="line">Review →Withdrawn</span><br><span class="line">历史Accepted →Completed</span><br></pre></td></tr></table></figure>
+<h2 id="先找到唯一登记入口">先找到唯一登记入口</h2>
+<p>ACDL中的同一状态只在一个地方维护。开始实际工作时，先从<code>docs/README.md</code>进入，再找到负责当前对象的登记表，不从聊天、提交标题或其它摘要反推状态。</p>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>要查的对象</th><th>当前状态由哪里维护</th><th>主要内容</th></tr></thead><tbody><tr><td>REQ和路线图</td><td><code>docs/01-需求/README.md</code></td><td>REQ编号、需求状态、优先级、目标版本和路线图入口</td></tr><tr><td>当前设计</td><td><code>docs/02-设计/README.md</code>及系统、能力、横切设计目录</td><td>Accepted产品与架构结论、ADR、索引和稳定设计要求正文</td></tr><tr><td>ISSUE</td><td><code>docs/03-实施/ISSUE/README.md</code></td><td>问题编号、状态、严重程度、来源和处理去向</td></tr><tr><td>ACL</td><td><code>docs/03-实施/ACL/README.md</code></td><td>ACL编号、整体状态、版本关系、启动方案和记录入口</td></tr><tr><td>DFL</td><td><code>docs/03-实施/DFL/README.md</code></td><td>DFL编号、整体状态、实际环境、执行基线（实际使用的提交、制品和配置）及记录入口</td></tr><tr><td>ERL</td><td><code>docs/03-实施/ERL/README.md</code></td><td>ERL编号、整体状态、评审基线（实际检查的提交或Git标签）、计划和记录入口</td></tr><tr><td>目标版本与正式版本</td><td><code>docs/04-版本/产品版本总览.md</code></td><td>实际纳入范围、验收结论、发布说明和Git标签</td></tr><tr><td>环境</td><td><code>docs/05-环境/README.md</code></td><td>当前部署状态、环境变更记录和恢复入口</td></tr><tr><td>设计要求追踪</td><td><code>tests/traceability/design-requirements.json</code></td><td>稳定要求的来源、产生原因、主题和验证关系</td></tr></tbody></table>
+<p>索引负责编号和当前状态，单项正文负责详细内容。不要在实施根索引复制每轮Loop状态，也不要在追踪账本复制REQ、ISSUE、Loop或版本状态。</p>
+<h2 id="编号和状态">编号和状态</h2>
+<h3 id="常用编号和文件名">常用编号和文件名</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>对象</th><th>形式</th><th>编号范围</th></tr></thead><tbody><tr><td>规范</td><td><code>STD-三位编号-标题.md</code></td><td>全局连续，不复用</td></tr><tr><td>REQ</td><td><code>REQ-六位编号-需求简称.md</code></td><td>全局连续，不复用</td></tr><tr><td>路线图</td><td><code>RM-三位编号-标题.md</code></td><td>全局连续，不复用</td></tr><tr><td>系统设计</td><td><code>SYS-三位编号-标题.md</code></td><td>全局连续，不复用</td></tr><tr><td>能力设计</td><td><code>CAP-三位编号-标题.md</code>；专项设计可用<code>CAP-三位编号-两位子编号</code></td><td>全局连续，不复用</td></tr><tr><td>横切设计</td><td><code>CRS-三位编号-标题.md</code></td><td>全局连续，不复用</td></tr><tr><td>ADR</td><td><code>ADR-四位编号-决定名称.md</code></td><td>全局连续，不复用</td></tr><tr><td>设计索引</td><td><code>IDX-三位编号-标题.md</code></td><td>全局连续，不复用</td></tr><tr><td>ISSUE</td><td><code>ISSUE-六位编号-问题简称.md</code></td><td>全局连续；详情文件按需建立</td></tr><tr><td>ACL</td><td><code>ACL-六位编号-主题实施记录.md</code></td><td>全局连续；计划版本与身份分开</td></tr><tr><td>DFL</td><td><code>DFL-六位编号-主题实施记录.md</code>；独立计划按需建立</td><td>全局连续</td></tr><tr><td>ERL</td><td><code>ERL-六位编号-主题评审记录.md</code>；独立计划按需建立</td><td>全局连续</td></tr><tr><td>发布说明</td><td><code>V0.X-发布说明.md</code></td><td>与真实正式版本对应</td></tr></tbody></table>
+<p>编号一经使用不回收。文件标题变化时保留原编号；工作停止时保留编号并更新状态，不用删除文件来制造连续编号。</p>
+<h3 id="markdown文档状态">Markdown文档状态</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>状态</th><th>含义</th><th>常见去向</th></tr></thead><tbody><tr><td><code>Draft</code></td><td>内容仍在整理</td><td>继续编写，或者进入评审</td></tr><tr><td><code>Proposed</code></td><td>已经可以评审，等待决定</td><td>进入<code>Accepted</code>，或者退回修改</td></tr><tr><td><code>Review</code></td><td>正在评审或等待确认</td><td>进入<code>Accepted</code>或<code>Completed</code>，也可以继续修改</td></tr><tr><td><code>Accepted</code></td><td>负责人确认，可以在注明范围内采用</td><td>规范、产品、设计、ADR、当前手册的常见最终状态</td></tr><tr><td><code>Completed</code></td><td>计划、记录、版本或材料已经执行结束</td><td>Loop计划与记录、正式版本和发布说明的常见最终状态</td></tr><tr><td><code>Withdrawn</code></td><td>尚未确认的方案或计划已经停止</td><td>保留原因和已发生事实</td></tr><tr><td><code>Superseded</code></td><td>已经被新文档或决定替代</td><td>与替代入口建立双向关系</td></tr><tr><td><code>Rejected</code></td><td>ADR经过评审后明确不采用</td><td>只用于ADR</td></tr></tbody></table>
+<p>产品、设计、ADR和规范持续表达当前结论，不使用<code>Completed</code>。环境状态随部署持续变化，使用<code>Review</code>记录环境当前状态，不用<code>Accepted</code>表示环境已经获得批准。</p>
+<h3 id="req状态">REQ状态</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>需求状态</th><th>含义</th><th>目标版本</th></tr></thead><tbody><tr><td><code>待评估</code></td><td>刚登记，尚未判断是否值得保留</td><td>不需要</td></tr><tr><td><code>候选</code></td><td>值得继续考虑，但当前不一定投入</td><td>不需要</td></tr><tr><td><code>已选中</code></td><td>Director确认可以进入产品与架构设计</td><td>不需要</td></tr><tr><td><code>已排期</code></td><td>设计已经确认，并确定交付顺序和目标版本</td><td>必须填写</td></tr><tr><td><code>已完成</code></td><td>随实际正式版本通过验收</td><td>填写实际版本</td></tr><tr><td><code>不采纳</code></td><td>拒绝、撤回、重复或由其它事项覆盖</td><td>不需要，但保存原因和去向</td></tr></tbody></table>
+<p>“设计中”“开发中”和“测试中”不是REQ状态。设计进度从设计文档读取，开发和验证进度从Loop读取。</p>
+<h3 id="issue状态和严重程度">ISSUE状态和严重程度</h3>
+<p>ISSUE可以按实际情况在调查、处理和验证之间变化，不把它强行简化成一条只能向前的流水线。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>状态</th><th>什么时候使用</th></tr></thead><tbody><tr><td><code>待确认</code></td><td>来源和现象还需要复核</td></tr><tr><td><code>待分流</code></td><td>问题已经保留，但还不知道进入REQ、ACL、环境还是其它处理</td></tr><tr><td><code>待处理</code></td><td>去向已经确定，尚未开始</td></tr><tr><td><code>处理中</code></td><td>已经有正在进行的调查或处理</td></tr><tr><td><code>待验证</code></td><td>修复或处理已发生，尚未取得要求的验证结果</td></tr><tr><td><code>已关闭</code></td><td>结果已经验证并有明确结论</td></tr><tr><td><code>不处理</code></td><td>Director决定不继续处理，并保存理由</td></tr><tr><td><code>重复</code></td><td>已有其它ISSUE处理同一个问题</td></tr></tbody></table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>严重程度</th><th>含义</th></tr></thead><tbody><tr><td><code>S0</code></td><td>会造成Secret泄露、越权、跨员工访问、数据损坏、无法恢复或未批准业务写入等必须立即阻止交付的问题</td></tr><tr><td><code>S1</code></td><td>核心流程不可用或高概率造成严重业务影响</td></tr><tr><td><code>S2</code></td><td>存在明确缺陷，但仍有可用替代路径</td></tr><tr><td><code>S3</code></td><td>低影响交互、表达、文档或维护问题</td></tr></tbody></table>
+<p>严重程度表达影响，不等于处理顺序的全部答案。是否阻止某个版本，还要结合版本范围和ERL计划中事先确定的标准判断。</p>
+<h3 id="loop整体状态">Loop整体状态</h3>
+<p>Loop在启动内容已经准备好、但还没有第一次真实执行时可以处于<code>Ready</code>；开始执行后进入<code>In Progress</code>。现行主要变化是：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>Ready →In Progress →Review →Completed</span></span>
+<span class="line"><span>Ready →Withdrawn</span></span>
+<span class="line"><span>In Progress →Withdrawn</span></span>
+<span class="line"><span>Review →In Progress</span></span>
+<span class="line"><span>Review →Withdrawn</span></span>
+<span class="line"><span>历史Accepted →Completed</span></span></code></pre>
 <p><code>Review</code>表示执行结束，证据和剩余问题已经整理，等待结论确认或合入；它也可以因为发现缺口回到<code>In Progress</code>。<code>Completed</code>和<code>Withdrawn</code>是最终状态。ACL进入<code>Completed</code>还要求已经合入目标分支，并记录实际合入提交。结果另行记录，不能从<code>Completed</code>推断“没有遗留问题”。</p>
 <p>Loop整体状态只在相应ACL、DFL或ERL登记表维护。计划和记录的Markdown状态需要与整体状态一致，但不能替代整体状态。</p>
-<h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><h3 id="运行命令前先检查工具版本、分支和已有修改"><a href="#运行命令前先检查工具版本、分支和已有修改" class="headerlink" title="运行命令前先检查工具版本、分支和已有修改"></a>运行命令前先检查工具版本、分支和已有修改</h3><p>项目命令使用仓库固定的Node.js和pnpm。开始验证前先运行：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">nvm use</span><br><span class="line">git status --short</span><br><span class="line">git branch --show-current</span><br><span class="line">git rev-parse HEAD</span><br></pre></td></tr></table></figure>
-
+<h2 id="常用命令">常用命令</h2>
+<h3 id="运行命令前先检查工具版本分支和已有修改">运行命令前先检查工具版本、分支和已有修改</h3>
+<p>项目命令使用仓库固定的Node.js和pnpm。开始验证前先运行：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">nvm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> use</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> status</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --short</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> branch</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --show-current</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rev-parse</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> HEAD</span></span></code></pre>
 <p>这四条命令分别确认工具版本、已有差异、当前分支和当前提交。发现不属于本任务的改动时保留它们，不为了得到干净工作树删除或覆盖。</p>
-<h3 id="文档和追踪命令"><a href="#文档和追踪命令" class="headerlink" title="文档和追踪命令"></a>文档和追踪命令</h3><table>
-<thead>
-<tr>
-<th>命令</th>
-<th>是否修改文件</th>
-<th>用途</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>pnpm docs:check</code></td>
-<td>否</td>
-<td>检查文档结构、编号、状态、路径、链接、ISSUE与ACL关系及设计要求追踪</td>
-</tr>
-<tr>
-<td><code>pnpm trace:check</code></td>
-<td>否</td>
-<td>单独检查稳定设计要求账本、正文、验证入口和生成视图</td>
-</tr>
-<tr>
-<td><code>pnpm trace:render</code></td>
-<td>是</td>
-<td>根据设计正文和追踪账本重建人类可读视图的生成区</td>
-</tr>
-<tr>
-<td><code>git diff --check</code></td>
-<td>否</td>
-<td>检查空白错误和冲突标记</td>
-</tr>
-</tbody></table>
+<h3 id="文档和追踪命令">文档和追踪命令</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>命令</th><th>是否修改文件</th><th>用途</th></tr></thead><tbody><tr><td><code>pnpm docs:check</code></td><td>否</td><td>检查文档结构、编号、状态、路径、链接、ISSUE与ACL关系及设计要求追踪</td></tr><tr><td><code>pnpm trace:check</code></td><td>否</td><td>单独检查稳定设计要求账本、正文、验证入口和生成视图</td></tr><tr><td><code>pnpm trace:render</code></td><td>是</td><td>根据设计正文和追踪账本重建人类可读视图的生成区</td></tr><tr><td><code>git diff --check</code></td><td>否</td><td>检查空白错误和冲突标记</td></tr></tbody></table>
 <p>修改普通Markdown后运行：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pnpm docs:check</span><br><span class="line">git diff --check</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> docs:check</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> diff</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --check</span></span></code></pre>
 <p>稳定设计要求或追踪关系变化时，先生成视图再检查：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:render</span><br><span class="line">pnpm docs:check</span><br><span class="line">git diff --check</span><br></pre></td></tr></table></figure>
-
-<h3 id="ISSUE命令"><a href="#ISSUE命令" class="headerlink" title="ISSUE命令"></a>ISSUE命令</h3><p>本地发现的问题先预览编号和准备写入的文件：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pnpm issue:new -- --title=问题摘要 --<span class="built_in">source</span>=反馈来源 --category=实现缺陷 --severity=S2 --dry-run</span><br><span class="line">pnpm issue:new -- --title=问题摘要 --<span class="built_in">source</span>=反馈来源 --category=实现缺陷 --severity=S2</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> trace:render</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> docs:check</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> diff</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --check</span></span></code></pre>
+<h3 id="issue命令">ISSUE命令</h3>
+<p>本地发现的问题先预览编号和准备写入的文件：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> issue:new</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --title=问题摘要</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --source=反馈来源</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --category=实现缺陷</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --severity=S2</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dry-run</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> issue:new</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --title=问题摘要</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --source=反馈来源</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --category=实现缺陷</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --severity=S2</span></span></code></pre>
 <p>来源记录已经完整保存事实时，可以使用<code>--registry-only</code>只登记台账。GitHub新反馈经复核后导入，两边都已有编号时只建立关联：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pnpm issue:import -- --github=42 --repository=example-org/acdl-project --category=实现缺陷 --severity=S2 --dry-run</span><br><span class="line">pnpm issue:<span class="built_in">link</span> -- --<span class="built_in">id</span>=ISSUE-000036 --github=42 --repository=example-org/acdl-project --dry-run</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> issue:import</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --github=42</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --repository=example-org/acdl-project</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --category=实现缺陷</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --severity=S2</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dry-run</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> issue:link</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --id=ISSUE-000036</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --github=42</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --repository=example-org/acdl-project</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dry-run</span></span></code></pre>
 <p>GitHub同步只从本地ISSUE台账流向GitHub。不带<code>--apply</code>只报告差异，带<code>--apply</code>才修改GitHub：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pnpm issue:<span class="built_in">sync</span> -- --repository=example-org/acdl-project</span><br><span class="line">pnpm issue:<span class="built_in">sync</span> -- --repository=example-org/acdl-project --apply</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> issue:sync</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --repository=example-org/acdl-project</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> issue:sync</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --repository=example-org/acdl-project</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --apply</span></span></code></pre>
 <p><code>issue:new</code>、<code>issue:import</code>和<code>issue:link</code>会修改本地登记表和文档，正式执行前优先使用<code>--dry-run</code>。同步不会根据GitHub手工状态反向修改本地台账。</p>
-<h3 id="Loop命令"><a href="#Loop命令" class="headerlink" title="Loop命令"></a>Loop命令</h3><p>当前<code>loop:new</code>只创建ACL。ACL身份与版本分开，计划版本尚未确定时填写<code>未确定</code>：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pnpm loop:new -- --version=未确定 --title=主题 --<span class="built_in">source</span>=工作来源 --goal=本轮目标 --dry-run</span><br><span class="line">pnpm loop:new -- --version=未确定 --title=主题 --<span class="built_in">source</span>=工作来源 --goal=本轮目标</span><br></pre></td></tr></table></figure>
-
+<h3 id="loop命令">Loop命令</h3>
+<p>当前<code>loop:new</code>只创建ACL。ACL身份与版本分开，计划版本尚未确定时填写<code>未确定</code>：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> loop:new</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --version=未确定</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --title=主题</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --source=工作来源</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --goal=本轮目标</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dry-run</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> loop:new</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --version=未确定</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --title=主题</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --source=工作来源</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --goal=本轮目标</span></span></code></pre>
 <p>默认创建为<code>In Progress</code>。启动内容已经准备好、尚未发生第一次真实执行时，增加<code>--ready</code>创建为<code>Ready</code>。命令会在单一主记录开头生成启动方案；<code>--mainline</code>和<code>--with-plan</code>已经移除。来源精确填写一个<code>ISSUE-六位编号</code>时，工具还会把新ACL写回ISSUE台账的处理关系。</p>
 <p>DFL和ERL当前不能自动创建文件，需要在各自登记表取得下一编号，并按相应模板建立主记录。是否另建独立计划，取决于执行前是否需要单独批准高风险、恢复或评审边界。</p>
 <p>ACL进入<code>Review</code>使用专门入口，DFL和ERL使用通用状态命令。状态修改都先预览，再正式执行：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pnpm loop:review -- --<span class="built_in">id</span>=ACL-000039 --dry-run</span><br><span class="line">pnpm loop:status -- --<span class="built_in">id</span>=DFL-000002 --status=Review --dry-run</span><br><span class="line">pnpm loop:status -- --<span class="built_in">id</span>=DFL-000002 --status=Completed --confirm=<span class="string">&quot;确认本轮结论和未解决问题去向&quot;</span> --dry-run</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> loop:review</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --id=ACL-000039</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dry-run</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> loop:status</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --id=DFL-000002</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --status=Review</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dry-run</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> loop:status</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --id=DFL-000002</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --status=Completed</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --confirm=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"确认本轮结论和未解决问题去向"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dry-run</span></span></code></pre>
 <p><code>loop:review</code>会检查ACL候选和最近一次成功的<code>pnpm verify</code>证据是否匹配。进入<code>Completed</code>前需要Director已经确认；ACL还必须已经合入目标分支，并在主记录填写真实<code>主线合入提交</code>。<code>--confirm</code>只记录确认了什么，不能代替确认本身。</p>
-<h3 id="验证和发布前检查命令"><a href="#验证和发布前检查命令" class="headerlink" title="验证和发布前检查命令"></a>验证和发布前检查命令</h3><table>
-<thead>
-<tr>
-<th>命令</th>
-<th>用途和边界</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>pnpm verify -- --dry-run</code></td>
-<td>读取当前差异并预览将选择的验证范围</td>
-</tr>
-<tr>
-<td><code>pnpm verify</code></td>
-<td>根据当前差异执行不低于要求的验证，并保存能够精确对应被测内容的提交或Git树标识</td>
-</tr>
-<tr>
-<td><code>pnpm check</code></td>
-<td>执行工具链、CI契约、输入、Lint、依赖、许可证、类型、构建和非数据库测试组合</td>
-</tr>
-<tr>
-<td><code>pnpm release:preflight</code></td>
-<td>检查完整发布验证需要的工具链、Docker、Buildx和<code>linux/amd64</code>条件</td>
-</tr>
-<tr>
-<td><code>pnpm validate:release</code></td>
-<td>执行完整平台验证，构建并检查全部产品镜像</td>
-</tr>
-<tr>
-<td><code>pnpm process:metrics -- --since=2026-08-01 --until=2026-08-31</code></td>
-<td>只读统计Loop积压、已完成周期和ACL首次统一验证结果</td>
-</tr>
-</tbody></table>
+<h3 id="验证和发布前检查命令">验证和发布前检查命令</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>命令</th><th>用途和边界</th></tr></thead><tbody><tr><td><code>pnpm verify -- --dry-run</code></td><td>读取当前差异并预览将选择的验证范围</td></tr><tr><td><code>pnpm verify</code></td><td>根据当前差异执行不低于要求的验证，并保存能够精确对应被测内容的提交或Git树标识</td></tr><tr><td><code>pnpm check</code></td><td>执行工具链、CI契约、输入、Lint、依赖、许可证、类型、构建和非数据库测试组合</td></tr><tr><td><code>pnpm release:preflight</code></td><td>检查完整发布验证需要的工具链、Docker、Buildx和<code>linux/amd64</code>条件</td></tr><tr><td><code>pnpm validate:release</code></td><td>执行完整平台验证，构建并检查全部产品镜像</td></tr><tr><td><code>pnpm process:metrics -- --since=2026-08-01 --until=2026-08-31</code></td><td>只读统计Loop积压、已完成周期和ACL首次统一验证结果</td></tr></tbody></table>
 <p>涉及真实PostgreSQL测试时，<code>PROJECT_TEST_DATABASE_URL</code>必须指向名称以<code>project_test_</code>开头的全新PostgreSQL18专用测试库。正式发布验证、镜像和环境操作的当前输入条件从《开发与验证》和目标环境记录读取，不把本附录当作环境操作手册。</p>
-<h2 id="没有辅助命令的状态怎样维护"><a href="#没有辅助命令的状态怎样维护" class="headerlink" title="没有辅助命令的状态怎样维护"></a>没有辅助命令的状态怎样维护</h2><p>REQ排期、设计确认、目标版本形成和版本验收目前没有自动代替Director判断的状态命令。Agent根据已确认事实更新对应台账和正文，再运行文档检查。</p>
-<p>脚本能够分配编号、检查结构和同步多个文件，但不能判断需求是否值得做、设计是否合理、证据是否充分或版本是否应该通过。为了让命令成功而修改历史结论，比一次检查失败更危险。</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B10-%E9%80%9A%E8%BF%87%E7%9C%9F%E5%AE%9E%E4%BD%BF%E7%94%A8%E5%92%8C%E7%8B%AC%E7%AB%8B%E8%AF%84%E5%AE%A1%E5%8F%91%E7%8E%B0%E9%81%97%E6%BC%8F/" rel="prev" title="ACDL研发流程10：通过真实使用和独立评审发现遗漏">
-                  <i class="fa fa-angle-left"></i> ACDL研发流程10：通过真实使用和独立评审发现遗漏
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/" rel="next" title="ACDL研发流程08：让多个Agent在不同worktree工作">
-                  ACDL研发流程08：让多个Agent在不同worktree工作 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="没有辅助命令的状态怎样维护">没有辅助命令的状态怎样维护</h2>
+<p>REQ排期、设计确认、目标版本形成和版本验收目前没有自动代替Director判断的状态命令。Agent根据已确认事实更新对应台账和正文，再运行文档检查。</p>
+<p>脚本能够分配编号、检查结构和同步多个文件，但不能判断需求是否值得做、设计是否合理、证据是否充分或版本是否应该通过。为了让命令成功而修改历史结论，比一次检查失败更危险。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#先找到唯一登记入口">先找到唯一登记入口</a></li><li class="depth-2"><a href="#编号和状态">编号和状态</a></li><li class="depth-3"><a href="#常用编号和文件名">常用编号和文件名</a></li><li class="depth-3"><a href="#markdown文档状态">Markdown文档状态</a></li><li class="depth-3"><a href="#req状态">REQ状态</a></li><li class="depth-3"><a href="#issue状态和严重程度">ISSUE状态和严重程度</a></li><li class="depth-3"><a href="#loop整体状态">Loop整体状态</a></li><li class="depth-2"><a href="#常用命令">常用命令</a></li><li class="depth-3"><a href="#运行命令前先检查工具版本分支和已有修改">运行命令前先检查工具版本、分支和已有修改</a></li><li class="depth-3"><a href="#文档和追踪命令">文档和追踪命令</a></li><li class="depth-3"><a href="#issue命令">ISSUE命令</a></li><li class="depth-3"><a href="#loop命令">Loop命令</a></li><li class="depth-3"><a href="#验证和发布前检查命令">验证和发布前检查命令</a></li><li class="depth-2"><a href="#没有辅助命令的状态怎样维护">没有辅助命令的状态怎样维护</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

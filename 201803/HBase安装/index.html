@@ -1,356 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="基础准备 JDK Hadoop SSH Server  下载HBasehttps:&#x2F;&#x2F;hbase.apache.org&#x2F; 12tar -zxvf hbase-1.4.2-bin.tar.gzsudo mv hbase-1.4.2 &#x2F;opt&#x2F;hbase 系统环境变量export HBASE_MANAGES_ZK&#x3D;trueexport HBASE_HOME&#x3D;&#x2F;opt&amp;#x">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Ubuntu16.04下HBase安装笔记">
-<meta property="og:url" content="https://www.bluexiii.com/201803/HBase%E5%AE%89%E8%A3%85/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="基础准备 JDK Hadoop SSH Server  下载HBasehttps:&#x2F;&#x2F;hbase.apache.org&#x2F; 12tar -zxvf hbase-1.4.2-bin.tar.gzsudo mv hbase-1.4.2 &#x2F;opt&#x2F;hbase 系统环境变量export HBASE_MANAGES_ZK&#x3D;trueexport HBASE_HOME&#x3D;&#x2F;opt&amp;#x">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2018-11-06T07:30:08.000Z">
-<meta property="article:modified_time" content="2018-11-06T07:30:08.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201803/HBase%E5%AE%89%E8%A3%85/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201803/HBase%E5%AE%89%E8%A3%85/","path":"201803/HBase安装/","title":"Ubuntu16.04下HBase安装笔记"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Ubuntu16.04下HBase安装笔记 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E5%87%86%E5%A4%87"><span class="nav-number">1.</span> <span class="nav-text">基础准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDHBase"><span class="nav-number">2.</span> <span class="nav-text">下载HBase</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">3.</span> <span class="nav-text">系统环境变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E6%AD%BBJAVA-HOME"><span class="nav-number">4.</span> <span class="nav-text">写死JAVA_HOME</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E6%9C%BA%E6%A8%A1%E5%BC%8F%E9%85%8D%E7%BD%AE"><span class="nav-number">5.</span> <span class="nav-text">单机模式配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%AA%E5%88%86%E5%B8%83%E6%A8%A1%E5%BC%8F%E9%85%8D%E7%BD%AE"><span class="nav-number">6.</span> <span class="nav-text">伪分布模式配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hbase%E5%90%AF%E5%81%9C"><span class="nav-number">7.</span> <span class="nav-text">Hbase启停</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HBase-Shell"><span class="nav-number">8.</span> <span class="nav-text">HBase Shell</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">9.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201803/HBase%E5%AE%89%E8%A3%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Ubuntu16.04下HBase安装笔记 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Ubuntu16.04下HBase安装笔记
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:30:08" itemprop="dateCreated datePublished" datetime="2018-11-06T15:30:08+08:00">2018-11-06</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="基础准备"><a href="#基础准备" class="headerlink" title="基础准备"></a>基础准备</h2><ul>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="基础准备 JDK Hadoop SSH Server 下载HBase https://hbase.apache.org/ 系统环境变量 export HBASE MANAGES ZK=true export HBASE HOME=/opt/hbase export PATH=$PATH:/opt/hbase/…"><link rel="canonical" href="https://www.bluexiii.com/201803/HBase%E5%AE%89%E8%A3%85/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Ubuntu16.04下HBase安装笔记｜BlueXIII's Blog"><meta property="og:description" content="基础准备 JDK Hadoop SSH Server 下载HBase https://hbase.apache.org/ 系统环境变量 export HBASE MANAGES ZK=true export HBASE HOME=/opt/hbase export PATH=$PATH:/opt/hbase/…"><meta property="og:url" content="https://www.bluexiii.com/201803/HBase%E5%AE%89%E8%A3%85/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Ubuntu16.04下HBase安装笔记｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Ubuntu16.04下HBase安装笔记</h1><div class="article-meta"><time datetime="2018-11-06T07:30:08.000Z">发布于2018-11-06</time></div><div class="badges"><a class="badge" href="/tags/Linux/">Linux</a><a class="badge" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><a class="badge" href="/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a></div></header><div class="prose"><h2 id="基础准备">基础准备</h2>
+<ul>
 <li>JDK</li>
 <li>Hadoop</li>
 <li>SSH Server</li>
 </ul>
-<h2 id="下载HBase"><a href="#下载HBase" class="headerlink" title="下载HBase"></a>下载HBase</h2><p><a target="_blank" rel="noopener" href="https://hbase.apache.org/">https://hbase.apache.org/</a></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf hbase-1.4.2-bin.tar.gz</span><br><span class="line">sudo mv hbase-1.4.2 /opt/hbase</span><br></pre></td></tr></table></figure>
-<h2 id="系统环境变量"><a href="#系统环境变量" class="headerlink" title="系统环境变量"></a>系统环境变量</h2><p>export HBASE_MANAGES_ZK&#x3D;true<br>export HBASE_HOME&#x3D;&#x2F;opt&#x2F;hbase<br>export PATH&#x3D;$PATH:&#x2F;opt&#x2F;hbase&#x2F;bin</p>
-<h2 id="写死JAVA-HOME"><a href="#写死JAVA-HOME" class="headerlink" title="写死JAVA_HOME"></a>写死JAVA_HOME</h2><p>vi .&#x2F;conf&#x2F;hbase-env.sh</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre/</span><br></pre></td></tr></table></figure>
-
-<h2 id="单机模式配置"><a href="#单机模式配置" class="headerlink" title="单机模式配置"></a>单机模式配置</h2><p>vi hbase-site.xml</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.rootdir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;file:///tmp/hbase-$&#123;user.name&#125;/hbase&lt;/value&gt;</span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="伪分布模式配置"><a href="#伪分布模式配置" class="headerlink" title="伪分布模式配置"></a>伪分布模式配置</h2><p>vi hbase-site.xml</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.rootdir&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;hdfs://localhost:9000/hbase&lt;/value&gt;</span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">    &lt;property&gt;</span><br><span class="line">        &lt;name&gt;hbase.cluster.distributed&lt;/name&gt;</span><br><span class="line">        &lt;value&gt;true&lt;/value&gt;</span><br><span class="line">    &lt;/property&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure>
-
+<h2 id="下载hbase">下载HBase</h2>
+<p><a href="https://hbase.apache.org/">https://hbase.apache.org/</a></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>tar -zxvf hbase-1.4.2-bin.tar.gz</span></span>
+<span class="line"><span>sudo mv hbase-1.4.2 /opt/hbase</span></span></code></pre>
+<h2 id="系统环境变量">系统环境变量</h2>
+<p>export HBASE_MANAGES_ZK=true
+export HBASE_HOME=/opt/hbase
+export PATH=$PATH:/opt/hbase/bin</p>
+<h2 id="写死java_home">写死JAVA_HOME</h2>
+<p>vi ./conf/hbase-env.sh</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>export JAVA_HOME=/usr/lib/jvm/java-8-oracle/jre/</span></span></code></pre>
+<h2 id="单机模式配置">单机模式配置</h2>
+<p>vi hbase-site.xml</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>&#x3C;configuration></span></span>
+<span class="line"><span>    &#x3C;property></span></span>
+<span class="line"><span>        &#x3C;name>hbase.rootdir&#x3C;/name></span></span>
+<span class="line"><span>        &#x3C;value>file:///tmp/hbase-${user.name}/hbase&#x3C;/value></span></span>
+<span class="line"><span>    &#x3C;/property></span></span>
+<span class="line"><span>&#x3C;/configuration></span></span></code></pre>
+<h2 id="伪分布模式配置">伪分布模式配置</h2>
+<p>vi hbase-site.xml</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>&#x3C;configuration></span></span>
+<span class="line"><span>    &#x3C;property></span></span>
+<span class="line"><span>        &#x3C;name>hbase.rootdir&#x3C;/name></span></span>
+<span class="line"><span>        &#x3C;value>hdfs://localhost:9000/hbase&#x3C;/value></span></span>
+<span class="line"><span>    &#x3C;/property></span></span>
+<span class="line"><span>    &#x3C;property></span></span>
+<span class="line"><span>        &#x3C;name>hbase.cluster.distributed&#x3C;/name></span></span>
+<span class="line"><span>        &#x3C;value>true&#x3C;/value></span></span>
+<span class="line"><span>    &#x3C;/property></span></span>
+<span class="line"><span>&#x3C;/configuration></span></span></code></pre>
 <p>启动Hadoop：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./start-all.sh</span><br></pre></td></tr></table></figure>
-
-<h2 id="Hbase启停"><a href="#Hbase启停" class="headerlink" title="Hbase启停"></a>Hbase启停</h2><p>启停:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./bin/start-hbase.sh</span><br><span class="line">./bin/stop-hbase.sh</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>./start-all.sh</span></span></code></pre>
+<h2 id="hbase启停">Hbase启停</h2>
+<p>启停:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>./bin/start-hbase.sh</span></span>
+<span class="line"><span>./bin/stop-hbase.sh</span></span></code></pre>
 <p>查看进程：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jps</span><br></pre></td></tr></table></figure>
-
-<p>WEB控制台:<br><a target="_blank" rel="noopener" href="http://localhost:45005/master-status">http://localhost:45005/master-status</a></p>
-<h2 id="HBase-Shell"><a href="#HBase-Shell" class="headerlink" title="HBase Shell"></a>HBase Shell</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./bin/hbase shell</span><br><span class="line">help</span><br></pre></td></tr></table></figure>
-
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>jps</span></span></code></pre>
+<p>WEB控制台:
+<a href="http://localhost:45005/master-status">http://localhost:45005/master-status</a></p>
+<h2 id="hbase-shell">HBase Shell</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>./bin/hbase shell</span></span>
+<span class="line"><span>help</span></span></code></pre>
 <p>常用命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">status</span><br><span class="line">create &#x27;test&#x27;, &#x27;cf&#x27;</span><br><span class="line">list &#x27;test&#x27;</span><br><span class="line">describe &#x27;test&#x27;</span><br><span class="line"></span><br><span class="line">disable &#x27;test&#x27;</span><br><span class="line">drop &#x27;test&#x27;</span><br><span class="line">exists &#x27;test&#x27;</span><br><span class="line"></span><br><span class="line">put &#x27;test&#x27;, &#x27;row1&#x27;, &#x27;cf:a&#x27;, &#x27;value1&#x27;</span><br><span class="line">put &#x27;test&#x27;, &#x27;row2&#x27;, &#x27;cf:b&#x27;, &#x27;value2&#x27;</span><br><span class="line">put &#x27;test&#x27;, &#x27;row3&#x27;, &#x27;cf:c&#x27;, &#x27;value3&#x27;</span><br><span class="line"></span><br><span class="line">scan &#x27;test&#x27;</span><br><span class="line">get &#x27;test&#x27;, &#x27;row1&#x27;</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8818e8d40da4">https://www.jianshu.com/p/8818e8d40da4</a><br><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/352213f109e5">https://www.jianshu.com/p/352213f109e5</a><br><a target="_blank" rel="noopener" href="https://www.shiyanlou.com/courses/37">https://www.shiyanlou.com/courses/37</a><br><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html">https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html</a></p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201804/Ubuntu%E5%AE%89%E8%A3%85OracleExpress/" rel="prev" title="Ubuntu安装OracleExpress">
-                  <i class="fa fa-angle-left"></i> Ubuntu安装OracleExpress
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201803/Phoenix%E5%AE%89%E8%A3%85/" rel="next" title="Ubuntu16.04下Phoenix安装笔记">
-                  Ubuntu16.04下Phoenix安装笔记 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>status</span></span>
+<span class="line"><span>create 'test', 'cf'</span></span>
+<span class="line"><span>list 'test'</span></span>
+<span class="line"><span>describe 'test'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>disable 'test'</span></span>
+<span class="line"><span>drop 'test'</span></span>
+<span class="line"><span>exists 'test'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>put 'test', 'row1', 'cf:a', 'value1'</span></span>
+<span class="line"><span>put 'test', 'row2', 'cf:b', 'value2'</span></span>
+<span class="line"><span>put 'test', 'row3', 'cf:c', 'value3'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>scan 'test'</span></span>
+<span class="line"><span>get 'test', 'row1'</span></span></code></pre>
+<h2 id="参考文档">参考文档</h2>
+<p><a href="https://www.jianshu.com/p/8818e8d40da4">https://www.jianshu.com/p/8818e8d40da4</a>
+<a href="https://www.jianshu.com/p/352213f109e5">https://www.jianshu.com/p/352213f109e5</a>
+<a href="https://www.shiyanlou.com/courses/37">https://www.shiyanlou.com/courses/37</a>
+<a href="https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html">https://www.ibm.com/developerworks/cn/analytics/library/ba-cn-bigdata-hbase/index.html</a></p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#基础准备">基础准备</a></li><li class="depth-2"><a href="#下载hbase">下载HBase</a></li><li class="depth-2"><a href="#系统环境变量">系统环境变量</a></li><li class="depth-2"><a href="#写死java_home">写死JAVA_HOME</a></li><li class="depth-2"><a href="#单机模式配置">单机模式配置</a></li><li class="depth-2"><a href="#伪分布模式配置">伪分布模式配置</a></li><li class="depth-2"><a href="#hbase启停">Hbase启停</a></li><li class="depth-2"><a href="#hbase-shell">HBase Shell</a></li><li class="depth-2"><a href="#参考文档">参考文档</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

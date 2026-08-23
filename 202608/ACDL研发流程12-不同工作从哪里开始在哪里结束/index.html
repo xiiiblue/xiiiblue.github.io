@@ -1,290 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="ACDL研发流程系列第12篇，共15篇。 上一篇：ACDL研发流程11：结束Loop并冻结正式版本 下一篇：ACDL研发流程附录A：术语和对象关系  每项工作不必走完同一条路前面的章节用一项需求串起了完整ACDL，但日常工作并不都是新功能。修正一句错误说明、补一条测试、恢复已经设计好的行为、调整模块内部实现和处理环境故障，需要的约束明显不同。 如果所有工作都先建立REQ(Requirement)">
-<meta property="og:type" content="article">
-<meta property="og:title" content="ACDL研发流程12：不同工作从哪里开始、在哪里结束">
-<meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B12-%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BB%8E%E5%93%AA%E9%87%8C%E5%BC%80%E5%A7%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="ACDL研发流程系列第12篇，共15篇。 上一篇：ACDL研发流程11：结束Loop并冻结正式版本 下一篇：ACDL研发流程附录A：术语和对象关系  每项工作不必走完同一条路前面的章节用一项需求串起了完整ACDL，但日常工作并不都是新功能。修正一句错误说明、补一条测试、恢复已经设计好的行为、调整模块内部实现和处理环境故障，需要的约束明显不同。 如果所有工作都先建立REQ(Requirement)">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:modified_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B12-%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BB%8E%E5%93%AA%E9%87%8C%E5%BC%80%E5%A7%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B12-%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BB%8E%E5%93%AA%E9%87%8C%E5%BC%80%E5%A7%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F/","path":"202608/ACDL研发流程12-不同工作从哪里开始在哪里结束/","title":"ACDL研发流程12：不同工作从哪里开始、在哪里结束"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>ACDL研发流程12：不同工作从哪里开始、在哪里结束 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AF%8F%E9%A1%B9%E5%B7%A5%E4%BD%9C%E4%B8%8D%E5%BF%85%E8%B5%B0%E5%AE%8C%E5%90%8C%E4%B8%80%E6%9D%A1%E8%B7%AF"><span class="nav-number">1.</span> <span class="nav-text">每项工作不必走完同一条路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E5%88%A4%E6%96%AD%E5%AE%9E%E9%99%85%E6%94%B9%E5%8F%98%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">2.</span> <span class="nav-text">先判断实际改变了什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%AF%E5%90%A6%E8%A6%81%E6%94%B9%E5%8F%98%E5%B7%B2%E7%BB%8F%E7%A1%AE%E8%AE%A4%E7%9A%84%E4%BA%A7%E5%93%81%E6%88%96%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.1.</span> <span class="nav-text">是否要改变已经确认的产品或设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E5%AE%9E%E6%98%AF%E5%90%A6%E5%B7%B2%E7%BB%8F%E6%B8%85%E6%A5%9A"><span class="nav-number">2.2.</span> <span class="nav-text">事实是否已经清楚</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%AF%E5%90%A6%E9%9C%80%E8%A6%81%E8%B7%A8%E4%BC%9A%E8%AF%9D%E7%BB%A7%E7%BB%AD%E8%BF%BD%E8%B8%AA"><span class="nav-number">2.3.</span> <span class="nav-text">是否需要跨会话继续追踪</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%AF%E5%90%A6%E5%87%86%E5%A4%87%E5%BD%A2%E6%88%90%E6%AD%A3%E5%BC%8F%E4%BA%A4%E4%BB%98"><span class="nav-number">2.4.</span> <span class="nav-text">是否准备形成正式交付</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B0%E5%8A%9F%E8%83%BD%E6%88%96%E4%BA%A7%E5%93%81%E5%8F%98%E5%8C%96%EF%BC%9A%E4%BB%8EREQ%E5%92%8C%E8%AE%BE%E8%AE%A1%E5%BC%80%E5%A7%8B"><span class="nav-number">3.</span> <span class="nav-text">新功能或产品变化：从REQ和设计开始</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E7%BC%BA%E9%99%B7%EF%BC%9A%E5%85%88%E7%9C%8B%E8%AE%BE%E8%AE%A1%E6%9C%89%E6%B2%A1%E6%9C%89%E6%98%8E%E7%A1%AE%E7%AD%94%E6%A1%88"><span class="nav-number">4.</span> <span class="nav-text">实现缺陷：先看设计有没有明确答案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E5%8F%98%E5%8C%96%EF%BC%9A%E5%85%88%E5%88%A4%E6%96%AD%E5%93%AA%E7%B1%BB%E8%AE%BE%E8%AE%A1%E8%B4%9F%E8%B4%A3%E5%BD%93%E5%89%8D%E4%BA%8B%E5%AE%9E"><span class="nav-number">5.</span> <span class="nav-text">设计变化：先判断哪类设计负责当前事实</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E9%83%A8%E9%87%8D%E6%9E%84%E5%92%8C%E6%B5%8B%E8%AF%95%E8%A1%A5%E5%85%85%EF%BC%9A%E4%B8%8D%E5%88%B6%E9%80%A0%E8%99%9A%E5%81%87%E7%9A%84%E4%BA%A7%E5%93%81%E5%8F%98%E5%8C%96"><span class="nav-number">6.</span> <span class="nav-text">内部重构和测试补充：不制造虚假的产品变化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E6%A1%A3%E5%8F%98%E5%8C%96%EF%BC%9A%E5%8C%BA%E5%88%86%E8%A1%A8%E8%BE%BE%E3%80%81%E4%BA%8B%E5%AE%9E%E5%92%8C%E8%A7%84%E5%88%99"><span class="nav-number">7.</span> <span class="nav-text">文档变化：区分表达、事实和规则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%AD%A3%E8%A1%A8%E8%BE%BE"><span class="nav-number">7.1.</span> <span class="nav-text">修正表达</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9B%B4%E6%AD%A3%E4%BA%8B%E5%AE%9E"><span class="nav-number">7.2.</span> <span class="nav-text">更正事实</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B9%E5%8F%98%E8%A7%84%E5%88%99%E6%88%96%E8%AE%BE%E8%AE%A1"><span class="nav-number">7.3.</span> <span class="nav-text">改变规则或设计</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E6%95%85%E9%9A%9C%EF%BC%9A%E5%85%88%E6%81%A2%E5%A4%8D%E7%8E%B0%E5%9C%BA%EF%BC%8C%E5%86%8D%E5%86%B3%E5%AE%9A%E9%95%BF%E6%9C%9F%E4%BF%AE%E6%94%B9"><span class="nav-number">8.</span> <span class="nav-text">环境故障：先恢复现场，再决定长期修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DFL%E5%92%8CERL%EF%BC%9A%E4%BB%8E%E5%87%86%E5%A4%87%E5%9B%9E%E7%AD%94%E7%9A%84%E9%97%AE%E9%A2%98%E5%BC%80%E5%A7%8B"><span class="nav-number">9.</span> <span class="nav-text">DFL和ERL：从准备回答的问题开始</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%BB%E5%8A%A1%E7%9B%AE%E6%A0%87%E5%86%B3%E5%AE%9A%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F"><span class="nav-number">10.</span> <span class="nav-text">任务目标决定在哪里结束</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B12-%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BB%8E%E5%93%AA%E9%87%8C%E5%BC%80%E5%A7%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="ACDL研发流程12：不同工作从哪里开始、在哪里结束 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          ACDL研发流程12：不同工作从哪里开始、在哪里结束
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<blockquote>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="ACDL研发流程系列第12篇，共15篇。 上一篇：ACDL研发流程11：结束Loop并冻结正式版本 下一篇：ACDL研发流程附录A：术语和对象关系 每项工作不必走完同一条路 前面的章节用一项需求串起了完整ACDL，但日常工作并不都是新功能。修正一句错误说明、补一条测试、恢复已经设计好的行为、调整模块内部实现和…"><link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B12-%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BB%8E%E5%93%AA%E9%87%8C%E5%BC%80%E5%A7%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="ACDL研发流程12：不同工作从哪里开始、在哪里结束｜BlueXIII's Blog"><meta property="og:description" content="ACDL研发流程系列第12篇，共15篇。 上一篇：ACDL研发流程11：结束Loop并冻结正式版本 下一篇：ACDL研发流程附录A：术语和对象关系 每项工作不必走完同一条路 前面的章节用一项需求串起了完整ACDL，但日常工作并不都是新功能。修正一句错误说明、补一条测试、恢复已经设计好的行为、调整模块内部实现和…"><meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B12-%E4%B8%8D%E5%90%8C%E5%B7%A5%E4%BD%9C%E4%BB%8E%E5%93%AA%E9%87%8C%E5%BC%80%E5%A7%8B%E5%9C%A8%E5%93%AA%E9%87%8C%E7%BB%93%E6%9D%9F/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>ACDL研发流程12：不同工作从哪里开始、在哪里结束｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>ACDL研发流程12：不同工作从哪里开始、在哪里结束</h1><div class="article-meta"><time datetime="2026-08-17T08:53:44.000Z">发布于2026-08-17</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ACDL/">ACDL</a><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B/">研发流程</a></div></header><div class="prose"><blockquote>
 <p>ACDL研发流程系列第12篇，共15篇。</p>
 <p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B11-%E7%BB%93%E6%9D%9FLoop%E5%B9%B6%E5%86%BB%E7%BB%93%E6%AD%A3%E5%BC%8F%E7%89%88%E6%9C%AC/">ACDL研发流程11：结束Loop并冻结正式版本</a></p>
 <p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95A-%E6%9C%AF%E8%AF%AD%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB/">ACDL研发流程附录A：术语和对象关系</a></p>
 </blockquote>
-<h2 id="每项工作不必走完同一条路"><a href="#每项工作不必走完同一条路" class="headerlink" title="每项工作不必走完同一条路"></a>每项工作不必走完同一条路</h2><p>前面的章节用一项需求串起了完整ACDL，但日常工作并不都是新功能。修正一句错误说明、补一条测试、恢复已经设计好的行为、调整模块内部实现和处理环境故障，需要的约束明显不同。</p>
+<h2 id="每项工作不必走完同一条路">每项工作不必走完同一条路</h2>
+<p>前面的章节用一项需求串起了完整ACDL，但日常工作并不都是新功能。修正一句错误说明、补一条测试、恢复已经设计好的行为、调整模块内部实现和处理环境故障，需要的约束明显不同。</p>
 <p>如果所有工作都先建立REQ(Requirement)、重写所有设计类别、依次开展三种Loop再形成正式版本，ACDL会变成填写材料的负担。反过来，如果所有工作都以“小改动”为由直接修改，产品承诺、长期设计和现场事实又会逐渐失去可信度。</p>
 <p>因此，选择流程时不是追求步骤最少，而是保留这项工作真正需要的决定、检查和记录：重要决定有依据，实际修改能验证，发现的问题有去向，后来的人能够理解结果。达到这些条件以后就可以结束，不需要为了形式继续增加对象。</p>
 <p>文件数量和代码行数不能直接决定路径。一个只改一行代码的权限规则调整，如果改变了安全边界，也可能需要REQ、设计评审和正式版本；一次涉及几十个文件的机械重命名，只要没有改变行为和长期约定，可能仍然只是一次边界清楚的实施工作。</p>
-<h2 id="先判断实际改变了什么"><a href="#先判断实际改变了什么" class="headerlink" title="先判断实际改变了什么"></a>先判断实际改变了什么</h2><p>收到任务以后，Director和Agent先回答四个问题。</p>
-<h3 id="是否要改变已经确认的产品或设计"><a href="#是否要改变已经确认的产品或设计" class="headerlink" title="是否要改变已经确认的产品或设计"></a>是否要改变已经确认的产品或设计</h3><p>先看用户行为、业务规则、权限、安全边界、数据含义、接口语义、部署方式或正式支持范围是否改变。只要其中一项发生变化，就不能只根据任务标题把它当成缺陷或重构。</p>
+<h2 id="先判断实际改变了什么">先判断实际改变了什么</h2>
+<p>收到任务以后，Director和Agent先回答四个问题。</p>
+<h3 id="是否要改变已经确认的产品或设计">是否要改变已经确认的产品或设计</h3>
+<p>先看用户行为、业务规则、权限、安全边界、数据含义、接口语义、部署方式或正式支持范围是否改变。只要其中一项发生变化，就不能只根据任务标题把它当成缺陷或重构。</p>
 <p>如果已经有明确并确认的设计，而本次只是让实现重新符合设计，可以直接进入实施。现有设计没有答案，或者准备采用不同答案，就先回到需求和设计。</p>
-<h3 id="事实是否已经清楚"><a href="#事实是否已经清楚" class="headerlink" title="事实是否已经清楚"></a>事实是否已经清楚</h3><p>“页面有问题”“测试不稳定”“环境坏了”都只是现象。事实不清楚时，先复现、读取日志、核对当前代码和环境，必要时建立ISSUE保留调查过程。不要在原因尚未确认时直接建立一项虚假的产品需求。</p>
-<h3 id="是否需要跨会话继续追踪"><a href="#是否需要跨会话继续追踪" class="headerlink" title="是否需要跨会话继续追踪"></a>是否需要跨会话继续追踪</h3><p>能在当前会话中完成并验证的低风险修正，不一定需要新增编号。需要以后继续、需要多个任务协作、会进入排期，或者必须保存处理决定时，就使用ISSUE、REQ、Loop或环境记录分配唯一编号并登记。</p>
+<h3 id="事实是否已经清楚">事实是否已经清楚</h3>
+<p>“页面有问题”“测试不稳定”“环境坏了”都只是现象。事实不清楚时，先复现、读取日志、核对当前代码和环境，必要时建立ISSUE保留调查过程。不要在原因尚未确认时直接建立一项虚假的产品需求。</p>
+<h3 id="是否需要跨会话继续追踪">是否需要跨会话继续追踪</h3>
+<p>能在当前会话中完成并验证的低风险修正，不一定需要新增编号。需要以后继续、需要多个任务协作、会进入排期，或者必须保存处理决定时，就使用ISSUE、REQ、Loop或环境记录分配唯一编号并登记。</p>
 <p>“当前会话可以完成”不能单独作为不登记ISSUE的理由。需要跨工作单元、跨责任人或跨版本继续处理时，应当取得稳定编号；DFL和ERL中的局部发现可以先留在本轮记录中，需要修改正式产物时另建ACL，需要跨上述范围继续处理时再登记全局ISSUE。</p>
-<h3 id="是否准备形成正式交付"><a href="#是否准备形成正式交付" class="headerlink" title="是否准备形成正式交付"></a>是否准备形成正式交付</h3><p>代码合入主线、Loop结束和正式版本形成是不同的结束位置。多数维护工作可以在验证完成或ACL(Agentic Coding Loop)结束后停止。只有Director准备向使用者形成一次正式交付时，才继续进行版本验收并创建Git标签。</p>
+<h3 id="是否准备形成正式交付">是否准备形成正式交付</h3>
+<p>代码合入主线、Loop结束和正式版本形成是不同的结束位置。多数维护工作可以在验证完成或ACL(Agentic Coding Loop)结束后停止。只有Director准备向使用者形成一次正式交付时，才继续进行版本验收并创建Git标签。</p>
 <p>可以把这四个问题压缩成一条判断顺序：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">先确认事实</span><br><span class="line">  →再判断是否改变既有承诺</span><br><span class="line">    →再决定是否需要跨会话追踪</span><br><span class="line">      →最后决定停在验证、Loop结束还是正式版本</span><br></pre></td></tr></table></figure>
-
-<h2 id="新功能或产品变化：从REQ和设计开始"><a href="#新功能或产品变化：从REQ和设计开始" class="headerlink" title="新功能或产品变化：从REQ和设计开始"></a>新功能或产品变化：从REQ和设计开始</h2><p>增加新能力、改变用户行为、修改业务规则，或者改变权限、安全、数据和正式支持范围时，先建立或关联REQ。REQ说明为什么要改变、准备解决什么问题、怎样判断结果有用，不提前代替设计决定实现方法。</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>先确认事实</span></span>
+<span class="line"><span>  →再判断是否改变既有承诺</span></span>
+<span class="line"><span>    →再决定是否需要跨会话追踪</span></span>
+<span class="line"><span>      →最后决定停在验证、Loop结束还是正式版本</span></span></code></pre>
+<h2 id="新功能或产品变化从req和设计开始">新功能或产品变化：从REQ和设计开始</h2>
+<p>增加新能力、改变用户行为、修改业务规则，或者改变权限、安全、数据和正式支持范围时，先建立或关联REQ。REQ说明为什么要改变、准备解决什么问题、怎样判断结果有用，不提前代替设计决定实现方法。</p>
 <p>Director选择REQ以后，与Agent共同修改受影响的产品与架构设计。先找到负责当前事实的系统、能力或横切设计，再检查相关共同规则。需要替换既有重要决策或作出难以撤销的选择时，另外建立ADR(Architecture Decision Record)保留选择依据。</p>
 <p>这类工作的典型路径是：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">问题和证据</span><br><span class="line">  →REQ进入已选中</span><br><span class="line">    →产品与架构设计进入Accepted</span><br><span class="line">      →确定目标版本并启动ACL</span><br><span class="line">        →实施、验证和必要的环境发布</span><br><span class="line">          →按需要开展DFL或ERL</span><br><span class="line">            →结束各轮Loop</span><br><span class="line">              →准备交付时形成正式版本</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>问题和证据</span></span>
+<span class="line"><span>  →REQ进入已选中</span></span>
+<span class="line"><span>    →产品与架构设计进入Accepted</span></span>
+<span class="line"><span>      →确定目标版本并启动ACL</span></span>
+<span class="line"><span>        →实施、验证和必要的环境发布</span></span>
+<span class="line"><span>          →按需要开展DFL或ERL</span></span>
+<span class="line"><span>            →结束各轮Loop</span></span>
+<span class="line"><span>              →准备交付时形成正式版本</span></span></code></pre>
 <p>DFL(Developer Feedback Loop)和ERL(Engineering Review Loop)不是ACL后面的固定步骤。Director希望通过真实使用检验某个场景时，可以独立启动DFL；需要独立Agent从一个明确的提交、差异范围、Git标签或设计范围中寻找工程遗漏时，可以独立启动ERL。是否把它们作为版本证据，由本次交付风险和验收目标决定。</p>
 <p>如果完成ACL以后暂时不准备发布，工作可以停在Loop结束。REQ保持已排期，直到它真正随正式版本交付，不能因为代码已经完成就提前改成已完成。</p>
-<h2 id="实现缺陷：先看设计有没有明确答案"><a href="#实现缺陷：先看设计有没有明确答案" class="headerlink" title="实现缺陷：先看设计有没有明确答案"></a>实现缺陷：先看设计有没有明确答案</h2><p>实现缺陷是代码、配置或部署结果没有兑现已经确认的设计。例如设计明确要求员工只能读取自己的会话，而当前实现允许跨员工读取。这时产品承诺没有变化，不需要为了修复缺陷重新创造REQ。</p>
+<h2 id="实现缺陷先看设计有没有明确答案">实现缺陷：先看设计有没有明确答案</h2>
+<p>实现缺陷是代码、配置或部署结果没有兑现已经确认的设计。例如设计明确要求员工只能读取自己的会话，而当前实现允许跨员工读取。这时产品承诺没有变化，不需要为了修复缺陷重新创造REQ。</p>
 <p>处理过程先记录可复现的现象、预期结果和实际结果。问题需要跨会话处理、影响真实环境或需要保留优先级和处置决定时，建立ISSUE。随后直接依据对应的已确认设计启动ACL；计划版本尚未确定时如实填写<code>未确定</code>，再完成修复、定点验证和受影响范围的回归。</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">发现偏差</span><br><span class="line">  →核对已经确认的设计</span><br><span class="line">    →必要时建立ISSUE</span><br><span class="line">      →启动维护ACL</span><br><span class="line">        →修复并验证</span><br><span class="line">          →Director确认Loop结论</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>发现偏差</span></span>
+<span class="line"><span>  →核对已经确认的设计</span></span>
+<span class="line"><span>    →必要时建立ISSUE</span></span>
+<span class="line"><span>      →启动维护ACL</span></span>
+<span class="line"><span>        →修复并验证</span></span>
+<span class="line"><span>          →Director确认Loop结论</span></span></code></pre>
 <p>如果核对以后发现设计没有说明预期行为，Director和Agent面对的就不是单纯实现缺陷。此时先用ISSUE保留现象和调查，再决定是否建立REQ并补充设计。不要让Agent在修Bug的名义下替项目决定新的产品规则。</p>
 <p>缺陷修复通常在ACL进入<code>Completed</code>后结束。只有这次修复需要作为正式交付发布时，才继续进入版本形成；是否紧急不改变这一点。</p>
-<h2 id="设计变化：先判断哪类设计负责当前事实"><a href="#设计变化：先判断哪类设计负责当前事实" class="headerlink" title="设计变化：先判断哪类设计负责当前事实"></a>设计变化：先判断哪类设计负责当前事实</h2><p>“修改设计”也不是一条固定路径，需要先看被修改的设计正在承诺什么。</p>
+<h2 id="设计变化先判断哪类设计负责当前事实">设计变化：先判断哪类设计负责当前事实</h2>
+<p>“修改设计”也不是一条固定路径，需要先看被修改的设计正在承诺什么。</p>
 <p>如果变化影响产品行为、跨能力关系、权限、安全、数据含义、接口语义或正式范围，就从REQ开始，联合修改产品与架构设计。系统、能力和横切设计之间存在影响时一起评审，不能只更新最靠近代码的位置来掩盖其它长期规则已经变化。</p>
 <p>如果产品目标不变，只调整某项能力内部的长期实现约定，可以直接修改对应能力设计，并说明修改原因、影响范围和验证方法。这类变化不必编造产品REQ，但设计仍要经过Review和Director确认，再由ACL实施。</p>
 <p>无论发生在哪一层，只要准备推翻已经确认的ADR，或者选择会长期限制后续方案且难以撤销，都要新增ADR。旧ADR保留当时事实并标记为已被替代，不直接改写成今天的结论。</p>
 <p>判断边界不清楚时，先按设计变化处理。多做一次设计确认的成本，通常低于Agent按照未经确认的假设修改代码以后再返工。</p>
-<h2 id="内部重构和测试补充：不制造虚假的产品变化"><a href="#内部重构和测试补充：不制造虚假的产品变化" class="headerlink" title="内部重构和测试补充：不制造虚假的产品变化"></a>内部重构和测试补充：不制造虚假的产品变化</h2><p>内部重构可以改变代码结构、依赖组织和实现方式，但不能借此改变用户行为、接口语义、数据边界或安全规则。开始前先指出准备改善的工程问题，例如重复逻辑、难以测试、职责混杂或构建耗时，并明确哪些行为必须保持不变。</p>
+<h2 id="内部重构和测试补充不制造虚假的产品变化">内部重构和测试补充：不制造虚假的产品变化</h2>
+<p>内部重构可以改变代码结构、依赖组织和实现方式，但不能借此改变用户行为、接口语义、数据边界或安全规则。开始前先指出准备改善的工程问题，例如重复逻辑、难以测试、职责混杂或构建耗时，并明确哪些行为必须保持不变。</p>
 <p>如果重构会改变能力或横切设计中的长期约定，先更新对应设计；如果只改变局部实现，可以直接进入ACL。范围很小、能够在当前会话完成且不需要持续追踪时，也可以在完成代码审查、定点测试和必要回归后结束，不为它单独建立REQ或目标版本。</p>
 <p>测试补充同样以现有已经确认的设计为依据。Agent先说明测试准备证明哪条行为，再增加能够失败、能够复现目标条件的测试。只有新增或调整了长期设计要求与测试之间的直接、支持关系时，才同步更新验证追踪记录。</p>
 <p>测试暴露出实现不符合设计时，按实现缺陷处理；暴露出设计没有答案时，回到ISSUE、REQ和设计判断。不要为了让测试通过而悄悄改变产品行为，也不要把“只改测试”当成降低风险的理由。</p>
-<h2 id="文档变化：区分表达、事实和规则"><a href="#文档变化：区分表达、事实和规则" class="headerlink" title="文档变化：区分表达、事实和规则"></a>文档变化：区分表达、事实和规则</h2><p>文档修改看起来都发生在Markdown文件中，实际影响却可能完全不同。</p>
-<h3 id="修正表达"><a href="#修正表达" class="headerlink" title="修正表达"></a>修正表达</h3><p>错别字、标点、排版、失效的内部引用和不改变含义的名称修正，可以直接修改。Agent需要完整阅读目标文件，检查相关引用，并运行文档检查和差异检查。结果通过后即可结束，不需要ISSUE、REQ或Loop。</p>
-<h3 id="更正事实"><a href="#更正事实" class="headerlink" title="更正事实"></a>更正事实</h3><p>测试结果、发布状态、版本、环境地址、当前实现和完成情况属于事实。修改前先找到原始证据，例如真实命令结果、Git提交、Git标签、环境记录或当前代码，再更新负责保存该事实的文档。</p>
+<h2 id="文档变化区分表达事实和规则">文档变化：区分表达、事实和规则</h2>
+<p>文档修改看起来都发生在Markdown文件中，实际影响却可能完全不同。</p>
+<h3 id="修正表达">修正表达</h3>
+<p>错别字、标点、排版、失效的内部引用和不改变含义的名称修正，可以直接修改。Agent需要完整阅读目标文件，检查相关引用，并运行文档检查和差异检查。结果通过后即可结束，不需要ISSUE、REQ或Loop。</p>
+<h3 id="更正事实">更正事实</h3>
+<p>测试结果、发布状态、版本、环境地址、当前实现和完成情况属于事实。修改前先找到原始证据，例如真实命令结果、Git提交、Git标签、环境记录或当前代码，再更新负责保存该事实的文档。</p>
 <p>如果更正会推翻已经由Director确认的结论，需要保留更正原因和新证据，并重新取得确认。不能只因为修改对象是文档，就把一次结论变化当成文字润色。</p>
-<h3 id="改变规则或设计"><a href="#改变规则或设计" class="headerlink" title="改变规则或设计"></a>改变规则或设计</h3><p>规范、产品承诺和已经确认的设计本身发生变化时，按项目规则变化或设计变化处理。先说明为什么改、影响哪些对象、如何验证，再经过对应评审和确认。代码尚未变化，不表示这次修改没有工程影响；文档作为代码的“源码”，会改变后续Agent应该实现的内容。</p>
-<h2 id="环境故障：先恢复现场，再决定长期修改"><a href="#环境故障：先恢复现场，再决定长期修改" class="headerlink" title="环境故障：先恢复现场，再决定长期修改"></a>环境故障：先恢复现场，再决定长期修改</h2><p>环境故障与普通代码任务的顺序不同。服务不可用、数据异常或安全风险正在扩大时，首先保存发现时间、环境、影响、当前状态和已有证据，再在授权范围内采取可逆的止损或恢复动作。现场尚未稳定时，不必先写完整产品设计。</p>
+<h3 id="改变规则或设计">改变规则或设计</h3>
+<p>规范、产品承诺和已经确认的设计本身发生变化时，按项目规则变化或设计变化处理。先说明为什么改、影响哪些对象、如何验证，再经过对应评审和确认。代码尚未变化，不表示这次修改没有工程影响；文档作为代码的“源码”，会改变后续Agent应该实现的内容。</p>
+<h2 id="环境故障先恢复现场再决定长期修改">环境故障：先恢复现场，再决定长期修改</h2>
+<p>环境故障与普通代码任务的顺序不同。服务不可用、数据异常或安全风险正在扩大时，首先保存发现时间、环境、影响、当前状态和已有证据，再在授权范围内采取可逆的止损或恢复动作。现场尚未稳定时，不必先写完整产品设计。</p>
 <p>一般环境问题可以在环境变更记录中保存操作、结果和环境当前运行的版本、配置和服务状态；需要跨会话调查、影响持续存在或要安排后续处理时，再建立ISSUE。严重生产故障仍然沿用ISSUE和环境记录，不另外建立一套Incident编号。</p>
 <p>恢复以后要重新检查服务健康、关键路径、数据一致性、安全状态和最初受影响的任务。仅看到进程启动或接口返回成功，不能证明故障已经结束。</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">发现环境故障</span><br><span class="line">  →保存现场和影响</span><br><span class="line">    →在授权范围内止损或恢复</span><br><span class="line">      →验证服务、数据和安全状态</span><br><span class="line">        →记录实际操作与结果</span><br><span class="line">          →调查长期根因</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>发现环境故障</span></span>
+<span class="line"><span>  →保存现场和影响</span></span>
+<span class="line"><span>    →在授权范围内止损或恢复</span></span>
+<span class="line"><span>      →验证服务、数据和安全状态</span></span>
+<span class="line"><span>        →记录实际操作与结果</span></span>
+<span class="line"><span>          →调查长期根因</span></span></code></pre>
 <p>长期根因如果是实现偏差，进入维护ACL；如果需要改变产品行为、权限、安全或数据规则，建立REQ并修改设计；如果只是环境参数或操作错误，在环境记录和运维入口中完成修正与验证。紧急恢复只缩短止损动作的前置过程，不是绕过长期设计和评审的理由。</p>
 <p>环境恢复和根因修复也可以分别结束。现场已经恢复时，环境处置可以先结束；尚未完成的长期修复由ISSUE、REQ或ACL继续追踪，不必让环境记录无限保持进行中。</p>
-<h2 id="DFL和ERL：从准备回答的问题开始"><a href="#DFL和ERL：从准备回答的问题开始" class="headerlink" title="DFL和ERL：从准备回答的问题开始"></a>DFL和ERL：从准备回答的问题开始</h2><p>DFL由Director主导，适合回答“真实角色实际使用时能不能完成任务”。它可以针对刚完成的功能，也可以用于检查一个已经运行很久的版本。开始时选择真实角色、任务和环境，结束时保存实际操作、观察和发现的问题。</p>
+<h2 id="dfl和erl从准备回答的问题开始">DFL和ERL：从准备回答的问题开始</h2>
+<p>DFL由Director主导，适合回答“真实角色实际使用时能不能完成任务”。它可以针对刚完成的功能，也可以用于检查一个已经运行很久的版本。开始时选择真实角色、任务和环境，结束时保存实际操作、观察和发现的问题。</p>
 <p>ERL由没有参与被评内容实施的Agent主导，适合回答“固定范围中还有哪些工程遗漏”。它可以检查设计、代码、测试、部署或版本候选，不要求前面刚刚完成一轮ACL。开始前固定评审对象、提交和边界，避免检查过程中对象持续变化。</p>
 <p>两种Loop发现的问题都先复核，再按性质进入对应路径：</p>
 <ul>
@@ -295,77 +98,80 @@
 <li>与本轮目标无关但值得以后处理的，建立ISSUE保留，不顺手扩大当前范围。</li>
 </ul>
 <p>DFL和ERL在本轮问题得到回答、发现项都有去向并由相应主导者确认后结束。它们不因为发现了后续工作就必须一直保持进行中。</p>
-<h2 id="任务目标决定在哪里结束"><a href="#任务目标决定在哪里结束" class="headerlink" title="任务目标决定在哪里结束"></a>任务目标决定在哪里结束</h2><p>下面这张表给出常见工作的默认路径。它不是机械规则；只要实际影响更大，就增加更完整的需求、设计、验证和评审。</p>
-<table>
-<thead>
-<tr>
-<th>工作类型</th>
-<th>通常从哪里开始</th>
-<th>主要保留什么</th>
-<th>通常在哪里结束</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>新功能或产品行为变化</td>
-<td>REQ和产品与架构设计</td>
-<td>问题、验收场景、已经确认的设计、实施与验证证据</td>
-<td>ACL结束；准备交付时继续形成正式版本</td>
-</tr>
-<tr>
-<td>已有设计明确的实现缺陷</td>
-<td>已经确认的设计，必要时建立ISSUE</td>
-<td>复现、偏差、修复和回归证据</td>
-<td>维护ACL进入<code>Completed</code></td>
-</tr>
-<tr>
-<td>产品或架构设计变化</td>
-<td>REQ和负责当前事实的设计</td>
-<td>改变原因、相关设计、评审结论，必要时增加ADR</td>
-<td>设计进入<code>Accepted</code>；实施另由ACL继续</td>
-</tr>
-<tr>
-<td>能力内部长期约定变化</td>
-<td>能力设计</td>
-<td>技术原因、影响范围、评审和验证方法</td>
-<td>设计确认并完成ACL</td>
-</tr>
-<tr>
-<td>局部内部重构</td>
-<td>当前代码或维护ACL</td>
-<td>不能改变的行为、代码审查和测试结果</td>
-<td>验证通过或ACL结束</td>
-</tr>
-<tr>
-<td>测试补充</td>
-<td>已经确认的设计和现有测试</td>
-<td>目标行为、测试结果，必要时更新验证追踪</td>
-<td>验证通过</td>
-</tr>
-<tr>
-<td>文字和排版修正</td>
-<td>目标文档</td>
-<td>差异与文档检查结果</td>
-<td>文档检查通过</td>
-</tr>
-<tr>
-<td>事实更正</td>
-<td>原始证据和负责维护这项信息的文档</td>
-<td>新证据、更正原因，必要时增加Director确认</td>
-<td>记录与证据一致</td>
-</tr>
-<tr>
-<td>环境故障</td>
-<td>环境现场和环境记录</td>
-<td>影响、操作、恢复验证和环境当前状态</td>
-<td>环境恢复得到验证；长期根因另行追踪</td>
-</tr>
-<tr>
-<td>独立开展DFL或ERL</td>
-<td>待回答的问题和明确的提交、Git标签或设计范围</td>
-<td>使用或评审过程、发现项及其去向</td>
-<td>本轮结论得到确认</td>
-</tr>
-</tbody></table>
+<h2 id="任务目标决定在哪里结束">任务目标决定在哪里结束</h2>
+<p>下面这张表给出常见工作的默认路径。它不是机械规则；只要实际影响更大，就增加更完整的需求、设计、验证和评审。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>工作类型</th><th>通常从哪里开始</th><th>主要保留什么</th><th>通常在哪里结束</th></tr></thead><tbody><tr><td>新功能或产品行为变化</td><td>REQ和产品与架构设计</td><td>问题、验收场景、已经确认的设计、实施与验证证据</td><td>ACL结束；准备交付时继续形成正式版本</td></tr><tr><td>已有设计明确的实现缺陷</td><td>已经确认的设计，必要时建立ISSUE</td><td>复现、偏差、修复和回归证据</td><td>维护ACL进入<code>Completed</code></td></tr><tr><td>产品或架构设计变化</td><td>REQ和负责当前事实的设计</td><td>改变原因、相关设计、评审结论，必要时增加ADR</td><td>设计进入<code>Accepted</code>；实施另由ACL继续</td></tr><tr><td>能力内部长期约定变化</td><td>能力设计</td><td>技术原因、影响范围、评审和验证方法</td><td>设计确认并完成ACL</td></tr><tr><td>局部内部重构</td><td>当前代码或维护ACL</td><td>不能改变的行为、代码审查和测试结果</td><td>验证通过或ACL结束</td></tr><tr><td>测试补充</td><td>已经确认的设计和现有测试</td><td>目标行为、测试结果，必要时更新验证追踪</td><td>验证通过</td></tr><tr><td>文字和排版修正</td><td>目标文档</td><td>差异与文档检查结果</td><td>文档检查通过</td></tr><tr><td>事实更正</td><td>原始证据和负责维护这项信息的文档</td><td>新证据、更正原因，必要时增加Director确认</td><td>记录与证据一致</td></tr><tr><td>环境故障</td><td>环境现场和环境记录</td><td>影响、操作、恢复验证和环境当前状态</td><td>环境恢复得到验证；长期根因另行追踪</td></tr><tr><td>独立开展DFL或ERL</td><td>待回答的问题和明确的提交、Git标签或设计范围</td><td>使用或评审过程、发现项及其去向</td><td>本轮结论得到确认</td></tr></tbody></table>
 <p>真正足够的路径，最后应该能回答五个问题：</p>
 <ul>
 <li>为什么要做这项工作；</li>
@@ -374,94 +180,10 @@
 <li>什么证据说明结果达到了目标；</li>
 <li>尚未解决的事情由谁、在哪个对象中继续处理。</li>
 </ul>
-<p>五个问题已经有清楚答案，工作就可以在适当位置结束。缺少答案时，增加对应的调查、设计、Loop或确认；答案已经充分时，不再为了“走完整流程”制造多余对象。ACDL的价值不在于让每项工作看起来一样，而在于让不同工作都根据风险高低完成必要的设计、验证和评审，并得到可靠结果。</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B11-%E7%BB%93%E6%9D%9FLoop%E5%B9%B6%E5%86%BB%E7%BB%93%E6%AD%A3%E5%BC%8F%E7%89%88%E6%9C%AC/" rel="prev" title="ACDL研发流程11：结束Loop并冻结正式版本">
-                  <i class="fa fa-angle-left"></i> ACDL研发流程11：结束Loop并冻结正式版本
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B10-%E9%80%9A%E8%BF%87%E7%9C%9F%E5%AE%9E%E4%BD%BF%E7%94%A8%E5%92%8C%E7%8B%AC%E7%AB%8B%E8%AF%84%E5%AE%A1%E5%8F%91%E7%8E%B0%E9%81%97%E6%BC%8F/" rel="next" title="ACDL研发流程10：通过真实使用和独立评审发现遗漏">
-                  ACDL研发流程10：通过真实使用和独立评审发现遗漏 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<p>五个问题已经有清楚答案，工作就可以在适当位置结束。缺少答案时，增加对应的调查、设计、Loop或确认；答案已经充分时，不再为了“走完整流程”制造多余对象。ACDL的价值不在于让每项工作看起来一样，而在于让不同工作都根据风险高低完成必要的设计、验证和评审，并得到可靠结果。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#每项工作不必走完同一条路">每项工作不必走完同一条路</a></li><li class="depth-2"><a href="#先判断实际改变了什么">先判断实际改变了什么</a></li><li class="depth-3"><a href="#是否要改变已经确认的产品或设计">是否要改变已经确认的产品或设计</a></li><li class="depth-3"><a href="#事实是否已经清楚">事实是否已经清楚</a></li><li class="depth-3"><a href="#是否需要跨会话继续追踪">是否需要跨会话继续追踪</a></li><li class="depth-3"><a href="#是否准备形成正式交付">是否准备形成正式交付</a></li><li class="depth-2"><a href="#新功能或产品变化从req和设计开始">新功能或产品变化：从REQ和设计开始</a></li><li class="depth-2"><a href="#实现缺陷先看设计有没有明确答案">实现缺陷：先看设计有没有明确答案</a></li><li class="depth-2"><a href="#设计变化先判断哪类设计负责当前事实">设计变化：先判断哪类设计负责当前事实</a></li><li class="depth-2"><a href="#内部重构和测试补充不制造虚假的产品变化">内部重构和测试补充：不制造虚假的产品变化</a></li><li class="depth-2"><a href="#文档变化区分表达事实和规则">文档变化：区分表达、事实和规则</a></li><li class="depth-3"><a href="#修正表达">修正表达</a></li><li class="depth-3"><a href="#更正事实">更正事实</a></li><li class="depth-3"><a href="#改变规则或设计">改变规则或设计</a></li><li class="depth-2"><a href="#环境故障先恢复现场再决定长期修改">环境故障：先恢复现场，再决定长期修改</a></li><li class="depth-2"><a href="#dfl和erl从准备回答的问题开始">DFL和ERL：从准备回答的问题开始</a></li><li class="depth-2"><a href="#任务目标决定在哪里结束">任务目标决定在哪里结束</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

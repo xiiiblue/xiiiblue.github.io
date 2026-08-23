@@ -1,358 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="说明 针对老项目，多个模块共用一个git仓库的情况，识别出每次push的变更，只构建对应的模块 如果配置多个git地址相同的Jenkins流水线，他们的hook地址也是相同的，无法单独触发其中一个流水线。所以要配置多个镜像仓库。 使用原始方式配置最便捷，不使用gitlab、gogs 当使用ssh协议对外暴露git时，由于jenkins的bug?，可以手工构建但无法通过hook触发。所以必须再配置h">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Jenkins大仓库精准构建">
-<meta property="og:url" content="https://www.bluexiii.com/202210/Jenkins%E5%A4%A7%E4%BB%93%E5%BA%93%E7%B2%BE%E5%87%86%E6%9E%84%E5%BB%BA/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="说明 针对老项目，多个模块共用一个git仓库的情况，识别出每次push的变更，只构建对应的模块 如果配置多个git地址相同的Jenkins流水线，他们的hook地址也是相同的，无法单独触发其中一个流水线。所以要配置多个镜像仓库。 使用原始方式配置最便捷，不使用gitlab、gogs 当使用ssh协议对外暴露git时，由于jenkins的bug?，可以手工构建但无法通过hook触发。所以必须再配置h">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-11-02T09:24:42.000Z">
-<meta property="article:modified_time" content="2022-11-02T09:24:42.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202210/Jenkins%E5%A4%A7%E4%BB%93%E5%BA%93%E7%B2%BE%E5%87%86%E6%9E%84%E5%BB%BA/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202210/Jenkins%E5%A4%A7%E4%BB%93%E5%BA%93%E7%B2%BE%E5%87%86%E6%9E%84%E5%BB%BA/","path":"202210/Jenkins大仓库精准构建/","title":"Jenkins大仓库精准构建"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Jenkins大仓库精准构建 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git%E9%95%9C%E5%83%8F%E4%BB%93%E5%BA%93%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">git镜像仓库配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">2.1.</span> <span class="nav-text">参考文档</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Jenkins%E6%B5%81%E6%B0%B4%E7%BA%BF%E9%85%8D%E7%BD%AE"><span class="nav-number">3.</span> <span class="nav-text">Jenkins流水线配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Git%E9%95%9C%E5%83%8F%E5%BA%93%E5%90%8C%E6%AD%A5%E8%84%9A%E6%9C%AC"><span class="nav-number">4.</span> <span class="nav-text">Git镜像库同步脚本</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%91%E5%90%AC%E9%92%A9%E5%AD%90-%E5%B7%B2%E5%BA%9F%E5%BC%83"><span class="nav-number">5.</span> <span class="nav-text">监听钩子(已废弃)</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202210/Jenkins%E5%A4%A7%E4%BB%93%E5%BA%93%E7%B2%BE%E5%87%86%E6%9E%84%E5%BB%BA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Jenkins大仓库精准构建 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Jenkins大仓库精准构建
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2022-11-02 17:24:42" itemprop="dateCreated datePublished" datetime="2022-11-02T17:24:42+08:00">2022-11-02</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><ul>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="说明 针对老项目，多个模块共用一个git仓库的情况，识别出每次push的变更，只构建对应的模块 如果配置多个git地址相同的Jenkins流水线，他们的hook地址也是相同的，无法单独触发其中一个流水线。所以要配置多个镜像仓库。 使用原始方式配置最便捷，不使用gitlab、gogs 当使用ssh协议对外暴露g…"><link rel="canonical" href="https://www.bluexiii.com/202210/Jenkins%E5%A4%A7%E4%BB%93%E5%BA%93%E7%B2%BE%E5%87%86%E6%9E%84%E5%BB%BA/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Jenkins大仓库精准构建｜BlueXIII's Blog"><meta property="og:description" content="说明 针对老项目，多个模块共用一个git仓库的情况，识别出每次push的变更，只构建对应的模块 如果配置多个git地址相同的Jenkins流水线，他们的hook地址也是相同的，无法单独触发其中一个流水线。所以要配置多个镜像仓库。 使用原始方式配置最便捷，不使用gitlab、gogs 当使用ssh协议对外暴露g…"><meta property="og:url" content="https://www.bluexiii.com/202210/Jenkins%E5%A4%A7%E4%BB%93%E5%BA%93%E7%B2%BE%E5%87%86%E6%9E%84%E5%BB%BA/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Jenkins大仓库精准构建｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Jenkins大仓库精准构建</h1><div class="article-meta"><time datetime="2022-11-02T09:24:42.000Z">发布于2022-11-02</time></div><div class="badges"><a class="badge" href="/tags/%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90/">持续集成</a><a class="badge" href="/tags/DevOps/">DevOps</a></div></header><div class="prose"><h2 id="说明">说明</h2>
+<ul>
 <li>针对老项目，多个模块共用一个git仓库的情况，识别出每次push的变更，只构建对应的模块</li>
 <li>如果配置多个git地址相同的Jenkins流水线，他们的hook地址也是相同的，无法单独触发其中一个流水线。所以要配置多个镜像仓库。</li>
 <li>使用原始方式配置最便捷，不使用gitlab、gogs</li>
 <li>当使用ssh协议对外暴露git时，由于jenkins的bug?，可以手工构建但无法通过hook触发。所以必须再配置httpd服务通过http对外暴露。</li>
 </ul>
-<h2 id="git镜像仓库配置"><a href="#git镜像仓库配置" class="headerlink" title="git镜像仓库配置"></a>git镜像仓库配置</h2><h3 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h3><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/mxdzchallpp/article/details/80597126">https://blog.csdn.net/mxdzchallpp/article/details/80597126</a></p>
+<h2 id="git镜像仓库配置">git镜像仓库配置</h2>
+<h3 id="参考文档">参考文档</h3>
+<p><a href="https://blog.csdn.net/mxdzchallpp/article/details/80597126">https://blog.csdn.net/mxdzchallpp/article/details/80597126</a></p>
 <ul>
 <li>使用http协议对外暴露，搭建方式不再赘述</li>
 <li>为一个仓库配置多个镜像时，可以用<code>ln -s</code>软链接方式实现</li>
 </ul>
-<h2 id="Jenkins流水线配置"><a href="#Jenkins流水线配置" class="headerlink" title="Jenkins流水线配置"></a>Jenkins流水线配置</h2><p>为每个模块配置独立的流水线，使用独立的仓库</p>
+<h2 id="jenkins流水线配置">Jenkins流水线配置</h2>
+<p>为每个模块配置独立的流水线，使用独立的仓库</p>
 <p>自动构建测试:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-alert</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="Git镜像库同步脚本"><a href="#Git镜像库同步脚本" class="headerlink" title="Git镜像库同步脚本"></a>Git镜像库同步脚本</h2><blockquote>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>curl http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-alert</span></span></code></pre>
+<h2 id="git镜像库同步脚本">Git镜像库同步脚本</h2>
+<blockquote>
 <p>使用后台进程while do循环方式，每10秒pull一次</p>
 </blockquote>
 <p>sync.sh</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"></span><br><span class="line">GIT_PATH=/dubhe/git/develop</span><br><span class="line">BASE_PATH=/dubhe/git/sync-dev</span><br><span class="line">SLEEP_SEC=10</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span> :</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">    <span class="built_in">echo</span> Git同步开始 `<span class="built_in">date</span> +<span class="string">&quot;%Y/%m/%d %H:%M:%S&quot;</span>` | <span class="built_in">tee</span> -a sync.log</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 拉取git仓库更新日志到sync.dat</span></span><br><span class="line">    <span class="built_in">cd</span> <span class="variable">$GIT_PATH</span></span><br><span class="line">    oldsha=`git rev-parse HEAD`</span><br><span class="line">    git pull</span><br><span class="line">    git diff --name-only <span class="variable">$oldsha</span> | <span class="built_in">tee</span> -a <span class="string">&quot;<span class="variable">$BASE_PATH</span>/sync.dat&quot;</span> <span class="string">&quot;<span class="variable">$BASE_PATH</span>/sync.log&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 判断发生变更的模块并发送通知到Jenkins</span></span><br><span class="line">    <span class="built_in">cd</span> <span class="variable">$BASE_PATH</span></span><br><span class="line">    <span class="built_in">cat</span> sync.cfg|<span class="keyword">while</span> <span class="built_in">read</span> line</span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">        module=`<span class="built_in">echo</span> <span class="variable">$line</span>|awk -F <span class="string">&#x27; &#x27;</span> <span class="string">&#x27;&#123;print $1&#125;&#x27;</span>`</span><br><span class="line">        hook=`<span class="built_in">echo</span> <span class="variable">$line</span>|awk -F <span class="string">&#x27; &#x27;</span> <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>`</span><br><span class="line">        count=`<span class="built_in">cat</span> sync.dat | grep <span class="string">&quot;<span class="variable">$module</span>&quot;</span>|<span class="built_in">wc</span> -l`</span><br><span class="line">        <span class="comment">#echo $module $hook $count</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">test</span> <span class="variable">$count</span> -gt 0</span><br><span class="line">        <span class="keyword">then</span></span><br><span class="line">            <span class="built_in">echo</span> 触发构建 <span class="variable">$module</span> 模块 | <span class="built_in">tee</span> -a sync.log</span><br><span class="line">            curl -s <span class="variable">$hook</span> &gt;/dev/null</span><br><span class="line">        <span class="keyword">fi</span></span><br><span class="line">    <span class="keyword">done</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">echo</span> Git同步完成 `<span class="built_in">date</span> +<span class="string">&quot;%Y/%m/%d %H:%M:%S&quot;</span>` | <span class="built_in">tee</span> -a sync.log</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 清空dat文件</span></span><br><span class="line">    &gt; sync.dat</span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;&quot;</span> | <span class="built_in">tee</span> -a sync.log</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 休眠</span></span><br><span class="line">    <span class="built_in">sleep</span> <span class="variable">$SLEEP_SEC</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">#!/bin/sh</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">GIT_PATH</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/dubhe/git/develop</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">BASE_PATH</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/dubhe/git/sync-dev</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">SLEEP_SEC</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">10</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">while</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> :</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">do</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> Git同步开始</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> `</span><span style="color:#6F42C1;--shiki-dark:#B392F0">date</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> +"%Y/%m/%d %H:%M:%S"`</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> tee</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sync.log</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # 拉取git仓库更新日志到sync.dat</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    cd</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $GIT_PATH</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    oldsha</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span><span style="color:#6F42C1;--shiki-dark:#B392F0">git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rev-parse HEAD`</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pull</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> diff</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --name-only</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $oldsha </span><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> tee</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$BASE_PATH</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/sync.dat"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$BASE_PATH</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/sync.log"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # 判断发生变更的模块并发送通知到Jenkins</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    cd</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $BASE_PATH</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    cat</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sync.cfg</span><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#24292E;--shiki-dark:#E1E4E8">while read line</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        module</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span><span style="color:#005CC5;--shiki-dark:#79B8FF">echo</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $line</span><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0">awk</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -F</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' ' '{print $1}'`</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        hook</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span><span style="color:#005CC5;--shiki-dark:#79B8FF">echo</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $line</span><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0">awk</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -F</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ' ' '{print $2}'`</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">        count</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span><span style="color:#6F42C1;--shiki-dark:#B392F0">cat</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sync.dat </span><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> grep</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$module</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0">wc</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -l</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">        #echo $module $hook $count</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        if</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> test</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $count </span><span style="color:#005CC5;--shiki-dark:#79B8FF">-gt</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        then</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">            echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 触发构建</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $module </span><span style="color:#032F62;--shiki-dark:#9ECBFF">模块</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> tee</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sync.log</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">            curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -s</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $hook </span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#032F62;--shiki-dark:#9ECBFF">/dev/null</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">        fi</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    done</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> Git同步完成</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> `</span><span style="color:#6F42C1;--shiki-dark:#B392F0">date</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> +"%Y/%m/%d %H:%M:%S"`</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> tee</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sync.log</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">    </span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # 清空dat文件</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">    ></span><span style="color:#6F42C1;--shiki-dark:#B392F0"> sync.dat</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">    echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ""</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> tee</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> sync.log</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # 休眠</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    sleep</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $SLEEP_SEC</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">done</span></span></code></pre>
 <p>sync.cfg</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">efpx-ui    http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-ui</span><br><span class="line">efpx-upms    http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-upms</span><br><span class="line">dubhe-metadata    http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-metadata</span><br><span class="line">dubhe-scheduler    http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-scheduler</span><br><span class="line">dubhe-data-integration    http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-data-integration</span><br><span class="line">dubhe-alert    http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-alert</span><br><span class="line">dubhe-api-generation    http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-api-generation</span><br><span class="line">dubhe-quality    http://10.133.0.186/devops_webhook/git/?url=http://10.193.2.12:8081/git/develop-quality</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="监听钩子-已废弃"><a href="#监听钩子-已废弃" class="headerlink" title="监听钩子(已废弃)"></a>监听钩子(已废弃)</h2><blockquote>
-<p>使用nc搭建简易HTTP服务器<br>因gitlat至镜像服务器的网络不可达，此方案废弃</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="ini"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">efpx-ui    http://10.133.0.186/devops_webhook/git/?</span><span style="color:#D73A49;--shiki-dark:#F97583">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=http://10.193.2.12:8081/git/develop-ui</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">efpx-upms    http://10.133.0.186/devops_webhook/git/?</span><span style="color:#D73A49;--shiki-dark:#F97583">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=http://10.193.2.12:8081/git/develop-upms</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">dubhe-metadata    http://10.133.0.186/devops_webhook/git/?</span><span style="color:#D73A49;--shiki-dark:#F97583">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=http://10.193.2.12:8081/git/develop-metadata</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">dubhe-scheduler    http://10.133.0.186/devops_webhook/git/?</span><span style="color:#D73A49;--shiki-dark:#F97583">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=http://10.193.2.12:8081/git/develop-scheduler</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">dubhe-data-integration    http://10.133.0.186/devops_webhook/git/?</span><span style="color:#D73A49;--shiki-dark:#F97583">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=http://10.193.2.12:8081/git/develop-data-integration</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">dubhe-alert    http://10.133.0.186/devops_webhook/git/?</span><span style="color:#D73A49;--shiki-dark:#F97583">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=http://10.193.2.12:8081/git/develop-alert</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">dubhe-api-generation    http://10.133.0.186/devops_webhook/git/?</span><span style="color:#D73A49;--shiki-dark:#F97583">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=http://10.193.2.12:8081/git/develop-api-generation</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">dubhe-quality    http://10.133.0.186/devops_webhook/git/?</span><span style="color:#D73A49;--shiki-dark:#F97583">url</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=http://10.193.2.12:8081/git/develop-quality</span></span>
+<span class="line"></span></code></pre>
+<h2 id="监听钩子已废弃">监听钩子(已废弃)</h2>
+<blockquote>
+<p>使用nc搭建简易HTTP服务器
+因gitlat至镜像服务器的网络不可达，此方案废弃</p>
 </blockquote>
 <p>listen.sh</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">true</span></span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">    <span class="built_in">cat</span> index.http | nc -l 8082</span><br><span class="line">    <span class="comment"># echo &quot;开始同步git&quot;</span></span><br><span class="line">    <span class="comment"># call sync shell</span></span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">while</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> true</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">do</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">    cat</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> index.http</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> nc</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -l</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 8082</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # echo "开始同步git"</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">    # call sync shell</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">done</span></span></code></pre>
 <p>index.http</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Content-Type: text/html; charset=UTF-8</span><br><span class="line">Server: netcat!</span><br><span class="line"></span><br><span class="line"><span class="meta">&lt;!doctype <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span><span class="tag">&lt;<span class="name">body</span>&gt;</span><span class="tag">&lt;<span class="name">h1</span>&gt;</span>开始同步GIT<span class="tag">&lt;/<span class="name">h1</span>&gt;</span><span class="tag">&lt;/<span class="name">body</span>&gt;</span><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="html"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">HTTP/1.1 200 OK</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">Content-Type: text/html; charset=UTF-8</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">Server: netcat!</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;!</span><span style="color:#22863A;--shiki-dark:#85E89D">doctype</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">body</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">h1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>开始同步GIT&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">h1</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">body</span><span style="color:#24292E;--shiki-dark:#E1E4E8">>&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">html</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span></code></pre>
 <p>测试</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl http://10.193.2.12:8082</span><br><span class="line">curl http://10.193.2.12:8083</span><br></pre></td></tr></table></figure>
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202210/Gost%E9%9A%A7%E9%81%93%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/" rel="prev" title="Gost隧道部署笔记">
-                  <i class="fa fa-angle-left"></i> Gost隧道部署笔记
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202210/KubeSphere%E4%B8%AD%E6%8B%B7%E8%B4%9D%E6%96%87%E4%BB%B6/" rel="next" title="KubeSphere中拷贝文件">
-                  KubeSphere中拷贝文件 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>curl http://10.193.2.12:8082</span></span>
+<span class="line"><span>curl http://10.193.2.12:8083</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#说明">说明</a></li><li class="depth-2"><a href="#git镜像仓库配置">git镜像仓库配置</a></li><li class="depth-3"><a href="#参考文档">参考文档</a></li><li class="depth-2"><a href="#jenkins流水线配置">Jenkins流水线配置</a></li><li class="depth-2"><a href="#git镜像库同步脚本">Git镜像库同步脚本</a></li><li class="depth-2"><a href="#监听钩子已废弃">监听钩子(已废弃)</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

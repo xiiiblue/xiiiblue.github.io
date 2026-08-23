@@ -1,235 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="整体说明 harbor早期通过整合第三方的chartmuseum，实现了对helm-chart仓库的支持 chartmuseum归属于helm公司，有独立官网和github仓库 harbor有多种安装方式，例如: 二进制脚本安装、DockerCompose安装、Helm方式在K8S安装(通过一个名为harbor-helm项目) harbor的二进制脚本安装，在3个月前已经移除对chartmuseu">
-<meta property="og:type" content="article">
-<meta property="og:title" content="chartmuseum预研">
-<meta property="og:url" content="https://www.bluexiii.com/202306/chartmuseum%E9%A2%84%E7%A0%94/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="整体说明 harbor早期通过整合第三方的chartmuseum，实现了对helm-chart仓库的支持 chartmuseum归属于helm公司，有独立官网和github仓库 harbor有多种安装方式，例如: 二进制脚本安装、DockerCompose安装、Helm方式在K8S安装(通过一个名为harbor-helm项目) harbor的二进制脚本安装，在3个月前已经移除对chartmuseu">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-06-29T08:47:45.000Z">
-<meta property="article:modified_time" content="2023-06-29T08:47:45.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202306/chartmuseum%E9%A2%84%E7%A0%94/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202306/chartmuseum%E9%A2%84%E7%A0%94/","path":"202306/chartmuseum预研/","title":"chartmuseum预研"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>chartmuseum预研 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">整体说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#chartmuseum%E5%AE%98%E7%BD%91"><span class="nav-number">2.</span> <span class="nav-text">chartmuseum官网</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#harbor%E4%B8%AD%E5%85%B3%E4%BA%8Echartmuseum%E7%9A%84%E4%B8%80%E4%BA%9B%E7%BA%BF%E7%B4%A2"><span class="nav-number">3.</span> <span class="nav-text">harbor中关于chartmuseum的一些线索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#harbor%E7%89%88%E6%9C%AC%E5%8F%91%E5%B8%83%E6%97%B6%E9%97%B4%E6%A2%B3%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">harbor版本发布时间梳理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#chartmuseum-docker%E6%96%B9%E5%BC%8F%E8%AF%95%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">chartmuseum docker方式试用</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202306/chartmuseum%E9%A2%84%E7%A0%94/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="chartmuseum预研 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          chartmuseum预研
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-06-29 16:47:45" itemprop="dateCreated datePublished" datetime="2023-06-29T16:47:45+08:00">2023-06-29</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="整体说明"><a href="#整体说明" class="headerlink" title="整体说明"></a>整体说明</h2><ul>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="整体说明 harbor早期通过整合第三方的chartmuseum，实现了对helm chart仓库的支持 chartmuseum归属于helm公司，有独立官网和github仓库 harbor有多种安装方式，例如: 二进制脚本安装、DockerCompose安装、Helm方式在K8S安装(通过一个名为harbo…"><link rel="canonical" href="https://www.bluexiii.com/202306/chartmuseum%E9%A2%84%E7%A0%94/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="chartmuseum预研｜BlueXIII's Blog"><meta property="og:description" content="整体说明 harbor早期通过整合第三方的chartmuseum，实现了对helm chart仓库的支持 chartmuseum归属于helm公司，有独立官网和github仓库 harbor有多种安装方式，例如: 二进制脚本安装、DockerCompose安装、Helm方式在K8S安装(通过一个名为harbo…"><meta property="og:url" content="https://www.bluexiii.com/202306/chartmuseum%E9%A2%84%E7%A0%94/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>chartmuseum预研｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>chartmuseum预研</h1><div class="article-meta"><time datetime="2023-06-29T08:47:45.000Z">发布于2023-06-29</time></div><div class="badges"><a class="badge" href="/tags/Kubernetes/">Kubernetes</a></div></header><div class="prose"><h2 id="整体说明">整体说明</h2>
+<ul>
 <li>harbor早期通过整合第三方的chartmuseum，实现了对helm-chart仓库的支持</li>
 <li>chartmuseum归属于helm公司，有独立官网和github仓库</li>
 <li>harbor有多种安装方式，例如: 二进制脚本安装、DockerCompose安装、Helm方式在K8S安装(通过一个名为harbor-helm项目)</li>
@@ -240,116 +14,42 @@
 <li>harbor未来会通过OCI规范，直接支持chart仓库</li>
 </ul>
 <hr>
-<h2 id="chartmuseum官网"><a href="#chartmuseum官网" class="headerlink" title="chartmuseum官网"></a>chartmuseum官网</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://chartmuseum.com/#Instructions">https://chartmuseum.com/#Instructions</a>  chartmuseum有独立官网</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/helm/chartmuseum">https://github.com/helm/chartmuseum</a>   仓库还是归属于helm</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/chartmuseum">https://github.com/chartmuseum</a>   但也有自已的独立github用户</li>
+<h2 id="chartmuseum官网">chartmuseum官网</h2>
+<ul>
+<li><a href="https://chartmuseum.com/#Instructions">https://chartmuseum.com/#Instructions</a>  chartmuseum有独立官网</li>
+<li><a href="https://github.com/helm/chartmuseum">https://github.com/helm/chartmuseum</a>   仓库还是归属于helm</li>
+<li><a href="https://github.com/chartmuseum">https://github.com/chartmuseum</a>   但也有自已的独立github用户</li>
 </ul>
-<h2 id="harbor中关于chartmuseum的一些线索"><a href="#harbor中关于chartmuseum的一些线索" class="headerlink" title="harbor中关于chartmuseum的一些线索"></a>harbor中关于chartmuseum的一些线索</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/blame/d84b1d07d200f1c64708d420cf9903c207e18b81/make/install.sh#L12">https://github.com/goharbor/harbor/blame/d84b1d07d200f1c64708d420cf9903c207e18b81/make/install.sh#L12</a>    harbor常规方式安装脚本，在3个月前已经移除对chartmuseum的支持</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor-helm/blob/1.11.0/values.yaml">https://github.com/goharbor/harbor-helm/blob/1.11.0/values.yaml</a>   harbor-helm的最新仓库中已经没有chartmuseum的选项，从提交历史上看1.11.0是最后一个包含museum的版本</li>
-<li><a target="_blank" rel="noopener" href="https://goharbor.io/docs/2.5.0/working-with-projects/working-with-images/managing-helm-charts/#manage-helm-charts-with-the-chartmuseum-in-harbor-interface">https://goharbor.io/docs/2.5.0/working-with-projects/working-with-images/managing-helm-charts/#manage-helm-charts-with-the-chartmuseum-in-harbor-interface</a>  直到2.5.0文档中有依然有chartmuseum的介绍(最新2.8.0)</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/issues/18573">https://github.com/goharbor/harbor/issues/18573</a>  官方在2023年4月24日的一个Issue中，解释了抛弃chartmusem的原因，以及整个提案的过程</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/releases/tag/v2.6.0">https://github.com/goharbor/harbor/releases/tag/v2.6.0</a>  最早追溯到2022年8月29日，V2.6.0发版说明中提到了已经准备移除Chartmuseum，V2.8.0将会完成移除</li>
-<li><a target="_blank" rel="noopener" href="https://github.com/goharbor/harbor/discussions/15057">https://github.com/goharbor/harbor/discussions/15057</a>  提案</li>
+<h2 id="harbor中关于chartmuseum的一些线索">harbor中关于chartmuseum的一些线索</h2>
+<ul>
+<li><a href="https://github.com/goharbor/harbor/blame/d84b1d07d200f1c64708d420cf9903c207e18b81/make/install.sh#L12">https://github.com/goharbor/harbor/blame/d84b1d07d200f1c64708d420cf9903c207e18b81/make/install.sh#L12</a>    harbor常规方式安装脚本，在3个月前已经移除对chartmuseum的支持</li>
+<li><a href="https://github.com/goharbor/harbor-helm/blob/1.11.0/values.yaml">https://github.com/goharbor/harbor-helm/blob/1.11.0/values.yaml</a>   harbor-helm的最新仓库中已经没有chartmuseum的选项，从提交历史上看1.11.0是最后一个包含museum的版本</li>
+<li><a href="https://goharbor.io/docs/2.5.0/working-with-projects/working-with-images/managing-helm-charts/#manage-helm-charts-with-the-chartmuseum-in-harbor-interface">https://goharbor.io/docs/2.5.0/working-with-projects/working-with-images/managing-helm-charts/#manage-helm-charts-with-the-chartmuseum-in-harbor-interface</a>  直到2.5.0文档中有依然有chartmuseum的介绍(最新2.8.0)</li>
+<li><a href="https://github.com/goharbor/harbor/issues/18573">https://github.com/goharbor/harbor/issues/18573</a>  官方在2023年4月24日的一个Issue中，解释了抛弃chartmusem的原因，以及整个提案的过程</li>
+<li><a href="https://github.com/goharbor/harbor/releases/tag/v2.6.0">https://github.com/goharbor/harbor/releases/tag/v2.6.0</a>  最早追溯到2022年8月29日，V2.6.0发版说明中提到了已经准备移除Chartmuseum，V2.8.0将会完成移除</li>
+<li><a href="https://github.com/goharbor/harbor/discussions/15057">https://github.com/goharbor/harbor/discussions/15057</a>  提案</li>
 </ul>
-<h2 id="harbor版本发布时间梳理"><a href="#harbor版本发布时间梳理" class="headerlink" title="harbor版本发布时间梳理"></a>harbor版本发布时间梳理</h2><ul>
-<li>v2.8.0  2023&#x2F;04</li>
-<li>v2.7.0	2022&#x2F;12</li>
-<li>v2.6.0  2022&#x2F;08</li>
+<h2 id="harbor版本发布时间梳理">harbor版本发布时间梳理</h2>
+<ul>
+<li>v2.8.0  2023/04</li>
+<li>v2.7.0	2022/12</li>
+<li>v2.6.0  2022/08</li>
 </ul>
 <hr>
-<h2 id="chartmuseum-docker方式试用"><a href="#chartmuseum-docker方式试用" class="headerlink" title="chartmuseum docker方式试用"></a>chartmuseum docker方式试用</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> -it \</span><br><span class="line">  -p 8080:8080 \</span><br><span class="line">  -e DEBUG=1 \</span><br><span class="line">  -e STORAGE=<span class="built_in">local</span> \</span><br><span class="line">  -e STORAGE_LOCAL_ROOTDIR=/charts \</span><br><span class="line">  -v $(<span class="built_in">pwd</span>)/charts:/charts \</span><br><span class="line">  ghcr.io/helm/chartmuseum:v0.14.0</span><br></pre></td></tr></table></figure>
+<h2 id="chartmuseum-docker方式试用">chartmuseum docker方式试用</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --rm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -it</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 8080:8080</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -e</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> DEBUG=</span><span style="color:#005CC5;--shiki-dark:#79B8FF">1</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -e</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> STORAGE=local</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -e</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> STORAGE_LOCAL_ROOTDIR=/charts</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -v</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> $(</span><span style="color:#005CC5;--shiki-dark:#79B8FF">pwd</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/charts:/charts</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  ghcr.io/helm/chartmuseum:v0.14.0</span></span></code></pre>
 <blockquote>
 <p>只提供API，没有UI，类似docker-registry</p>
-</blockquote>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202305/HelmChart%E5%88%B6%E4%BD%9C/" rel="prev" title="HelmChart制作">
-                  <i class="fa fa-angle-left"></i> HelmChart制作
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202306/ArgoCD%E9%83%A8%E7%BD%B2/" rel="next" title="ArgoCD部署">
-                  ArgoCD部署 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+</blockquote></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#整体说明">整体说明</a></li><li class="depth-2"><a href="#chartmuseum官网">chartmuseum官网</a></li><li class="depth-2"><a href="#harbor中关于chartmuseum的一些线索">harbor中关于chartmuseum的一些线索</a></li><li class="depth-2"><a href="#harbor版本发布时间梳理">harbor版本发布时间梳理</a></li><li class="depth-2"><a href="#chartmuseum-docker方式试用">chartmuseum docker方式试用</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

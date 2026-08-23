@@ -1,381 +1,169 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="本地调试Qdrant时，用Docker启动服务，再直接通过RESTAPI操作Collection和Point就足够了。查询接口已经统一到QueryAPI，旧的Search接口不再继续使用。 参考 Qdrant本地启动 QdrantRESTAPI QueryAPI 安全配置  Docker启动示例使用v1.19.0： 123456docker run --rm \  --name qdrant \">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Qdrant的Docker启动与RESTAPI常用操作">
-<meta property="og:url" content="https://www.bluexiii.com/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="本地调试Qdrant时，用Docker启动服务，再直接通过RESTAPI操作Collection和Point就足够了。查询接口已经统一到QueryAPI，旧的Search接口不再继续使用。 参考 Qdrant本地启动 QdrantRESTAPI QueryAPI 安全配置  Docker启动示例使用v1.19.0： 123456docker run --rm \  --name qdrant \">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2024-09-23T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-22T12:20:10.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/","path":"202409/Qdrant的Docker启动与RESTAPI常用操作/","title":"Qdrant的Docker启动与RESTAPI常用操作"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Qdrant的Docker启动与RESTAPI常用操作 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker%E5%90%AF%E5%8A%A8"><span class="nav-number">2.</span> <span class="nav-text">Docker启动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Collection"><span class="nav-number">3.</span> <span class="nav-text">Collection</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Point"><span class="nav-number">4.</span> <span class="nav-text">Point</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Scroll%E6%9F%A5%E8%AF%A2"><span class="nav-number">5.</span> <span class="nav-text">Scroll查询</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%91%E9%87%8F%E6%9F%A5%E8%AF%A2"><span class="nav-number">6.</span> <span class="nav-text">向量查询</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%9F%E8%AE%A1"><span class="nav-number">7.</span> <span class="nav-text">统计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E9%99%A4Point"><span class="nav-number">8.</span> <span class="nav-text">删除Point</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Qdrant的Docker启动与RESTAPI常用操作 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Qdrant的Docker启动与RESTAPI常用操作
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2024-09-24 00:00:00" itemprop="dateCreated datePublished" datetime="2024-09-24T00:00:00+08:00">2024-09-24</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 20:20:10" itemprop="dateModified" datetime="2026-08-22T20:20:10+08:00">2026-08-22</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<p>本地调试Qdrant时，用Docker启动服务，再直接通过RESTAPI操作Collection和Point就足够了。查询接口已经统一到QueryAPI，旧的Search接口不再继续使用。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/quick-start/">Qdrant本地启动</a></li>
-<li><a target="_blank" rel="noopener" href="https://api.qdrant.tech/">QdrantRESTAPI</a></li>
-<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/search/">QueryAPI</a></li>
-<li><a target="_blank" rel="noopener" href="https://qdrant.tech/documentation/security/">安全配置</a></li>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="本地调试Qdrant时，用Docker启动服务，再直接通过RESTAPI操作Collection和Point就足够了。查询接口已经统一到QueryAPI，旧的Search接口不再继续使用。 参考 Qdrant本地启动 QdrantRESTAPI QueryAPI 安全配置 Docker启动 示例使用 v1.1…"><link rel="canonical" href="https://www.bluexiii.com/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Qdrant的Docker启动与RESTAPI常用操作｜BlueXIII's Blog"><meta property="og:description" content="本地调试Qdrant时，用Docker启动服务，再直接通过RESTAPI操作Collection和Point就足够了。查询接口已经统一到QueryAPI，旧的Search接口不再继续使用。 参考 Qdrant本地启动 QdrantRESTAPI QueryAPI 安全配置 Docker启动 示例使用 v1.1…"><meta property="og:url" content="https://www.bluexiii.com/202409/Qdrant%E7%9A%84Docker%E5%90%AF%E5%8A%A8%E4%B8%8ERESTAPI%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Qdrant的Docker启动与RESTAPI常用操作｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Qdrant的Docker启动与RESTAPI常用操作</h1><div class="article-meta"><time datetime="2024-09-23T16:00:00.000Z">发布于2024-09-24</time><time datetime="2026-08-22T12:20:10.000Z">更新于2026-08-22</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/Docker/">Docker</a><a class="badge" href="/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></div></header><div class="prose"><p>本地调试Qdrant时，用Docker启动服务，再直接通过RESTAPI操作Collection和Point就足够了。查询接口已经统一到QueryAPI，旧的Search接口不再继续使用。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://qdrant.tech/documentation/quick-start/">Qdrant本地启动</a></li>
+<li><a href="https://api.qdrant.tech/">QdrantRESTAPI</a></li>
+<li><a href="https://qdrant.tech/documentation/search/">QueryAPI</a></li>
+<li><a href="https://qdrant.tech/documentation/security/">安全配置</a></li>
 </ul>
-<h2 id="Docker启动"><a href="#Docker启动" class="headerlink" title="Docker启动"></a>Docker启动</h2><p>示例使用<code>v1.19.0</code>：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">docker run --<span class="built_in">rm</span> \</span><br><span class="line">  --name qdrant \</span><br><span class="line">  -p 127.0.0.1:6333:6333 \</span><br><span class="line">  -p 127.0.0.1:6334:6334 \</span><br><span class="line">  -v <span class="string">&quot;<span class="variable">$PWD</span>/qdrant_storage:/qdrant/storage&quot;</span> \</span><br><span class="line">  qdrant/qdrant:v1.19.0</span><br></pre></td></tr></table></figure>
-
+<h2 id="docker启动">Docker启动</h2>
+<p>示例使用<code>v1.19.0</code>：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">docker</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> run</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --rm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --name</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> qdrant</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 127.0.0.1:6333:6333</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 127.0.0.1:6334:6334</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -v</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$PWD</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/qdrant_storage:/qdrant/storage"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  qdrant/qdrant:v1.19.0</span></span></code></pre>
 <ul>
 <li>RESTAPI：<code>http://localhost:6333</code></li>
 <li>WebUI：<code>http://localhost:6333/dashboard</code></li>
 <li>gRPC：<code>localhost:6334</code></li>
 </ul>
 <p>DockerCompose配置：</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">qdrant:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">qdrant/qdrant:v1.19.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">qdrant</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;127.0.0.1:6333:6333&quot;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;127.0.0.1:6334:6334&quot;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./qdrant_storage:/qdrant/storage</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">services</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  qdrant</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    image</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">qdrant/qdrant:v1.19.0</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    container_name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">qdrant</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    ports</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      - </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"127.0.0.1:6333:6333"</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      - </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"127.0.0.1:6334:6334"</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    volumes</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">      - </span><span style="color:#032F62;--shiki-dark:#9ECBFF">./qdrant_storage:/qdrant/storage</span></span></code></pre>
 <p>自建Qdrant默认没有认证和TLS，所以这里只绑定到<code>127.0.0.1</code>。需要从其他机器访问时，先配置APIKey、TLS或带鉴权的反向代理，不要直接把6333和6334端口暴露到公网。</p>
 <p>下面的RESTAPI示例都使用本机地址：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> QDRANT_URL=http://localhost:6333</span><br></pre></td></tr></table></figure>
-
-<h2 id="Collection"><a href="#Collection" class="headerlink" title="Collection"></a>Collection</h2><p>列出Collection：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections&quot;</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> QDRANT_URL</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">http://localhost:6333</span></span></code></pre>
+<h2 id="collection">Collection</h2>
+<p>列出Collection：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections"</span></span></code></pre>
 <p>创建一个4维向量的Collection：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X PUT \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;vectors&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;size&quot;: 4,</span></span><br><span class="line"><span class="string">      &quot;distance&quot;: &quot;Cosine&quot;</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> PUT</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/test_collection"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Content-Type: application/json'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "vectors": {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      "size": 4,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      "distance": "Cosine"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    }</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }'</span></span></code></pre>
 <p>查看Collection和检查是否存在：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection&quot;</span></span><br><span class="line">curl -sS <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/exists&quot;</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/test_collection"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/test_collection/exists"</span></span></code></pre>
 <p>创建别名：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/aliases&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;actions&quot;: [</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;create_alias&quot;: &#123;</span></span><br><span class="line"><span class="string">          &quot;collection_name&quot;: &quot;test_collection&quot;,</span></span><br><span class="line"><span class="string">          &quot;alias_name&quot;: &quot;production_collection&quot;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      &#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="Point"><a href="#Point" class="headerlink" title="Point"></a>Point</h2><p>批量写入3个Point：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X PUT \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points?wait=true&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;points&quot;: [</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 1,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;red&quot;, &quot;city&quot;: &quot;Beijing&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.9, 0.1, 0.1, 0.2]</span></span><br><span class="line"><span class="string">      &#125;,</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 2,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;green&quot;, &quot;city&quot;: &quot;Shanghai&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.1, 0.9, 0.1, 0.2]</span></span><br><span class="line"><span class="string">      &#125;,</span></span><br><span class="line"><span class="string">      &#123;</span></span><br><span class="line"><span class="string">        &quot;id&quot;: 3,</span></span><br><span class="line"><span class="string">        &quot;payload&quot;: &#123;&quot;color&quot;: &quot;blue&quot;, &quot;city&quot;: &quot;Beijing&quot;&#125;,</span></span><br><span class="line"><span class="string">        &quot;vector&quot;: [0.1, 0.1, 0.9, 0.2]</span></span><br><span class="line"><span class="string">      &#125;</span></span><br><span class="line"><span class="string">    ]</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="Scroll查询"><a href="#Scroll查询" class="headerlink" title="Scroll查询"></a>Scroll查询</h2><p>Scroll不计算向量相似度，适合按条件遍历Point：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/scroll&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 10,</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true,</span></span><br><span class="line"><span class="string">    &quot;with_vector&quot;: false</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/aliases"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Content-Type: application/json'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "actions": [</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "create_alias": {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">          "collection_name": "test_collection",</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">          "alias_name": "production_collection"</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        }</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      }</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    ]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }'</span></span></code></pre>
+<h2 id="point">Point</h2>
+<p>批量写入3个Point：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> PUT</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/test_collection/points?wait=true"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Content-Type: application/json'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "points": [</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "id": 1,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "payload": {"color": "red", "city": "Beijing"},</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "vector": [0.9, 0.1, 0.1, 0.2]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      },</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "id": 2,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "payload": {"color": "green", "city": "Shanghai"},</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "vector": [0.1, 0.9, 0.1, 0.2]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      },</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "id": 3,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "payload": {"color": "blue", "city": "Beijing"},</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        "vector": [0.1, 0.1, 0.9, 0.2]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      }</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    ]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }'</span></span></code></pre>
+<h2 id="scroll查询">Scroll查询</h2>
+<p>Scroll不计算向量相似度，适合按条件遍历Point：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/test_collection/points/scroll"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Content-Type: application/json'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "limit": 10,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "filter": {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      "must": [</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">          "key": "city",</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">          "match": {"value": "Beijing"}</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        }</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      ]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    },</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "with_payload": true,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "with_vector": false</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }'</span></span></code></pre>
 <p>返回结果中的<code>next_page_offset</code>可以作为下一次请求的<code>offset</code>。</p>
-<h2 id="向量查询"><a href="#向量查询" class="headerlink" title="向量查询"></a>向量查询</h2><p><code>points/search</code>属于旧接口，向量查询改用QueryAPI：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/query&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;query&quot;: [0.2, 0.1, 0.9, 0.7],</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;params&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;hnsw_ef&quot;: 128,</span></span><br><span class="line"><span class="string">      &quot;exact&quot;: false</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 3,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
+<h2 id="向量查询">向量查询</h2>
+<p><code>points/search</code>属于旧接口，向量查询改用QueryAPI：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/test_collection/points/query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Content-Type: application/json'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "query": [0.2, 0.1, 0.9, 0.7],</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "filter": {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      "must": [</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">          "key": "city",</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">          "match": {"value": "Beijing"}</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        }</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      ]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    },</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "params": {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      "hnsw_ef": 128,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      "exact": false</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    },</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "limit": 3,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "with_payload": true</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }'</span></span></code></pre>
 <p>也可以使用已有Point的ID作为查询向量：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/query&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;query&quot;: 2,</span></span><br><span class="line"><span class="string">    &quot;limit&quot;: 3,</span></span><br><span class="line"><span class="string">    &quot;with_payload&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="统计"><a href="#统计" class="headerlink" title="统计"></a>统计</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/count&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;</span></span><br><span class="line"><span class="string">    &quot;filter&quot;: &#123;</span></span><br><span class="line"><span class="string">      &quot;must&quot;: [</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          &quot;key&quot;: &quot;city&quot;,</span></span><br><span class="line"><span class="string">          &quot;match&quot;: &#123;&quot;value&quot;: &quot;Beijing&quot;&#125;</span></span><br><span class="line"><span class="string">        &#125;</span></span><br><span class="line"><span class="string">      ]</span></span><br><span class="line"><span class="string">    &#125;,</span></span><br><span class="line"><span class="string">    &quot;exact&quot;: true</span></span><br><span class="line"><span class="string">  &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="删除Point"><a href="#删除Point" class="headerlink" title="删除Point"></a>删除Point</h2><p>按ID删除Point：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">curl -sS -X POST \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$QDRANT_URL</span>/collections/test_collection/points/delete?wait=true&quot;</span> \</span><br><span class="line">  -H <span class="string">&#x27;Content-Type: application/json&#x27;</span> \</span><br><span class="line">  -d <span class="string">&#x27;&#123;&quot;points&quot;: [1, 3]&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202409/Ubuntu%E4%B8%8B%E6%90%AD%E5%BB%BACUDA%E4%B8%8E%E5%AE%B9%E5%99%A8GPU%E5%B7%A5%E5%85%B7%E9%93%BE/" rel="prev" title="Ubuntu下搭建CUDA与容器GPU工具链">
-                  <i class="fa fa-angle-left"></i> Ubuntu下搭建CUDA与容器GPU工具链
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202504/uv%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%EF%BC%9APython%E3%80%81%E8%84%9A%E6%9C%AC%E3%80%81%E5%B7%A5%E5%85%B7%E4%B8%8E%E9%A1%B9%E7%9B%AE%E7%AE%A1%E7%90%86/" rel="next" title="uv常用操作：Python、脚本、工具与项目管理">
-                  uv常用操作：Python、脚本、工具与项目管理 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/test_collection/points/query"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Content-Type: application/json'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "query": 2,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "limit": 3,</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "with_payload": true</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }'</span></span></code></pre>
+<h2 id="统计">统计</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/test_collection/points/count"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Content-Type: application/json'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '{</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "filter": {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      "must": [</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        {</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">          "key": "city",</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">          "match": {"value": "Beijing"}</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">        }</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">      ]</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    },</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "exact": true</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }'</span></span></code></pre>
+<h2 id="删除point">删除Point</h2>
+<p>按ID删除Point：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -sS</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> POST</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#032F62;--shiki-dark:#9ECBFF">  "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$QDRANT_URL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/collections/test_collection/points/delete?wait=true"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'Content-Type: application/json'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '{"points": [1, 3]}'</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#参考">参考</a></li><li class="depth-2"><a href="#docker启动">Docker启动</a></li><li class="depth-2"><a href="#collection">Collection</a></li><li class="depth-2"><a href="#point">Point</a></li><li class="depth-2"><a href="#scroll查询">Scroll查询</a></li><li class="depth-2"><a href="#向量查询">向量查询</a></li><li class="depth-2"><a href="#统计">统计</a></li><li class="depth-2"><a href="#删除point">删除Point</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

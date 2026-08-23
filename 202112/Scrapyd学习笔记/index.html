@@ -1,336 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="参考文档 https:&#x2F;&#x2F;python-scrapyd-api.readthedocs.io&#x2F;en&#x2F;latest&#x2F; https:&#x2F;&#x2F;github.com&#x2F;scrapy&#x2F;scrapyd-client  scrapyd安装12345678910111213141516171819202122232425262728293031323334353637383940pip install scrapydv">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Scrapyd学习笔记">
-<meta property="og:url" content="https://www.bluexiii.com/202112/Scrapyd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="参考文档 https:&#x2F;&#x2F;python-scrapyd-api.readthedocs.io&#x2F;en&#x2F;latest&#x2F; https:&#x2F;&#x2F;github.com&#x2F;scrapy&#x2F;scrapyd-client  scrapyd安装12345678910111213141516171819202122232425262728293031323334353637383940pip install scrapydv">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-11-02T09:16:51.000Z">
-<meta property="article:modified_time" content="2022-11-02T09:16:51.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202112/Scrapyd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202112/Scrapyd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/","path":"202112/Scrapyd学习笔记/","title":"Scrapyd学习笔记"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Scrapyd学习笔记 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">1.</span> <span class="nav-text">参考文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scrapyd"><span class="nav-number">2.</span> <span class="nav-text">scrapyd</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">2.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-API"><span class="nav-number">2.2.</span> <span class="nav-text">HTTP API</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#scrapyd-client"><span class="nav-number">3.</span> <span class="nav-text">scrapyd-client</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%AC%E6%9C%BA%E5%AE%89%E8%A3%85"><span class="nav-number">3.1.</span> <span class="nav-text">本机安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEscrapy-cfg"><span class="nav-number">3.2.</span> <span class="nav-text">配置scrapy.cfg</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CLI"><span class="nav-number">3.3.</span> <span class="nav-text">CLI</span></a></li></ol></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202112/Scrapyd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Scrapyd学习笔记 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Scrapyd学习笔记
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2022-11-02 17:16:51" itemprop="dateCreated datePublished" datetime="2022-11-02T17:16:51+08:00">2022-11-02</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://python-scrapyd-api.readthedocs.io/en/latest/">https://python-scrapyd-api.readthedocs.io/en/latest/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/scrapy/scrapyd-client">https://github.com/scrapy/scrapyd-client</a></li>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="参考文档 https://python scrapyd api.readthedocs.io/en/latest/ https://github.com/scrapy/scrapyd client scrapyd 安装 HTTP API scrapyd client 本机安装 pip3 install scr…"><link rel="canonical" href="https://www.bluexiii.com/202112/Scrapyd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Scrapyd学习笔记｜BlueXIII's Blog"><meta property="og:description" content="参考文档 https://python scrapyd api.readthedocs.io/en/latest/ https://github.com/scrapy/scrapyd client scrapyd 安装 HTTP API scrapyd client 本机安装 pip3 install scr…"><meta property="og:url" content="https://www.bluexiii.com/202112/Scrapyd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Scrapyd学习笔记｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Scrapyd学习笔记</h1><div class="article-meta"><time datetime="2022-11-02T09:16:51.000Z">发布于2022-11-02</time></div><div class="badges"><a class="badge" href="/tags/Python/">Python</a></div></header><div class="prose"><h2 id="参考文档">参考文档</h2>
+<ul>
+<li><a href="https://python-scrapyd-api.readthedocs.io/en/latest/">https://python-scrapyd-api.readthedocs.io/en/latest/</a></li>
+<li><a href="https://github.com/scrapy/scrapyd-client">https://github.com/scrapy/scrapyd-client</a></li>
 </ul>
-<h2 id="scrapyd"><a href="#scrapyd" class="headerlink" title="scrapyd"></a>scrapyd</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">pip install scrapyd</span><br><span class="line"></span><br><span class="line">vi /etc/scrapyd/scrapyd.conf</span><br><span class="line">[scrapyd]</span><br><span class="line">eggs_dir    = /data/scrapyd/eggs</span><br><span class="line">logs_dir    = /data/scrapyd/logs</span><br><span class="line">items_dir   = /data/scrapyd/items</span><br><span class="line">jobs_to_keep = 100</span><br><span class="line">dbs_dir     = /data/scrapyd/dbs</span><br><span class="line">max_proc    = 0</span><br><span class="line">max_proc_per_cpu = 10</span><br><span class="line">finished_to_keep = 100</span><br><span class="line">poll_interval = 5.0</span><br><span class="line">bind_address = 0.0.0.0</span><br><span class="line">http_port   = 6800</span><br><span class="line">debug       = off</span><br><span class="line">runner      = scrapyd.runner</span><br><span class="line">application = scrapyd.app.application</span><br><span class="line">launcher    = scrapyd.launcher.Launcher</span><br><span class="line">webroot     = scrapyd.website.Root</span><br><span class="line"></span><br><span class="line">[services]</span><br><span class="line">schedule.json     = scrapyd.webservice.Schedule</span><br><span class="line">cancel.json       = scrapyd.webservice.Cancel</span><br><span class="line">addversion.json   = scrapyd.webservice.AddVersion</span><br><span class="line">listprojects.json = scrapyd.webservice.ListProjects</span><br><span class="line">listversions.json = scrapyd.webservice.ListVersions</span><br><span class="line">listspiders.json  = scrapyd.webservice.ListSpiders</span><br><span class="line">delproject.json   = scrapyd.webservice.DeleteProject</span><br><span class="line">delversion.json   = scrapyd.webservice.DeleteVersion</span><br><span class="line">listjobs.json     = scrapyd.webservice.ListJobs</span><br><span class="line">daemonstatus.json = scrapyd.webservice.DaemonStatus</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">nohup</span> scrapyd&gt;scrapyd.log 2&gt;&amp;1 &amp;</span><br><span class="line"></span><br><span class="line">open http://10.211.55.101:6800</span><br><span class="line"></span><br><span class="line"><span class="comment"># scrapyd服务器提前安装依赖</span></span><br><span class="line">pip install -r requirements.txt</span><br></pre></td></tr></table></figure>
-
-<h3 id="HTTP-API"><a href="#HTTP-API" class="headerlink" title="HTTP API"></a>HTTP API</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">curl http://10.211.55.101:6800/daemonstatus.json</span><br><span class="line">curl http://10.211.55.101:6800/addversion.json -F project=hydrabot -F version=1.0.0 -F egg=@hydrabot.egg</span><br><span class="line">curl http://10.211.55.101:6800/schedule.json -d project=hydrabot -d spider=teacher -d task_id=1 -d entry_id=3070</span><br><span class="line">curl http://10.211.55.101:6800/cancel.json -d project=hydrabot -d job=6487ec79947edab326d6db28a2d86S11e8247444</span><br><span class="line"></span><br><span class="line">curl http://10.211.55.101:6800/listprojects.json</span><br><span class="line">curl http://10.211.55.101:6800/listversions.json?project=hydrabot</span><br><span class="line">curl http://10.211.55.101:6800/listspiders.json?project=hydrabot</span><br><span class="line">curl http://10.211.55.101:6800/listjobs.json?project=hydrabot</span><br><span class="line"></span><br><span class="line">curl http://10.211.55.101:6800/delversion.json -d project=hydrabot -d version=1.0.0</span><br><span class="line">curl http://10.211.55.101:6800/delproject.json -d project=hydrabot</span><br></pre></td></tr></table></figure>
-
-
-
-
-<h2 id="scrapyd-client"><a href="#scrapyd-client" class="headerlink" title="scrapyd-client"></a>scrapyd-client</h2><h3 id="本机安装"><a href="#本机安装" class="headerlink" title="本机安装"></a>本机安装</h3><p>pip3 install scrapyd-deploy<br>pip3 install scrapyd-client</p>
+<h2 id="scrapyd">scrapyd</h2>
+<h3 id="安装">安装</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">vi</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/scrapyd/scrapyd.conf</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[scrapyd]</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">eggs_dir</span><span style="color:#032F62;--shiki-dark:#9ECBFF">    =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /data/scrapyd/eggs</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">logs_dir</span><span style="color:#032F62;--shiki-dark:#9ECBFF">    =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /data/scrapyd/logs</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">items_dir</span><span style="color:#032F62;--shiki-dark:#9ECBFF">   =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /data/scrapyd/items</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">jobs_to_keep</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 100</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">dbs_dir</span><span style="color:#032F62;--shiki-dark:#9ECBFF">     =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /data/scrapyd/dbs</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">max_proc</span><span style="color:#032F62;--shiki-dark:#9ECBFF">    =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">max_proc_per_cpu</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">finished_to_keep</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 100</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">poll_interval</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 5.0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">bind_address</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0.0.0.0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">http_port</span><span style="color:#032F62;--shiki-dark:#9ECBFF">   =</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 6800</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">debug</span><span style="color:#032F62;--shiki-dark:#9ECBFF">       =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> off</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">runner</span><span style="color:#032F62;--shiki-dark:#9ECBFF">      =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.runner</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">application</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.app.application</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">launcher</span><span style="color:#032F62;--shiki-dark:#9ECBFF">    =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.launcher.Launcher</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">webroot</span><span style="color:#032F62;--shiki-dark:#9ECBFF">     =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.website.Root</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">[services]</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">schedule.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF">     =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.Schedule</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">cancel.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF">       =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.Cancel</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">addversion.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF">   =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.AddVersion</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">listprojects.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.ListProjects</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">listversions.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.ListVersions</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">listspiders.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF">  =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.ListSpiders</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">delproject.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF">   =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.DeleteProject</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">delversion.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF">   =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.DeleteVersion</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">listjobs.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF">     =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.ListJobs</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">daemonstatus.json</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapyd.webservice.DaemonStatus</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">nohup</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> scrapy</span><span style="color:#24292E;--shiki-dark:#E1E4E8">d</span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#032F62;--shiki-dark:#9ECBFF">scrapyd.log</span><span style="color:#D73A49;--shiki-dark:#F97583"> 2>&#x26;1</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">open</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> http://10.211.55.101:6800</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># scrapyd服务器提前安装依赖</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -r</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> requirements.txt</span></span></code></pre>
+<h3 id="http-api">HTTP API</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>curl http://10.211.55.101:6800/daemonstatus.json</span></span>
+<span class="line"><span>curl http://10.211.55.101:6800/addversion.json -F project=hydrabot -F version=1.0.0 -F egg=@hydrabot.egg</span></span>
+<span class="line"><span>curl http://10.211.55.101:6800/schedule.json -d project=hydrabot -d spider=teacher -d task_id=1 -d entry_id=3070</span></span>
+<span class="line"><span>curl http://10.211.55.101:6800/cancel.json -d project=hydrabot -d job=6487ec79947edab326d6db28a2d86S11e8247444</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl http://10.211.55.101:6800/listprojects.json</span></span>
+<span class="line"><span>curl http://10.211.55.101:6800/listversions.json?project=hydrabot</span></span>
+<span class="line"><span>curl http://10.211.55.101:6800/listspiders.json?project=hydrabot</span></span>
+<span class="line"><span>curl http://10.211.55.101:6800/listjobs.json?project=hydrabot</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>curl http://10.211.55.101:6800/delversion.json -d project=hydrabot -d version=1.0.0</span></span>
+<span class="line"><span>curl http://10.211.55.101:6800/delproject.json -d project=hydrabot</span></span></code></pre>
+<h2 id="scrapyd-client">scrapyd-client</h2>
+<h3 id="本机安装">本机安装</h3>
+<p>pip3 install scrapyd-deploy
+pip3 install scrapyd-client</p>
 <p>scrapyd-deploy -h</p>
-<h3 id="配置scrapy-cfg"><a href="#配置scrapy-cfg" class="headerlink" title="配置scrapy.cfg"></a>配置scrapy.cfg</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[settings]</span><br><span class="line">default = settings.default</span><br><span class="line"></span><br><span class="line">[deploy:node5]</span><br><span class="line">url = http://10.194.99.5:6800/</span><br><span class="line">project = hydrabot</span><br><span class="line"></span><br><span class="line">[deploy:node6]</span><br><span class="line">url = http://10.194.99.6:6800/</span><br><span class="line">project = hydrabot</span><br><span class="line"></span><br><span class="line">[deploy:node7]</span><br><span class="line">url = http://10.194.99.7:6800/</span><br><span class="line">project = hydrabot</span><br><span class="line"></span><br><span class="line">[deploy:node8]</span><br><span class="line">url = http://10.194.99.8:6800/</span><br><span class="line">project = hydrabot</span><br></pre></td></tr></table></figure>
-
-<h3 id="CLI"><a href="#CLI" class="headerlink" title="CLI"></a>CLI</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 部署到一个节点</span></span><br><span class="line">scrapyd-deploy node8</span><br><span class="line"></span><br><span class="line"><span class="comment"># 部署到全部节点</span></span><br><span class="line">scrapyd-deploy -a</span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出工程</span></span><br><span class="line">scrapyd-client -t http://10.194.99.8:6800 projects</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看计划任务</span></span><br><span class="line">scrapyd-client -t http://10.194.99.8:6800  schedule -p hydrabot \istic </span><br><span class="line"></span><br><span class="line"><span class="comment"># 列出爬虫</span></span><br><span class="line">scrapyd-client -t http://10.194.99.8:6800 spiders -p hydrabot</span><br></pre></td></tr></table></figure>
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202112/GatewayWorker%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="GatewayWorker学习笔记">
-                  <i class="fa fa-angle-left"></i> GatewayWorker学习笔记
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202112/Setuptool%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="next" title="Setuptool学习笔记">
-                  Setuptool学习笔记 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h3 id="配置scrapycfg">配置scrapy.cfg</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>[settings]</span></span>
+<span class="line"><span>default = settings.default</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>[deploy:node5]</span></span>
+<span class="line"><span>url = http://10.194.99.5:6800/</span></span>
+<span class="line"><span>project = hydrabot</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>[deploy:node6]</span></span>
+<span class="line"><span>url = http://10.194.99.6:6800/</span></span>
+<span class="line"><span>project = hydrabot</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>[deploy:node7]</span></span>
+<span class="line"><span>url = http://10.194.99.7:6800/</span></span>
+<span class="line"><span>project = hydrabot</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>[deploy:node8]</span></span>
+<span class="line"><span>url = http://10.194.99.8:6800/</span></span>
+<span class="line"><span>project = hydrabot</span></span></code></pre>
+<h3 id="cli">CLI</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 部署到一个节点</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scrapyd-deploy</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> node8</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 部署到全部节点</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scrapyd-deploy</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 列出工程</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scrapyd-client</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> http://10.194.99.8:6800</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> projects</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看计划任务</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scrapyd-client</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> http://10.194.99.8:6800</span><span style="color:#032F62;--shiki-dark:#9ECBFF">  schedule</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> hydrabot</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \i</span><span style="color:#032F62;--shiki-dark:#9ECBFF">stic</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> </span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 列出爬虫</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">scrapyd-client</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> http://10.194.99.8:6800</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> spiders</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> hydrabot</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#参考文档">参考文档</a></li><li class="depth-2"><a href="#scrapyd">scrapyd</a></li><li class="depth-3"><a href="#安装">安装</a></li><li class="depth-3"><a href="#http-api">HTTP API</a></li><li class="depth-2"><a href="#scrapyd-client">scrapyd-client</a></li><li class="depth-3"><a href="#本机安装">本机安装</a></li><li class="depth-3"><a href="#配置scrapycfg">配置scrapy.cfg</a></li><li class="depth-3"><a href="#cli">CLI</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

@@ -1,355 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="Postgre安装官网https:&#x2F;&#x2F;www.postgresql.org&#x2F; rpm方式安装https:&#x2F;&#x2F;yum.postgresql.org&#x2F;rpmchart.phppostgresql11-11.4-1PGDG.rhel7.x86_64.rpmpostgresql11-contrib-11.4-1PGDG.rhel7.x86_64.rpmpostgresql11-libs-11.4-1PGD">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Kong部署笔记">
-<meta property="og:url" content="https://www.bluexiii.com/201907/20190716Kong%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="Postgre安装官网https:&#x2F;&#x2F;www.postgresql.org&#x2F; rpm方式安装https:&#x2F;&#x2F;yum.postgresql.org&#x2F;rpmchart.phppostgresql11-11.4-1PGDG.rhel7.x86_64.rpmpostgresql11-contrib-11.4-1PGDG.rhel7.x86_64.rpmpostgresql11-libs-11.4-1PGD">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2019-07-15T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-07-15T16:00:00.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201907/20190716Kong%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201907/20190716Kong%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/","path":"201907/20190716Kong部署笔记/","title":"Kong部署笔记"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Kong部署笔记 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Postgre%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">Postgre安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E7%BD%91"><span class="nav-number">1.1.</span> <span class="nav-text">官网</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rpm%E6%96%B9%E5%BC%8F%E5%AE%89%E8%A3%85"><span class="nav-number">1.2.</span> <span class="nav-text">rpm方式安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96DB"><span class="nav-number">1.3.</span> <span class="nav-text">初始化DB</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8"><span class="nav-number">1.4.</span> <span class="nav-text">启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E9%85%8D%E7%BD%AE"><span class="nav-number">1.5.</span> <span class="nav-text">修改配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%90%8D%E4%B8%BAkong%E7%9A%84%E7%94%A8%E6%88%B7"><span class="nav-number">1.6.</span> <span class="nav-text">添加名为kong的用户</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Kong%E5%AE%89%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">Kong安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Kong%E5%AE%98%E7%BD%91"><span class="nav-number">2.1.</span> <span class="nav-text">Kong官网</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">2.2.</span> <span class="nav-text">参考文档</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RPM%E6%96%B9%E5%BC%8F%E5%AE%89%E8%A3%85"><span class="nav-number">2.3.</span> <span class="nav-text">RPM方式安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">2.4.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">2.5.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">2.6.</span> <span class="nav-text">测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GUI"><span class="nav-number">3.</span> <span class="nav-text">GUI</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Kong-Admin-GUI"><span class="nav-number">3.1.</span> <span class="nav-text">Kong Admin GUI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Konga"><span class="nav-number">3.2.</span> <span class="nav-text">Konga</span></a></li></ol></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201907/20190716Kong%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Kong部署笔记 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Kong部署笔记
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2019-07-16 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-16T00:00:00+08:00">2019-07-16</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="Postgre安装"><a href="#Postgre安装" class="headerlink" title="Postgre安装"></a>Postgre安装</h2><h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a>官网</h3><p><a target="_blank" rel="noopener" href="https://www.postgresql.org/">https://www.postgresql.org/</a></p>
-<h3 id="rpm方式安装"><a href="#rpm方式安装" class="headerlink" title="rpm方式安装"></a>rpm方式安装</h3><p><a target="_blank" rel="noopener" href="https://yum.postgresql.org/rpmchart.php">https://yum.postgresql.org/rpmchart.php</a><br>postgresql11-11.4-1PGDG.rhel7.x86_64.rpm<br>postgresql11-contrib-11.4-1PGDG.rhel7.x86_64.rpm<br>postgresql11-libs-11.4-1PGDG.rhel7.x86_64.rpm<br>postgresql11-server-11.4-1PGDG.rhel7.x86_64.rpm</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpm -ivh postgresql11*</span><br></pre></td></tr></table></figure>
-
-<h3 id="初始化DB"><a href="#初始化DB" class="headerlink" title="初始化DB"></a>初始化DB</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/pgsql-11/bin/postgresql-11-setup initdb</span><br><span class="line">or</span><br><span class="line">postgresql-setup initdb</span><br></pre></td></tr></table></figure>
-
-<h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable postgresql-11</span><br><span class="line">systemctl start postgresql-11</span><br></pre></td></tr></table></figure>
-
-<h3 id="修改配置"><a href="#修改配置" class="headerlink" title="修改配置"></a>修改配置</h3><p>cd &#x2F;var&#x2F;lib&#x2F;pgsql&#x2F;11&#x2F;data</p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="Postgre安装 官网 https://www.postgresql.org/ rpm方式安装 https://yum.postgresql.org/rpmchart.php postgresql11 11.4 1PGDG.rhel7.x86 64.rpm postgresql11 contrib 11.4…"><link rel="canonical" href="https://www.bluexiii.com/201907/20190716Kong%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Kong部署笔记｜BlueXIII's Blog"><meta property="og:description" content="Postgre安装 官网 https://www.postgresql.org/ rpm方式安装 https://yum.postgresql.org/rpmchart.php postgresql11 11.4 1PGDG.rhel7.x86 64.rpm postgresql11 contrib 11.4…"><meta property="og:url" content="https://www.bluexiii.com/201907/20190716Kong%E9%83%A8%E7%BD%B2%E7%AC%94%E8%AE%B0/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Kong部署笔记｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Kong部署笔记</h1><div class="article-meta"><time datetime="2019-07-15T16:00:00.000Z">发布于2019-07-16</time></div><div class="badges"><a class="badge" href="/tags/Java/">Java</a><a class="badge" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a></div></header><div class="prose"><h2 id="postgre安装">Postgre安装</h2>
+<h3 id="官网">官网</h3>
+<p><a href="https://www.postgresql.org/">https://www.postgresql.org/</a></p>
+<h3 id="rpm方式安装">rpm方式安装</h3>
+<p><a href="https://yum.postgresql.org/rpmchart.php">https://yum.postgresql.org/rpmchart.php</a>
+postgresql11-11.4-1PGDG.rhel7.x86_64.rpm
+postgresql11-contrib-11.4-1PGDG.rhel7.x86_64.rpm
+postgresql11-libs-11.4-1PGDG.rhel7.x86_64.rpm
+postgresql11-server-11.4-1PGDG.rhel7.x86_64.rpm</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>rpm -ivh postgresql11*</span></span></code></pre>
+<h3 id="初始化db">初始化DB</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>/usr/pgsql-11/bin/postgresql-11-setup initdb</span></span>
+<span class="line"><span>or</span></span>
+<span class="line"><span>postgresql-setup initdb</span></span></code></pre>
+<h3 id="启动">启动</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>systemctl enable postgresql-11</span></span>
+<span class="line"><span>systemctl start postgresql-11</span></span></code></pre>
+<h3 id="修改配置">修改配置</h3>
+<p>cd /var/lib/pgsql/11/data</p>
 <p>vi postgresql.conf</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">listen_addresses = &#x27;*&#x27;</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>listen_addresses = '*'</span></span></code></pre>
 <p>vi pg_hba.conf</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">host    all all 0.0.0.0/0   md5</span><br></pre></td></tr></table></figure>
-
-<h3 id="添加名为kong的用户"><a href="#添加名为kong的用户" class="headerlink" title="添加名为kong的用户"></a>添加名为kong的用户</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">useradd kong;</span><br><span class="line">su - postgres</span><br><span class="line">psql </span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE USER kong; CREATE DATABASE kong OWNER kong;</span><br><span class="line">CREATE USER kong WITH PASSWORD &#x27;123456&#x27;;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">psql -U kong -d kong -h 127.0.0.1 -p 5432 </span><br></pre></td></tr></table></figure>
-
-<h2 id="Kong安装"><a href="#Kong安装" class="headerlink" title="Kong安装"></a>Kong安装</h2><h3 id="Kong官网"><a href="#Kong官网" class="headerlink" title="Kong官网"></a>Kong官网</h3><p><a target="_blank" rel="noopener" href="https://konghq.com/">https://konghq.com/</a></p>
-<h3 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h3><p><a target="_blank" rel="noopener" href="https://docs.konghq.com/install/centos/?_ga=2.146470708.1859714253.1563239338-1792454818.1563239338">https://docs.konghq.com/install/centos/?_ga=2.146470708.1859714253.1563239338-1792454818.1563239338</a></p>
-<h3 id="RPM方式安装"><a href="#RPM方式安装" class="headerlink" title="RPM方式安装"></a>RPM方式安装</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpm -ivh kong-1.2.1.el7.noarch.rpm</span><br></pre></td></tr></table></figure>
-
-<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cp /etc/kong/kong.conf.defaul /etc/kong/kong.conf</span><br><span class="line">vi /etc/kong/kong.conf</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">database = postgres              # Determines which of PostgreSQL or Cassandra</span><br><span class="line">pg_host = 127.0.0.1             # The PostgreSQL host to connect to.</span><br><span class="line">pg_port = 5432                  # The port to connect to.</span><br><span class="line">pg_user = kong                  # The username to authenticate if required.</span><br><span class="line">pg_password = 123456            # The password to authenticate if required.</span><br><span class="line">pg_database = kong              # The database name to connect to.</span><br><span class="line">pg_ssl = off                    # Toggles client-server TLS connections</span><br><span class="line">pg_ssl_verify = off             # Toggles server certificate verification if</span><br></pre></td></tr></table></figure>
-
-<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">kong migrations bootstrap -c /etc/kong/kong.conf</span><br><span class="line">kong start /etc/kong/kong.conf</span><br></pre></td></tr></table></figure>
-
-<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>curl -i <a target="_blank" rel="noopener" href="http://localhost:8001/">http://localhost:8001/</a></p>
-<h2 id="GUI"><a href="#GUI" class="headerlink" title="GUI"></a>GUI</h2><h3 id="Kong-Admin-GUI"><a href="#Kong-Admin-GUI" class="headerlink" title="Kong Admin GUI"></a>Kong Admin GUI</h3><p><a target="_blank" rel="noopener" href="https://docs.konghq.com/enterprise/0.31-x/admin-gui/">https://docs.konghq.com/enterprise/0.31-x/admin-gui/</a></p>
-<h3 id="Konga"><a href="#Konga" class="headerlink" title="Konga"></a>Konga</h3><p><a target="_blank" rel="noopener" href="https://github.com/pantsel/konga">https://github.com/pantsel/konga</a></p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201907/20190709Neo4j%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="Neo4j学习笔记">
-                  <i class="fa fa-angle-left"></i> Neo4j学习笔记
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201907/20190731systemd%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="next" title="systemd学习笔记">
-                  systemd学习笔记 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>host    all all 0.0.0.0/0   md5</span></span></code></pre>
+<h3 id="添加名为kong的用户">添加名为kong的用户</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>useradd kong;</span></span>
+<span class="line"><span>su - postgres</span></span>
+<span class="line"><span>psql </span></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>CREATE USER kong; CREATE DATABASE kong OWNER kong;</span></span>
+<span class="line"><span>CREATE USER kong WITH PASSWORD '123456';</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>psql -U kong -d kong -h 127.0.0.1 -p 5432 </span></span></code></pre>
+<h2 id="kong安装">Kong安装</h2>
+<h3 id="kong官网">Kong官网</h3>
+<p><a href="https://konghq.com/">https://konghq.com/</a></p>
+<h3 id="参考文档">参考文档</h3>
+<p><a href="https://docs.konghq.com/install/centos/?_ga=2.146470708.1859714253.1563239338-1792454818.1563239338">https://docs.konghq.com/install/centos/?_ga=2.146470708.1859714253.1563239338-1792454818.1563239338</a></p>
+<h3 id="rpm方式安装-1">RPM方式安装</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>rpm -ivh kong-1.2.1.el7.noarch.rpm</span></span></code></pre>
+<h3 id="配置">配置</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>cp /etc/kong/kong.conf.defaul /etc/kong/kong.conf</span></span>
+<span class="line"><span>vi /etc/kong/kong.conf</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>database = postgres              # Determines which of PostgreSQL or Cassandra</span></span>
+<span class="line"><span>pg_host = 127.0.0.1             # The PostgreSQL host to connect to.</span></span>
+<span class="line"><span>pg_port = 5432                  # The port to connect to.</span></span>
+<span class="line"><span>pg_user = kong                  # The username to authenticate if required.</span></span>
+<span class="line"><span>pg_password = 123456            # The password to authenticate if required.</span></span>
+<span class="line"><span>pg_database = kong              # The database name to connect to.</span></span>
+<span class="line"><span>pg_ssl = off                    # Toggles client-server TLS connections</span></span>
+<span class="line"><span>pg_ssl_verify = off             # Toggles server certificate verification if</span></span></code></pre>
+<h3 id="初始化">初始化</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>kong migrations bootstrap -c /etc/kong/kong.conf</span></span>
+<span class="line"><span>kong start /etc/kong/kong.conf</span></span></code></pre>
+<h3 id="测试">测试</h3>
+<p>curl -i <a href="http://localhost:8001/">http://localhost:8001/</a></p>
+<h2 id="gui">GUI</h2>
+<h3 id="kong-admin-gui">Kong Admin GUI</h3>
+<p><a href="https://docs.konghq.com/enterprise/0.31-x/admin-gui/">https://docs.konghq.com/enterprise/0.31-x/admin-gui/</a></p>
+<h3 id="konga">Konga</h3>
+<p><a href="https://github.com/pantsel/konga">https://github.com/pantsel/konga</a></p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#postgre安装">Postgre安装</a></li><li class="depth-3"><a href="#官网">官网</a></li><li class="depth-3"><a href="#rpm方式安装">rpm方式安装</a></li><li class="depth-3"><a href="#初始化db">初始化DB</a></li><li class="depth-3"><a href="#启动">启动</a></li><li class="depth-3"><a href="#修改配置">修改配置</a></li><li class="depth-3"><a href="#添加名为kong的用户">添加名为kong的用户</a></li><li class="depth-2"><a href="#kong安装">Kong安装</a></li><li class="depth-3"><a href="#kong官网">Kong官网</a></li><li class="depth-3"><a href="#参考文档">参考文档</a></li><li class="depth-3"><a href="#rpm方式安装-1">RPM方式安装</a></li><li class="depth-3"><a href="#配置">配置</a></li><li class="depth-3"><a href="#初始化">初始化</a></li><li class="depth-3"><a href="#测试">测试</a></li><li class="depth-2"><a href="#gui">GUI</a></li><li class="depth-3"><a href="#kong-admin-gui">Kong Admin GUI</a></li><li class="depth-3"><a href="#konga">Konga</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

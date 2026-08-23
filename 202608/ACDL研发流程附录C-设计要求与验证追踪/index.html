@@ -1,246 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="ACDL研发流程系列第15篇，共15篇。 上一篇：ACDL研发流程附录B：登记表、状态和常用命令  这套追踪解决什么问题项目规模扩大以后，仅仅知道“有测试”还不够。Director和Agent需要继续回答：一条长期规则在哪里定义，为什么存在，哪些验证能够直接判断它，哪些测试只是提供相关支持。 当前项目的设计要求追踪只保存设计要求与来源、产生原因和验证之间的长期关系，不把需求、设计、代码、测试结果">
-<meta property="og:type" content="article">
-<meta property="og:title" content="ACDL研发流程附录C：设计要求与验证追踪">
-<meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="ACDL研发流程系列第15篇，共15篇。 上一篇：ACDL研发流程附录B：登记表、状态和常用命令  这套追踪解决什么问题项目规模扩大以后，仅仅知道“有测试”还不够。Director和Agent需要继续回答：一条长期规则在哪里定义，为什么存在，哪些验证能够直接判断它，哪些测试只是提供相关支持。 当前项目的设计要求追踪只保存设计要求与来源、产生原因和验证之间的长期关系，不把需求、设计、代码、测试结果">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:modified_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/","path":"202608/ACDL研发流程附录C-设计要求与验证追踪/","title":"ACDL研发流程附录C：设计要求与验证追踪"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>ACDL研发流程附录C：设计要求与验证追踪 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%99%E5%A5%97%E8%BF%BD%E8%B8%AA%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">这套追踪解决什么问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%A0%B7%E7%9A%84%E8%A7%84%E5%88%99%E9%9C%80%E8%A6%81%E7%A8%B3%E5%AE%9A%E7%BC%96%E5%8F%B7"><span class="nav-number">2.</span> <span class="nav-text">什么样的规则需要稳定编号</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E4%B8%AA%E7%BB%84%E6%88%90%E9%83%A8%E5%88%86%E5%90%84%E8%87%AA%E8%B4%9F%E8%B4%A3%E4%BB%80%E4%B9%88"><span class="nav-number">3.</span> <span class="nav-text">六个组成部分各自负责什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%A6%E6%9C%AC%E5%AD%97%E6%AE%B5%E6%80%8E%E6%A0%B7%E7%90%86%E8%A7%A3"><span class="nav-number">4.</span> <span class="nav-text">账本字段怎样理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B4%E6%8E%A5%E9%AA%8C%E8%AF%81%E5%92%8C%E6%94%AF%E6%8C%81%E6%80%A7%E9%AA%8C%E8%AF%81%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB"><span class="nav-number">5.</span> <span class="nav-text">直接验证和支持性验证有什么区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B0%E5%A2%9E%E4%B8%80%E6%9D%A1%E7%A8%B3%E5%AE%9A%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82"><span class="nav-number">6.</span> <span class="nav-text">新增一条稳定设计要求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E3%80%81%E7%A7%BB%E5%8A%A8%E6%88%96%E6%9B%BF%E4%BB%A3%E6%97%A7%E8%A6%81%E6%B1%82"><span class="nav-number">7.</span> <span class="nav-text">修改、移动或替代旧要求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E6%A3%80%E6%9F%A5%E5%A4%B1%E8%B4%A5%E6%80%8E%E6%A0%B7%E5%A4%84%E7%90%86"><span class="nav-number">8.</span> <span class="nav-text">常见检查失败怎样处理</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="ACDL研发流程附录C：设计要求与验证追踪 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          ACDL研发流程附录C：设计要求与验证追踪
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<blockquote>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="ACDL研发流程系列第15篇，共15篇。 上一篇：ACDL研发流程附录B：登记表、状态和常用命令 这套追踪解决什么问题 项目规模扩大以后，仅仅知道“有测试”还不够。Director和Agent需要继续回答：一条长期规则在哪里定义，为什么存在，哪些验证能够直接判断它，哪些测试只是提供相关支持。 当前项目的设计要…"><link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="ACDL研发流程附录C：设计要求与验证追踪｜BlueXIII's Blog"><meta property="og:description" content="ACDL研发流程系列第15篇，共15篇。 上一篇：ACDL研发流程附录B：登记表、状态和常用命令 这套追踪解决什么问题 项目规模扩大以后，仅仅知道“有测试”还不够。Director和Agent需要继续回答：一条长期规则在哪里定义，为什么存在，哪些验证能够直接判断它，哪些测试只是提供相关支持。 当前项目的设计要…"><meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95C-%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%B1%82%E4%B8%8E%E9%AA%8C%E8%AF%81%E8%BF%BD%E8%B8%AA/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>ACDL研发流程附录C：设计要求与验证追踪｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>ACDL研发流程附录C：设计要求与验证追踪</h1><div class="article-meta"><time datetime="2026-08-17T08:53:44.000Z">发布于2026-08-17</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ACDL/">ACDL</a><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B/">研发流程</a></div></header><div class="prose"><blockquote>
 <p>ACDL研发流程系列第15篇，共15篇。</p>
 <p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95B-%E7%99%BB%E8%AE%B0%E8%A1%A8%E7%8A%B6%E6%80%81%E5%92%8C%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">ACDL研发流程附录B：登记表、状态和常用命令</a></p>
 </blockquote>
-<h2 id="这套追踪解决什么问题"><a href="#这套追踪解决什么问题" class="headerlink" title="这套追踪解决什么问题"></a>这套追踪解决什么问题</h2><p>项目规模扩大以后，仅仅知道“有测试”还不够。Director和Agent需要继续回答：一条长期规则在哪里定义，为什么存在，哪些验证能够直接判断它，哪些测试只是提供相关支持。</p>
+<h2 id="这套追踪解决什么问题">这套追踪解决什么问题</h2>
+<p>项目规模扩大以后，仅仅知道“有测试”还不够。Director和Agent需要继续回答：一条长期规则在哪里定义，为什么存在，哪些验证能够直接判断它，哪些测试只是提供相关支持。</p>
 <p>当前项目的设计要求追踪只保存设计要求与来源、产生原因和验证之间的长期关系，不把需求、设计、代码、测试结果和版本状态复制到一张大表中。</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">已经确认的设计正文</span><br><span class="line">  →定义稳定设计要求的完整含义</span><br><span class="line"></span><br><span class="line">design-requirements.json</span><br><span class="line">  →登记要求来源、产生原因、主题和验证关系</span><br><span class="line"></span><br><span class="line">测试或其它验证入口</span><br><span class="line">  →提供实际判断方式</span><br><span class="line"></span><br><span class="line">当前设计要求与验证追踪.md</span><br><span class="line">  →生成供人查阅的关系视图</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>已经确认的设计正文</span></span>
+<span class="line"><span>  →定义稳定设计要求的完整含义</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>design-requirements.json</span></span>
+<span class="line"><span>  →登记要求来源、产生原因、主题和验证关系</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>测试或其它验证入口</span></span>
+<span class="line"><span>  →提供实际判断方式</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>当前设计要求与验证追踪.md</span></span>
+<span class="line"><span>  →生成供人查阅的关系视图</span></span></code></pre>
 <p>测试是否真正通过，继续写在ACL、DFL、ERL或版本记录中；REQ、ISSUE和Loop状态也继续由各自登记表负责。追踪账本不是第二份状态台账，更不是测试报告。</p>
-<h2 id="什么样的规则需要稳定编号"><a href="#什么样的规则需要稳定编号" class="headerlink" title="什么样的规则需要稳定编号"></a>什么样的规则需要稳定编号</h2><p>不是每个带有“必须”或“不得”的句子都需要编号。新增或实质修改的规则满足以下任一条件时，才分配稳定设计要求编号：</p>
+<h2 id="什么样的规则需要稳定编号">什么样的规则需要稳定编号</h2>
+<p>不是每个带有“必须”或“不得”的句子都需要编号。新增或实质修改的规则满足以下任一条件时，才分配稳定设计要求编号：</p>
 <ul>
 <li>决定用户可以观察和验收的结果；</li>
 <li>构成权限、安全或数据边界；</li>
@@ -248,303 +30,237 @@
 <li>需要跨版本持续回归或进入正式验收。</li>
 </ul>
 <p>普通私有函数怎样拆分、局部变量怎样命名、单个测试怎样组织，不为便于引用而分配稳定编号。一个编号也不能包住几条彼此无关的规则，否则测试无法判断它究竟证明了什么。</p>
-<table>
-<thead>
-<tr>
-<th>前缀</th>
-<th>用于</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>PRD-</code></td>
-<td>平台级产品范围、用户承诺、核心规则和结果指标</td>
-</tr>
-<tr>
-<td><code>DOM-</code></td>
-<td>领域行为、用户流程、对象状态和验收结果</td>
-</tr>
-<tr>
-<td><code>ARCH-</code></td>
-<td>跨进程、数据、接口、部署、迁移和恢复要求</td>
-</tr>
-<tr>
-<td><code>SEC-</code></td>
-<td>身份、凭据、隔离、网络、审计和数据安全要求</td>
-</tr>
-</tbody></table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>前缀</th><th>用于</th></tr></thead><tbody><tr><td><code>PRD-</code></td><td>平台级产品范围、用户承诺、核心规则和结果指标</td></tr><tr><td><code>DOM-</code></td><td>领域行为、用户流程、对象状态和验收结果</td></tr><tr><td><code>ARCH-</code></td><td>跨进程、数据、接口、部署、迁移和恢复要求</td></tr><tr><td><code>SEC-</code></td><td>身份、凭据、隔离、网络、审计和数据安全要求</td></tr></tbody></table>
 <p>每类使用三位数字，一经使用不修改、回收或复用。<code>CAP-005</code>是整份能力设计文档，<code>DOM-005</code>是文档中的一条领域行为要求，两者不要混用。</p>
-<h2 id="六个组成部分各自负责什么"><a href="#六个组成部分各自负责什么" class="headerlink" title="六个组成部分各自负责什么"></a>六个组成部分各自负责什么</h2><table>
-<thead>
-<tr>
-<th>组成部分</th>
-<th>路径或标记</th>
-<th>职责</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>设计正文</td>
-<td><code>docs/02-设计/</code>中的系统、能力或横切设计</td>
-<td>保存要求完整含义，完整内容只在这里定义</td>
-</tr>
-<tr>
-<td>追踪账本</td>
-<td><code>tests/traceability/design-requirements.json</code></td>
-<td>保存当前主题、每项要求的来源和验证关系</td>
-</tr>
-<tr>
-<td>账本JSON结构规则（Schema）</td>
-<td><code>tests/traceability/design-requirements.schema.json</code></td>
-<td>规定JSON字段、编号格式和验证方法</td>
-</tr>
-<tr>
-<td>测试标记</td>
-<td><code>TRACE-REQ</code>或<code>TRACE-TOPIC</code></td>
-<td>让检查器确认测试声明的直接或支持性关系</td>
-</tr>
-<tr>
-<td>生成视图</td>
-<td><code>docs/02-设计/00-索引与追踪/IDX-002-设计要求与验证追踪.md</code></td>
-<td>按主题和要求生成人类可读入口</td>
-</tr>
-<tr>
-<td>检查与生成脚本</td>
-<td><code>pnpm trace:check</code>、<code>pnpm trace:render</code>、<code>pnpm trace:refresh -- --reviewed</code></td>
-<td>检查关系、重建视图；设计定义经过人工复核后，受控刷新定义来源和摘要</td>
-</tr>
-</tbody></table>
+<h2 id="六个组成部分各自负责什么">六个组成部分各自负责什么</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>组成部分</th><th>路径或标记</th><th>职责</th></tr></thead><tbody><tr><td>设计正文</td><td><code>docs/02-设计/</code>中的系统、能力或横切设计</td><td>保存要求完整含义，完整内容只在这里定义</td></tr><tr><td>追踪账本</td><td><code>tests/traceability/design-requirements.json</code></td><td>保存当前主题、每项要求的来源和验证关系</td></tr><tr><td>账本JSON结构规则（Schema）</td><td><code>tests/traceability/design-requirements.schema.json</code></td><td>规定JSON字段、编号格式和验证方法</td></tr><tr><td>测试标记</td><td><code>TRACE-REQ</code>或<code>TRACE-TOPIC</code></td><td>让检查器确认测试声明的直接或支持性关系</td></tr><tr><td>生成视图</td><td><code>docs/02-设计/00-索引与追踪/IDX-002-设计要求与验证追踪.md</code></td><td>按主题和要求生成人类可读入口</td></tr><tr><td>检查与生成脚本</td><td><code>pnpm trace:check</code>、<code>pnpm trace:render</code>、<code>pnpm trace:refresh -- --reviewed</code></td><td>检查关系、重建视图；设计定义经过人工复核后，受控刷新定义来源和摘要</td></tr></tbody></table>
 <p>普通设计变化只修改设计正文、账本和必要测试，不修改Schema。只有追踪系统的数据结构本身改变时，才调整Schema和相应工具。</p>
-<h2 id="账本字段怎样理解"><a href="#账本字段怎样理解" class="headerlink" title="账本字段怎样理解"></a>账本字段怎样理解</h2><p>逐要求记录使用以下字段：</p>
-<table>
-<thead>
-<tr>
-<th>字段</th>
-<th>表达的事实</th>
-<th>维护要求</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>id</code></td>
-<td>稳定设计要求编号</td>
-<td>与设计正文完全一致</td>
-</tr>
-<tr>
-<td><code>source</code></td>
-<td>完整定义所在的仓库路径</td>
-<td>只指向当前设计，不指向计划和实施记录</td>
-</tr>
-<tr>
-<td><code>definitionDigest</code></td>
-<td>该项要求定义块的SHA-256摘要</td>
-<td>正文变化或移动后，在人工复核关系后刷新</td>
-</tr>
-<tr>
-<td><code>origin</code></td>
-<td>要求为什么产生</td>
-<td>新要求填写对应<code>REQ-六位编号</code>；旧基线使用<code>pre-req-process</code></td>
-</tr>
-<tr>
-<td><code>topics</code></td>
-<td>按问题查找要求时使用的主题</td>
-<td>优先复用已有主题</td>
-</tr>
-<tr>
-<td><code>directVerification</code></td>
-<td>能够直接判断该项要求的验证</td>
-<td>不能完整判断时保持空数组</td>
-</tr>
-<tr>
-<td><code>issues</code></td>
-<td>当前与该要求直接相关的问题</td>
-<td>可选，只引用已登记ISSUE，不复制状态</td>
-</tr>
-</tbody></table>
+<h2 id="账本字段怎样理解">账本字段怎样理解</h2>
+<p>逐要求记录使用以下字段：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>字段</th><th>表达的事实</th><th>维护要求</th></tr></thead><tbody><tr><td><code>id</code></td><td>稳定设计要求编号</td><td>与设计正文完全一致</td></tr><tr><td><code>source</code></td><td>完整定义所在的仓库路径</td><td>只指向当前设计，不指向计划和实施记录</td></tr><tr><td><code>definitionDigest</code></td><td>该项要求定义块的SHA-256摘要</td><td>正文变化或移动后，在人工复核关系后刷新</td></tr><tr><td><code>origin</code></td><td>要求为什么产生</td><td>新要求填写对应<code>REQ-六位编号</code>；旧基线使用<code>pre-req-process</code></td></tr><tr><td><code>topics</code></td><td>按问题查找要求时使用的主题</td><td>优先复用已有主题</td></tr><tr><td><code>directVerification</code></td><td>能够直接判断该项要求的验证</td><td>不能完整判断时保持空数组</td></tr><tr><td><code>issues</code></td><td>当前与该要求直接相关的问题</td><td>可选，只引用已登记ISSUE，不复制状态</td></tr></tbody></table>
 <p>主题记录只保存<code>id</code>、<code>title</code>和<code>supportingVerification</code>。同一批代表性测试在主题上登记一次，不复制到几十条要求中。</p>
 <p>每项验证使用：</p>
-<table>
-<thead>
-<tr>
-<th>字段</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>method</code></td>
-<td><code>test</code>、<code>inspection</code>、<code>analysis</code>或<code>demonstration</code>之一</td>
-</tr>
-<tr>
-<td><code>references</code></td>
-<td>真实存在的测试、检查、分析或实机记录路径</td>
-</tr>
-<tr>
-<td><code>note</code></td>
-<td>可选，说明这项证据能证明什么、不能证明什么</td>
-</tr>
-</tbody></table>
-<p><code>test</code>表示自动化测试；<code>inspection</code>表示人工或工具检查；<code>analysis</code>表示通过设计、代码、数据或模型分析作出判断；<code>demonstration</code>表示实机操作或运行记录。没有自动化测试不等于不能验证，但必须选择真实发生的方法和证据入口。</p>
-<h2 id="直接验证和支持性验证有什么区别"><a href="#直接验证和支持性验证有什么区别" class="headerlink" title="直接验证和支持性验证有什么区别"></a>直接验证和支持性验证有什么区别</h2><p>直接验证（<code>direct</code>）表示一个引用能够直接判断某项具体要求是否满足。假设一条要求同时规定“员工只能读取自己的文件”“跨员工请求必须拒绝”“不得泄露目标文件是否存在”，直接测试需要对这三部分都作出明确判断。</p>
-<p>直接测试文件使用要求编号标记：</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TRACE-REQ: SEC-999</span></span><br></pre></td></tr></table></figure>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>字段</th><th>含义</th></tr></thead><tbody><tr><td><code>method</code></td><td><code>test</code>、<code>inspection</code>、<code>analysis</code>或<code>demonstration</code>之一</td></tr><tr><td><code>references</code></td><td>真实存在的测试、检查、分析或实机记录路径</td></tr><tr><td><code>note</code></td><td>可选，说明这项证据能证明什么、不能证明什么</td></tr></tbody></table>
+<p><code>test</code>表示自动化测试；<code>inspection</code>表示人工或工具检查；<code>analysis</code>表示通过设计、代码、数据或模型分析作出判断；<code>demonstration</code>表示实机操作或运行记录。没有自动化测试不等于不能验证，但必须选择真实发生的方法和证据入口。</p>
+<h2 id="直接验证和支持性验证有什么区别">直接验证和支持性验证有什么区别</h2>
+<p>直接验证（<code>direct</code>）表示一个引用能够直接判断某项具体要求是否满足。假设一条要求同时规定“员工只能读取自己的文件”“跨员工请求必须拒绝”“不得泄露目标文件是否存在”，直接测试需要对这三部分都作出明确判断。</p>
+<p>直接测试文件使用要求编号标记：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// TRACE-REQ: SEC-999</span></span></code></pre>
 <p>并把这个文件登记到该要求的<code>directVerification</code>。<code>SEC-999</code>在这里只是教学编号，不是仓库中的真实要求。</p>
 <p>支持性验证（<code>supporting</code>）表示测试与一个主题相关，却不能单独证明其中每条要求。测试文件使用主题标记：</p>
-<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TRACE-TOPIC: workspace-runtime</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="ts"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">// TRACE-TOPIC: workspace-runtime</span></span></code></pre>
 <p>并登记到主题的<code>supportingVerification</code>。支持性测试不能描述成“逐项覆盖全部要求”。如果没有一项测试能够完整判断某条要求，<code>directVerification</code>保持空数组，比夸大覆盖更准确。</p>
-<h2 id="新增一条稳定设计要求"><a href="#新增一条稳定设计要求" class="headerlink" title="新增一条稳定设计要求"></a>新增一条稳定设计要求</h2><p>下面继续使用虚构的<code>SEC-999</code>说明完整操作。实际工作先从对应REQ和设计评审开始，不能直接复制这个编号。</p>
+<h2 id="新增一条稳定设计要求">新增一条稳定设计要求</h2>
+<p>下面继续使用虚构的<code>SEC-999</code>说明完整操作。实际工作先从对应REQ和设计评审开始，不能直接复制这个编号。</p>
 <p>第一步，在受影响的设计正文中写出一条完整、可以判断的规则：</p>
-<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="strong">**SEC-999**</span>：员工只能通过工作空间文件接口读取自己的文件；请求其它员工的路径时必须拒绝，且不得返回文件是否存在。</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="markdown"><code><span class="line"><span style="color:#24292E;--shiki-light-font-weight:bold;--shiki-dark:#E1E4E8;--shiki-dark-font-weight:bold">**SEC-999**</span><span style="color:#24292E;--shiki-dark:#E1E4E8">：员工只能通过工作空间文件接口读取自己的文件；请求其它员工的路径时必须拒绝，且不得返回文件是否存在。</span></span></code></pre>
 <p>第二步，在<code>design-requirements.json</code>增加记录。此时重点先把人工维护的关系写准确：<code>source</code>指向定义正文，<code>origin</code>指向产生这项变化的REQ，<code>topics</code>和验证关系按实际情况填写。<code>definitionDigest</code>可以先保留一个符合格式的临时值，最终由受控刷新命令根据正文统一生成。</p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;SEC-999&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;source&quot;</span><span class="punctuation">:</span> <span class="string">&quot;docs/02-设计/03-横切设计/CRS-001-安全与信任边界.md&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;definitionDigest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:0000000000000000000000000000000000000000000000000000000000000000&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;origin&quot;</span><span class="punctuation">:</span> <span class="string">&quot;REQ-替换为真实六位编号&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;topics&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;workspace-runtime&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;directVerification&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="json"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "id"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"SEC-999"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "source"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"docs/02-设计/03-横切设计/CRS-001-安全与信任边界.md"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "definitionDigest"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"sha256:0000000000000000000000000000000000000000000000000000000000000000"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "origin"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"REQ-替换为真实六位编号"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "topics"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"workspace-runtime"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">],</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  "directVerification"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: []</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre>
 <p>第三步，根据实际证明能力选择直接或支持性验证。只有测试能够判断整条要求时才添加<code>TRACE-REQ</code>并登记到<code>directVerification</code>；一般相关测试使用<code>TRACE-TOPIC</code>并登记到主题。</p>
-<p>第四步，人工复核设计要求的身份、产生原因、主题、直接&#x2F;支持性验证和Issue关系。确认这些关系准确后，运行：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:refresh -- --reviewed</span><br><span class="line">pnpm docs:check</span><br><span class="line">git diff --check</span><br></pre></td></tr></table></figure>
-
+<p>第四步，人工复核设计要求的身份、产生原因、主题、直接/支持性验证和Issue关系。确认这些关系准确后，运行：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> trace:refresh</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --reviewed</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> docs:check</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> diff</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --check</span></span></code></pre>
 <p><code>trace:refresh</code>会先要求当前设计定义集合和追踪账本一一对应，然后只刷新每项要求的<code>source</code>和<code>definitionDigest</code>，保留<code>origin</code>、<code>topics</code>、<code>directVerification</code>和<code>issues</code>。随后它会重建追踪Markdown生成区。出现新增、缺失或重复ID时直接拒绝，不会为了生成摘要自动猜测关系。</p>
 <p><code>trace:render</code>只用于<strong>账本关系和定义摘要都已经正确、只是Markdown生成视图过期</strong>的情况：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:render</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> trace:render</span></span></code></pre>
 <p>它只更新生成视图中的自动生成区域，不修改设计正文和账本。生成区域不接受手工编辑。</p>
-<h2 id="修改、移动或替代旧要求"><a href="#修改、移动或替代旧要求" class="headerlink" title="修改、移动或替代旧要求"></a>修改、移动或替代旧要求</h2><p>只改善表达且含义不变时，保留原编号。正文变化会让<code>trace:check</code>报告摘要不一致，这是提醒人工复核，不是要求把文字改回旧写法。确认要求含义、产生原因、主题、验证关系和Issue关系仍然正确后，运行：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pnpm trace:refresh -- --reviewed</span><br></pre></td></tr></table></figure>
-
+<h2 id="修改移动或替代旧要求">修改、移动或替代旧要求</h2>
+<p>只改善表达且含义不变时，保留原编号。正文变化会让<code>trace:check</code>报告摘要不一致，这是提醒人工复核，不是要求把文字改回旧写法。确认要求含义、产生原因、主题、验证关系和Issue关系仍然正确后，运行：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> trace:refresh</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --reviewed</span></span></code></pre>
 <p>要求移动到另一份设计但含义不变时，同样保留编号。受控刷新会把<code>source</code>更新到当前唯一的定义位置，并重新计算摘要；如果同一编号在多处定义或账本和正文集合不一致，会直接失败。</p>
 <p>要求含义发生实质变化时，先判断修改后的规则是否仍与原规则表达同一件事。如果新规则替代了旧要求，保留旧要求的替代说明，并为新规则取得新编号；不要继续使用旧编号表达不同含义。变化来自现行产品需求时，新的<code>origin</code>填写对应REQ。</p>
 <p>测试移动、删除或覆盖范围变化时，同步更新验证入口和标记。一个测试不再能直接判断整项要求时，把它降为支持性验证或移除关系，不为了让覆盖数量看起来不下降继续登记为<code>direct</code>。</p>
 <p>ISSUE关闭后，复核要求记录中的可选<code>issues</code>是否仍有保留关系的必要。这里不复制ISSUE状态和结论，问题的当前状态和结论始终从ISSUE台账读取。</p>
-<h2 id="常见检查失败怎样处理"><a href="#常见检查失败怎样处理" class="headerlink" title="常见检查失败怎样处理"></a>常见检查失败怎样处理</h2><table>
-<thead>
-<tr>
-<th>检查结果</th>
-<th>实际含义</th>
-<th>正确处理</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>当前稳定设计要求没有进入账本</td>
-<td>正文新增了编号，账本没有对应记录</td>
-<td>补充来源、摘要、产生原因、主题和验证关系，复核后运行<code>trace:refresh</code></td>
-</tr>
-<tr>
-<td>账本引用未定义稳定要求</td>
-<td>编号或路径错误，或者正文已经删除</td>
-<td>恢复定义或按替代关系更新账本</td>
-</tr>
-<tr>
-<td>要求正文已经变化</td>
-<td><code>definitionDigest</code>与当前定义不一致</td>
-<td>先复核产生原因和验证关系；确认语义没有错误漂移后运行<code>pnpm trace:refresh -- --reviewed</code></td>
-</tr>
-<tr>
-<td>验证引用不存在</td>
-<td>测试或证据文件移动、删除或拼写错误</td>
-<td>更新为真实入口，不创建空文件绕过</td>
-</tr>
-<tr>
-<td>缺少<code>TRACE-REQ</code></td>
-<td>测试被登记为直接验证，但文件没有要求标记</td>
-<td>确认是否真的直接验证，再补标记或降低关系</td>
-</tr>
-<tr>
-<td>缺少<code>TRACE-TOPIC</code></td>
-<td>测试被登记为主题支持性验证，但文件没有主题标记</td>
-<td>补充准确主题标记或移除关系</td>
-</tr>
-<tr>
-<td>Markdown与账本不一致</td>
-<td>生成视图已经过期</td>
-<td>运行<code>pnpm trace:render</code>，不手工修改生成区</td>
-</tr>
-</tbody></table>
-<p>检查通过只证明编号、来源、关系和生成结果彼此一致。它不能证明设计决定合理，也不能证明测试最近一次运行成功。设计合理性由设计评审确认，实际验证结果由Loop和版本记录保存，Director仍然对最终结论负责。</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95A-%E6%9C%AF%E8%AF%AD%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB/" rel="prev" title="ACDL研发流程附录A：术语和对象关系">
-                  <i class="fa fa-angle-left"></i> ACDL研发流程附录A：术语和对象关系
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B11-%E7%BB%93%E6%9D%9FLoop%E5%B9%B6%E5%86%BB%E7%BB%93%E6%AD%A3%E5%BC%8F%E7%89%88%E6%9C%AC/" rel="next" title="ACDL研发流程11：结束Loop并冻结正式版本">
-                  ACDL研发流程11：结束Loop并冻结正式版本 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
+<h2 id="常见检查失败怎样处理">常见检查失败怎样处理</h2>
 
 
 
 
 
 
-</div>
-  </main>
 
-  <footer class="footer">
-    <div class="footer-inner">
 
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
 
-    </div>
-  </footer>
 
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
 
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
 
-</body>
-</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>检查结果</th><th>实际含义</th><th>正确处理</th></tr></thead><tbody><tr><td>当前稳定设计要求没有进入账本</td><td>正文新增了编号，账本没有对应记录</td><td>补充来源、摘要、产生原因、主题和验证关系，复核后运行<code>trace:refresh</code></td></tr><tr><td>账本引用未定义稳定要求</td><td>编号或路径错误，或者正文已经删除</td><td>恢复定义或按替代关系更新账本</td></tr><tr><td>要求正文已经变化</td><td><code>definitionDigest</code>与当前定义不一致</td><td>先复核产生原因和验证关系；确认语义没有错误漂移后运行<code>pnpm trace:refresh -- --reviewed</code></td></tr><tr><td>验证引用不存在</td><td>测试或证据文件移动、删除或拼写错误</td><td>更新为真实入口，不创建空文件绕过</td></tr><tr><td>缺少<code>TRACE-REQ</code></td><td>测试被登记为直接验证，但文件没有要求标记</td><td>确认是否真的直接验证，再补标记或降低关系</td></tr><tr><td>缺少<code>TRACE-TOPIC</code></td><td>测试被登记为主题支持性验证，但文件没有主题标记</td><td>补充准确主题标记或移除关系</td></tr><tr><td>Markdown与账本不一致</td><td>生成视图已经过期</td><td>运行<code>pnpm trace:render</code>，不手工修改生成区</td></tr></tbody></table>
+<p>检查通过只证明编号、来源、关系和生成结果彼此一致。它不能证明设计决定合理，也不能证明测试最近一次运行成功。设计合理性由设计评审确认，实际验证结果由Loop和版本记录保存，Director仍然对最终结论负责。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#这套追踪解决什么问题">这套追踪解决什么问题</a></li><li class="depth-2"><a href="#什么样的规则需要稳定编号">什么样的规则需要稳定编号</a></li><li class="depth-2"><a href="#六个组成部分各自负责什么">六个组成部分各自负责什么</a></li><li class="depth-2"><a href="#账本字段怎样理解">账本字段怎样理解</a></li><li class="depth-2"><a href="#直接验证和支持性验证有什么区别">直接验证和支持性验证有什么区别</a></li><li class="depth-2"><a href="#新增一条稳定设计要求">新增一条稳定设计要求</a></li><li class="depth-2"><a href="#修改移动或替代旧要求">修改、移动或替代旧要求</a></li><li class="depth-2"><a href="#常见检查失败怎样处理">常见检查失败怎样处理</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

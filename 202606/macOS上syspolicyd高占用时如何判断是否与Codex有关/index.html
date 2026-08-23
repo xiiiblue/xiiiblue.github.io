@@ -1,258 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="在macOS上使用Codex桌面端时，如果机器突然变卡，活动监视器里又恰好是syspolicyd或trustd占满CPU，很容易把两件事直接联系起来。不过，syspolicyd本来就是系统安全策略的一部分，应用启动、签名验证以及应用写入的可执行文件都可能触发它。进程同时出现，只能说明值得继续查，还不能证明Codex就是根因。 更稳妥的顺序是先做一轮只读检查，确认高占用是否随桌面应用启动和退出而变化">
-<meta property="og:type" content="article">
-<meta property="og:title" content="macOS上syspolicyd高占用时如何判断是否与Codex有关">
-<meta property="og:url" content="https://www.bluexiii.com/202606/macOS%E4%B8%8Asyspolicyd%E9%AB%98%E5%8D%A0%E7%94%A8%E6%97%B6%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E4%B8%8ECodex%E6%9C%89%E5%85%B3/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="在macOS上使用Codex桌面端时，如果机器突然变卡，活动监视器里又恰好是syspolicyd或trustd占满CPU，很容易把两件事直接联系起来。不过，syspolicyd本来就是系统安全策略的一部分，应用启动、签名验证以及应用写入的可执行文件都可能触发它。进程同时出现，只能说明值得继续查，还不能证明Codex就是根因。 更稳妥的顺序是先做一轮只读检查，确认高占用是否随桌面应用启动和退出而变化">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-06-21T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-22T15:27:03.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202606/macOS%E4%B8%8Asyspolicyd%E9%AB%98%E5%8D%A0%E7%94%A8%E6%97%B6%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E4%B8%8ECodex%E6%9C%89%E5%85%B3/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202606/macOS%E4%B8%8Asyspolicyd%E9%AB%98%E5%8D%A0%E7%94%A8%E6%97%B6%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E4%B8%8ECodex%E6%9C%89%E5%85%B3/","path":"202606/macOS上syspolicyd高占用时如何判断是否与Codex有关/","title":"macOS上syspolicyd高占用时如何判断是否与Codex有关"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>macOS上syspolicyd高占用时如何判断是否与Codex有关 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E7%A1%AE%E8%AE%A4%E6%98%AF%E8%B0%81%E5%9C%A8%E6%B6%88%E8%80%97%E8%B5%84%E6%BA%90"><span class="nav-number">1.</span> <span class="nav-text">先确认是谁在消耗资源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8%E9%80%80%E5%87%BA%E5%89%8D%E5%90%8E%E7%9A%84%E5%8F%98%E5%8C%96%E5%88%A4%E6%96%AD%E5%85%B3%E8%81%94"><span class="nav-number">2.</span> <span class="nav-text">用退出前后的变化判断关联</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%81%A2%E5%A4%8D%E6%97%B6%E5%85%88%E5%8A%A8%E5%BA%94%E7%94%A8%EF%BC%8C%E4%B8%8D%E5%8A%A8%E7%B3%BB%E7%BB%9F%E5%AE%89%E5%85%A8%E6%9C%8D%E5%8A%A1"><span class="nav-number">3.</span> <span class="nav-text">恢复时先动应用，不动系统安全服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E5%90%8E%E6%A3%80%E6%9F%A5%E5%BA%94%E7%94%A8%E6%9C%AC%E8%BA%AB"><span class="nav-number">4.</span> <span class="nav-text">更新后检查应用本身</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202606/macOS%E4%B8%8Asyspolicyd%E9%AB%98%E5%8D%A0%E7%94%A8%E6%97%B6%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E4%B8%8ECodex%E6%9C%89%E5%85%B3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="macOS上syspolicyd高占用时如何判断是否与Codex有关 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          macOS上syspolicyd高占用时如何判断是否与Codex有关
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-06-22 00:00:00" itemprop="dateCreated datePublished" datetime="2026-06-22T00:00:00+08:00">2026-06-22</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<p>在macOS上使用Codex桌面端时，如果机器突然变卡，活动监视器里又恰好是<code>syspolicyd</code>或<code>trustd</code>占满CPU，很容易把两件事直接联系起来。不过，<code>syspolicyd</code>本来就是系统安全策略的一部分，应用启动、签名验证以及应用写入的可执行文件都可能触发它。进程同时出现，只能说明值得继续查，还不能证明Codex就是根因。</p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="在macOS上使用Codex桌面端时，如果机器突然变卡，活动监视器里又恰好是 syspolicyd 或 trustd 占满CPU，很容易把两件事直接联系起来。不过， syspolicyd 本来就是系统安全策略的一部分，应用启动、签名验证以及应用写入的可执行文件都可能触发它。进程同时出现，只能说明值得继续查，还…"><link rel="canonical" href="https://www.bluexiii.com/202606/macOS%E4%B8%8Asyspolicyd%E9%AB%98%E5%8D%A0%E7%94%A8%E6%97%B6%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E4%B8%8ECodex%E6%9C%89%E5%85%B3/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="macOS上syspolicyd高占用时如何判断是否与Codex有关｜BlueXIII's Blog"><meta property="og:description" content="在macOS上使用Codex桌面端时，如果机器突然变卡，活动监视器里又恰好是 syspolicyd 或 trustd 占满CPU，很容易把两件事直接联系起来。不过， syspolicyd 本来就是系统安全策略的一部分，应用启动、签名验证以及应用写入的可执行文件都可能触发它。进程同时出现，只能说明值得继续查，还…"><meta property="og:url" content="https://www.bluexiii.com/202606/macOS%E4%B8%8Asyspolicyd%E9%AB%98%E5%8D%A0%E7%94%A8%E6%97%B6%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E4%B8%8ECodex%E6%9C%89%E5%85%B3/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>macOS上syspolicyd高占用时如何判断是否与Codex有关｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>macOS上syspolicyd高占用时如何判断是否与Codex有关</h1><div class="article-meta"><time datetime="2026-06-21T16:00:00.000Z">发布于2026-06-22</time><time datetime="2026-08-22T15:27:03.000Z">更新于2026-08-22</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/macOS/">macOS</a></div></header><div class="prose"><p>在macOS上使用Codex桌面端时，如果机器突然变卡，活动监视器里又恰好是<code>syspolicyd</code>或<code>trustd</code>占满CPU，很容易把两件事直接联系起来。不过，<code>syspolicyd</code>本来就是系统安全策略的一部分，应用启动、签名验证以及应用写入的可执行文件都可能触发它。进程同时出现，只能说明值得继续查，还不能证明Codex就是根因。</p>
 <p>更稳妥的顺序是先做一轮只读检查，确认高占用是否随桌面应用启动和退出而变化，再决定是更新应用、暂时改用CLI，还是继续检查其他刚刚安装或生成的程序。</p>
-<h2 id="先确认是谁在消耗资源"><a href="#先确认是谁在消耗资源" class="headerlink" title="先确认是谁在消耗资源"></a>先确认是谁在消耗资源</h2><p>活动监视器已经足够看出CPU趋势。需要把进程信息留存下来时，可以执行：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps -axo pid,ppid,%cpu,%mem,etime,<span class="built_in">command</span> \</span><br><span class="line">  | grep -E <span class="string">&#x27;[s]yspolicyd|[t]rustd|[C]hatGPT|[C]odex&#x27;</span></span><br></pre></td></tr></table></figure>
-
+<h2 id="先确认是谁在消耗资源">先确认是谁在消耗资源</h2>
+<p>活动监视器已经足够看出CPU趋势。需要把进程信息留存下来时，可以执行：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">ps</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -axo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pid,ppid,%cpu,%mem,etime,command</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> grep</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -E</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '[s]yspolicyd|[t]rustd|[C]hatGPT|[C]odex'</span></span></code></pre>
 <p>当前的Codex桌面体验位于ChatGPT桌面应用中，旧版本或旧安装中也可能仍然看到<code>Codex.app</code>，因此排查时不要只盯着一个应用名。</p>
 <p>如果<code>syspolicyd</code>持续高占用，再看它打开了多少文件，以及最近打开的对象里有没有反复出现同一路径：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">policy_pid=<span class="string">&quot;<span class="subst">$(pgrep -x syspolicyd | head -n 1)</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ -n <span class="string">&quot;<span class="variable">$policy_pid</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">  <span class="built_in">sudo</span> lsof -nP -p <span class="string">&quot;<span class="variable">$policy_pid</span>&quot;</span> | <span class="built_in">wc</span> -l</span><br><span class="line">  <span class="built_in">sudo</span> lsof -nP -p <span class="string">&quot;<span class="variable">$policy_pid</span>&quot;</span> | <span class="built_in">tail</span> -n 50</span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">policy_pid</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"$(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">pgrep</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -x</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> syspolicyd </span><span style="color:#D73A49;--shiki-dark:#F97583">|</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> head</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -n</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="color:#032F62;--shiki-dark:#9ECBFF">)"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-n</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$policy_pid</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ]; </span><span style="color:#D73A49;--shiki-dark:#F97583">then</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> lsof</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -nP</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$policy_pid</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> wc</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -l</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> lsof</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -nP</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$policy_pid</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> tail</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -n</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 50</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">fi</span></span></code></pre>
 <p>这里的文件数只能用来判断进程是否异常忙碌，不能拿一个固定阈值直接下结论。真正有价值的是路径是否反复指向ChatGPT、Codex或它刚刚下载、解压、编译出来的可执行文件。</p>
 <p>系统统一日志也能补上时间线：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/log show --last 10m --style compact \</span><br><span class="line">  --predicate <span class="string">&#x27;process == &quot;syspolicyd&quot; OR process == &quot;trustd&quot;&#x27;</span> \</span><br><span class="line">  | <span class="built_in">tail</span> -n 100</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">/usr/bin/log</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> show</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --last</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 10m</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --style</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> compact</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --predicate</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'process == "syspolicyd" OR process == "trustd"'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">  |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> tail</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -n</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 100</span></span></code></pre>
 <p>日志可能隐去部分路径，也可能夹杂其他应用的安全检查。重点看高占用开始前后是否重复出现同一签名、同一目录或同一类校验失败，不要因为看到<code>syspolicyd</code>字样就认定已经找到了原因。</p>
-<h2 id="用退出前后的变化判断关联"><a href="#用退出前后的变化判断关联" class="headerlink" title="用退出前后的变化判断关联"></a>用退出前后的变化判断关联</h2><p>如果卡顿仍在发生，先保存正在进行的工作，再从菜单正常退出ChatGPT桌面应用。旧版独立Codex应用同样应当正常退出，而不是用模糊的<code>pkill -f</code>一次结束所有名称相近的进程。</p>
+<h2 id="用退出前后的变化判断关联">用退出前后的变化判断关联</h2>
+<p>如果卡顿仍在发生，先保存正在进行的工作，再从菜单正常退出ChatGPT桌面应用。旧版独立Codex应用同样应当正常退出，而不是用模糊的<code>pkill -f</code>一次结束所有名称相近的进程。</p>
 <p>退出后重新执行前面的<code>ps</code>和<code>lsof</code>检查，观察一两分钟：</p>
 <ul>
 <li>应用退出后，<code>syspolicyd</code>占用很快下降，且多次发生时都能重复看到相同变化，说明两者关联较强。</li>
@@ -260,113 +31,38 @@
 <li>只有一次时间上的重合，没有路径或重复现象支撑，最多只能记为怀疑对象。</li>
 </ul>
 <p>这一步仍然不能回答是桌面应用自身、应用调用的工具，还是项目里刚生成的二进制文件触发了检查，但至少可以避免一开始就修改系统安全配置。</p>
-<h2 id="恢复时先动应用，不动系统安全服务"><a href="#恢复时先动应用，不动系统安全服务" class="headerlink" title="恢复时先动应用，不动系统安全服务"></a>恢复时先动应用，不动系统安全服务</h2><p>如果退出桌面应用后系统恢复正常，先不要急着重新打开。可以从官方渠道更新或重新安装ChatGPT桌面应用，重启macOS后再观察。系统服务已经长时间无响应时，重启也比强制结束<code>syspolicyd</code>、<code>trustd</code>更稳妥。</p>
+<h2 id="恢复时先动应用不动系统安全服务">恢复时先动应用，不动系统安全服务</h2>
+<p>如果退出桌面应用后系统恢复正常，先不要急着重新打开。可以从官方渠道更新或重新安装ChatGPT桌面应用，重启macOS后再观察。系统服务已经长时间无响应时，重启也比强制结束<code>syspolicyd</code>、<code>trustd</code>更稳妥。</p>
 <p>桌面端暂时不能使用时，可以改用Codex CLI继续工作：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">codex --version</span><br><span class="line">codex</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">codex</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --version</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">codex</span></span></code></pre>
 <p>CLI是独立入口，但并不意味着它一定绕过所有系统检查。如果任务会下载工具、运行浏览器或生成新的可执行文件，仍然可能触发Gatekeeper。它在这里只是缩小变量的临时替代方案，不是对问题原因的证明。</p>
 <p>不建议为了消除高占用去关闭Gatekeeper或SIP，也不要删除<code>/var/db/SystemPolicy</code>下的数据库。它们会扩大安全风险，还会破坏现场信息；即使负载暂时下降，也无法说明原来的触发对象是什么。清理Codex会话或本地缓存同样不是直接修复，除非日志和打开文件已经明确指向其中的具体损坏文件。</p>
-<h2 id="更新后检查应用本身"><a href="#更新后检查应用本身" class="headerlink" title="更新后检查应用本身"></a>更新后检查应用本身</h2><p>系统恢复后，可以先记录macOS、CPU架构和应用版本：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sw_vers</span><br><span class="line"><span class="built_in">uname</span> -m</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> app <span class="keyword">in</span> /Applications/ChatGPT.app /Applications/Codex.app; <span class="keyword">do</span></span><br><span class="line">  [ -d <span class="string">&quot;<span class="variable">$app</span>&quot;</span> ] || <span class="built_in">continue</span></span><br><span class="line">  <span class="built_in">echo</span> <span class="string">&quot;<span class="variable">$app</span>&quot;</span></span><br><span class="line">  defaults <span class="built_in">read</span> <span class="string">&quot;<span class="variable">$app</span>/Contents/Info&quot;</span> CFBundleShortVersionString</span><br><span class="line">  defaults <span class="built_in">read</span> <span class="string">&quot;<span class="variable">$app</span>/Contents/Info&quot;</span> CFBundleVersion</span><br><span class="line"><span class="keyword">done</span></span><br></pre></td></tr></table></figure>
-
+<h2 id="更新后检查应用本身">更新后检查应用本身</h2>
+<p>系统恢复后，可以先记录macOS、CPU架构和应用版本：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sw_vers</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">uname</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> app </span><span style="color:#D73A49;--shiki-dark:#F97583">in</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /Applications/ChatGPT.app</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /Applications/Codex.app</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; </span><span style="color:#D73A49;--shiki-dark:#F97583">do</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">  [ </span><span style="color:#D73A49;--shiki-dark:#F97583">-d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ] </span><span style="color:#D73A49;--shiki-dark:#F97583">||</span><span style="color:#D73A49;--shiki-dark:#F97583"> continue</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  echo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  defaults</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> read</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/Contents/Info"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> CFBundleShortVersionString</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">  defaults</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> read</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$app</span><span style="color:#032F62;--shiki-dark:#9ECBFF">/Contents/Info"</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> CFBundleVersion</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">done</span></span></code></pre>
 <p>再让系统评估一次应用是否能正常执行：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">spctl --assess --<span class="built_in">type</span> execute --verbose=4 /Applications/ChatGPT.app</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">spctl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --assess</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --type</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> execute</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --verbose=4</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /Applications/ChatGPT.app</span></span></code></pre>
 <p>这条命令本身会发起安全评估，应当在系统已经稳定时运行。如果实际安装的是旧版<code>Codex.app</code>，把路径换成对应应用即可。评估失败时，优先从官方渠道重新下载；不要用移除隔离属性、临时签名或全局关闭安全检查来掩盖失败。</p>
 <p>如果问题仍能重复出现，提交反馈时附上macOS版本、芯片架构、应用版本、出现与恢复时间，以及脱敏后的进程快照和日志片段。项目路径、用户名、对话内容和凭据不需要跟着日志一起公开。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://support.apple.com/guide/security/gatekeeper-and-runtime-protection-sec5599b66df/web">Apple：Gatekeeper and runtime protection in macOS</a></li>
-<li><a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/app">ChatGPT桌面应用</a></li>
-<li><a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/reference/troubleshooting">ChatGPT桌面应用故障排查</a></li>
-<li><a target="_blank" rel="noopener" href="https://learn.chatgpt.com/docs/codex/cli">Codex CLI</a></li>
-</ul>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202605/%E6%88%91%E7%9A%84Obsidian%E7%9F%A5%E8%AF%86%E5%BA%93%E6%98%AF%E6%80%8E%E6%A0%B7%E7%BB%84%E7%BB%87%E7%9A%84/" rel="prev" title="Obsidian知识库的目录与维护方式">
-                  <i class="fa fa-angle-left"></i> Obsidian知识库的目录与维护方式
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B%E9%99%84%E5%BD%95A-%E6%9C%AF%E8%AF%AD%E5%92%8C%E5%AF%B9%E8%B1%A1%E5%85%B3%E7%B3%BB/" rel="next" title="ACDL研发流程附录A：术语和对象关系">
-                  ACDL研发流程附录A：术语和对象关系 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="https://support.apple.com/guide/security/gatekeeper-and-runtime-protection-sec5599b66df/web">Apple：Gatekeeper and runtime protection in macOS</a></li>
+<li><a href="https://learn.chatgpt.com/docs/app">ChatGPT桌面应用</a></li>
+<li><a href="https://learn.chatgpt.com/docs/reference/troubleshooting">ChatGPT桌面应用故障排查</a></li>
+<li><a href="https://learn.chatgpt.com/docs/codex/cli">Codex CLI</a></li>
+</ul></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#先确认是谁在消耗资源">先确认是谁在消耗资源</a></li><li class="depth-2"><a href="#用退出前后的变化判断关联">用退出前后的变化判断关联</a></li><li class="depth-2"><a href="#恢复时先动应用不动系统安全服务">恢复时先动应用，不动系统安全服务</a></li><li class="depth-2"><a href="#更新后检查应用本身">更新后检查应用本身</a></li><li class="depth-2"><a href="#参考资料">参考资料</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

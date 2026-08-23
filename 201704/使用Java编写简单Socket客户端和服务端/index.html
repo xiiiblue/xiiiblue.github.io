@@ -1,325 +1,167 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="简介某同事要用Socket连接外围系统，帮忙写了个简单的Demo。包含一个客户端和一个服务端的，仅是示例，比较简陋，服务端也没有用多线程。直接贴代码了。   服务端1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636">
-<meta property="og:type" content="article">
-<meta property="og:title" content="使用Java编写简单Socket客户端和服务端">
-<meta property="og:url" content="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="简介某同事要用Socket连接外围系统，帮忙写了个简单的Demo。包含一个客户端和一个服务端的，仅是示例，比较简陋，服务端也没有用多线程。直接贴代码了。   服务端1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2018-11-06T07:45:39.000Z">
-<meta property="article:modified_time" content="2018-11-06T07:45:39.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/","path":"201704/使用Java编写简单Socket客户端和服务端/","title":"使用Java编写简单Socket客户端和服务端"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>使用Java编写简单Socket客户端和服务端 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="nav-number">2.</span> <span class="nav-text">服务端</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">3.</span> <span class="nav-text">客户端</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="使用Java编写简单Socket客户端和服务端 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          使用Java编写简单Socket客户端和服务端
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:45:39" itemprop="dateCreated datePublished" datetime="2018-11-06T15:45:39+08:00">2018-11-06</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>某同事要用Socket连接外围系统，帮忙写了个简单的Demo。<br>包含一个客户端和一个服务端的，仅是示例，比较简陋，服务端也没有用多线程。<br>直接贴代码了。  </p>
-<h2 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line">import java.io.*;</span><br><span class="line">import java.net.*;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Socket服务端示例</span><br><span class="line"> */</span><br><span class="line">public class SocketServer &#123;</span><br><span class="line">    ServerSocket serverSocket;</span><br><span class="line">    Socket connection = null;</span><br><span class="line">    ObjectOutputStream out;</span><br><span class="line">    ObjectInputStream in;</span><br><span class="line">    String message;</span><br><span class="line"></span><br><span class="line">    void runServer() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            // 创建服务端监听</span><br><span class="line">            serverSocket = new ServerSocket(31313, 10);</span><br><span class="line"></span><br><span class="line">            // 等待客户端连接</span><br><span class="line">            System.out.println(&quot;等待客户端连接...&quot;);</span><br><span class="line">            connection = serverSocket.accept();</span><br><span class="line">            System.out.println(&quot;收到客户端连接： &quot; + connection.getInetAddress().getHostName());</span><br><span class="line"></span><br><span class="line">            // 获取输入输出流</span><br><span class="line">            out = new ObjectOutputStream(connection.getOutputStream());</span><br><span class="line">            out.flush();</span><br><span class="line">            in = new ObjectInputStream(connection.getInputStream());</span><br><span class="line"></span><br><span class="line">            // 连接成功后，首先向客户端发成功消息</span><br><span class="line">            sendMsg(&quot;连接成功&quot;);</span><br><span class="line"></span><br><span class="line">            // 发送接收消息</span><br><span class="line">            do &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    message = (String) in.readObject();</span><br><span class="line">                    System.out.println(&quot;client&gt;&quot; + message);</span><br><span class="line"></span><br><span class="line">                    // 发送退出消息</span><br><span class="line">                    if (message.equals(&quot;bye&quot;)) &#123;</span><br><span class="line">                        sendMsg(&quot;bye&quot;);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; catch (ClassNotFoundException ex) &#123;</span><br><span class="line">                    ex.printStackTrace();</span><br><span class="line">                    System.err.println(&quot;数据格式无效&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; while (!message.equals(&quot;bye&quot;));  //当对方消息为bye时退出循环</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            // 关闭Socket连接</span><br><span class="line">            try &#123;</span><br><span class="line">                in.close();</span><br><span class="line">                out.close();</span><br><span class="line">                serverSocket.close();</span><br><span class="line">            &#125; catch (IOException ioException) &#123;</span><br><span class="line">                ioException.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void sendMsg(String msg) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            out.writeObject(msg);</span><br><span class="line">            out.flush();</span><br><span class="line">            System.out.println(&quot;server&gt;&quot; + msg);</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String args[]) &#123;</span><br><span class="line">        SocketServer server = new SocketServer();</span><br><span class="line">        while (true) &#123;</span><br><span class="line">            server.runServer();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">import java.io.*;</span><br><span class="line">import java.net.*;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Socket客户端示例</span><br><span class="line"> */</span><br><span class="line">public class SocketClient &#123;</span><br><span class="line">    Socket clientSocket;</span><br><span class="line">    ObjectOutputStream out;</span><br><span class="line">    ObjectInputStream in;</span><br><span class="line">    String message;</span><br><span class="line"></span><br><span class="line">    void runClient() &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            // 连接到服务端</span><br><span class="line">            clientSocket = new Socket(&quot;localhost&quot;, 31313);</span><br><span class="line">            System.out.println(&quot;已连接到服务端&quot;);</span><br><span class="line"></span><br><span class="line">            // 获取输入输出流</span><br><span class="line">            out = new ObjectOutputStream(clientSocket.getOutputStream());</span><br><span class="line">            out.flush();</span><br><span class="line">            in = new ObjectInputStream(clientSocket.getInputStream());</span><br><span class="line"></span><br><span class="line">            // 发送接收消息</span><br><span class="line">            do &#123;</span><br><span class="line">                try &#123;</span><br><span class="line">                    // 接收消息</span><br><span class="line">                    message = (String) in.readObject();</span><br><span class="line">                    System.out.println(&quot;server&gt;&quot; + message);</span><br><span class="line"></span><br><span class="line">                    // 发送消息</span><br><span class="line">                    sendMsg(&quot;hello&quot;);</span><br><span class="line">                    sendMsg(&quot;hello again&quot;);</span><br><span class="line"></span><br><span class="line">                    // 发送退出消息</span><br><span class="line">                    message = &quot;bye&quot;;</span><br><span class="line">                    sendMsg(message);</span><br><span class="line">                &#125; catch (ClassNotFoundException ex) &#123;</span><br><span class="line">                    ex.printStackTrace();</span><br><span class="line">                    System.err.println(&quot;数据格式无效&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; while (!message.equals(&quot;bye&quot;)); //当对方消息为bye时退出循环</span><br><span class="line">        &#125; catch (UnknownHostException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">            System.err.println(&quot;无法连接到服务端&quot;);</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            // 关闭Socket连接</span><br><span class="line">            try &#123;</span><br><span class="line">                in.close();</span><br><span class="line">                out.close();</span><br><span class="line">                clientSocket.close();</span><br><span class="line">            &#125; catch (IOException ex) &#123;</span><br><span class="line">                ex.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    void sendMsg(String msg) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            out.writeObject(msg);</span><br><span class="line">            out.flush();</span><br><span class="line">            System.out.println(&quot;client&gt;&quot; + msg);</span><br><span class="line">        &#125; catch (IOException ex) &#123;</span><br><span class="line">            ex.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String args[]) &#123;</span><br><span class="line">        SocketClient client = new SocketClient();</span><br><span class="line">        client.runClient();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201706/maven%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE/" rel="prev" title="Maven配置示例">
-                  <i class="fa fa-angle-left"></i> Maven配置示例
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201704/%E4%BD%BF%E7%94%A8Gradle%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%A8%A1%E5%9D%97Java%E9%A1%B9%E7%9B%AE/" rel="next" title="使用Gradle构建Java项目">
-                  使用Gradle构建Java项目 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="简介 某同事要用Socket连接外围系统，帮忙写了个简单的Demo。 包含一个客户端和一个服务端的，仅是示例，比较简陋，服务端也没有用多线程。 直接贴代码了。 服务端 客户端"><link rel="canonical" href="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="使用Java编写简单Socket客户端和服务端｜BlueXIII's Blog"><meta property="og:description" content="简介 某同事要用Socket连接外围系统，帮忙写了个简单的Demo。 包含一个客户端和一个服务端的，仅是示例，比较简陋，服务端也没有用多线程。 直接贴代码了。 服务端 客户端"><meta property="og:url" content="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>使用Java编写简单Socket客户端和服务端｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>使用Java编写简单Socket客户端和服务端</h1><div class="article-meta"><time datetime="2018-11-06T07:45:39.000Z">发布于2018-11-06</time></div><div class="badges"><a class="badge" href="/tags/Java/">Java</a></div></header><div class="prose"><h2 id="简介">简介</h2>
+<p>某同事要用Socket连接外围系统，帮忙写了个简单的Demo。<br>
+包含一个客户端和一个服务端的，仅是示例，比较简陋，服务端也没有用多线程。<br>
+直接贴代码了。</p>
+<h2 id="服务端">服务端</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>import java.io.*;</span></span>
+<span class="line"><span>import java.net.*;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/**</span></span>
+<span class="line"><span> * Socket服务端示例</span></span>
+<span class="line"><span> */</span></span>
+<span class="line"><span>public class SocketServer {</span></span>
+<span class="line"><span>    ServerSocket serverSocket;</span></span>
+<span class="line"><span>    Socket connection = null;</span></span>
+<span class="line"><span>    ObjectOutputStream out;</span></span>
+<span class="line"><span>    ObjectInputStream in;</span></span>
+<span class="line"><span>    String message;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    void runServer() {</span></span>
+<span class="line"><span>        try {</span></span>
+<span class="line"><span>            // 创建服务端监听</span></span>
+<span class="line"><span>            serverSocket = new ServerSocket(31313, 10);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>            // 等待客户端连接</span></span>
+<span class="line"><span>            System.out.println("等待客户端连接...");</span></span>
+<span class="line"><span>            connection = serverSocket.accept();</span></span>
+<span class="line"><span>            System.out.println("收到客户端连接： " + connection.getInetAddress().getHostName());</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>            // 获取输入输出流</span></span>
+<span class="line"><span>            out = new ObjectOutputStream(connection.getOutputStream());</span></span>
+<span class="line"><span>            out.flush();</span></span>
+<span class="line"><span>            in = new ObjectInputStream(connection.getInputStream());</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>            // 连接成功后，首先向客户端发成功消息</span></span>
+<span class="line"><span>            sendMsg("连接成功");</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>            // 发送接收消息</span></span>
+<span class="line"><span>            do {</span></span>
+<span class="line"><span>                try {</span></span>
+<span class="line"><span>                    message = (String) in.readObject();</span></span>
+<span class="line"><span>                    System.out.println("client>" + message);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>                    // 发送退出消息</span></span>
+<span class="line"><span>                    if (message.equals("bye")) {</span></span>
+<span class="line"><span>                        sendMsg("bye");</span></span>
+<span class="line"><span>                    }</span></span>
+<span class="line"><span>                } catch (ClassNotFoundException ex) {</span></span>
+<span class="line"><span>                    ex.printStackTrace();</span></span>
+<span class="line"><span>                    System.err.println("数据格式无效");</span></span>
+<span class="line"><span>                }</span></span>
+<span class="line"><span>            } while (!message.equals("bye"));  //当对方消息为bye时退出循环</span></span>
+<span class="line"><span>        } catch (IOException ex) {</span></span>
+<span class="line"><span>            ex.printStackTrace();</span></span>
+<span class="line"><span>        } finally {</span></span>
+<span class="line"><span>            // 关闭Socket连接</span></span>
+<span class="line"><span>            try {</span></span>
+<span class="line"><span>                in.close();</span></span>
+<span class="line"><span>                out.close();</span></span>
+<span class="line"><span>                serverSocket.close();</span></span>
+<span class="line"><span>            } catch (IOException ioException) {</span></span>
+<span class="line"><span>                ioException.printStackTrace();</span></span>
+<span class="line"><span>            }</span></span>
+<span class="line"><span>        }</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    void sendMsg(String msg) {</span></span>
+<span class="line"><span>        try {</span></span>
+<span class="line"><span>            out.writeObject(msg);</span></span>
+<span class="line"><span>            out.flush();</span></span>
+<span class="line"><span>            System.out.println("server>" + msg);</span></span>
+<span class="line"><span>        } catch (IOException ex) {</span></span>
+<span class="line"><span>            ex.printStackTrace();</span></span>
+<span class="line"><span>        }</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    public static void main(String args[]) {</span></span>
+<span class="line"><span>        SocketServer server = new SocketServer();</span></span>
+<span class="line"><span>        while (true) {</span></span>
+<span class="line"><span>            server.runServer();</span></span>
+<span class="line"><span>        }</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span></code></pre>
+<h2 id="客户端">客户端</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>import java.io.*;</span></span>
+<span class="line"><span>import java.net.*;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>/**</span></span>
+<span class="line"><span> * Socket客户端示例</span></span>
+<span class="line"><span> */</span></span>
+<span class="line"><span>public class SocketClient {</span></span>
+<span class="line"><span>    Socket clientSocket;</span></span>
+<span class="line"><span>    ObjectOutputStream out;</span></span>
+<span class="line"><span>    ObjectInputStream in;</span></span>
+<span class="line"><span>    String message;</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    void runClient() {</span></span>
+<span class="line"><span>        try {</span></span>
+<span class="line"><span>            // 连接到服务端</span></span>
+<span class="line"><span>            clientSocket = new Socket("localhost", 31313);</span></span>
+<span class="line"><span>            System.out.println("已连接到服务端");</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>            // 获取输入输出流</span></span>
+<span class="line"><span>            out = new ObjectOutputStream(clientSocket.getOutputStream());</span></span>
+<span class="line"><span>            out.flush();</span></span>
+<span class="line"><span>            in = new ObjectInputStream(clientSocket.getInputStream());</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>            // 发送接收消息</span></span>
+<span class="line"><span>            do {</span></span>
+<span class="line"><span>                try {</span></span>
+<span class="line"><span>                    // 接收消息</span></span>
+<span class="line"><span>                    message = (String) in.readObject();</span></span>
+<span class="line"><span>                    System.out.println("server>" + message);</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>                    // 发送消息</span></span>
+<span class="line"><span>                    sendMsg("hello");</span></span>
+<span class="line"><span>                    sendMsg("hello again");</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>                    // 发送退出消息</span></span>
+<span class="line"><span>                    message = "bye";</span></span>
+<span class="line"><span>                    sendMsg(message);</span></span>
+<span class="line"><span>                } catch (ClassNotFoundException ex) {</span></span>
+<span class="line"><span>                    ex.printStackTrace();</span></span>
+<span class="line"><span>                    System.err.println("数据格式无效");</span></span>
+<span class="line"><span>                }</span></span>
+<span class="line"><span>            } while (!message.equals("bye")); //当对方消息为bye时退出循环</span></span>
+<span class="line"><span>        } catch (UnknownHostException ex) {</span></span>
+<span class="line"><span>            ex.printStackTrace();</span></span>
+<span class="line"><span>            System.err.println("无法连接到服务端");</span></span>
+<span class="line"><span>        } catch (IOException ex) {</span></span>
+<span class="line"><span>            ex.printStackTrace();</span></span>
+<span class="line"><span>        } finally {</span></span>
+<span class="line"><span>            // 关闭Socket连接</span></span>
+<span class="line"><span>            try {</span></span>
+<span class="line"><span>                in.close();</span></span>
+<span class="line"><span>                out.close();</span></span>
+<span class="line"><span>                clientSocket.close();</span></span>
+<span class="line"><span>            } catch (IOException ex) {</span></span>
+<span class="line"><span>                ex.printStackTrace();</span></span>
+<span class="line"><span>            }</span></span>
+<span class="line"><span>        }</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    void sendMsg(String msg) {</span></span>
+<span class="line"><span>        try {</span></span>
+<span class="line"><span>            out.writeObject(msg);</span></span>
+<span class="line"><span>            out.flush();</span></span>
+<span class="line"><span>            System.out.println("client>" + msg);</span></span>
+<span class="line"><span>        } catch (IOException ex) {</span></span>
+<span class="line"><span>            ex.printStackTrace();</span></span>
+<span class="line"><span>        }</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    public static void main(String args[]) {</span></span>
+<span class="line"><span>        SocketClient client = new SocketClient();</span></span>
+<span class="line"><span>        client.runClient();</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#简介">简介</a></li><li class="depth-2"><a href="#服务端">服务端</a></li><li class="depth-2"><a href="#客户端">客户端</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

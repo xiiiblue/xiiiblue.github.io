@@ -1,247 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="crontabcrontab并不陌生，在*nix的操作系统之中，使用它设置周期性被执行的指令.每个用户可以拥有自己的crontab文件；同时，操作系统保存一个针对整个系统的crontab文件，该文件通常存放于&#x2F;etc或者&#x2F;etc之下的子目录中。   1234567pi@raspberrypi:&#x2F;etc $ ls -al|grep crondrwxr-xr-x   2 root">
-<meta property="og:type" content="article">
-<meta property="og:title" content="crontab配置及简单应用">
-<meta property="og:url" content="https://www.bluexiii.com/201703/crontab%E9%85%8D%E7%BD%AE%E5%8F%8A%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="crontabcrontab并不陌生，在*nix的操作系统之中，使用它设置周期性被执行的指令.每个用户可以拥有自己的crontab文件；同时，操作系统保存一个针对整个系统的crontab文件，该文件通常存放于&#x2F;etc或者&#x2F;etc之下的子目录中。   1234567pi@raspberrypi:&#x2F;etc $ ls -al|grep crondrwxr-xr-x   2 root">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2018-11-06T07:46:09.000Z">
-<meta property="article:modified_time" content="2018-11-06T07:46:09.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201703/crontab%E9%85%8D%E7%BD%AE%E5%8F%8A%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201703/crontab%E9%85%8D%E7%BD%AE%E5%8F%8A%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/","path":"201703/crontab配置及简单应用/","title":"crontab配置及简单应用"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>crontab配置及简单应用 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#crontab"><span class="nav-number">1.</span> <span class="nav-text">crontab</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E7%94%A8%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">基本用法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">配置格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E7%A4%BA%E4%BE%8B"><span class="nav-number">4.</span> <span class="nav-text">配置示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8"><span class="nav-number">5.</span> <span class="nav-text">简单应用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%B5%8B%E5%B9%B6%E8%87%AA%E5%8A%A8%E9%87%8D%E5%90%AF%E6%9C%8D%E5%8A%A1"><span class="nav-number">5.1.</span> <span class="nav-text">检测并自动重启服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%B5%8B%E5%B9%B6%E8%87%AA%E5%8A%A8%E9%87%8D%E5%90%AFtomcat"><span class="nav-number">5.2.</span> <span class="nav-text">检测并自动重启tomcat</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%85%E7%90%8630%E5%A4%A9%E5%89%8D%E7%9A%84tomcat%E6%97%A5%E5%BF%97"><span class="nav-number">5.3.</span> <span class="nav-text">清理30天前的tomcat日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%87%E4%BB%BD%E5%B9%B6%E6%B8%85%E7%90%86catalina-out"><span class="nav-number">5.4.</span> <span class="nav-text">备份并清理catalina.out</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">6.</span> <span class="nav-text">注意设置环境变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">7.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201703/crontab%E9%85%8D%E7%BD%AE%E5%8F%8A%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="crontab配置及简单应用 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          crontab配置及简单应用
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:46:09" itemprop="dateCreated datePublished" datetime="2018-11-06T15:46:09+08:00">2018-11-06</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="crontab"><a href="#crontab" class="headerlink" title="crontab"></a>crontab</h2><p>crontab并不陌生，在*nix的操作系统之中，使用它设置周期性被执行的指令.每个用户可以拥有自己的crontab文件；<br>同时，操作系统保存一个针对整个系统的crontab文件，该文件通常存放于&#x2F;etc或者&#x2F;etc之下的子目录中。  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">pi@raspberrypi:/etc $ ls -al|grep cron</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.d</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.daily</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.hourly</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.monthly</span><br><span class="line">drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.weekly</span><br><span class="line">-rw-r--r--   1 root root     722 Sep  5  2015 crontab</span><br></pre></td></tr></table></figure>
-
-<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><ul>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="crontab crontab并不陌生，在 nix的操作系统之中，使用它设置周期性被执行的指令.每个用户可以拥有自己的crontab文件； 同时，操作系统保存一个针对整个系统的crontab文件，该文件通常存放于/etc或者/etc之下的子目录中。 基本用法 u user：用来设定某个用户的crontab服务…"><link rel="canonical" href="https://www.bluexiii.com/201703/crontab%E9%85%8D%E7%BD%AE%E5%8F%8A%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="crontab配置及简单应用｜BlueXIII's Blog"><meta property="og:description" content="crontab crontab并不陌生，在 nix的操作系统之中，使用它设置周期性被执行的指令.每个用户可以拥有自己的crontab文件； 同时，操作系统保存一个针对整个系统的crontab文件，该文件通常存放于/etc或者/etc之下的子目录中。 基本用法 u user：用来设定某个用户的crontab服务…"><meta property="og:url" content="https://www.bluexiii.com/201703/crontab%E9%85%8D%E7%BD%AE%E5%8F%8A%E7%AE%80%E5%8D%95%E5%BA%94%E7%94%A8/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>crontab配置及简单应用｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>crontab配置及简单应用</h1><div class="article-meta"><time datetime="2018-11-06T07:46:09.000Z">发布于2018-11-06</time></div><div class="badges"><a class="badge" href="/tags/Linux/">Linux</a></div></header><div class="prose"><h2 id="crontab">crontab</h2>
+<p>crontab并不陌生，在*nix的操作系统之中，使用它设置周期性被执行的指令.每个用户可以拥有自己的crontab文件；<br>
+同时，操作系统保存一个针对整个系统的crontab文件，该文件通常存放于/etc或者/etc之下的子目录中。</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>pi@raspberrypi:/etc $ ls -al|grep cron</span></span>
+<span class="line"><span>drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.d</span></span>
+<span class="line"><span>drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.daily</span></span>
+<span class="line"><span>drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.hourly</span></span>
+<span class="line"><span>drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.monthly</span></span>
+<span class="line"><span>drwxr-xr-x   2 root root    4096 Jan  1  1970 cron.weekly</span></span>
+<span class="line"><span>-rw-r--r--   1 root root     722 Sep  5  2015 crontab</span></span></code></pre>
+<h2 id="基本用法">基本用法</h2>
+<ul>
 <li>-u user：用来设定某个用户的crontab服务；</li>
 <li>file：file是命令文件的名字,表示将file做为crontab的任务列表文件并载入crontab。如果在命令行中没有指定这个文件，crontab命令将接受标准输入（键盘）上键入的命令，并将它们载入crontab。</li>
 <li>-e：编辑某个用户的crontab文件内容。如果不指定用户，则表示编辑当前用户的crontab文件。</li>
 <li>-l：显示某个用户的crontab文件内容，如果不指定用户，则表示显示当前用户的crontab文件内容。</li>
-<li>-r：从&#x2F;var&#x2F;spool&#x2F;cron目录中删除某个用户的crontab文件，如果不指定用户，则默认删除当前用户的crontab文件。</li>
+<li>-r：从/var/spool/cron目录中删除某个用户的crontab文件，如果不指定用户，则默认删除当前用户的crontab文件。</li>
 <li>-i：在删除用户的crontab文件时给确认提示。</li>
 </ul>
 <p>最常用的参数有<code>-l 查询</code>和<code>-e 编辑</code></p>
-<h2 id="配置格式"><a href="#配置格式" class="headerlink" title="配置格式"></a>配置格式</h2><ul>
+<h2 id="配置格式">配置格式</h2>
+<ul>
 <li>第1列分钟0～59</li>
 <li>第2列小时0～23（0表示子夜）</li>
 <li>第3列日1～31</li>
@@ -249,129 +31,71 @@
 <li>第5列星期0～7（0和7表示星期天）</li>
 <li>第6列要运行的命令</li>
 </ul>
-<h2 id="配置示例"><a href="#配置示例" class="headerlink" title="配置示例"></a>配置示例</h2><p>每分钟执行一次:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* * * * * /path/to/your/app.sh</span><br></pre></td></tr></table></figure>
-
+<h2 id="配置示例">配置示例</h2>
+<p>每分钟执行一次:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>* * * * * /path/to/your/app.sh</span></span></code></pre>
 <p>每半分钟执行一次:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*/2 * * * * /path/to/your/app.sh</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>*/2 * * * * /path/to/your/app.sh</span></span></code></pre>
 <p>每小时的第3和第15分钟执行：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3,15 * * * * /path/to/your/app.sh</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>3,15 * * * * /path/to/your/app.sh</span></span></code></pre>
 <p>在上午8点到11点的第3和第15分钟执行：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">3,15 8-11 * * * /path/to/your/app.sh</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>3,15 8-11 * * * /path/to/your/app.sh</span></span></code></pre>
 <p>每周六23点执行：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0 23 * * 6 /etc/init.d/smb restart</span><br></pre></td></tr></table></figure>
-
-<h2 id="简单应用"><a href="#简单应用" class="headerlink" title="简单应用"></a>简单应用</h2><h3 id="检测并自动重启服务"><a href="#检测并自动重启服务" class="headerlink" title="检测并自动重启服务"></a>检测并自动重启服务</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br><span class="line">*/2 * * * * isfound=$(ps | grep &quot;redsocks&quot; | grep -v &quot;grep&quot;); if [ -z &quot;$isfound&quot; ]; then echo &quot;$(date): restart redsocks...&quot;&gt;&gt;/tmp/log/redsocks-mon.log &amp;&amp; /etc/init.d/redsocks restart; fi</span><br></pre></td></tr></table></figure>
-
-<h3 id="检测并自动重启tomcat"><a href="#检测并自动重启tomcat" class="headerlink" title="检测并自动重启tomcat"></a>检测并自动重启tomcat</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">*/2 * * * * sh /path/to/tomcat_monitor.sh</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">vi tomcat_monitor.sh</span><br><span class="line">#!/bin/sh</span><br><span class="line">source /home/user/.bash_profile</span><br><span class="line">export PATH=$PATH:.:/bin:/sbin:/usr/bin:</span><br><span class="line">pid_count=`ps aux|grep java|grep your-tomcat|grep -v grep|wc -l`</span><br><span class="line">if [ $pid_count -ne 1 ]; then</span><br><span class="line">        echo &quot;stop download-tomcat, time: `date`&quot;</span><br><span class="line">        if [ $pid_count -gt 0 ]; then</span><br><span class="line">                 ps aux|grep java|grep your-tomcat|grep -v grep|awk &#x27;&#123;print $2&#125;&#x27;|xargs kill</span><br><span class="line">        fi</span><br><span class="line">        sh /path/to/tomcat/bin/startup.sh</span><br><span class="line">        echo &quot;start download-tomcat finished, time: `date`&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
-
-<h3 id="清理30天前的tomcat日志"><a href="#清理30天前的tomcat日志" class="headerlink" title="清理30天前的tomcat日志"></a>清理30天前的tomcat日志</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br><span class="line">0 23 * * * sh /path/to/clean_log.sh</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi clean_log.sh</span><br><span class="line">DATE=$(date -d &quot;30 days ago&quot; +%Y-%m-%d)</span><br><span class="line">echo $DATE</span><br><span class="line">rm /path/to/tomcat/logs/*$DATE*</span><br></pre></td></tr></table></figure>
-
-<h3 id="备份并清理catalina-out"><a href="#备份并清理catalina-out" class="headerlink" title="备份并清理catalina.out"></a>备份并清理catalina.out</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">crontab -e</span><br><span class="line">00 22 * * * sh /path/to/clean_catalina_out.sh</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vi clean_catalina_out.sh</span><br><span class="line">y=`date &quot;+%Y&quot;`</span><br><span class="line">m=`date &quot;+%m&quot;`</span><br><span class="line">d=`date &quot;+%d&quot;`</span><br><span class="line">cp /path/to/tomcat/logs/catalina.out /path/to/tomcat/logs/catalina.out.$y-$m-$d</span><br><span class="line">echo &gt; /path/to/tomcat/logs/catalina.out</span><br><span class="line">exit</span><br></pre></td></tr></table></figure>
-
-<h2 id="注意设置环境变量"><a href="#注意设置环境变量" class="headerlink" title="注意设置环境变量"></a>注意设置环境变量</h2><p>由于crontab执行任务时不加载任何环境变量，可以在脚本中加入必要的环境变量，甚至ulimit设置，以保证程序可以正常执行。  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vi start.sh</span><br><span class="line"></span><br><span class="line">!/bin/sh</span><br><span class="line">source /etc/profile</span><br><span class="line">export YOUR_ENV=value</span><br><span class="line">ulimit -n 10240</span><br><span class="line">/path/to/your/app/run</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="http://www.linuxforums.org/forum/programming-scripting/21764-cron-job-not-taking-ulimits.html">http://www.linuxforums.org/forum/programming-scripting/21764-cron-job-not-taking-ulimits.html</a></li>
-<li><a target="_blank" rel="noopener" href="http://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/crontab.html">http://linuxtools-rst.readthedocs.io/zh_CN&#x2F;latest&#x2F;tool&#x2F;crontab.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Cron">https://zh.wikipedia.org/wiki/Cron</a></li>
-</ul>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201704/flask-rest-sample/" rel="prev" title="使用Flask快速构建REST应用">
-                  <i class="fa fa-angle-left"></i> 使用Flask快速构建REST应用
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201703/ulimit%E3%80%81limits.conf%E3%80%81sysctl%E5%92%8Cproc%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="next" title="ulimit、limits.conf、sysctl和proc文件系统">
-                  ulimit、limits.conf、sysctl和proc文件系统 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>0 23 * * 6 /etc/init.d/smb restart</span></span></code></pre>
+<h2 id="简单应用">简单应用</h2>
+<h3 id="检测并自动重启服务">检测并自动重启服务</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>crontab -e</span></span>
+<span class="line"><span>*/2 * * * * isfound=$(ps | grep "redsocks" | grep -v "grep"); if [ -z "$isfound" ]; then echo "$(date): restart redsocks...">>/tmp/log/redsocks-mon.log &#x26;&#x26; /etc/init.d/redsocks restart; fi</span></span></code></pre>
+<h3 id="检测并自动重启tomcat">检测并自动重启tomcat</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>*/2 * * * * sh /path/to/tomcat_monitor.sh</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>vi tomcat_monitor.sh</span></span>
+<span class="line"><span>#!/bin/sh</span></span>
+<span class="line"><span>source /home/user/.bash_profile</span></span>
+<span class="line"><span>export PATH=$PATH:.:/bin:/sbin:/usr/bin:</span></span>
+<span class="line"><span>pid_count=`ps aux|grep java|grep your-tomcat|grep -v grep|wc -l`</span></span>
+<span class="line"><span>if [ $pid_count -ne 1 ]; then</span></span>
+<span class="line"><span>        echo "stop download-tomcat, time: `date`"</span></span>
+<span class="line"><span>        if [ $pid_count -gt 0 ]; then</span></span>
+<span class="line"><span>                 ps aux|grep java|grep your-tomcat|grep -v grep|awk '{print $2}'|xargs kill</span></span>
+<span class="line"><span>        fi</span></span>
+<span class="line"><span>        sh /path/to/tomcat/bin/startup.sh</span></span>
+<span class="line"><span>        echo "start download-tomcat finished, time: `date`"</span></span>
+<span class="line"><span>fi</span></span></code></pre>
+<h3 id="清理30天前的tomcat日志">清理30天前的tomcat日志</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>crontab -e</span></span>
+<span class="line"><span>0 23 * * * sh /path/to/clean_log.sh</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>vi clean_log.sh</span></span>
+<span class="line"><span>DATE=$(date -d "30 days ago" +%Y-%m-%d)</span></span>
+<span class="line"><span>echo $DATE</span></span>
+<span class="line"><span>rm /path/to/tomcat/logs/*$DATE*</span></span></code></pre>
+<h3 id="备份并清理catalinaout">备份并清理catalina.out</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>crontab -e</span></span>
+<span class="line"><span>00 22 * * * sh /path/to/clean_catalina_out.sh</span></span></code></pre>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>vi clean_catalina_out.sh</span></span>
+<span class="line"><span>y=`date "+%Y"`</span></span>
+<span class="line"><span>m=`date "+%m"`</span></span>
+<span class="line"><span>d=`date "+%d"`</span></span>
+<span class="line"><span>cp /path/to/tomcat/logs/catalina.out /path/to/tomcat/logs/catalina.out.$y-$m-$d</span></span>
+<span class="line"><span>echo > /path/to/tomcat/logs/catalina.out</span></span>
+<span class="line"><span>exit</span></span></code></pre>
+<h2 id="注意设置环境变量">注意设置环境变量</h2>
+<p>由于crontab执行任务时不加载任何环境变量，可以在脚本中加入必要的环境变量，甚至ulimit设置，以保证程序可以正常执行。</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>vi start.sh</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>!/bin/sh</span></span>
+<span class="line"><span>source /etc/profile</span></span>
+<span class="line"><span>export YOUR_ENV=value</span></span>
+<span class="line"><span>ulimit -n 10240</span></span>
+<span class="line"><span>/path/to/your/app/run</span></span></code></pre>
+<h2 id="参考文档">参考文档</h2>
+<ul>
+<li><a href="http://www.linuxforums.org/forum/programming-scripting/21764-cron-job-not-taking-ulimits.html">http://www.linuxforums.org/forum/programming-scripting/21764-cron-job-not-taking-ulimits.html</a></li>
+<li><a href="http://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/crontab.html">http://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/crontab.html</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/Cron">https://zh.wikipedia.org/wiki/Cron</a></li>
+</ul></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#crontab">crontab</a></li><li class="depth-2"><a href="#基本用法">基本用法</a></li><li class="depth-2"><a href="#配置格式">配置格式</a></li><li class="depth-2"><a href="#配置示例">配置示例</a></li><li class="depth-2"><a href="#简单应用">简单应用</a></li><li class="depth-3"><a href="#检测并自动重启服务">检测并自动重启服务</a></li><li class="depth-3"><a href="#检测并自动重启tomcat">检测并自动重启tomcat</a></li><li class="depth-3"><a href="#清理30天前的tomcat日志">清理30天前的tomcat日志</a></li><li class="depth-3"><a href="#备份并清理catalinaout">备份并清理catalina.out</a></li><li class="depth-2"><a href="#注意设置环境变量">注意设置环境变量</a></li><li class="depth-2"><a href="#参考文档">参考文档</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

@@ -1,245 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="ACDL研发流程系列第6篇，共15篇。 上一篇：ACDL研发流程05：决定为什么要改变产品 下一篇：ACDL研发流程07：把设计拆成可以独立验证的任务  1.被选中的需求还不能直接交给Agent实现REQ进入已选中，表示Director已经确认这个问题值得改变，问题、期望结果、非目标和验收场景足以开始设计。但这时通常还没有把所有关键问题说清：用户从哪里操作，对象属于谁，状态怎样变化，失败时发生什">
-<meta property="og:type" content="article">
-<meta property="og:title" content="ACDL研发流程06：共同完成产品与架构设计">
-<meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B06-%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="ACDL研发流程系列第6篇，共15篇。 上一篇：ACDL研发流程05：决定为什么要改变产品 下一篇：ACDL研发流程07：把设计拆成可以独立验证的任务  1.被选中的需求还不能直接交给Agent实现REQ进入已选中，表示Director已经确认这个问题值得改变，问题、期望结果、非目标和验收场景足以开始设计。但这时通常还没有把所有关键问题说清：用户从哪里操作，对象属于谁，状态怎样变化，失败时发生什">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:modified_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B06-%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B06-%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/","path":"202608/ACDL研发流程06-共同完成产品与架构设计/","title":"ACDL研发流程06：共同完成产品与架构设计"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>ACDL研发流程06：共同完成产品与架构设计 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E8%A2%AB%E9%80%89%E4%B8%AD%E7%9A%84%E9%9C%80%E6%B1%82%E8%BF%98%E4%B8%8D%E8%83%BD%E7%9B%B4%E6%8E%A5%E4%BA%A4%E7%BB%99Agent%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.</span> <span class="nav-text">1.被选中的需求还不能直接交给Agent实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%85%88%E7%94%A8%E4%B8%80%E5%8F%A5%E8%AF%9D%E5%86%99%E6%B8%85%E5%87%86%E5%A4%87%E6%94%B9%E5%8F%98%E4%BB%80%E4%B9%88"><span class="nav-number">2.</span> <span class="nav-text">2.先用一句话写清准备改变什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%8E%B0%E8%A1%8C%E8%AE%BE%E8%AE%A1%E6%80%8E%E6%A0%B7%E5%88%86%E5%B7%A5"><span class="nav-number">3.</span> <span class="nav-text">3.现行设计怎样分工</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%85%88%E6%89%BE%E8%B4%9F%E8%B4%A3%E4%BA%8B%E5%AE%9E%E7%9A%84%E6%96%87%E6%A1%A3%EF%BC%8C%E4%B8%8D%E6%8C%89%E7%B1%BB%E5%88%AB%E8%B5%B0%E6%B5%81%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">4.先找负责事实的文档，不按类别走流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-Director%E5%92%8CAgent%E6%80%8E%E6%A0%B7%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E8%AE%BE%E8%AE%A1"><span class="nav-number">5.</span> <span class="nav-text">5.Director和Agent怎样共同完成设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E8%AE%BE%E8%AE%A1%E6%96%87%E4%BB%B6%E5%92%8C%E7%A8%B3%E5%AE%9A%E8%A6%81%E6%B1%82%E7%BC%96%E5%8F%B7%E4%B8%8D%E8%A6%81%E6%B7%B7%E6%B7%86"><span class="nav-number">6.</span> <span class="nav-text">6.设计文件和稳定要求编号不要混淆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-ADR%E8%AE%B0%E5%BD%95%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E6%A0%B7%E9%80%89%EF%BC%8C%E4%B8%8D%E6%98%AF%E7%AC%AC%E5%9B%9B%E5%B1%82%E8%AE%BE%E8%AE%A1"><span class="nav-number">7.</span> <span class="nav-text">7.ADR记录为什么这样选，不是第四层设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#8-%E8%AE%BE%E8%AE%A1%E6%80%8E%E6%A0%B7%E4%BB%8E%E8%8D%89%E7%A8%BF%E5%8F%98%E6%88%90%E5%B7%B2%E7%A1%AE%E8%AE%A4%E7%8A%B6%E6%80%81"><span class="nav-number">8.</span> <span class="nav-text">8.设计怎样从草稿变成已确认状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#9-%E8%AE%BE%E8%AE%A1%E7%A1%AE%E8%AE%A4%E4%BB%A5%E5%90%8E%E6%89%8D%E5%86%B3%E5%AE%9A%E6%98%AF%E5%90%A6%E6%8E%92%E6%9C%9F%E5%AE%9E%E6%96%BD"><span class="nav-number">9.</span> <span class="nav-text">9.设计确认以后才决定是否排期实施</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B06-%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="ACDL研发流程06：共同完成产品与架构设计 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          ACDL研发流程06：共同完成产品与架构设计
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<blockquote>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="ACDL研发流程系列第6篇，共15篇。 上一篇：ACDL研发流程05：决定为什么要改变产品 下一篇：ACDL研发流程07：把设计拆成可以独立验证的任务 1.被选中的需求还不能直接交给Agent实现 REQ进入 已选中 ，表示Director已经确认这个问题值得改变，问题、期望结果、非目标和验收场景足以开始设计…"><link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B06-%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="ACDL研发流程06：共同完成产品与架构设计｜BlueXIII's Blog"><meta property="og:description" content="ACDL研发流程系列第6篇，共15篇。 上一篇：ACDL研发流程05：决定为什么要改变产品 下一篇：ACDL研发流程07：把设计拆成可以独立验证的任务 1.被选中的需求还不能直接交给Agent实现 REQ进入 已选中 ，表示Director已经确认这个问题值得改变，问题、期望结果、非目标和验收场景足以开始设计…"><meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B06-%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>ACDL研发流程06：共同完成产品与架构设计｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>ACDL研发流程06：共同完成产品与架构设计</h1><div class="article-meta"><time datetime="2026-08-17T08:53:44.000Z">发布于2026-08-17</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ACDL/">ACDL</a><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B/">研发流程</a></div></header><div class="prose"><blockquote>
 <p>ACDL研发流程系列第6篇，共15篇。</p>
 <p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B05-%E5%86%B3%E5%AE%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%94%B9%E5%8F%98%E4%BA%A7%E5%93%81/">ACDL研发流程05：决定为什么要改变产品</a></p>
 <p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/">ACDL研发流程07：把设计拆成可以独立验证的任务</a></p>
 </blockquote>
-<h2 id="1-被选中的需求还不能直接交给Agent实现"><a href="#1-被选中的需求还不能直接交给Agent实现" class="headerlink" title="1.被选中的需求还不能直接交给Agent实现"></a>1.被选中的需求还不能直接交给Agent实现</h2><p>REQ进入<code>已选中</code>，表示Director已经确认这个问题值得改变，问题、期望结果、非目标和验收场景足以开始设计。但这时通常还没有把所有关键问题说清：用户从哪里操作，对象属于谁，状态怎样变化，失败时发生什么，接口和数据怎样实现，权限和恢复边界又是什么。</p>
+<h2 id="1被选中的需求还不能直接交给agent实现">1.被选中的需求还不能直接交给Agent实现</h2>
+<p>REQ进入<code>已选中</code>，表示Director已经确认这个问题值得改变，问题、期望结果、非目标和验收场景足以开始设计。但这时通常还没有把所有关键问题说清：用户从哪里操作，对象属于谁，状态怎样变化，失败时发生什么，接口和数据怎样实现，权限和恢复边界又是什么。</p>
 <p>如果直接让Agent编码，这些空白不会自动消失，它往往会在实现过程中自行补齐。很多返工并不是代码写错，而是<strong>代码替项目作出了还没有确认的产品或技术决定</strong>。</p>
 <p>设计阶段的任务，是把REQ中的期望结果变成一套前后一致、可以实施和验证的当前答案。</p>
-<h2 id="2-先用一句话写清准备改变什么"><a href="#2-先用一句话写清准备改变什么" class="headerlink" title="2.先用一句话写清准备改变什么"></a>2.先用一句话写清准备改变什么</h2><p>开始修改设计前，Director和Agent先用普通中文描述变化。</p>
+<h2 id="2先用一句话写清准备改变什么">2.先用一句话写清准备改变什么</h2>
+<p>开始修改设计前，Director和Agent先用普通中文描述变化。</p>
 <p>以“收藏会话”为例：</p>
 <blockquote>
 <p>员工可以收藏自己有权访问的会话，收藏属于员工个人，刷新和重新登录后仍然保留，并能帮助员工更快找到这些会话。</p>
@@ -252,40 +25,45 @@
 <li>当前代码只是没有做到设计，还是确实需要新的设计决定。</li>
 </ul>
 <p>如果现有设计已经明确答案，只是代码没有实现，应该转为实现缺陷处理，不需要为了流程完整重新设计。</p>
-<h2 id="3-现行设计怎样分工"><a href="#3-现行设计怎样分工" class="headerlink" title="3.现行设计怎样分工"></a>3.现行设计怎样分工</h2><p>当前项目按五类对象组织设计。它们是事实职责，不是开发阶段：</p>
-<table>
-<thead>
-<tr>
-<th>类别</th>
-<th>负责什么</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>SYS-xxx</code>系统设计</td>
-<td>产品定位、总体范围、核心进程、存储和外部边界</td>
-</tr>
-<tr>
-<td><code>CAP-xxx</code>能力设计</td>
-<td>一项能力的用户行为、对象、状态、流程、失败，以及对应数据、接口、事务、恢复、代码和测试入口</td>
-</tr>
-<tr>
-<td><code>CRS-xxx</code>横切设计</td>
-<td>多个能力共同遵守的安全、数据、接口、审计、观测、部署和恢复规则</td>
-</tr>
-<tr>
-<td><code>ADR-xxxx</code>决策记录</td>
-<td>重要选择的背景、备选方案、理由、代价和替代关系</td>
-</tr>
-<tr>
-<td><code>IDX-xxx</code>索引与追踪</td>
-<td>设计地图、编号迁移和要求验证关系，不定义新的产品或技术规则</td>
-</tr>
-</tbody></table>
+<h2 id="3现行设计怎样分工">3.现行设计怎样分工</h2>
+<p>当前项目按五类对象组织设计。它们是事实职责，不是开发阶段：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>类别</th><th>负责什么</th></tr></thead><tbody><tr><td><code>SYS-xxx</code>系统设计</td><td>产品定位、总体范围、核心进程、存储和外部边界</td></tr><tr><td><code>CAP-xxx</code>能力设计</td><td>一项能力的用户行为、对象、状态、流程、失败，以及对应数据、接口、事务、恢复、代码和测试入口</td></tr><tr><td><code>CRS-xxx</code>横切设计</td><td>多个能力共同遵守的安全、数据、接口、审计、观测、部署和恢复规则</td></tr><tr><td><code>ADR-xxxx</code>决策记录</td><td>重要选择的背景、备选方案、理由、代价和替代关系</td></tr><tr><td><code>IDX-xxx</code>索引与追踪</td><td>设计地图、编号迁移和要求验证关系，不定义新的产品或技术规则</td></tr></tbody></table>
 <p>旧<code>PLAT / DOMAIN / MODULE</code>只用于历史追溯，不再作为活动设计身份。当前入口见《设计目录》和《设计文档地图》。</p>
-<h2 id="4-先找负责事实的文档，不按类别走流程"><a href="#4-先找负责事实的文档，不按类别走流程" class="headerlink" title="4.先找负责事实的文档，不按类别走流程"></a>4.先找负责事实的文档，不按类别走流程</h2><p>以“收藏会话”为例，员工怎样收藏、关系属于谁、失去访问权后发生什么，以及对应数据、接口和测试入口，主要进入Conversation相关能力设计。员工隔离、数据所有权和接口错误等多个能力共同遵守的规则，要核对相应横切设计。只有这项能力改变产品定位、核心进程或全局边界时，才修改系统设计。</p>
+<h2 id="4先找负责事实的文档不按类别走流程">4.先找负责事实的文档，不按类别走流程</h2>
+<p>以“收藏会话”为例，员工怎样收藏、关系属于谁、失去访问权后发生什么，以及对应数据、接口和测试入口，主要进入Conversation相关能力设计。员工隔离、数据所有权和接口错误等多个能力共同遵守的规则，要核对相应横切设计。只有这项能力改变产品定位、核心进程或全局边界时，才修改系统设计。</p>
 <p>能力设计不是旧领域设计或模块设计的简单改名。它围绕一项完整能力，把用户行为与长期实现边界放在一起。这样，Agent不必从几份文档拼接同一个能力的答案，也不能让数据库或接口实现反过来偷偷定义用户规则。</p>
 <p>一项REQ可以影响多份设计，一份设计也可以承接多个REQ。先找到真正负责该事实的位置，再检查相关共同规则；不要为每项REQ机械新建一组文件，也不要把单一能力特有的规则塞进横切设计。</p>
-<h2 id="5-Director和Agent怎样共同完成设计"><a href="#5-Director和Agent怎样共同完成设计" class="headerlink" title="5.Director和Agent怎样共同完成设计"></a>5.Director和Agent怎样共同完成设计</h2><p>设计不是“Director想产品，Agent补技术”，也不是“Agent出完整方案，Director只点确认”。</p>
+<h2 id="5director和agent怎样共同完成设计">5.Director和Agent怎样共同完成设计</h2>
+<p>设计不是“Director想产品，Agent补技术”，也不是“Agent出完整方案，Director只点确认”。</p>
 <p>Director带来真实使用场景、业务优先级、风险承受和最终取舍；Agent读取REQ、当前设计、代码和数据，调查现实约束，复述自己的理解，指出缺口，并提出不同方案及其代价。</p>
 <p>以收藏会话为例，Agent不能把“需要更快找回重要会话”直接翻译成一个星标按钮。它需要继续确认：</p>
 <ul>
@@ -298,7 +76,8 @@
 </ul>
 <p>Director根据真实工作方式回答或修正这些假设。Agent再结合现有Conversation模型、权限和分页实现提出技术方案。如果最简单的实现不能解决真实问题，就重新设计；如果产品设想会带来明显的数据或安全风险，也要在确认前把这些风险反馈回来。</p>
 <p>共同设计的结果必须写回相应设计文档。聊天记录可以保存讨论过程，但不能代替项目当前答案。</p>
-<h2 id="6-设计文件和稳定要求编号不要混淆"><a href="#6-设计文件和稳定要求编号不要混淆" class="headerlink" title="6.设计文件和稳定要求编号不要混淆"></a>6.设计文件和稳定要求编号不要混淆</h2><p>设计文件使用：</p>
+<h2 id="6设计文件和稳定要求编号不要混淆">6.设计文件和稳定要求编号不要混淆</h2>
+<p>设计文件使用：</p>
 <ul>
 <li><code>SYS-三位编号-标题.md</code>：系统设计；</li>
 <li><code>CAP-三位编号-标题.md</code>：能力设计；</li>
@@ -314,7 +93,8 @@
 </ul>
 <p>例如<code>CAP-002</code>是一份能力设计，<code>DOM-021</code>则是正文中的一条具体行为要求。两种编号不能混用。</p>
 <p>不是每句“必须”都要分配编号。只有会长期影响用户结果、权限、安全、数据或跨模块边界，并需要持续回归的要求，才值得进入设计要求追踪。</p>
-<h2 id="7-ADR记录为什么这样选，不是第四层设计"><a href="#7-ADR记录为什么这样选，不是第四层设计" class="headerlink" title="7.ADR记录为什么这样选，不是第四层设计"></a>7.ADR记录为什么这样选，不是第四层设计</h2><p>设计中经常存在多个都能实现的方案。如果选择会长期限制后续方向、迁移或运维成本较高，或者要替代已有决定，就用ADR记录：</p>
+<h2 id="7adr记录为什么这样选不是第四层设计">7.ADR记录为什么这样选，不是第四层设计</h2>
+<p>设计中经常存在多个都能实现的方案。如果选择会长期限制后续方向、迁移或运维成本较高，或者要替代已有决定，就用ADR记录：</p>
 <ul>
 <li>当时遇到什么问题；</li>
 <li>比较过哪些真正不同的方案；</li>
@@ -325,7 +105,8 @@
 </ul>
 <p>普通错误修复、局部实现细节和容易替换的技术选择不需要ADR。</p>
 <p>ADR只回答“为什么这样决定”。决定生效以后，<strong>当前应该怎样工作</strong>仍要写回真正受影响的系统、能力或横切设计。否则后续Agent只知道历史理由，却找不到当前实施依据。</p>
-<h2 id="8-设计怎样从草稿变成已确认状态"><a href="#8-设计怎样从草稿变成已确认状态" class="headerlink" title="8.设计怎样从草稿变成已确认状态"></a>8.设计怎样从草稿变成已确认状态</h2><p>设计写出来不表示已经确认，更不表示代码已经实现。</p>
+<h2 id="8设计怎样从草稿变成已确认状态">8.设计怎样从草稿变成已确认状态</h2>
+<p>设计写出来不表示已经确认，更不表示代码已经实现。</p>
 <p>评审时，Director和Agent把REQ、受影响的设计和必要ADR放在一起检查，重点确认：</p>
 <ul>
 <li>用户问题和非目标有没有被设计真正覆盖；</li>
@@ -336,99 +117,22 @@
 </ul>
 <p>评审问题要区分“阻塞当前设计”和“以后可以继续优化”。阻塞问题必须解决，或者通过缩小范围明确移出本次设计。</p>
 <p>Director明确确认后，把受影响的设计更新为<code>Accepted</code>并通过Git保存。只在聊天里说“可以”而文档长期停在<code>Review</code>，后续Agent仍然无法可靠判断它能否采用。</p>
-<h2 id="9-设计确认以后才决定是否排期实施"><a href="#9-设计确认以后才决定是否排期实施" class="headerlink" title="9.设计确认以后才决定是否排期实施"></a>9.设计确认以后才决定是否排期实施</h2><p><code>Accepted</code>表示设计已经可以作为实施依据，不表示代码已经完成，也不表示需求已经承诺进入某个正式版本。</p>
+<h2 id="9设计确认以后才决定是否排期实施">9.设计确认以后才决定是否排期实施</h2>
+<p><code>Accepted</code>表示设计已经可以作为实施依据，不表示代码已经完成，也不表示需求已经承诺进入某个正式版本。</p>
 <p>如果Director决定现在实施，再为REQ确定目标版本并把它改为<code>已排期</code>。随后才进入下一章，把设计拆成一个或多个可以独立验证的ACL。</p>
 <p>完整关系是：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">已选中的REQ</span><br><span class="line">  →写清准备改变的结果</span><br><span class="line">    →找到负责当前事实的设计并修改</span><br><span class="line">      →Director和Agent共同讨论并处理阻塞问题</span><br><span class="line">        →必要时登记稳定要求和ADR</span><br><span class="line">          →Director确认</span><br><span class="line">            →相关设计进入Accepted</span><br><span class="line">              →决定是否排期并启动实施</span><br></pre></td></tr></table></figure>
-
-<p>设计分类的目标不是增加文档数量，而是让<strong>系统整体、完整能力和共同规则</strong>各自有明确位置。只要相关文档描述的是同一个系统，Agent就能够从需求进入实现，而不用在代码中重新猜产品答案。</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B09-%E5%AE%8C%E6%88%90%E4%BB%A3%E7%A0%81%E3%80%81%E9%AA%8C%E8%AF%81%E5%B9%B6%E6%9B%B4%E6%96%B0%E7%8E%AF%E5%A2%83/" rel="prev" title="ACDL研发流程09：完成代码、验证并更新环境">
-                  <i class="fa fa-angle-left"></i> ACDL研发流程09：完成代码、验证并更新环境
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B05-%E5%86%B3%E5%AE%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%94%B9%E5%8F%98%E4%BA%A7%E5%93%81/" rel="next" title="ACDL研发流程05：决定为什么要改变产品">
-                  ACDL研发流程05：决定为什么要改变产品 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>已选中的REQ</span></span>
+<span class="line"><span>  →写清准备改变的结果</span></span>
+<span class="line"><span>    →找到负责当前事实的设计并修改</span></span>
+<span class="line"><span>      →Director和Agent共同讨论并处理阻塞问题</span></span>
+<span class="line"><span>        →必要时登记稳定要求和ADR</span></span>
+<span class="line"><span>          →Director确认</span></span>
+<span class="line"><span>            →相关设计进入Accepted</span></span>
+<span class="line"><span>              →决定是否排期并启动实施</span></span></code></pre>
+<p>设计分类的目标不是增加文档数量，而是让<strong>系统整体、完整能力和共同规则</strong>各自有明确位置。只要相关文档描述的是同一个系统，Agent就能够从需求进入实现，而不用在代码中重新猜产品答案。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#1被选中的需求还不能直接交给agent实现">1.被选中的需求还不能直接交给Agent实现</a></li><li class="depth-2"><a href="#2先用一句话写清准备改变什么">2.先用一句话写清准备改变什么</a></li><li class="depth-2"><a href="#3现行设计怎样分工">3.现行设计怎样分工</a></li><li class="depth-2"><a href="#4先找负责事实的文档不按类别走流程">4.先找负责事实的文档，不按类别走流程</a></li><li class="depth-2"><a href="#5director和agent怎样共同完成设计">5.Director和Agent怎样共同完成设计</a></li><li class="depth-2"><a href="#6设计文件和稳定要求编号不要混淆">6.设计文件和稳定要求编号不要混淆</a></li><li class="depth-2"><a href="#7adr记录为什么这样选不是第四层设计">7.ADR记录为什么这样选，不是第四层设计</a></li><li class="depth-2"><a href="#8设计怎样从草稿变成已确认状态">8.设计怎样从草稿变成已确认状态</a></li><li class="depth-2"><a href="#9设计确认以后才决定是否排期实施">9.设计确认以后才决定是否排期实施</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

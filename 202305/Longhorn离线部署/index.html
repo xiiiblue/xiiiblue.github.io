@@ -1,332 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="参考 https:&#x2F;&#x2F;docs.k3s.io&#x2F;zh&#x2F;storage https:&#x2F;&#x2F;longhorn.io&#x2F;docs&#x2F;1.4.1&#x2F; https:&#x2F;&#x2F;github.com&#x2F;longhorn&#x2F;longhorn https:&#x2F;&#x2F;ranchermanager.docs.rancher.com&#x2F;zh&#x2F;integrations-in-rancher&#x2F;longhorn  版本选择1.4.1 镜像列表123456">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Longhorn离线部署">
-<meta property="og:url" content="https://www.bluexiii.com/202305/Longhorn%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="参考 https:&#x2F;&#x2F;docs.k3s.io&#x2F;zh&#x2F;storage https:&#x2F;&#x2F;longhorn.io&#x2F;docs&#x2F;1.4.1&#x2F; https:&#x2F;&#x2F;github.com&#x2F;longhorn&#x2F;longhorn https:&#x2F;&#x2F;ranchermanager.docs.rancher.com&#x2F;zh&#x2F;integrations-in-rancher&#x2F;longhorn  版本选择1.4.1 镜像列表123456">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-05-29T06:24:44.000Z">
-<meta property="article:modified_time" content="2023-05-29T06:24:44.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202305/Longhorn%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202305/Longhorn%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/","path":"202305/Longhorn离线部署/","title":"Longhorn离线部署"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Longhorn离线部署 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%88%E6%9C%AC%E9%80%89%E6%8B%A9"><span class="nav-number">2.</span> <span class="nav-text">版本选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%95%9C%E5%83%8F%E5%88%97%E8%A1%A8"><span class="nav-number">3.</span> <span class="nav-text">镜像列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">4.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E8%87%AA%E5%AE%9A%E4%B9%89StorageClass"><span class="nav-number">5.</span> <span class="nav-text">添加自定义StorageClass</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202305/Longhorn%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Longhorn离线部署 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Longhorn离线部署
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-05-29 14:24:44" itemprop="dateCreated datePublished" datetime="2023-05-29T14:24:44+08:00">2023-05-29</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://docs.k3s.io/zh/storage">https://docs.k3s.io/zh/storage</a></li>
-<li><a target="_blank" rel="noopener" href="https://longhorn.io/docs/1.4.1/">https://longhorn.io/docs/1.4.1/</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/longhorn/longhorn">https://github.com/longhorn/longhorn</a></li>
-<li><a target="_blank" rel="noopener" href="https://ranchermanager.docs.rancher.com/zh/integrations-in-rancher/longhorn">https://ranchermanager.docs.rancher.com/zh/integrations-in-rancher/longhorn</a></li>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="参考 https://docs.k3s.io/zh/storage https://longhorn.io/docs/1.4.1/ https://github.com/longhorn/longhorn https://ranchermanager.docs.rancher.com/zh/integrati…"><link rel="canonical" href="https://www.bluexiii.com/202305/Longhorn%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Longhorn离线部署｜BlueXIII's Blog"><meta property="og:description" content="参考 https://docs.k3s.io/zh/storage https://longhorn.io/docs/1.4.1/ https://github.com/longhorn/longhorn https://ranchermanager.docs.rancher.com/zh/integrati…"><meta property="og:url" content="https://www.bluexiii.com/202305/Longhorn%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Longhorn离线部署｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Longhorn离线部署</h1><div class="article-meta"><time datetime="2023-05-29T06:24:44.000Z">发布于2023-05-29</time></div><div class="badges"><a class="badge" href="/tags/Kubernetes/">Kubernetes</a><a class="badge" href="/tags/%E5%AD%98%E5%82%A8/">存储</a></div></header><div class="prose"><h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://docs.k3s.io/zh/storage">https://docs.k3s.io/zh/storage</a></li>
+<li><a href="https://longhorn.io/docs/1.4.1/">https://longhorn.io/docs/1.4.1/</a></li>
+<li><a href="https://github.com/longhorn/longhorn">https://github.com/longhorn/longhorn</a></li>
+<li><a href="https://ranchermanager.docs.rancher.com/zh/integrations-in-rancher/longhorn">https://ranchermanager.docs.rancher.com/zh/integrations-in-rancher/longhorn</a></li>
 </ul>
-<h2 id="版本选择"><a href="#版本选择" class="headerlink" title="版本选择"></a>版本选择</h2><p>1.4.1</p>
-<h2 id="镜像列表"><a href="#镜像列表" class="headerlink" title="镜像列表"></a>镜像列表</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">longhornio/backing-image-manager:v1.4.2</span><br><span class="line">longhornio/csi-attacher:v3.4.0</span><br><span class="line">longhornio/csi-node-driver-registrar:v2.7.0</span><br><span class="line">longhornio/csi-provisioner:v2.1.2</span><br><span class="line">longhornio/csi-provisioner:v3.4.1</span><br><span class="line">longhornio/csi-resizer:v1.3.0</span><br><span class="line">longhornio/csi-snapshotter:v5.0.1</span><br><span class="line">longhornio/livenessprobe:v2.8.0</span><br><span class="line">longhornio/livenessprobe:v2.9.0</span><br><span class="line">longhornio/longhorn-engine:v1.4.2</span><br><span class="line">longhornio/longhorn-instance-manager:v1.4.2</span><br><span class="line">longhornio/longhorn-manager:v1.4.2</span><br><span class="line">longhornio/longhorn-share-manager:v1.4.2</span><br><span class="line">longhornio/longhorn-ui:v1.4.2</span><br><span class="line">longhornio/support-bundle-kit:v0.0.24</span><br></pre></td></tr></table></figure>
-
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># helm下载</span></span><br><span class="line">helm repo add longhorn https://charts.longhorn.io</span><br><span class="line">helm repo update</span><br><span class="line">helm pull longhorn/longhorn</span><br><span class="line"></span><br><span class="line"><span class="comment"># 参数调整</span></span><br><span class="line">defaultClassReplicaCount: 1</span><br><span class="line">defaultDataLocality: best-effort <span class="comment"># best-effort otherwise</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装</span></span><br><span class="line">helm install longhorn ./longhorn_chart --namespace longhorn --create-namespace</span><br><span class="line"><span class="comment"># 更新</span></span><br><span class="line">helm upgrade longhorn ./longhorn_chart --namespace longhorn --create-namespace</span><br><span class="line"><span class="comment"># 删除</span></span><br><span class="line">helm uninstall longhorn -n longhorn</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="添加自定义StorageClass"><a href="#添加自定义StorageClass" class="headerlink" title="添加自定义StorageClass"></a>添加自定义StorageClass</h2><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">kind:</span> <span class="string">StorageClass</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">storage.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">longhorn-retain</span></span><br><span class="line">  <span class="attr">annotations:</span></span><br><span class="line">    <span class="attr">storageclass.kubernetes.io/is-default-class:</span> <span class="string">&#x27;true&#x27;</span></span><br><span class="line">    <span class="attr">storageclass.kubesphere.io/allow-clone:</span> <span class="string">&#x27;true&#x27;</span></span><br><span class="line">    <span class="attr">storageclass.kubesphere.io/allow-snapshot:</span> <span class="string">&#x27;true&#x27;</span></span><br><span class="line"><span class="attr">provisioner:</span> <span class="string">driver.longhorn.io</span></span><br><span class="line"><span class="attr">parameters:</span></span><br><span class="line">  <span class="attr">dataLocality:</span> <span class="string">best-effort</span></span><br><span class="line">  <span class="attr">fromBackup:</span> <span class="string">&#x27;&#x27;</span></span><br><span class="line">  <span class="attr">fsType:</span> <span class="string">ext4</span></span><br><span class="line">  <span class="attr">numberOfReplicas:</span> <span class="string">&#x27;2&#x27;</span></span><br><span class="line">  <span class="attr">staleReplicaTimeout:</span> <span class="string">&#x27;30&#x27;</span></span><br><span class="line"><span class="attr">reclaimPolicy:</span> <span class="string">Retain</span></span><br><span class="line"><span class="attr">allowVolumeExpansion:</span> <span class="literal">true</span></span><br><span class="line"><span class="attr">volumeBindingMode:</span> <span class="string">Immediate</span></span><br></pre></td></tr></table></figure>
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202305/KubeSphere%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2/" rel="prev" title="KubeSphere离线部署">
-                  <i class="fa fa-angle-left"></i> KubeSphere离线部署
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202305/%E5%B8%B8%E7%94%A8%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%98%E6%96%B9Helm%E5%AE%89%E8%A3%85/" rel="next" title="常用中间件官方Helm安装">
-                  常用中间件官方Helm安装 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="版本选择">版本选择</h2>
+<p>1.4.1</p>
+<h2 id="镜像列表">镜像列表</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/backing-image-manager:v1.4.2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/csi-attacher:v3.4.0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/csi-node-driver-registrar:v2.7.0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/csi-provisioner:v2.1.2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/csi-provisioner:v3.4.1</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/csi-resizer:v1.3.0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/csi-snapshotter:v5.0.1</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/livenessprobe:v2.8.0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/livenessprobe:v2.9.0</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/longhorn-engine:v1.4.2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/longhorn-instance-manager:v1.4.2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/longhorn-manager:v1.4.2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/longhorn-share-manager:v1.4.2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/longhorn-ui:v1.4.2</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">longhornio/support-bundle-kit:v0.0.24</span></span></code></pre>
+<h2 id="安装">安装</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># helm下载</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">helm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> repo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> add</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> longhorn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://charts.longhorn.io</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">helm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> repo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> update</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">helm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pull</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> longhorn/longhorn</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 参数调整</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">defaultClassReplicaCount:</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">defaultDataLocality:</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> best-effort</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # best-effort otherwise</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 安装</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">helm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> longhorn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./longhorn_chart</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --namespace</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> longhorn</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --create-namespace</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 更新</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">helm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> upgrade</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> longhorn</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./longhorn_chart</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --namespace</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> longhorn</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --create-namespace</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 删除</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">helm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> uninstall</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> longhorn</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -n</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> longhorn</span></span>
+<span class="line"></span></code></pre>
+<h2 id="添加自定义storageclass">添加自定义StorageClass</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">kind</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">StorageClass</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">apiVersion</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">storage.k8s.io/v1</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">metadata</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">longhorn-retain</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  annotations</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    storageclass.kubernetes.io/is-default-class</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'true'</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    storageclass.kubesphere.io/allow-clone</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'true'</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">    storageclass.kubesphere.io/allow-snapshot</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'true'</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">provisioner</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">driver.longhorn.io</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">parameters</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  dataLocality</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">best-effort</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  fromBackup</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">''</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  fsType</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">ext4</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  numberOfReplicas</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'2'</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">  staleReplicaTimeout</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'30'</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">reclaimPolicy</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Retain</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">allowVolumeExpansion</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line"><span style="color:#22863A;--shiki-dark:#85E89D">volumeBindingMode</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Immediate</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#参考">参考</a></li><li class="depth-2"><a href="#版本选择">版本选择</a></li><li class="depth-2"><a href="#镜像列表">镜像列表</a></li><li class="depth-2"><a href="#安装">安装</a></li><li class="depth-2"><a href="#添加自定义storageclass">添加自定义StorageClass</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

@@ -1,359 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="概述使用spotify的dockerfile maven插件，可以帮助我们将maven与docker进行集成，更快速的在maven构建过程中进行docker镜像的打包操作。配置仍然是基于Dockerfile的，插件只是辅助。   请注意，插件的名称是 spotify 的 dockerfile-maven-plugin ，而非 docker-maven-plugin 。 详情可访问 github页面">
-<meta property="og:type" content="article">
-<meta property="og:title" content="使用dockerfile插件打包微服务镜像">
-<meta property="og:url" content="https://www.bluexiii.com/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="概述使用spotify的dockerfile maven插件，可以帮助我们将maven与docker进行集成，更快速的在maven构建过程中进行docker镜像的打包操作。配置仍然是基于Dockerfile的，插件只是辅助。   请注意，插件的名称是 spotify 的 dockerfile-maven-plugin ，而非 docker-maven-plugin 。 详情可访问 github页面">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2018-11-06T07:34:50.000Z">
-<meta property="article:modified_time" content="2018-11-06T07:34:50.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/","path":"201709/使用dockerfile插件打包微服务镜像/","title":"使用dockerfile插件打包微服务镜像"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>使用dockerfile插件打包微服务镜像 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8BDockerfile"><span class="nav-number">3.</span> <span class="nav-text">建立Dockerfile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8docker%E5%91%BD%E4%BB%A4%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F"><span class="nav-number">4.</span> <span class="nav-text">使用docker命令构建镜像</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%BE%91pom-xml"><span class="nav-number">4.1.</span> <span class="nav-text">编辑pom.xml</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%8F%92%E4%BB%B6%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F"><span class="nav-number">4.2.</span> <span class="nav-text">使用插件构建镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%8F%92%E4%BB%B6%E6%8E%A8%E9%80%81%E9%95%9C%E5%83%8F"><span class="nav-number">4.3.</span> <span class="nav-text">使用插件推送镜像</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E9%95%9C%E5%83%8F"><span class="nav-number">5.</span> <span class="nav-text">运行镜像</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="使用dockerfile插件打包微服务镜像 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          使用dockerfile插件打包微服务镜像
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:34:50" itemprop="dateCreated datePublished" datetime="2018-11-06T15:34:50+08:00">2018-11-06</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>使用spotify的dockerfile maven插件，可以帮助我们将maven与docker进行集成，更快速的在maven构建过程中进行docker镜像的打包操作。<br>配置仍然是基于Dockerfile的，插件只是辅助。  </p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="概述 使用spotify的dockerfile maven插件，可以帮助我们将maven与docker进行集成，更快速的在maven构建过程中进行docker镜像的打包操作。 配置仍然是基于Dockerfile的，插件只是辅助。 请注意，插件的名称是 spotify 的 dockerfile maven pl…"><link rel="canonical" href="https://www.bluexiii.com/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="使用dockerfile插件打包微服务镜像｜BlueXIII's Blog"><meta property="og:description" content="概述 使用spotify的dockerfile maven插件，可以帮助我们将maven与docker进行集成，更快速的在maven构建过程中进行docker镜像的打包操作。 配置仍然是基于Dockerfile的，插件只是辅助。 请注意，插件的名称是 spotify 的 dockerfile maven pl…"><meta property="og:url" content="https://www.bluexiii.com/201709/%E4%BD%BF%E7%94%A8dockerfile%E6%8F%92%E4%BB%B6%E6%89%93%E5%8C%85%E5%BE%AE%E6%9C%8D%E5%8A%A1%E9%95%9C%E5%83%8F/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>使用dockerfile插件打包微服务镜像｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>使用dockerfile插件打包微服务镜像</h1><div class="article-meta"><time datetime="2018-11-06T07:34:50.000Z">发布于2018-11-06</time></div><div class="badges"><a class="badge" href="/tags/Docker/">Docker</a><a class="badge" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a></div></header><div class="prose"><h2 id="概述">概述</h2>
+<p>使用spotify的dockerfile maven插件，可以帮助我们将maven与docker进行集成，更快速的在maven构建过程中进行docker镜像的打包操作。<br>
+配置仍然是基于Dockerfile的，插件只是辅助。</p>
 <p>请注意，插件的名称是 <strong>spotify</strong> 的 <strong>dockerfile-maven-plugin</strong> ，而非 <strong>docker-maven-plugin</strong> 。</p>
-<p>详情可访问 <a target="_blank" rel="noopener" href="https://github.com/spotify/dockerfile-maven">github页面</a></p>
-<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>首先准备一个spring-boot工程，假设工程名为playground。另外本机需要安装docker，过程都不再赘述。<br>本文平台为macOS12，docker在不同平台下可能有所差异。  </p>
+<p>详情可访问 <a href="https://github.com/spotify/dockerfile-maven">github页面</a></p>
+<h2 id="准备工作">准备工作</h2>
+<p>首先准备一个spring-boot工程，假设工程名为playground。另外本机需要安装docker，过程都不再赘述。<br>
+本文平台为macOS12，docker在不同平台下可能有所差异。</p>
 <p>由于dockerhub访问较慢，可以用$$先自行搭建一个socks5代理来加速访问。代理不是必须的。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export ALL_PROXY=socks5://xx.xx.xx.xx:xx</span><br></pre></td></tr></table></figure>
-
-<h2 id="建立Dockerfile"><a href="#建立Dockerfile" class="headerlink" title="建立Dockerfile"></a>建立Dockerfile</h2><p>在工程目录下新建一个Dockerfile，基于openjdk的镜像：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">FROM openjdk:8-jdk-alpine</span><br><span class="line">VOLUME /tmp</span><br><span class="line">ADD target/playground-1.1.0.jar app.jar</span><br><span class="line">ENV JAVA_OPTS=&quot;&quot;</span><br><span class="line">ENTRYPOINT [ &quot;sh&quot;, &quot;-c&quot;, &quot;java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar&quot; ]</span><br></pre></td></tr></table></figure>
-
-<h2 id="使用docker命令构建镜像"><a href="#使用docker命令构建镜像" class="headerlink" title="使用docker命令构建镜像"></a>使用docker命令构建镜像</h2><p>在使用Maven插件之前，可以试着先用docker命令来进行打包：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t=&quot;yourname/playground:latest&quot; .</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>export ALL_PROXY=socks5://xx.xx.xx.xx:xx</span></span></code></pre>
+<h2 id="建立dockerfile">建立Dockerfile</h2>
+<p>在工程目录下新建一个Dockerfile，基于openjdk的镜像：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>FROM openjdk:8-jdk-alpine</span></span>
+<span class="line"><span>VOLUME /tmp</span></span>
+<span class="line"><span>ADD target/playground-1.1.0.jar app.jar</span></span>
+<span class="line"><span>ENV JAVA_OPTS=""</span></span>
+<span class="line"><span>ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar" ]</span></span></code></pre>
+<h2 id="使用docker命令构建镜像">使用docker命令构建镜像</h2>
+<p>在使用Maven插件之前，可以试着先用docker命令来进行打包：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>docker build -t="yourname/playground:latest" .</span></span></code></pre>
 <p>查看镜像是否生成：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker images</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>docker images</span></span></code></pre>
 <p>然后可以使用<code>docker push</code>推送镜像：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker push yourname/playground</span><br></pre></td></tr></table></figure>
-
-<h3 id="编辑pom-xml"><a href="#编辑pom-xml" class="headerlink" title="编辑pom.xml"></a>编辑pom.xml</h3><p>测试通过后，就可以在pom.xml中添加spotify插件了</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;properties&gt;</span><br><span class="line">   &lt;docker.image.prefix&gt;yourname&lt;/docker.image.prefix&gt;</span><br><span class="line">&lt;/properties&gt;</span><br><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;plugins&gt;</span><br><span class="line">        &lt;plugin&gt;</span><br><span class="line">            &lt;groupId&gt;com.spotify&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;dockerfile-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;1.3.4&lt;/version&gt;</span><br><span class="line">            &lt;configuration&gt;</span><br><span class="line">                &lt;repository&gt;$&#123;docker.image.prefix&#125;/$&#123;project.artifactId&#125;&lt;/repository&gt;</span><br><span class="line">            &lt;/configuration&gt;</span><br><span class="line">        &lt;/plugin&gt;</span><br><span class="line">    &lt;/plugins&gt;</span><br><span class="line">&lt;/build&gt;</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>docker push yourname/playground</span></span></code></pre>
+<h3 id="编辑pomxml">编辑pom.xml</h3>
+<p>测试通过后，就可以在pom.xml中添加spotify插件了</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>&#x3C;properties></span></span>
+<span class="line"><span>   &#x3C;docker.image.prefix>yourname&#x3C;/docker.image.prefix></span></span>
+<span class="line"><span>&#x3C;/properties></span></span>
+<span class="line"><span>&#x3C;build></span></span>
+<span class="line"><span>    &#x3C;plugins></span></span>
+<span class="line"><span>        &#x3C;plugin></span></span>
+<span class="line"><span>            &#x3C;groupId>com.spotify&#x3C;/groupId></span></span>
+<span class="line"><span>            &#x3C;artifactId>dockerfile-maven-plugin&#x3C;/artifactId></span></span>
+<span class="line"><span>            &#x3C;version>1.3.4&#x3C;/version></span></span>
+<span class="line"><span>            &#x3C;configuration></span></span>
+<span class="line"><span>                &#x3C;repository>${docker.image.prefix}/${project.artifactId}&#x3C;/repository></span></span>
+<span class="line"><span>            &#x3C;/configuration></span></span>
+<span class="line"><span>        &#x3C;/plugin></span></span>
+<span class="line"><span>    &#x3C;/plugins></span></span>
+<span class="line"><span>&#x3C;/build></span></span></code></pre>
 <p>另外还可以添加一个execution，在maven的install生命周期自动进行build和push。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;executions&gt;</span><br><span class="line">	&lt;execution&gt;</span><br><span class="line">		&lt;id&gt;default&lt;/id&gt;</span><br><span class="line">		&lt;phase&gt;install&lt;/phase&gt;</span><br><span class="line">		&lt;goals&gt;</span><br><span class="line">			&lt;goal&gt;build&lt;/goal&gt;</span><br><span class="line">			&lt;goal&gt;push&lt;/goal&gt;</span><br><span class="line">		&lt;/goals&gt;</span><br><span class="line">	&lt;/execution&gt;</span><br><span class="line">&lt;/executions&gt;</span><br></pre></td></tr></table></figure>
-
-<h3 id="使用插件构建镜像"><a href="#使用插件构建镜像" class="headerlink" title="使用插件构建镜像"></a>使用插件构建镜像</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn install dockerfile:build</span><br></pre></td></tr></table></figure>
-
-<h3 id="使用插件推送镜像"><a href="#使用插件推送镜像" class="headerlink" title="使用插件推送镜像"></a>使用插件推送镜像</h3><p>在使用dockerfile-maven-plugin推送前，需要先编辑一下<code>~/.docker/config.json</code>，添加用户名及密码，否则会报认证失败。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;auths&quot;: &#123;</span><br><span class="line">    &quot;https://index.docker.io/v1/&quot;: &#123;</span><br><span class="line">      &quot;Username&quot;: &quot;xxxxxx&quot;,</span><br><span class="line">      &quot;Secret&quot;: &quot;xxxxxx&quot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;credsStore&quot;: &quot;osxkeychain&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>&#x3C;executions></span></span>
+<span class="line"><span>	&#x3C;execution></span></span>
+<span class="line"><span>		&#x3C;id>default&#x3C;/id></span></span>
+<span class="line"><span>		&#x3C;phase>install&#x3C;/phase></span></span>
+<span class="line"><span>		&#x3C;goals></span></span>
+<span class="line"><span>			&#x3C;goal>build&#x3C;/goal></span></span>
+<span class="line"><span>			&#x3C;goal>push&#x3C;/goal></span></span>
+<span class="line"><span>		&#x3C;/goals></span></span>
+<span class="line"><span>	&#x3C;/execution></span></span>
+<span class="line"><span>&#x3C;/executions></span></span></code></pre>
+<h3 id="使用插件构建镜像">使用插件构建镜像</h3>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>mvn install dockerfile:build</span></span></code></pre>
+<h3 id="使用插件推送镜像">使用插件推送镜像</h3>
+<p>在使用dockerfile-maven-plugin推送前，需要先编辑一下<code>~/.docker/config.json</code>，添加用户名及密码，否则会报认证失败。</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>{</span></span>
+<span class="line"><span>  "auths": {</span></span>
+<span class="line"><span>    "https://index.docker.io/v1/": {</span></span>
+<span class="line"><span>      "Username": "xxxxxx",</span></span>
+<span class="line"><span>      "Secret": "xxxxxx"</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>  },</span></span>
+<span class="line"><span>  "credsStore": "osxkeychain"</span></span>
+<span class="line"><span>}</span></span></code></pre>
 <p>然后直接运行即可：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mvn dockerfile:push</span><br></pre></td></tr></table></figure>
-
-<h2 id="运行镜像"><a href="#运行镜像" class="headerlink" title="运行镜像"></a>运行镜像</h2><p>最后，可以使用<code>docker run</code>命令可以将镜像启动，在浏览器中查看一下运行情况</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -p 8080:8080 -t yourname/playground</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>mvn dockerfile:push</span></span></code></pre>
+<h2 id="运行镜像">运行镜像</h2>
+<p>最后，可以使用<code>docker run</code>命令可以将镜像启动，在浏览器中查看一下运行情况</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>docker run -p 8080:8080 -t yourname/playground</span></span></code></pre>
 <p>使用<code>docker logs</code>简单查看日志</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker ps</span><br><span class="line">docker logs f4d7e737f47f</span><br></pre></td></tr></table></figure>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201710/ZEN-SC-SAMPLE/" rel="prev" title="ZEN-SC-SAMPLE">
-                  <i class="fa fa-angle-left"></i> ZEN-SC-SAMPLE
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201709/feign%E5%A3%B0%E6%98%8E%E5%BC%8FREST%E8%B0%83%E7%94%A8/" rel="next" title="Feign-声明式REST调用">
-                  Feign-声明式REST调用 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>docker ps</span></span>
+<span class="line"><span>docker logs f4d7e737f47f</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#概述">概述</a></li><li class="depth-2"><a href="#准备工作">准备工作</a></li><li class="depth-2"><a href="#建立dockerfile">建立Dockerfile</a></li><li class="depth-2"><a href="#使用docker命令构建镜像">使用docker命令构建镜像</a></li><li class="depth-3"><a href="#编辑pomxml">编辑pom.xml</a></li><li class="depth-3"><a href="#使用插件构建镜像">使用插件构建镜像</a></li><li class="depth-3"><a href="#使用插件推送镜像">使用插件推送镜像</a></li><li class="depth-2"><a href="#运行镜像">运行镜像</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

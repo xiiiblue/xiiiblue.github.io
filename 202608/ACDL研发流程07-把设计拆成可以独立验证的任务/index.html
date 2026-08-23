@@ -1,248 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="ACDL研发流程系列第7篇，共15篇。 上一篇：ACDL研发流程06：共同完成产品与架构设计 下一篇：ACDL研发流程08：让多个Agent在不同worktree工作  已经确认的设计还不是Agent可以直接执行的任务经过需求管理和产品与架构设计，Director和Agent已经知道为什么要改，也共同确认了系统应该怎样工作。但一份已经确认的设计通常会同时涉及多个用户结果、代码模块和验证方式，它说">
-<meta property="og:type" content="article">
-<meta property="og:title" content="ACDL研发流程07：把设计拆成可以独立验证的任务">
-<meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="ACDL研发流程系列第7篇，共15篇。 上一篇：ACDL研发流程06：共同完成产品与架构设计 下一篇：ACDL研发流程08：让多个Agent在不同worktree工作  已经确认的设计还不是Agent可以直接执行的任务经过需求管理和产品与架构设计，Director和Agent已经知道为什么要改，也共同确认了系统应该怎样工作。但一份已经确认的设计通常会同时涉及多个用户结果、代码模块和验证方式，它说">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:modified_time" content="2026-08-17T08:53:44.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/","path":"202608/ACDL研发流程07-把设计拆成可以独立验证的任务/","title":"ACDL研发流程07：把设计拆成可以独立验证的任务"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>ACDL研发流程07：把设计拆成可以独立验证的任务 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%B2%E7%BB%8F%E7%A1%AE%E8%AE%A4%E7%9A%84%E8%AE%BE%E8%AE%A1%E8%BF%98%E4%B8%8D%E6%98%AFAgent%E5%8F%AF%E4%BB%A5%E7%9B%B4%E6%8E%A5%E6%89%A7%E8%A1%8C%E7%9A%84%E4%BB%BB%E5%8A%A1"><span class="nav-number">1.</span> <span class="nav-text">已经确认的设计还不是Agent可以直接执行的任务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E8%AE%A4%E8%AF%86ACL-Agentic-Coding-Loop"><span class="nav-number">2.</span> <span class="nav-text">先认识ACL(Agentic Coding Loop)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%88%A4%E6%96%AD%E6%98%AF%E5%90%A6%E7%9C%9F%E7%9A%84%E9%9C%80%E8%A6%81%E6%8B%86%E5%88%86"><span class="nav-number">3.</span> <span class="nav-text">第一步：判断是否真的需要拆分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E6%8C%89%E7%BB%93%E6%9E%9C%E6%8B%86%E5%88%86%EF%BC%8C%E4%B8%8D%E6%8C%89%E4%BB%A3%E7%A0%81%E5%B1%82%E6%8B%86%E5%88%86"><span class="nav-number">4.</span> <span class="nav-text">第二步：按结果拆分，不按代码层拆分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E5%85%88%E6%83%B3%E6%B8%85%E6%A5%9A%E6%80%8E%E6%A0%B7%E9%AA%8C%E8%AF%81%EF%BC%8C%E5%86%8D%E5%86%B3%E5%AE%9A%E4%BB%BB%E5%8A%A1%E6%80%8E%E6%A0%B7%E6%8B%86"><span class="nav-number">5.</span> <span class="nav-text">第三步：先想清楚怎样验证，再决定任务怎样拆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E6%AD%A5%EF%BC%9A%E7%99%BB%E8%AE%B0ACL%EF%BC%8C%E5%88%86%E5%88%AB%E8%AE%B0%E5%BD%95%E8%BA%AB%E4%BB%BD%E5%92%8C%E7%89%88%E6%9C%AC%E5%85%B3%E7%B3%BB"><span class="nav-number">6.</span> <span class="nav-text">第四步：登记ACL，分别记录身份和版本关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E6%AD%A5%EF%BC%9A%E5%9C%A8%E7%BC%96%E7%A0%81%E5%89%8D%E5%86%99%E5%A5%BD%E5%90%AF%E5%8A%A8%E6%96%B9%E6%A1%88"><span class="nav-number">7.</span> <span class="nav-text">第五步：在编码前写好启动方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%85%AD%E6%AD%A5%EF%BC%9A%E8%AE%A9%E6%96%B0%E4%BC%9A%E8%AF%9D%E8%83%BD%E5%A4%9F%E7%BB%A7%E7%BB%AD%E5%BD%93%E5%89%8D%E4%BB%BB%E5%8A%A1"><span class="nav-number">8.</span> <span class="nav-text">第六步：让新会话能够继续当前任务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E6%89%8D%E7%AE%97ACL%E5%B7%B2%E7%BB%8F%E5%90%AF%E5%8A%A8"><span class="nav-number">9.</span> <span class="nav-text">什么时候才算ACL已经启动</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9E%E5%A4%B4%E6%A3%80%E6%9F%A5%E8%BF%99%E6%9D%A1%E8%B7%AF%E5%BE%84"><span class="nav-number">10.</span> <span class="nav-text">回头检查这条路径</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="ACDL研发流程07：把设计拆成可以独立验证的任务 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          ACDL研发流程07：把设计拆成可以独立验证的任务
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-08-17 16:53:44" itemprop="dateCreated datePublished" datetime="2026-08-17T16:53:44+08:00">2026-08-17</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<blockquote>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="ACDL研发流程系列第7篇，共15篇。 上一篇：ACDL研发流程06：共同完成产品与架构设计 下一篇：ACDL研发流程08：让多个Agent在不同worktree工作 已经确认的设计还不是Agent可以直接执行的任务 经过需求管理和产品与架构设计，Director和Agent已经知道为什么要改，也共同确认了系…"><link rel="canonical" href="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="ACDL研发流程07：把设计拆成可以独立验证的任务｜BlueXIII's Blog"><meta property="og:description" content="ACDL研发流程系列第7篇，共15篇。 上一篇：ACDL研发流程06：共同完成产品与架构设计 下一篇：ACDL研发流程08：让多个Agent在不同worktree工作 已经确认的设计还不是Agent可以直接执行的任务 经过需求管理和产品与架构设计，Director和Agent已经知道为什么要改，也共同确认了系…"><meta property="og:url" content="https://www.bluexiii.com/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B07-%E6%8A%8A%E8%AE%BE%E8%AE%A1%E6%8B%86%E6%88%90%E5%8F%AF%E4%BB%A5%E7%8B%AC%E7%AB%8B%E9%AA%8C%E8%AF%81%E7%9A%84%E4%BB%BB%E5%8A%A1/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>ACDL研发流程07：把设计拆成可以独立验证的任务｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>ACDL研发流程07：把设计拆成可以独立验证的任务</h1><div class="article-meta"><time datetime="2026-08-17T08:53:44.000Z">发布于2026-08-17</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ACDL/">ACDL</a><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B/">研发流程</a></div></header><div class="prose"><blockquote>
 <p>ACDL研发流程系列第7篇，共15篇。</p>
 <p>上一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B06-%E5%85%B1%E5%90%8C%E5%AE%8C%E6%88%90%E4%BA%A7%E5%93%81%E4%B8%8E%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">ACDL研发流程06：共同完成产品与架构设计</a></p>
 <p>下一篇：<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/">ACDL研发流程08：让多个Agent在不同worktree工作</a></p>
 </blockquote>
-<h2 id="已经确认的设计还不是Agent可以直接执行的任务"><a href="#已经确认的设计还不是Agent可以直接执行的任务" class="headerlink" title="已经确认的设计还不是Agent可以直接执行的任务"></a>已经确认的设计还不是Agent可以直接执行的任务</h2><p>经过需求管理和产品与架构设计，Director和Agent已经知道为什么要改，也共同确认了系统应该怎样工作。但一份已经确认的设计通常会同时涉及多个用户结果、代码模块和验证方式，它说明的是系统长期应该怎样工作，不是当前这一轮工作的大小。</p>
+<h2 id="已经确认的设计还不是agent可以直接执行的任务">已经确认的设计还不是Agent可以直接执行的任务</h2>
+<p>经过需求管理和产品与架构设计，Director和Agent已经知道为什么要改，也共同确认了系统应该怎样工作。但一份已经确认的设计通常会同时涉及多个用户结果、代码模块和验证方式，它说明的是系统长期应该怎样工作，不是当前这一轮工作的大小。</p>
 <p>如果只对Agent说“按设计把收藏会话做完”，它需要自己决定从哪里开始、这一次做到哪里、先处理哪些风险，以及什么证据才能说明已经完成。任务过大时，Agent可能在长时间实施中丢失目标；任务过碎时，又会留下一组单独通过测试、合在一起却不能工作的局部结果。</p>
 <p>启动ACL之前的任务，就是把已经确认的设计变成一个或几个边界清楚、能够独立验证的实施目标。</p>
-<h2 id="先认识ACL-Agentic-Coding-Loop"><a href="#先认识ACL-Agentic-Coding-Loop" class="headerlink" title="先认识ACL(Agentic Coding Loop)"></a>先认识ACL(Agentic Coding Loop)</h2><p>ACL的全称是Agentic Coding Loop，是由Agent主导的开发Loop。Agent读取已经确认的需求和设计，调查当前代码，实施改动，补充测试，运行验证，并记录真实结果。Director负责确认本轮的目标和边界，处理需要人作出的取舍与授权，并在最后判断这轮工作能否结束。</p>
+<h2 id="先认识aclagentic-coding-loop">先认识ACL(Agentic Coding Loop)</h2>
+<p>ACL的全称是Agentic Coding Loop，是由Agent主导的开发Loop。Agent读取已经确认的需求和设计，调查当前代码，实施改动，补充测试，运行验证，并记录真实结果。Director负责确认本轮的目标和边界，处理需要人作出的取舍与授权，并在最后判断这轮工作能否结束。</p>
 <p>一轮ACL不是一次Prompt，也不是一个Git提交。Agent可以在其中经历很多次“调查—修改—测试—讨论”的短循环，也可以产生多个逻辑清楚的提交。只要这些工作仍在完成同一个独立目标，就没有必要为每一次Agent对话或每一个代码步骤新建ACL。</p>
 <p>ACL也不是ACDL的缩写。ACDL是当前项目完整的研发体系，ACL只是其中把已确认改变变成代码和自动化验证的一种Loop。</p>
-<h2 id="第一步：判断是否真的需要拆分"><a href="#第一步：判断是否真的需要拆分" class="headerlink" title="第一步：判断是否真的需要拆分"></a>第一步：判断是否真的需要拆分</h2><p>拆分不是默认动作。如果一项改变范围不大，Agent能够在一轮能够持续理解的范围内完成端到端实施，而Director也能一次看懂完整差异和验证结果，用一轮ACL完成往往最清楚。</p>
+<h2 id="第一步判断是否真的需要拆分">第一步：判断是否真的需要拆分</h2>
+<p>拆分不是默认动作。如果一项改变范围不大，Agent能够在一轮能够持续理解的范围内完成端到端实施，而Director也能一次看懂完整差异和验证结果，用一轮ACL完成往往最清楚。</p>
 <p>当出现以下情况时，才需要考虑拆成多轮ACL：</p>
 <ul>
 <li>一轮工作包含多个可以分别使用、分别验收的结果；</li>
@@ -252,13 +26,15 @@
 <li>不同结果确实可以由不同Agent独立推进，无需彼此等待尚未定稿的结论。</li>
 </ul>
 <p>文件多、预计代码行数多或可以分给多个Agent，都不是单独的拆分理由。先看能否形成可验证结果，再谈任务数量。</p>
-<h2 id="第二步：按结果拆分，不按代码层拆分"><a href="#第二步：按结果拆分，不按代码层拆分" class="headerlink" title="第二步：按结果拆分，不按代码层拆分"></a>第二步：按结果拆分，不按代码层拆分</h2><p>一个好任务要能回答：完成以后，系统新增了什么可以被证明的结果？</p>
+<h2 id="第二步按结果拆分不按代码层拆分">第二步：按结果拆分，不按代码层拆分</h2>
+<p>一个好任务要能回答：完成以后，系统新增了什么可以被证明的结果？</p>
 <p>以收藏会话为例，如果完整改动在一轮ACL中仍然容易理解和验证，可以直接实现：</p>
 <blockquote>
 <p>员工可以收藏和取消收藏自己有权访问的会话，重新登录后收藏状态仍然保留，并且能够在会话列表中找回它们。</p>
 </blockquote>
 <p>如果这个目标已经太大，可以拆成两个用户结果：</p>
-<p>1.员工可以收藏和取消收藏自己有权访问的会话，收藏状态能够持久保留。<br>2.员工可以在大量会话中筛选收藏内容，失去访问权或已删除的会话不会由此重新暴露。</p>
+<p>1.员工可以收藏和取消收藏自己有权访问的会话，收藏状态能够持久保留。
+2.员工可以在大量会话中筛选收藏内容，失去访问权或已删除的会话不会由此重新暴露。</p>
 <p>这两项有明确依赖：第二项依赖第一项已经形成稳定的收藏含义和数据结果，因此可以拆开，但不应为了并行而同时开始。</p>
 <p>下面这种拆法看上去容易分工，却不是三个可独立验证的任务：</p>
 <ul>
@@ -267,7 +43,8 @@
 <li>一个Agent只做页面按钮和交互。</li>
 </ul>
 <p>每一部分都要等待其它部分才能证明用户结果，契约还可能在三个Agent实施时继续变化。这些更适合成为同一轮ACL中的实施步骤，由一个Agent维持端到端上下文。</p>
-<h2 id="第三步：先想清楚怎样验证，再决定任务怎样拆"><a href="#第三步：先想清楚怎样验证，再决定任务怎样拆" class="headerlink" title="第三步：先想清楚怎样验证，再决定任务怎样拆"></a>第三步：先想清楚怎样验证，再决定任务怎样拆</h2><p>“可以独立验证”不是要求每个任务都能单独发布给用户，而是在它结束时，Director和Agent能够用实际证据判断目标是否达成。检查一个候选任务时，先试着写出它的验证方法：</p>
+<h2 id="第三步先想清楚怎样验证再决定任务怎样拆">第三步：先想清楚怎样验证，再决定任务怎样拆</h2>
+<p>“可以独立验证”不是要求每个任务都能单独发布给用户，而是在它结束时，Director和Agent能够用实际证据判断目标是否达成。检查一个候选任务时，先试着写出它的验证方法：</p>
 <ul>
 <li>什么正常结果能证明它已经完成；</li>
 <li>哪些失败、权限、并发、数据或恢复风险必须用测试或实际操作检查；</li>
@@ -276,13 +53,15 @@
 </ul>
 <p>如果一个任务只能写成“完成后与其它任务一起验证”，它很可能只是一个实施步骤。如果一个任务要同时使用十几种验证方式，而任何一组失败都会把整轮工作拉回起点，则需要再看它是否包含多个可分开的结果。</p>
 <p>有些工作没有立即可见的用户界面，也能独立验证。例如一次数据迁移可以用输入拒绝、前后数据对照和回退演练证明，一项不改变对外行为的主线维护可以用定点测试和完整检查证明。重点是结果能被判断，不是每个任务都要变成一项新功能。</p>
-<h2 id="第四步：登记ACL，分别记录身份和版本关系"><a href="#第四步：登记ACL，分别记录身份和版本关系" class="headerlink" title="第四步：登记ACL，分别记录身份和版本关系"></a>第四步：登记ACL，分别记录身份和版本关系</h2><p>对于一项新需求，设计确认以后，Director还要决定是否准备实施，以及它当前准备服务哪个目标版本。确定后，REQ填写目标版本并进入<code>已排期</code>。目标版本只表示当前准备把这项工作放入哪次交付，不表示它已经完成，也不是不可改变的承诺。</p>
+<h2 id="第四步登记acl分别记录身份和版本关系">第四步：登记ACL，分别记录身份和版本关系</h2>
+<p>对于一项新需求，设计确认以后，Director还要决定是否准备实施，以及它当前准备服务哪个目标版本。确定后，REQ填写目标版本并进入<code>已排期</code>。目标版本只表示当前准备把这项工作放入哪次交付，不表示它已经完成，也不是不可改变的承诺。</p>
 <p>之后，每个准备开始的独立任务登记一轮ACL。现行ACL统一使用<code>ACL-六位编号</code>。编号只表达身份，一经使用不回收、不复用；计划版本和实际纳入版本另用字段记录。排期变化时更新版本关系和原因，不修改ACL编号，也不为同一轮工作机械重建ACL。</p>
 <p>当前项目提供命令帮助分配下一个ACL编号，同时新建登记表条目和实施记录：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pnpm loop:new -- --version=未确定 --title=主题 --<span class="built_in">source</span>=工作来源 --goal=本轮目标 --dry-run</span><br><span class="line">pnpm loop:new -- --version=未确定 --title=主题 --<span class="built_in">source</span>=工作来源 --goal=本轮目标</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="bash"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> loop:new</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --version=未确定</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --title=主题</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --source=工作来源</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --goal=本轮目标</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dry-run</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">pnpm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> loop:new</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --version=未确定</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --title=主题</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --source=工作来源</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --goal=本轮目标</span></span></code></pre>
 <p>启动内容已经准备好、但尚未发生第一次真实执行时，可以增加<code>--ready</code>创建为<code>Ready</code>；不加时会创建为<code>In Progress</code>并记录开始时间。命令只负责生成编号、登记入口和文档骨架，不会替Director判断需求是否已排期、设计是否已确认，也不表示Agent已经获得超出已有边界的授权。<code>--mainline</code>和<code>--with-plan</code>已经移除，不应再使用。</p>
-<h2 id="第五步：在编码前写好启动方案"><a href="#第五步：在编码前写好启动方案" class="headerlink" title="第五步：在编码前写好启动方案"></a>第五步：在编码前写好启动方案</h2><p>启动方案是这轮ACL的工作说明，用来防止Agent在长时间实施中逐渐忘记原始目标。它不需要预测每一处代码改动，但需要让新会话或接手的Agent不依赖原对话也能回答以下问题：</p>
+<h2 id="第五步在编码前写好启动方案">第五步：在编码前写好启动方案</h2>
+<p>启动方案是这轮ACL的工作说明，用来防止Agent在长时间实施中逐渐忘记原始目标。它不需要预测每一处代码改动，但需要让新会话或接手的Agent不依赖原对话也能回答以下问题：</p>
 <ul>
 <li>这轮工作从哪项REQ、ISSUE、设计偏差或工程缺口而来；</li>
 <li>从哪个分支和完整Git提交开始，开始时已有工作树是什么状态；</li>
@@ -295,10 +74,16 @@
 <p>非目标要写具体。例如“本轮实现员工个人收藏，不实现收藏文件夹、团队共享和全局搜索”，就比“不扩大范围”更能阻止Agent顺手增加未经设计的功能。</p>
 <p>实施步骤可以使用<code>S1</code>、<code>S2</code>等稳定编号。每一步写明前置条件、实施范围、完成判定和失败时怎样处理，方便在上下文压缩或新会话中继续。这些步骤是一轮ACL内的进度节点，不会因为有编号就自动变成新的ACL。</p>
 <p>每轮ACL默认只有一篇主记录，启动方案、当前摘要、实施与验证、剩余问题和结论依次写在其中。启动方案在第一次真实执行后视为快照；后续变化追加原因和影响，不把最后结果反写成原计划。只有确实需要在执行前单独批准高风险或恢复边界时，才另建计划，不因任务复杂机械拆成两套状态。</p>
-<h2 id="第六步：让新会话能够继续当前任务"><a href="#第六步：让新会话能够继续当前任务" class="headerlink" title="第六步：让新会话能够继续当前任务"></a>第六步：让新会话能够继续当前任务</h2><p>启动ACL时，不要把过去所有聊天记录和整个文档目录不加选择地丢给Agent。有用的上下文应当让它知道当前决定、真实现状和下一个动作：</p>
-<p>1.读取本轮启动方案，确认目标、非目标、停止条件和完成条件。<br>2.读取相关REQ、已经确认的设计和必要ADR，理解产品行为与技术边界。<br>3.读取仓库对Agent的工程要求，再定位实际代码、测试、迁移、构建和发布入口。<br>4.核对当前分支、起点提交、工作树差异和需要使用的外部资源。<br>5.用自己的话复述本轮目标和预计路径，显示出它对任务的真实理解。</p>
+<h2 id="第六步让新会话能够继续当前任务">第六步：让新会话能够继续当前任务</h2>
+<p>启动ACL时，不要把过去所有聊天记录和整个文档目录不加选择地丢给Agent。有用的上下文应当让它知道当前决定、真实现状和下一个动作：</p>
+<p>1.读取本轮启动方案，确认目标、非目标、停止条件和完成条件。
+2.读取相关REQ、已经确认的设计和必要ADR，理解产品行为与技术边界。
+3.读取仓库对Agent的工程要求，再定位实际代码、测试、迁移、构建和发布入口。
+4.核对当前分支、起点提交、工作树差异和需要使用的外部资源。
+5.用自己的话复述本轮目标和预计路径，显示出它对任务的真实理解。</p>
 <p>如果Agent不能说清本轮结束时应该看到什么结果，或者现场的Git状态与启动方案不一致，就先查明原因，不立即实施。这一步不是考试Agent，而是在编码前尽早暴露上下文缺口。</p>
-<h2 id="什么时候才算ACL已经启动"><a href="#什么时候才算ACL已经启动" class="headerlink" title="什么时候才算ACL已经启动"></a>什么时候才算ACL已经启动</h2><p>一轮ACL真正开始时，不只有一个编号，而且具备以下事实：</p>
+<h2 id="什么时候才算acl已经启动">什么时候才算ACL已经启动</h2>
+<p>一轮ACL真正开始时，不只有一个编号，而且具备以下事实：</p>
 <ul>
 <li>工作来源和需要遵守的设计依据已经明确；</li>
 <li>计划版本已经写明，尚未确定时如实填写<code>未确定</code>；</li>
@@ -307,96 +92,19 @@
 <li>Agent已核对上下文、当前工作树和外部资源，知道下一个要执行的动作。</li>
 </ul>
 <p>其中任何一项缺失，就继续补齐准备，不用“先让Agent开始写，后面再补文档”掩盖起点不清。进入这个状态以后，Agent才从第一个实施步骤开始主导这轮ACL。</p>
-<h2 id="回头检查这条路径"><a href="#回头检查这条路径" class="headerlink" title="回头检查这条路径"></a>回头检查这条路径</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">已经确认的设计</span><br><span class="line">  →Director决定实施和目标版本</span><br><span class="line">    →REQ进入已排期</span><br><span class="line">      →按可验证结果确定一轮或多轮ACL</span><br><span class="line">        →登记ACL并记录起点提交</span><br><span class="line">          →写好启动方案</span><br><span class="line">            →Agent核对上下文、当前工作树和外部资源</span><br><span class="line">              →从第一个实施步骤开始ACL</span><br></pre></td></tr></table></figure>
-
-<p>拆分的目的不是让登记表出现更多编号，而是让每轮工作都有Agent能够持续理解的范围和可以判断的结果。一轮ACL启动后，如果还有其它能够独立推进的任务，就可以进一步判断它们是否适合由多个Agent在不同worktree中并行开发。</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B05-%E5%86%B3%E5%AE%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%94%B9%E5%8F%98%E4%BA%A7%E5%93%81/" rel="prev" title="ACDL研发流程05：决定为什么要改变产品">
-                  <i class="fa fa-angle-left"></i> ACDL研发流程05：决定为什么要改变产品
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B04-%E9%9C%80%E6%B1%82%E6%80%8E%E6%A0%B7%E8%B5%B0%E5%AE%8C%E6%95%B4%E4%B8%AAACDL/" rel="next" title="ACDL研发流程04：需求怎样走完整个ACDL">
-                  ACDL研发流程04：需求怎样走完整个ACDL <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="回头检查这条路径">回头检查这条路径</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>已经确认的设计</span></span>
+<span class="line"><span>  →Director决定实施和目标版本</span></span>
+<span class="line"><span>    →REQ进入已排期</span></span>
+<span class="line"><span>      →按可验证结果确定一轮或多轮ACL</span></span>
+<span class="line"><span>        →登记ACL并记录起点提交</span></span>
+<span class="line"><span>          →写好启动方案</span></span>
+<span class="line"><span>            →Agent核对上下文、当前工作树和外部资源</span></span>
+<span class="line"><span>              →从第一个实施步骤开始ACL</span></span></code></pre>
+<p>拆分的目的不是让登记表出现更多编号，而是让每轮工作都有Agent能够持续理解的范围和可以判断的结果。一轮ACL启动后，如果还有其它能够独立推进的任务，就可以进一步判断它们是否适合由多个Agent在不同worktree中并行开发。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#已经确认的设计还不是agent可以直接执行的任务">已经确认的设计还不是Agent可以直接执行的任务</a></li><li class="depth-2"><a href="#先认识aclagentic-coding-loop">先认识ACL(Agentic Coding Loop)</a></li><li class="depth-2"><a href="#第一步判断是否真的需要拆分">第一步：判断是否真的需要拆分</a></li><li class="depth-2"><a href="#第二步按结果拆分不按代码层拆分">第二步：按结果拆分，不按代码层拆分</a></li><li class="depth-2"><a href="#第三步先想清楚怎样验证再决定任务怎样拆">第三步：先想清楚怎样验证，再决定任务怎样拆</a></li><li class="depth-2"><a href="#第四步登记acl分别记录身份和版本关系">第四步：登记ACL，分别记录身份和版本关系</a></li><li class="depth-2"><a href="#第五步在编码前写好启动方案">第五步：在编码前写好启动方案</a></li><li class="depth-2"><a href="#第六步让新会话能够继续当前任务">第六步：让新会话能够继续当前任务</a></li><li class="depth-2"><a href="#什么时候才算acl已经启动">什么时候才算ACL已经启动</a></li><li class="depth-2"><a href="#回头检查这条路径">回头检查这条路径</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

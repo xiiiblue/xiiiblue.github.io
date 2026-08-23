@@ -1,394 +1,88 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="Hermes Agent既可以在终端里交互，也可以通过Dashboard和消息网关长期运行。早期配置曾把安装、WebUI、机器人接入和多Agent配置混在一起，真正维护起来以后，最值得固定的是官方CLI和Profile：前者负责安装与诊断，后者把模型、密钥、记忆和会话分开。 这套配置基于Linux主机。第三方WebUI和直接修改Python依赖包的临时补丁没有纳入日常方案，官方Dashboard已">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Hermes Agent的安装、Profile与日常运维">
-<meta property="og:url" content="https://www.bluexiii.com/202605/HermesAgent%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81Profile%E4%B8%8E%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="Hermes Agent既可以在终端里交互，也可以通过Dashboard和消息网关长期运行。早期配置曾把安装、WebUI、机器人接入和多Agent配置混在一起，真正维护起来以后，最值得固定的是官方CLI和Profile：前者负责安装与诊断，后者把模型、密钥、记忆和会话分开。 这套配置基于Linux主机。第三方WebUI和直接修改Python依赖包的临时补丁没有纳入日常方案，官方Dashboard已">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-05-20T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-22T15:27:03.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202605/HermesAgent%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81Profile%E4%B8%8E%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202605/HermesAgent%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81Profile%E4%B8%8E%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/","path":"202605/HermesAgent的安装、Profile与日常运维/","title":"Hermes Agent的安装、Profile与日常运维"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>Hermes Agent的安装、Profile与日常运维 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E4%B8%8E%E9%A6%96%E6%AC%A1%E9%85%8D%E7%BD%AE"><span class="nav-number">1.</span> <span class="nav-text">安装与首次配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8Profile%E9%9A%94%E7%A6%BB%E4%B8%8D%E5%90%8C%E7%94%A8%E9%80%94"><span class="nav-number">2.</span> <span class="nav-text">用Profile隔离不同用途</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%8B%E9%9A%86Profile%E6%97%B6%E5%B0%8F%E5%BF%83%E5%87%AD%E6%8D%AE"><span class="nav-number">3.</span> <span class="nav-text">克隆Profile时小心凭据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dashboard%E4%BF%9D%E6%8C%81%E6%9C%AC%E6%9C%BA%E7%9B%91%E5%90%AC"><span class="nav-number">4.</span> <span class="nav-text">Dashboard保持本机监听</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E7%BD%91%E5%85%B3%E6%8C%89Profile%E7%AE%A1%E7%90%86"><span class="nav-number">5.</span> <span class="nav-text">消息网关按Profile管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E3%80%81%E8%AF%8A%E6%96%AD%E4%B8%8E%E4%B8%B4%E6%97%B6%E8%A1%A5%E4%B8%81"><span class="nav-number">6.</span> <span class="nav-text">更新、诊断与临时补丁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">7.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202605/HermesAgent%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81Profile%E4%B8%8E%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="Hermes Agent的安装、Profile与日常运维 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          Hermes Agent的安装、Profile与日常运维
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-05-21 00:00:00" itemprop="dateCreated datePublished" datetime="2026-05-21T00:00:00+08:00">2026-05-21</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<p>Hermes Agent既可以在终端里交互，也可以通过Dashboard和消息网关长期运行。早期配置曾把安装、WebUI、机器人接入和多Agent配置混在一起，真正维护起来以后，最值得固定的是官方CLI和Profile：前者负责安装与诊断，后者把模型、密钥、记忆和会话分开。</p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="Hermes Agent既可以在终端里交互，也可以通过Dashboard和消息网关长期运行。早期配置曾把安装、WebUI、机器人接入和多Agent配置混在一起，真正维护起来以后，最值得固定的是官方CLI和Profile：前者负责安装与诊断，后者把模型、密钥、记忆和会话分开。 这套配置基于Linux主机。第三方…"><link rel="canonical" href="https://www.bluexiii.com/202605/HermesAgent%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81Profile%E4%B8%8E%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="Hermes Agent的安装、Profile与日常运维｜BlueXIII's Blog"><meta property="og:description" content="Hermes Agent既可以在终端里交互，也可以通过Dashboard和消息网关长期运行。早期配置曾把安装、WebUI、机器人接入和多Agent配置混在一起，真正维护起来以后，最值得固定的是官方CLI和Profile：前者负责安装与诊断，后者把模型、密钥、记忆和会话分开。 这套配置基于Linux主机。第三方…"><meta property="og:url" content="https://www.bluexiii.com/202605/HermesAgent%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81Profile%E4%B8%8E%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>Hermes Agent的安装、Profile与日常运维｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>Hermes Agent的安装、Profile与日常运维</h1><div class="article-meta"><time datetime="2026-05-20T16:00:00.000Z">发布于2026-05-21</time><time datetime="2026-08-22T15:27:03.000Z">更新于2026-08-22</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/AI/">AI</a></div></header><div class="prose"><p>Hermes Agent既可以在终端里交互，也可以通过Dashboard和消息网关长期运行。早期配置曾把安装、WebUI、机器人接入和多Agent配置混在一起，真正维护起来以后，最值得固定的是官方CLI和Profile：前者负责安装与诊断，后者把模型、密钥、记忆和会话分开。</p>
 <p>这套配置基于Linux主机。第三方WebUI和直接修改Python依赖包的临时补丁没有纳入日常方案，官方Dashboard已经能够管理多个Profile，升级时也更容易保持一致。</p>
-<h2 id="安装与首次配置"><a href="#安装与首次配置" class="headerlink" title="安装与首次配置"></a>安装与首次配置</h2><p>官方提供了一键安装脚本：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash</span><br></pre></td></tr></table></figure>
-
+<h2 id="安装与首次配置">安装与首次配置</h2>
+<p>官方提供了一键安装脚本：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -fsSL</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://hermes-agent.nousresearch.com/install.sh</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> bash</span></span></code></pre>
 <p>安装完成后运行设置向导，再分别确认模型和工具：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hermes setup</span><br><span class="line">hermes model</span><br><span class="line">hermes tools</span><br><span class="line">hermes doctor</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> setup</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> model</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> tools</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> doctor</span></span></code></pre>
 <p><code>hermes setup</code>负责完整初始化，<code>hermes model</code>适合后来单独切换提供商或模型，<code>hermes doctor</code>用于检查配置和运行环境。APIKey、机器人Token和自定义服务地址都属于凭据，不应直接写进Shell历史、博客或Profile说明文件。</p>
 <p>日常使用主要是这些命令：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hermes                  <span class="comment"># 进入交互界面</span></span><br><span class="line">hermes --tui            <span class="comment"># 使用TUI</span></span><br><span class="line">hermes chat -q <span class="string">&quot;Hello&quot;</span> <span class="comment"># 单次提问</span></span><br><span class="line">hermes update           <span class="comment"># 更新Hermes</span></span><br><span class="line">hermes doctor           <span class="comment"># 更新后重新诊断</span></span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#6A737D;--shiki-dark:#6A737D">                  # 进入交互界面</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --tui</span><span style="color:#6A737D;--shiki-dark:#6A737D">            # 使用TUI</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> chat</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -q</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Hello"</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # 单次提问</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> update</span><span style="color:#6A737D;--shiki-dark:#6A737D">           # 更新Hermes</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> doctor</span><span style="color:#6A737D;--shiki-dark:#6A737D">           # 更新后重新诊断</span></span></code></pre>
 <p>交互会话里常用<code>/model</code>切换模型、<code>/tools</code>查看工具、<code>/status</code>查看当前Profile和上下文、<code>/sessions</code>恢复历史会话。配置变更后最好开启新会话，避免旧会话继续带着修改前的状态。</p>
-<h2 id="用Profile隔离不同用途"><a href="#用Profile隔离不同用途" class="headerlink" title="用Profile隔离不同用途"></a>用Profile隔离不同用途</h2><p>Profile不是一个提示词别名，而是一套独立的Hermes主目录。每个Profile都有自己的<code>config.yaml</code>、<code>.env</code>、<code>SOUL.md</code>、技能、记忆、会话和网关状态。</p>
+<h2 id="用profile隔离不同用途">用Profile隔离不同用途</h2>
+<p>Profile不是一个提示词别名，而是一套独立的Hermes主目录。每个Profile都有自己的<code>config.yaml</code>、<code>.env</code>、<code>SOUL.md</code>、技能、记忆、会话和网关状态。</p>
 <p>创建一个研究Profile：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hermes profile create research</span><br><span class="line">research setup</span><br><span class="line">research doctor</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> profile</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> research</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> setup</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> doctor</span></span></code></pre>
 <p>创建时会同时生成<code>research</code>命令别名，它等价于显式指定Profile：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">research chat</span><br><span class="line">hermes -p research chat</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> chat</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> chat</span></span></code></pre>
 <p>需要临时把它设为默认入口时使用：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hermes profile use research</span><br><span class="line">hermes profile use default</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> profile</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> use</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> research</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> profile</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> use</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> default</span></span></code></pre>
 <p>知识库整理、技术简报、代码辅助和深度研究应拆成不同Profile。拆分的理由不是角色名称听起来更专业，而是避免记忆、技能和密钥互相污染。两个Agent进程也不要同时使用同一个Profile目录，它们会共同写入状态和记忆。</p>
 <p>Profile同样不等于文件系统沙箱。<code>SOUL.md</code>里写“只访问某个目录”只是行为说明，不能限制进程权限。需要固定命令起始位置时，应明确设置<code>terminal.cwd</code>：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">research config <span class="built_in">set</span> terminal.cwd /srv/hermes/workspace</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> config</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> set</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> terminal.cwd</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /srv/hermes/workspace</span></span></code></pre>
 <p>真正需要隔离时，还要使用独立系统用户、容器或受限执行环境，不能把Profile当作权限边界。</p>
-<h2 id="克隆Profile时小心凭据"><a href="#克隆Profile时小心凭据" class="headerlink" title="克隆Profile时小心凭据"></a>克隆Profile时小心凭据</h2><p><code>--clone</code>可以复制现有Profile的配置、<code>.env</code>、<code>SOUL.md</code>和技能：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes profile create writer --clone-from default</span><br></pre></td></tr></table></figure>
-
+<h2 id="克隆profile时小心凭据">克隆Profile时小心凭据</h2>
+<p><code>--clone</code>可以复制现有Profile的配置、<code>.env</code>、<code>SOUL.md</code>和技能：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> profile</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> create</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> writer</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --clone-from</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> default</span></span></code></pre>
 <p>这很方便，也意味着原Profile里的APIKey和机器人Token会一起复制。克隆后应立即检查新Profile的环境文件，删除不需要的凭据；如果两个Profile分别运行消息网关，还要给它们配置不同的机器人Token。</p>
 <p>当前Hermes会对多个Profile复用同一消息平台Token进行锁定，避免两个Long Polling进程争抢消息。即便如此，也不能把Token共享当成正常配置。每个对外身份对应一个Profile，问题会少很多。</p>
 <p>Profile可以导出为本地归档：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes profile <span class="built_in">export</span> research -o research-backup.tar.gz</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> profile</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> export</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> research</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> research-backup.tar.gz</span></span></code></pre>
 <p>归档里可能包含<code>.env</code>、会话和记忆，应按密钥备份对待，不要发送到公共网盘或提交到代码仓库。</p>
-<h2 id="Dashboard保持本机监听"><a href="#Dashboard保持本机监听" class="headerlink" title="Dashboard保持本机监听"></a>Dashboard保持本机监听</h2><p>启动官方Dashboard：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes dashboard</span><br></pre></td></tr></table></figure>
-
+<h2 id="dashboard保持本机监听">Dashboard保持本机监听</h2>
+<p>启动官方Dashboard：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> dashboard</span></span></code></pre>
 <p>默认地址是<code>http://127.0.0.1:9119</code>，可以在侧边栏切换并管理不同Profile，不需要为每个Profile再启动一套第三方WebUI。远程使用时，继续保留回环监听并通过SSH转发更稳妥：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -L 9119:127.0.0.1:9119 user@192.0.2.10</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">ssh</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -L</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 9119:127.0.0.1:9119</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> user@192.0.2.10</span></span></code></pre>
 <p>然后在本机浏览器打开<code>http://127.0.0.1:9119</code>。</p>
 <p>旧配置中常见的<code>--host 0.0.0.0 --insecure</code>已经不适合作为无认证远程入口。Hermes在2026年6月强化了Dashboard认证：非回环地址会强制启用认证门，<code>--insecure</code>只为兼容旧命令而保留，不再关闭认证。即便配置了用户名和密码，也应优先放在HTTPS、VPN或SSH隧道之后。</p>
-<h2 id="消息网关按Profile管理"><a href="#消息网关按Profile管理" class="headerlink" title="消息网关按Profile管理"></a>消息网关按Profile管理</h2><p>每个Profile的网关是独立进程，可以单独安装、启动和排查：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">research gateway install</span><br><span class="line">research gateway start</span><br><span class="line">research gateway status</span><br><span class="line">research gateway restart</span><br><span class="line"></span><br><span class="line">hermes gateway list</span><br></pre></td></tr></table></figure>
-
+<h2 id="消息网关按profile管理">消息网关按Profile管理</h2>
+<p>每个Profile的网关是独立进程，可以单独安装、启动和排查：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gateway</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gateway</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> start</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gateway</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> status</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gateway</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> restart</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gateway</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> list</span></span></code></pre>
 <p>消息平台的允许名单、群组策略和Token保存在Profile自己的配置和<code>.env</code>中。接入完成后至少检查两件事：未授权的私聊或群组不能触发Agent；日志和诊断输出不能回显完整Token。</p>
 <p>停用某个平台时，不仅要停止网关，还要撤销配对并删除对应凭据：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hermes pairing list</span><br><span class="line">hermes pairing revoke &lt;platform&gt; &lt;pairing-id&gt;</span><br><span class="line">research gateway restart</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pairing</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> list</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pairing</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> revoke</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF">platfor</span><span style="color:#24292E;--shiki-dark:#E1E4E8">m</span><span style="color:#D73A49;--shiki-dark:#F97583">></span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF">pairing-i</span><span style="color:#24292E;--shiki-dark:#E1E4E8">d</span><span style="color:#D73A49;--shiki-dark:#F97583">></span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">research</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gateway</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> restart</span></span></code></pre>
 <p>平台侧仍然有效的Token也应在平台控制台撤销或轮换，只删除本机文件并不能让泄露的Token失效。</p>
-<h2 id="更新、诊断与临时补丁"><a href="#更新、诊断与临时补丁" class="headerlink" title="更新、诊断与临时补丁"></a>更新、诊断与临时补丁</h2><p>更新顺序保持简单：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hermes update</span><br><span class="line">hermes doctor</span><br><span class="line">hermes profile list</span><br><span class="line">hermes gateway list</span><br></pre></td></tr></table></figure>
-
+<h2 id="更新诊断与临时补丁">更新、诊断与临时补丁</h2>
+<p>更新顺序保持简单：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> update</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> doctor</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> profile</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> list</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">hermes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gateway</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> list</span></span></code></pre>
 <p>然后分别打开常用Profile的新会话，确认模型、工具和工作目录。网关正在运行时，还要检查它是否仍由对应Profile启动。</p>
 <p>早期记录中曾有直接修改Hermes虚拟环境中OpenAI SDK解析代码的办法，用来绕过流式响应末尾<code>output: null</code>的问题。这种补丁会在升级后丢失，也可能掩盖上游已经修复或改变的数据结构，因此不再作为常规操作。遇到类似问题，优先更新Hermes和依赖、保留错误日志并核对官方Issue；确实必须临时修改时，也应保存补丁文件和版本信息，而不是只改<code>site-packages</code>。</p>
-<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/reference/cli-commands">Hermes Agent CLI命令</a></li>
-<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/user-guide/profiles/">Hermes Agent Profiles</a></li>
-<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/user-guide/features/web-dashboard">Hermes Agent Web Dashboard</a></li>
-<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/user-guide/multi-profile-gateways">Hermes Agent多Profile网关</a></li>
-</ul>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202604/ComfyUI%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E4%B8%8E%E6%A8%A1%E5%9E%8B%E7%AE%A1%E7%90%86/" rel="prev" title="ComfyUI的安装、远程访问与模型管理">
-                  <i class="fa fa-angle-left"></i> ComfyUI的安装、远程访问与模型管理
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202605/%E6%88%91%E7%9A%84Obsidian%E7%9F%A5%E8%AF%86%E5%BA%93%E6%98%AF%E6%80%8E%E6%A0%B7%E7%BB%84%E7%BB%87%E7%9A%84/" rel="next" title="Obsidian知识库的目录与维护方式">
-                  Obsidian知识库的目录与维护方式 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="https://hermes-agent.nousresearch.com/docs/reference/cli-commands">Hermes Agent CLI命令</a></li>
+<li><a href="https://hermes-agent.nousresearch.com/docs/user-guide/profiles/">Hermes Agent Profiles</a></li>
+<li><a href="https://hermes-agent.nousresearch.com/docs/user-guide/features/web-dashboard">Hermes Agent Web Dashboard</a></li>
+<li><a href="https://hermes-agent.nousresearch.com/docs/user-guide/multi-profile-gateways">Hermes Agent多Profile网关</a></li>
+</ul></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#安装与首次配置">安装与首次配置</a></li><li class="depth-2"><a href="#用profile隔离不同用途">用Profile隔离不同用途</a></li><li class="depth-2"><a href="#克隆profile时小心凭据">克隆Profile时小心凭据</a></li><li class="depth-2"><a href="#dashboard保持本机监听">Dashboard保持本机监听</a></li><li class="depth-2"><a href="#消息网关按profile管理">消息网关按Profile管理</a></li><li class="depth-2"><a href="#更新诊断与临时补丁">更新、诊断与临时补丁</a></li><li class="depth-2"><a href="#参考资料">参考资料</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

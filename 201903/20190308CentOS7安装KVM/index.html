@@ -1,355 +1,112 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="参考文档 https:&#x2F;&#x2F;github.com&#x2F;jaywcjlove&#x2F;handbook&#x2F;blob&#x2F;master&#x2F;CentOS&#x2F;CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md https:&#x2F;&#x2F;c.isme.pub&#x2F;2017&#x2F;06&#x2F;17&#x2F;kvm-install&#x2F; https:&#x2F;&#x2F;www.tuxfi">
-<meta property="og:type" content="article">
-<meta property="og:title" content="CentOS7安装KVM">
-<meta property="og:url" content="https://www.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="参考文档 https:&#x2F;&#x2F;github.com&#x2F;jaywcjlove&#x2F;handbook&#x2F;blob&#x2F;master&#x2F;CentOS&#x2F;CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md https:&#x2F;&#x2F;c.isme.pub&#x2F;2017&#x2F;06&#x2F;17&#x2F;kvm-install&#x2F; https:&#x2F;&#x2F;www.tuxfi">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2019-03-07T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-03-07T16:00:00.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/","path":"201903/20190308CentOS7安装KVM/","title":"CentOS7安装KVM"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>CentOS7安装KVM | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">1.</span> <span class="nav-text">参考文档</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B3%E9%97%ADselinux"><span class="nav-number">2.</span> <span class="nav-text">关闭selinux</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%81%9C%E7%94%A8%E9%98%B2%E7%81%AB%E5%A2%99"><span class="nav-number">3.</span> <span class="nav-text">停用防火墙</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85KVM"><span class="nav-number">3.1.</span> <span class="nav-text">安装KVM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%90%AFlibvirtd%E6%9C%8D%E5%8A%A1"><span class="nav-number">3.2.</span> <span class="nav-text">开启libvirtd服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">3.3.</span> <span class="nav-text">创建虚拟机</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86"><span class="nav-number">4.</span> <span class="nav-text">虚拟机管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3"><span class="nav-number">4.1.</span> <span class="nav-text">相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E5%BD%A2%E7%95%8C%E9%9D%A2"><span class="nav-number">4.2.</span> <span class="nav-text">图形界面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F"><span class="nav-number">4.3.</span> <span class="nav-text">配置桥接模式</span></a></li></ol></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="CentOS7安装KVM | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          CentOS7安装KVM
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2019-03-08 00:00:00" itemprop="dateCreated datePublished" datetime="2019-03-08T00:00:00+08:00">2019-03-08</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md">https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md</a></li>
-<li><a target="_blank" rel="noopener" href="https://c.isme.pub/2017/06/17/kvm-install/">https://c.isme.pub/2017/06/17/kvm-install/</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.tuxfixer.com/install-and-configure-kvm-qemu-on-centos-7-rhel-7-bridge-vhost-network-interface/">https://www.tuxfixer.com/install-and-configure-kvm-qemu-on-centos-7-rhel-7-bridge-vhost-network-interface/</a></li>
-<li><a target="_blank" rel="noopener" href="http://www.91bg.top/archives/51/">http://www.91bg.top/archives/51/</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.51cto.com/11305268/1774531">https://blog.51cto.com/11305268/1774531</a></li>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="参考文档 https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md https://c.isme.…"><link rel="canonical" href="https://www.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="CentOS7安装KVM｜BlueXIII's Blog"><meta property="og:description" content="参考文档 https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md https://c.isme.…"><meta property="og:url" content="https://www.bluexiii.com/201903/20190308CentOS7%E5%AE%89%E8%A3%85KVM/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>CentOS7安装KVM｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>CentOS7安装KVM</h1><div class="article-meta"><time datetime="2019-03-07T16:00:00.000Z">发布于2019-03-08</time></div><div class="badges"><a class="badge" href="/tags/Linux/">Linux</a><a class="badge" href="/tags/%E8%99%9A%E6%8B%9F%E5%8C%96/">虚拟化</a></div></header><div class="prose"><h2 id="参考文档">参考文档</h2>
+<ul>
+<li><a href="https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md">https://github.com/jaywcjlove/handbook/blob/master/CentOS/CentOS7%E5%AE%89%E8%A3%85KVM%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%AF%A6%E8%A7%A3.md</a></li>
+<li><a href="https://c.isme.pub/2017/06/17/kvm-install/">https://c.isme.pub/2017/06/17/kvm-install/</a></li>
+<li><a href="https://www.tuxfixer.com/install-and-configure-kvm-qemu-on-centos-7-rhel-7-bridge-vhost-network-interface/">https://www.tuxfixer.com/install-and-configure-kvm-qemu-on-centos-7-rhel-7-bridge-vhost-network-interface/</a></li>
+<li><a href="http://www.91bg.top/archives/51/">http://www.91bg.top/archives/51/</a></li>
+<li><a href="https://blog.51cto.com/11305268/1774531">https://blog.51cto.com/11305268/1774531</a></li>
 </ul>
-<h1 id="关闭selinux"><a href="#关闭selinux" class="headerlink" title="关闭selinux"></a>关闭selinux</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setenforce 0</span><br><span class="line">sed -i &#x27;s/=enforcing/=disabled/g&#x27; /etc/selinux/config</span><br></pre></td></tr></table></figure>
-
-<h1 id="停用防火墙"><a href="#停用防火墙" class="headerlink" title="停用防火墙"></a>停用防火墙</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl disable firewalld.service</span><br><span class="line">systemctl stop firewalld.service</span><br></pre></td></tr></table></figure>
-
-<h2 id="安装KVM"><a href="#安装KVM" class="headerlink" title="安装KVM"></a>安装KVM</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install qemu-kvm libvirt virt-install bridge-utils </span><br></pre></td></tr></table></figure>
+<h1 id="关闭selinux">关闭selinux</h1>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>setenforce 0</span></span>
+<span class="line"><span>sed -i 's/=enforcing/=disabled/g' /etc/selinux/config</span></span></code></pre>
+<h1 id="停用防火墙">停用防火墙</h1>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>systemctl disable firewalld.service</span></span>
+<span class="line"><span>systemctl stop firewalld.service</span></span></code></pre>
+<h2 id="安装kvm">安装KVM</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>yum -y install qemu-kvm libvirt virt-install bridge-utils </span></span></code></pre>
 <blockquote>
 <p>安装后需要重启系统</p>
 </blockquote>
-<h2 id="开启libvirtd服务"><a href="#开启libvirtd服务" class="headerlink" title="开启libvirtd服务"></a>开启libvirtd服务</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl start libvirtd</span><br><span class="line">systemctl enable libvirtd</span><br></pre></td></tr></table></figure>
-
-<h2 id="创建虚拟机"><a href="#创建虚拟机" class="headerlink" title="创建虚拟机"></a>创建虚拟机</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">virt-install \</span><br><span class="line">--virt-type=kvm \</span><br><span class="line">--name=centos01 \</span><br><span class="line">--vcpus=2 \</span><br><span class="line">--memory=2048 \</span><br><span class="line">--location=/tmp/CentOS-7-x86_64-Minimal-1511.iso \</span><br><span class="line">--disk path=/home/vms/centos01.qcow2,size=40,format=qcow2 \</span><br><span class="line">--network bridge=br0 \</span><br><span class="line">--graphics none \</span><br><span class="line">--extra-args=&#x27;console=ttyS0&#x27; \</span><br><span class="line">--force</span><br></pre></td></tr></table></figure>
-
-
-<h1 id="虚拟机管理"><a href="#虚拟机管理" class="headerlink" title="虚拟机管理"></a>虚拟机管理</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">virsh list              # 查看在运行的虚拟机</span><br><span class="line">virsh list --all         # 查看所有虚拟机</span><br><span class="line">virsh console centos72</span><br><span class="line">virsh start centos72     # 虚拟机开启（启动）：</span><br><span class="line">virsh reboot centos72    # 虚拟机重新启动</span><br><span class="line">virsh shutdown centos72  # 虚拟机关机</span><br><span class="line">virsh destroy centos72   # 强制关机（强制断电）</span><br><span class="line">virsh suspend centos72   # 暂停（挂起）KVM 虚拟机</span><br><span class="line">virsh resume centos72    # 恢复被挂起的 KVM 虚拟机</span><br><span class="line">virsh undefine centos72  # 该方法只删除配置文件，磁盘文件未删除</span><br><span class="line">virsh autostart centos72 # 随物理机启动而启动（开机启动）</span><br><span class="line">virsh autostart --disable centos72 # 取消标记为自动开始（取消开机启动）</span><br></pre></td></tr></table></figure>
-
-<h2 id="相关"><a href="#相关" class="headerlink" title="相关"></a>相关</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">libvirt-client   # libvirt的客户端,最重要的功能之一就是在宿主机关机时可以通知虚拟机也关机  </span><br><span class="line">gpxe-roms-qemu   # 虚拟机 iPXE 的启动固件,支持虚拟机从网络启动</span><br><span class="line">libvirt-python   # libvirt 为 python 提供的 API</span><br><span class="line">python-virtinst  # 一套 Python 的虚拟机安装工具</span><br><span class="line">qemu-kvm         # KVM 在用户空间运行的程序</span><br><span class="line">libvirt          # 用于管理虚拟机,它提供了一套虚拟机操作 API</span><br><span class="line">virt-manager     # 基于 libvirt 的图像化虚拟机管理软件 </span><br><span class="line">virt-viewer      # 显示虚拟机的控制台 Console</span><br><span class="line">virt-top         # 类似于 top 命令,查看虚拟机的资源使用情况</span><br><span class="line">virt-what        # 在虚拟机内部执行,查看虚拟机运行的虚拟化平台</span><br><span class="line">qemu-img         # 用于操作虚拟机硬盘镜像的创建、查看和格式转化</span><br><span class="line">qemu-kvm: 主要包含KVM内核模块和基于KVM重构后的QEMU模拟器. KVM模块作为整个虚拟化环境的核心工作在系统空间, 负责CPU和内存的调度. QEMU作为模拟器工作在用户空间, 负责虚拟机I/O模拟. </span><br><span class="line">依赖包 quemu-img:  主要用来QEMU磁盘镜像的管理, 如新建一块磁盘镜像给虚拟机. </span><br><span class="line">libvirt: 提供Hypervisor和虚拟机管理的API. </span><br><span class="line">libvirt-client: KVM客户端命令行管理工具virsh, 负责虚拟机的启动、停止和管理等.</span><br><span class="line">libvirt-daemon: libvirtd守护进, 作为客户端管理工具跟Hypervisor和虚拟机之间的桥梁.</span><br><span class="line">libvirt-daemon-driver-xxx: 从名字来看属于libvirtd服务的驱动文件, 作为libvirtd服务跟Hypervisor不同对象(如qemu模拟器、网络、存储等)间的接口.</span><br><span class="line">bridge-utils: 网桥管理工具包, 负责桥接网络的创建、配置和管理等工作.</span><br><span class="line">virt-install: 创建和克隆虚拟机的命令行工具包.</span><br><span class="line">virt-manager: 图形界面的KVM管理工具.</span><br></pre></td></tr></table></figure>
-
-<h2 id="图形界面"><a href="#图形界面" class="headerlink" title="图形界面"></a>图形界面</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum install virt-manager</span><br><span class="line">virt-manager</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置桥接模式"><a href="#配置桥接模式" class="headerlink" title="配置桥接模式"></a>配置桥接模式</h2><p>停用NetworkManager</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop NetworkManager</span><br><span class="line">systemctl disable NetworkManager</span><br></pre></td></tr></table></figure>
-
-<p>cd &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts<br>vi ifcfg-br0 </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DEVICE=br0</span><br><span class="line">TYPE=Bridge</span><br><span class="line">BOOTRPOTO=static</span><br><span class="line">IPADDR=10.211.55.11</span><br><span class="line">NETMASK=255.255.255.0</span><br><span class="line">GATEWAY=10.211.55.1</span><br><span class="line">DNS1=10.211.55.1</span><br><span class="line">ONBOOT=yes</span><br></pre></td></tr></table></figure>
-
-<p>vi ifcfg-eth0 </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">TYPE=Ethernet</span><br><span class="line">PROXY_METHOD=none</span><br><span class="line">BROWSER_ONLY=no</span><br><span class="line">BOOTPROTO=none</span><br><span class="line">#IPADDR=10.211.55.11</span><br><span class="line">#PREFIX=24</span><br><span class="line">#GATEWAY=10.211.55.1</span><br><span class="line">#DNS1=10.211.55.1</span><br><span class="line">DEFROUTE=yes</span><br><span class="line">IPV4_FAILURE_FATAL=no</span><br><span class="line">IPV6INIT=no</span><br><span class="line">NAME=eth0</span><br><span class="line">UUID=9beea3d9-92ac-4f7f-b5eb-c8341f308a7d</span><br><span class="line">ONBOOT=yes</span><br><span class="line">DEVICE=eth0</span><br><span class="line">BRIDGE=br0</span><br></pre></td></tr></table></figure>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201903/20190308CentOS7%E5%AE%89%E8%A3%85VirtualBox/" rel="prev" title="CentOS7安装VirtualBox">
-                  <i class="fa fa-angle-left"></i> CentOS7安装VirtualBox
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201903/20190312net-tools%E5%AF%B9%E6%AF%94iproute2/" rel="next" title="net-tools对比iproute2">
-                  net-tools对比iproute2 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="开启libvirtd服务">开启libvirtd服务</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>systemctl start libvirtd</span></span>
+<span class="line"><span>systemctl enable libvirtd</span></span></code></pre>
+<h2 id="创建虚拟机">创建虚拟机</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>virt-install \</span></span>
+<span class="line"><span>--virt-type=kvm \</span></span>
+<span class="line"><span>--name=centos01 \</span></span>
+<span class="line"><span>--vcpus=2 \</span></span>
+<span class="line"><span>--memory=2048 \</span></span>
+<span class="line"><span>--location=/tmp/CentOS-7-x86_64-Minimal-1511.iso \</span></span>
+<span class="line"><span>--disk path=/home/vms/centos01.qcow2,size=40,format=qcow2 \</span></span>
+<span class="line"><span>--network bridge=br0 \</span></span>
+<span class="line"><span>--graphics none \</span></span>
+<span class="line"><span>--extra-args='console=ttyS0' \</span></span>
+<span class="line"><span>--force</span></span></code></pre>
+<h1 id="虚拟机管理">虚拟机管理</h1>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>virsh list              # 查看在运行的虚拟机</span></span>
+<span class="line"><span>virsh list --all         # 查看所有虚拟机</span></span>
+<span class="line"><span>virsh console centos72</span></span>
+<span class="line"><span>virsh start centos72     # 虚拟机开启（启动）：</span></span>
+<span class="line"><span>virsh reboot centos72    # 虚拟机重新启动</span></span>
+<span class="line"><span>virsh shutdown centos72  # 虚拟机关机</span></span>
+<span class="line"><span>virsh destroy centos72   # 强制关机（强制断电）</span></span>
+<span class="line"><span>virsh suspend centos72   # 暂停（挂起）KVM 虚拟机</span></span>
+<span class="line"><span>virsh resume centos72    # 恢复被挂起的 KVM 虚拟机</span></span>
+<span class="line"><span>virsh undefine centos72  # 该方法只删除配置文件，磁盘文件未删除</span></span>
+<span class="line"><span>virsh autostart centos72 # 随物理机启动而启动（开机启动）</span></span>
+<span class="line"><span>virsh autostart --disable centos72 # 取消标记为自动开始（取消开机启动）</span></span></code></pre>
+<h2 id="相关">相关</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>libvirt-client   # libvirt的客户端,最重要的功能之一就是在宿主机关机时可以通知虚拟机也关机  </span></span>
+<span class="line"><span>gpxe-roms-qemu   # 虚拟机 iPXE 的启动固件,支持虚拟机从网络启动</span></span>
+<span class="line"><span>libvirt-python   # libvirt 为 python 提供的 API</span></span>
+<span class="line"><span>python-virtinst  # 一套 Python 的虚拟机安装工具</span></span>
+<span class="line"><span>qemu-kvm         # KVM 在用户空间运行的程序</span></span>
+<span class="line"><span>libvirt          # 用于管理虚拟机,它提供了一套虚拟机操作 API</span></span>
+<span class="line"><span>virt-manager     # 基于 libvirt 的图像化虚拟机管理软件 </span></span>
+<span class="line"><span>virt-viewer      # 显示虚拟机的控制台 Console</span></span>
+<span class="line"><span>virt-top         # 类似于 top 命令,查看虚拟机的资源使用情况</span></span>
+<span class="line"><span>virt-what        # 在虚拟机内部执行,查看虚拟机运行的虚拟化平台</span></span>
+<span class="line"><span>qemu-img         # 用于操作虚拟机硬盘镜像的创建、查看和格式转化</span></span>
+<span class="line"><span>qemu-kvm: 主要包含KVM内核模块和基于KVM重构后的QEMU模拟器. KVM模块作为整个虚拟化环境的核心工作在系统空间, 负责CPU和内存的调度. QEMU作为模拟器工作在用户空间, 负责虚拟机I/O模拟. </span></span>
+<span class="line"><span>依赖包 quemu-img:  主要用来QEMU磁盘镜像的管理, 如新建一块磁盘镜像给虚拟机. </span></span>
+<span class="line"><span>libvirt: 提供Hypervisor和虚拟机管理的API. </span></span>
+<span class="line"><span>libvirt-client: KVM客户端命令行管理工具virsh, 负责虚拟机的启动、停止和管理等.</span></span>
+<span class="line"><span>libvirt-daemon: libvirtd守护进, 作为客户端管理工具跟Hypervisor和虚拟机之间的桥梁.</span></span>
+<span class="line"><span>libvirt-daemon-driver-xxx: 从名字来看属于libvirtd服务的驱动文件, 作为libvirtd服务跟Hypervisor不同对象(如qemu模拟器、网络、存储等)间的接口.</span></span>
+<span class="line"><span>bridge-utils: 网桥管理工具包, 负责桥接网络的创建、配置和管理等工作.</span></span>
+<span class="line"><span>virt-install: 创建和克隆虚拟机的命令行工具包.</span></span>
+<span class="line"><span>virt-manager: 图形界面的KVM管理工具.</span></span></code></pre>
+<h2 id="图形界面">图形界面</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>yum install virt-manager</span></span>
+<span class="line"><span>virt-manager</span></span></code></pre>
+<h2 id="配置桥接模式">配置桥接模式</h2>
+<p>停用NetworkManager</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>systemctl stop NetworkManager</span></span>
+<span class="line"><span>systemctl disable NetworkManager</span></span></code></pre>
+<p>cd /etc/sysconfig/network-scripts
+vi ifcfg-br0</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>DEVICE=br0</span></span>
+<span class="line"><span>TYPE=Bridge</span></span>
+<span class="line"><span>BOOTRPOTO=static</span></span>
+<span class="line"><span>IPADDR=10.211.55.11</span></span>
+<span class="line"><span>NETMASK=255.255.255.0</span></span>
+<span class="line"><span>GATEWAY=10.211.55.1</span></span>
+<span class="line"><span>DNS1=10.211.55.1</span></span>
+<span class="line"><span>ONBOOT=yes</span></span></code></pre>
+<p>vi ifcfg-eth0</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>TYPE=Ethernet</span></span>
+<span class="line"><span>PROXY_METHOD=none</span></span>
+<span class="line"><span>BROWSER_ONLY=no</span></span>
+<span class="line"><span>BOOTPROTO=none</span></span>
+<span class="line"><span>#IPADDR=10.211.55.11</span></span>
+<span class="line"><span>#PREFIX=24</span></span>
+<span class="line"><span>#GATEWAY=10.211.55.1</span></span>
+<span class="line"><span>#DNS1=10.211.55.1</span></span>
+<span class="line"><span>DEFROUTE=yes</span></span>
+<span class="line"><span>IPV4_FAILURE_FATAL=no</span></span>
+<span class="line"><span>IPV6INIT=no</span></span>
+<span class="line"><span>NAME=eth0</span></span>
+<span class="line"><span>UUID=9beea3d9-92ac-4f7f-b5eb-c8341f308a7d</span></span>
+<span class="line"><span>ONBOOT=yes</span></span>
+<span class="line"><span>DEVICE=eth0</span></span>
+<span class="line"><span>BRIDGE=br0</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#参考文档">参考文档</a></li><li class="depth-2"><a href="#安装kvm">安装KVM</a></li><li class="depth-2"><a href="#开启libvirtd服务">开启libvirtd服务</a></li><li class="depth-2"><a href="#创建虚拟机">创建虚拟机</a></li><li class="depth-2"><a href="#相关">相关</a></li><li class="depth-2"><a href="#图形界面">图形界面</a></li><li class="depth-2"><a href="#配置桥接模式">配置桥接模式</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

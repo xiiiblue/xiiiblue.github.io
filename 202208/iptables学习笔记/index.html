@@ -1,345 +1,105 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="参考文档https:&#x2F;&#x2F;www.zsythink.net&#x2F;archives&#x2F;1199 流程图  PREROUTING   的规则可以存在于：raw表，mangle表，nat表。  INPUT        的规则可以存在于：mangle表，filter表，（centos7中还有nat表，centos6中没有）。  FORWARD      的规则可以存在于：mangle表，filter表。  OU">
-<meta property="og:type" content="article">
-<meta property="og:title" content="iptables学习笔记">
-<meta property="og:url" content="https://www.bluexiii.com/202208/iptables%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="参考文档https:&#x2F;&#x2F;www.zsythink.net&#x2F;archives&#x2F;1199 流程图  PREROUTING   的规则可以存在于：raw表，mangle表，nat表。  INPUT        的规则可以存在于：mangle表，filter表，（centos7中还有nat表，centos6中没有）。  FORWARD      的规则可以存在于：mangle表，filter表。  OU">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://oss.bluexiii.com/c07520f56f1563ae817e67946825cd5f.png">
-<meta property="article:published_time" content="2022-11-02T09:20:07.000Z">
-<meta property="article:modified_time" content="2022-11-02T09:20:07.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://oss.bluexiii.com/c07520f56f1563ae817e67946825cd5f.png">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202208/iptables%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202208/iptables%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/","path":"202208/iptables学习笔记/","title":"iptables学习笔记"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>iptables学习笔记 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">1.</span> <span class="nav-text">参考文档</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="nav-number">2.</span> <span class="nav-text">流程图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">常用操作</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202208/iptables%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="iptables学习笔记 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          iptables学习笔记
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2022-11-02 17:20:07" itemprop="dateCreated datePublished" datetime="2022-11-02T17:20:07+08:00">2022-11-02</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a target="_blank" rel="noopener" href="https://www.zsythink.net/archives/1199">https://www.zsythink.net/archives/1199</a></p>
-<h2 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h2><p><img src="http://oss.bluexiii.com/c07520f56f1563ae817e67946825cd5f.png" alt="20220927103716"></p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="参考文档 https://www.zsythink.net/archives/1199 流程图 PREROUTING 的规则可以存在于：raw表，mangle表，nat表。 INPUT 的规则可以存在于：mangle表，filter表，（centos7中还有nat表，centos6中没有）。 FORWARD…"><link rel="canonical" href="https://www.bluexiii.com/202208/iptables%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="iptables学习笔记｜BlueXIII's Blog"><meta property="og:description" content="参考文档 https://www.zsythink.net/archives/1199 流程图 PREROUTING 的规则可以存在于：raw表，mangle表，nat表。 INPUT 的规则可以存在于：mangle表，filter表，（centos7中还有nat表，centos6中没有）。 FORWARD…"><meta property="og:url" content="https://www.bluexiii.com/202208/iptables%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>iptables学习笔记｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>iptables学习笔记</h1><div class="article-meta"><time datetime="2022-11-02T09:20:07.000Z">发布于2022-11-02</time></div><div class="badges"><a class="badge" href="/tags/%E7%BD%91%E7%BB%9C/">网络</a></div></header><div class="prose"><h2 id="参考文档">参考文档</h2>
+<p><a href="https://www.zsythink.net/archives/1199">https://www.zsythink.net/archives/1199</a></p>
+<h2 id="流程图">流程图</h2>
+<p><img src="http://oss.bluexiii.com/c07520f56f1563ae817e67946825cd5f.png" alt="20220927103716"></p>
 <ul>
-<li><p>PREROUTING   的规则可以存在于：raw表，mangle表，nat表。</p>
+<li>
+<p>PREROUTING   的规则可以存在于：raw表，mangle表，nat表。</p>
 </li>
-<li><p>INPUT        的规则可以存在于：mangle表，filter表，（centos7中还有nat表，centos6中没有）。</p>
+<li>
+<p>INPUT        的规则可以存在于：mangle表，filter表，（centos7中还有nat表，centos6中没有）。</p>
 </li>
-<li><p>FORWARD      的规则可以存在于：mangle表，filter表。</p>
+<li>
+<p>FORWARD      的规则可以存在于：mangle表，filter表。</p>
 </li>
-<li><p>OUTPUT       的规则可以存在于：raw表mangle表，nat表，filter表。</p>
+<li>
+<p>OUTPUT       的规则可以存在于：raw表mangle表，nat表，filter表。</p>
 </li>
-<li><p>POSTROUTING  的规则可以存在于：mangle表，nat表。</p>
+<li>
+<p>POSTROUTING  的规则可以存在于：mangle表，nat表。</p>
 </li>
-<li><p>raw     表中的规则可以被哪些链使用：PREROUTING，OUTPUT</p>
+<li>
+<p>raw     表中的规则可以被哪些链使用：PREROUTING，OUTPUT</p>
 </li>
-<li><p>mangle  表中的规则可以被哪些链使用：PREROUTING，INPUT，FORWARD，OUTPUT，POSTROUTING</p>
+<li>
+<p>mangle  表中的规则可以被哪些链使用：PREROUTING，INPUT，FORWARD，OUTPUT，POSTROUTING</p>
 </li>
-<li><p>nat     表中的规则可以被哪些链使用：PREROUTING，OUTPUT，POSTROUTING（centos7中还有INPUT，centos6中没有）</p>
+<li>
+<p>nat     表中的规则可以被哪些链使用：PREROUTING，OUTPUT，POSTROUTING（centos7中还有INPUT，centos6中没有）</p>
 </li>
-<li><p>filter  表中的规则可以被哪些链使用：INPUT，FORWARD，OUTPUT</p>
+<li>
+<p>filter  表中的规则可以被哪些链使用：INPUT，FORWARD，OUTPUT</p>
 </li>
 </ul>
-<h2 id="常用操作"><a href="#常用操作" class="headerlink" title="常用操作"></a>常用操作</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看规则</span></span><br><span class="line">iptables --line -nvL</span><br><span class="line"><span class="comment"># 查看指定链上的规则</span></span><br><span class="line">iptables --line -nvL INPUT</span><br><span class="line"></span><br><span class="line"><span class="comment"># 清空INPUT链中的规则</span></span><br><span class="line">iptables -F INPUT</span><br><span class="line"><span class="comment"># 清空filter表在INUT链中的规则</span></span><br><span class="line">iptables -t filter -F INPUT</span><br><span class="line"></span><br><span class="line"><span class="comment"># 插入规则</span></span><br><span class="line">iptables -t filter -I INPUT -s 10.211.55.101 -j DROP</span><br><span class="line"><span class="comment"># 追加规则</span></span><br><span class="line">iptables -t filter -A INPUT -s 10.211.55.101 -j ACCEPT</span><br><span class="line"><span class="comment"># 在第N行前插入规则</span></span><br><span class="line">iptables -t filter -I INPUT 2 -s 10.211.55.101 -j ACCEPT</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除指定行</span></span><br><span class="line">iptables -t filter -D INPUT 3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改默认策略</span></span><br><span class="line">iptables -t filter -P FORWARD DROP</span><br><span class="line"></span><br><span class="line"><span class="comment"># centos7安装iptables-services </span></span><br><span class="line">yum install iptables-services </span><br><span class="line">systemctl stop firewalld &amp;&amp; systemctl <span class="built_in">disable</span> firewalld  <span class="comment">#停止firewalld</span></span><br><span class="line">systemctl start iptables &amp;&amp; systemctl <span class="built_in">enable</span> iptables <span class="comment">#启动iptables</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 保存规则</span></span><br><span class="line">service iptables save</span><br><span class="line"><span class="comment"># 保存规则</span></span><br><span class="line">iptables-save &gt; /etc/sysconfig/iptables</span><br><span class="line"><span class="comment"># 还原规则</span></span><br><span class="line">iptables-restore &lt; /etc/sysconfig/iptables</span><br><span class="line"><span class="comment"># 查看规则</span></span><br><span class="line"><span class="built_in">cat</span> /etc/sysconfig/iptables</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 条件匹配</span></span><br><span class="line">-s 10.211.55.0/24 <span class="comment">#源地址</span></span><br><span class="line">-d 10.211.55.10  <span class="comment">#目标地址</span></span><br><span class="line">-p tcp <span class="comment">#协议 tcp, udp, udplite, icmp, esp, ah, sctp</span></span><br><span class="line">-i eth0 <span class="comment">#流入网卡 只能用于PREROUTING链、INPUT链、FORWARD链</span></span><br><span class="line">-o eth1 <span class="comment">#流出网卡 只能用于FORWARD链、OUTPUT链、POSTROUTING链</span></span><br><span class="line">--dport 22 <span class="comment">#目标端口22</span></span><br><span class="line">! --dport 22 <span class="comment">#目标端口，非22的</span></span><br><span class="line">–-dport 22:25 <span class="comment"># 目标端口，22到25的</span></span><br><span class="line">-m multiport --dport 22,36,80 <span class="comment">#目标端口，离散的，需要用到扩展模块multiport</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建自定义链</span></span><br><span class="line">iptables -t filter -N IN_WEB</span><br><span class="line">iptables -t filter -I IN_WEB -s 10.211.55.101 -j REJECT</span><br><span class="line">iptables           -I IN_WEB -s 10.211.55.102 -j REJECT</span><br><span class="line"></span><br><span class="line"><span class="comment"># 引用自定义链</span></span><br><span class="line">iptables -I INPUT -p tcp --dport 80 -j IN_WEB</span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除自定义链</span></span><br><span class="line">iptables -D INPUT 1</span><br><span class="line">iptables -t filter -F IN_WEB</span><br><span class="line">iptables -t filter -X IN_WEB</span><br></pre></td></tr></table></figure>
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202208/Druid%E5%8F%8C%E6%95%B0%E6%8D%AE%E6%BA%90%E7%9B%91%E6%8E%A7/" rel="prev" title="Druid双数据源监控">
-                  <i class="fa fa-angle-left"></i> Druid双数据源监控
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202208/MicroPython%E5%85%A5%E9%97%A8/" rel="next" title="MicroPython入门">
-                  MicroPython入门 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="常用操作">常用操作</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --line</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -nvL</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看指定链上的规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --line</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -nvL</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INPUT</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 清空INPUT链中的规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -F</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INPUT</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 清空filter表在INUT链中的规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -F</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INPUT</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 插入规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -I</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INPUT</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10.211.55.101</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> DROP</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 追加规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -A</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INPUT</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10.211.55.101</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ACCEPT</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 在第N行前插入规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -I</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INPUT</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 2</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10.211.55.101</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ACCEPT</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 删除指定行</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -D</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INPUT</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 3</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 修改默认策略</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -P</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> FORWARD</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> DROP</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># centos7安装iptables-services </span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">yum</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> iptables-services</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> </span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">systemctl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> stop</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> firewalld</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;&#x26; </span><span style="color:#6F42C1;--shiki-dark:#B392F0">systemctl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> disable</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> firewalld</span><span style="color:#6A737D;--shiki-dark:#6A737D">  #停止firewalld</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">systemctl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> start</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> iptables</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;&#x26; </span><span style="color:#6F42C1;--shiki-dark:#B392F0">systemctl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> enable</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> iptables</span><span style="color:#6A737D;--shiki-dark:#6A737D"> #启动iptables</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 保存规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">service</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> iptables</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> save</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 保存规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables-save</span><span style="color:#D73A49;--shiki-dark:#F97583"> ></span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/sysconfig/iptables</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 还原规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables-restore</span><span style="color:#D73A49;--shiki-dark:#F97583"> &#x3C;</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/sysconfig/iptables</span></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 查看规则</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">cat</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /etc/sysconfig/iptables</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 条件匹配</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">-s</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 10.211.55.0/24</span><span style="color:#6A737D;--shiki-dark:#6A737D"> #源地址</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">-d</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10.211.55.10</span><span style="color:#6A737D;--shiki-dark:#6A737D">  #目标地址</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">-p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> tcp</span><span style="color:#6A737D;--shiki-dark:#6A737D"> #协议 tcp, udp, udplite, icmp, esp, ah, sctp</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">-i</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> eth0</span><span style="color:#6A737D;--shiki-dark:#6A737D"> #流入网卡 只能用于PREROUTING链、INPUT链、FORWARD链</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">-o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> eth1</span><span style="color:#6A737D;--shiki-dark:#6A737D"> #流出网卡 只能用于FORWARD链、OUTPUT链、POSTROUTING链</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">--dport</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 22</span><span style="color:#6A737D;--shiki-dark:#6A737D"> #目标端口22</span></span>
+<span class="line"><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> --dport</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 22</span><span style="color:#6A737D;--shiki-dark:#6A737D"> #目标端口，非22的</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">–-dport</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 22:25</span><span style="color:#6A737D;--shiki-dark:#6A737D"> # 目标端口，22到25的</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">-m</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> multiport</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dport</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 22,36,80</span><span style="color:#6A737D;--shiki-dark:#6A737D"> #目标端口，离散的，需要用到扩展模块multiport</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 创建自定义链</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -N</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> IN_WEB</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -I</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> IN_WEB</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10.211.55.101</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> REJECT</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF">           -I</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> IN_WEB</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10.211.55.102</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> REJECT</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 引用自定义链</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -I</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INPUT</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> tcp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dport</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 80</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> IN_WEB</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 删除自定义链</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -D</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INPUT</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 1</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -F</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> IN_WEB</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">iptables</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -t</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> filter</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -X</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> IN_WEB</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#参考文档">参考文档</a></li><li class="depth-2"><a href="#流程图">流程图</a></li><li class="depth-2"><a href="#常用操作">常用操作</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

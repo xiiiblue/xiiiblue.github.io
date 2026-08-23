@@ -1,437 +1,171 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="为了把YOLOv8部署到BM1684X，这次使用TPU-MLIR完成了从ONNX到BModel的转换。F16模型可以直接编译，INT8则要多做一次校准；全INT8精度不理想时，再用qtable把敏感层保留为浮点计算。 这次只转换了少量模型，目标是跑通工具链并比较F16和INT8，没有覆盖其他检测、跟踪和人脸模型。TPU-MLIR版本当时没有记录，命令中的参数应以所用SDK附带的文档为准。 参考 T">
-<meta property="og:type" content="article">
-<meta property="og:title" content="BM1684X上将YOLOv8量化为INT8BModel">
-<meta property="og:url" content="https://www.bluexiii.com/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="为了把YOLOv8部署到BM1684X，这次使用TPU-MLIR完成了从ONNX到BModel的转换。F16模型可以直接编译，INT8则要多做一次校准；全INT8精度不理想时，再用qtable把敏感层保留为浮点计算。 这次只转换了少量模型，目标是跑通工具链并比较F16和INT8，没有覆盖其他检测、跟踪和人脸模型。TPU-MLIR版本当时没有记录，命令中的参数应以所用SDK附带的文档为准。 参考 T">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-04-14T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-08-22T15:27:03.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/","path":"202604/BM1684X上将YOLOv8量化为INT8BModel/","title":"BM1684X上将YOLOv8量化为INT8BModel"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>BM1684X上将YOLOv8量化为INT8BModel | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">1.</span> <span class="nav-text">参考</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8EONNX%E7%94%9F%E6%88%90MLIR"><span class="nav-number">2.</span> <span class="nav-text">从ONNX生成MLIR</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E7%94%9F%E6%88%90F16%E5%9F%BA%E7%BA%BF"><span class="nav-number">3.</span> <span class="nav-text">先生成F16基线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E6%A0%A1%E5%87%86%E8%A1%A8%E5%92%8CINT8%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.</span> <span class="nav-text">生成校准表和INT8模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A8INT8%E4%B8%8D%E5%A4%9F%E6%97%B6%E4%BD%BF%E7%94%A8%E6%B7%B7%E5%90%88%E7%B2%BE%E5%BA%A6"><span class="nav-number">5.</span> <span class="nav-text">全INT8不够时使用混合精度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%99%E6%AC%A1%E7%9A%84%E7%B2%BE%E5%BA%A6%E5%92%8C%E8%80%97%E6%97%B6"><span class="nav-number">6.</span> <span class="nav-text">这次的精度和耗时</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="BM1684X上将YOLOv8量化为INT8BModel | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          BM1684X上将YOLOv8量化为INT8BModel
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2026-04-15 00:00:00" itemprop="dateCreated datePublished" datetime="2026-04-15T00:00:00+08:00">2026-04-15</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-08-22 23:27:03" itemprop="dateModified" datetime="2026-08-22T23:27:03+08:00">2026-08-22</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<p class="post-ai-assisted-notice">本文由AI辅助编写</p>
-
-<p>为了把YOLOv8部署到BM1684X，这次使用TPU-MLIR完成了从ONNX到BModel的转换。F16模型可以直接编译，INT8则要多做一次校准；全INT8精度不理想时，再用qtable把敏感层保留为浮点计算。</p>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="为了把YOLOv8部署到BM1684X，这次使用TPU MLIR完成了从ONNX到BModel的转换。F16模型可以直接编译，INT8则要多做一次校准；全INT8精度不理想时，再用qtable把敏感层保留为浮点计算。 这次只转换了少量模型，目标是跑通工具链并比较F16和INT8，没有覆盖其他检测、跟踪和人脸模…"><link rel="canonical" href="https://www.bluexiii.com/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="BM1684X上将YOLOv8量化为INT8BModel｜BlueXIII's Blog"><meta property="og:description" content="为了把YOLOv8部署到BM1684X，这次使用TPU MLIR完成了从ONNX到BModel的转换。F16模型可以直接编译，INT8则要多做一次校准；全INT8精度不理想时，再用qtable把敏感层保留为浮点计算。 这次只转换了少量模型，目标是跑通工具链并比较F16和INT8，没有覆盖其他检测、跟踪和人脸模…"><meta property="og:url" content="https://www.bluexiii.com/202604/BM1684X%E4%B8%8A%E5%B0%86YOLOv8%E9%87%8F%E5%8C%96%E4%B8%BAINT8BModel/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>BM1684X上将YOLOv8量化为INT8BModel｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>BM1684X上将YOLOv8量化为INT8BModel</h1><div class="article-meta"><time datetime="2026-04-14T16:00:00.000Z">发布于2026-04-15</time><time datetime="2026-08-22T15:27:03.000Z">更新于2026-08-22</time><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/AI/">AI</a></div></header><div class="prose"><p>为了把YOLOv8部署到BM1684X，这次使用TPU-MLIR完成了从ONNX到BModel的转换。F16模型可以直接编译，INT8则要多做一次校准；全INT8精度不理想时，再用qtable把敏感层保留为浮点计算。</p>
 <p>这次只转换了少量模型，目标是跑通工具链并比较F16和INT8，没有覆盖其他检测、跟踪和人脸模型。TPU-MLIR版本当时没有记录，命令中的参数应以所用SDK附带的文档为准。</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/sophgo/tpu-mlir">TPU-MLIR项目与视觉模型转换示例</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/sophgo/tpu-mlir/blob/master/docs/quick_start/source_zh/07_quantization.rst">TPU-MLIR量化与混合精度说明</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/sophgo/sophon-demo/blob/release/sample/YOLOv8_plus_det/docs/YOLOv8_Export_Guide.md">SOPHGO YOLOv8导出说明</a></li>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://github.com/sophgo/tpu-mlir">TPU-MLIR项目与视觉模型转换示例</a></li>
+<li><a href="https://github.com/sophgo/tpu-mlir/blob/master/docs/quick_start/source_zh/07_quantization.rst">TPU-MLIR量化与混合精度说明</a></li>
+<li><a href="https://github.com/sophgo/sophon-demo/blob/release/sample/YOLOv8_plus_det/docs/YOLOv8_Export_Guide.md">SOPHGO YOLOv8导出说明</a></li>
 </ul>
-<h2 id="从ONNX生成MLIR"><a href="#从ONNX生成MLIR" class="headerlink" title="从ONNX生成MLIR"></a>从ONNX生成MLIR</h2><p>先准备固定输入尺寸的ONNX模型、一张测试图片和校准图片目录，工作目录使用以下名称：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">workspace/</span><br><span class="line">├── detector.onnx</span><br><span class="line">├── image/</span><br><span class="line">│   └── sample.jpg</span><br><span class="line">└── calibration/</span><br><span class="line">    ├── 0001.jpg</span><br><span class="line">    └── ...</span><br></pre></td></tr></table></figure>
-
+<h2 id="从onnx生成mlir">从ONNX生成MLIR</h2>
+<p>先准备固定输入尺寸的ONNX模型、一张测试图片和校准图片目录，工作目录使用以下名称：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>workspace/</span></span>
+<span class="line"><span>├── detector.onnx</span></span>
+<span class="line"><span>├── image/</span></span>
+<span class="line"><span>│   └── sample.jpg</span></span>
+<span class="line"><span>└── calibration/</span></span>
+<span class="line"><span>    ├── 0001.jpg</span></span>
+<span class="line"><span>    └── ...</span></span></code></pre>
 <p>转换时把YOLOv8的<code>0~255</code>RGB输入缩放到<code>0~1</code>，并生成后续比对需要的测试结果：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">model_transform.py \</span><br><span class="line">  --model_name detector \</span><br><span class="line">  --model_def detector.onnx \</span><br><span class="line">  --input_shapes <span class="string">&#x27;[[1,3,640,640]]&#x27;</span> \</span><br><span class="line">  --mean 0.0,0.0,0.0 \</span><br><span class="line">  --scale 0.0039216,0.0039216,0.0039216 \</span><br><span class="line">  --keep_aspect_ratio \</span><br><span class="line">  --pixel_format rgb \</span><br><span class="line">  --test_input image/sample.jpg \</span><br><span class="line">  --test_result detector_top_outputs.npz \</span><br><span class="line">  --mlir detector.mlir</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">model_transform.py</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --model_name</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --model_def</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector.onnx</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --input_shapes</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '[[1,3,640,640]]'</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --mean</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 0.0,0.0,0.0</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --scale</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 0.0039216,0.0039216,0.0039216</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --keep_aspect_ratio</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --pixel_format</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> rgb</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --test_input</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> image/sample.jpg</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --test_result</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_top_outputs.npz</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --mlir</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector.mlir</span></span></code></pre>
 <p>这里的预处理必须和训练、ONNX推理及最终应用保持一致。<code>--keep_aspect_ratio</code>会在缩放时保留宽高比并补边；如果原来的推理代码采用直接拉伸，这个参数也要随之调整，不能只照搬示例。</p>
 <p>命令还会生成<code>detector_in_f32.npz</code>，它是同一张测试图片经过预处理后的输入，后面的F16和INT8编译都用它做数值比对。</p>
-<h2 id="先生成F16基线"><a href="#先生成F16基线" class="headerlink" title="先生成F16基线"></a>先生成F16基线</h2><p>F16不需要校准表，可以直接从MLIR生成BM1684X使用的BModel：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">model_deploy.py \</span><br><span class="line">  --mlir detector.mlir \</span><br><span class="line">  --quantize F16 \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --test_input detector_in_f32.npz \</span><br><span class="line">  --test_reference detector_top_outputs.npz \</span><br><span class="line">  --model detector_1684x_f16.bmodel</span><br></pre></td></tr></table></figure>
-
+<h2 id="先生成f16基线">先生成F16基线</h2>
+<p>F16不需要校准表，可以直接从MLIR生成BM1684X使用的BModel：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">model_deploy.py</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --mlir</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector.mlir</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --quantize</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> F16</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --processor</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bm1684x</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --test_input</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_in_f32.npz</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --test_reference</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_top_outputs.npz</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --model</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_1684x_f16.bmodel</span></span></code></pre>
 <p>先保留F16结果很有必要。它既是部署候选，也能把“模型转换本身的问题”和“INT8量化带来的误差”分开。</p>
 <p>可以用<code>model_runner.py</code>检查BModel输出：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">model_runner.py \</span><br><span class="line">  --input detector_in_f32.npz \</span><br><span class="line">  --model detector_1684x_f16.bmodel \</span><br><span class="line">  --output detector_f16_outputs.npz</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">model_runner.py</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --input</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_in_f32.npz</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --model</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_1684x_f16.bmodel</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --output</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_f16_outputs.npz</span></span></code></pre>
 <p><code>model_deploy.py</code>的相似度检查和输出张量统计只能发现明显的数值异常，不能代替完整数据集上的mAP、Precision和Recall评估。</p>
-<h2 id="生成校准表和INT8模型"><a href="#生成校准表和INT8模型" class="headerlink" title="生成校准表和INT8模型"></a>生成校准表和INT8模型</h2><p>这次探索使用了100张校准图片：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">run_calibration.py detector.mlir \</span><br><span class="line">  --dataset calibration \</span><br><span class="line">  --input_num 100 \</span><br><span class="line">  -o detector_cali_table</span><br></pre></td></tr></table></figure>
-
+<h2 id="生成校准表和int8模型">生成校准表和INT8模型</h2>
+<p>这次探索使用了100张校准图片：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">run_calibration.py</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector.mlir</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --dataset</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> calibration</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --input_num</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 100</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -o</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_cali_table</span></span></code></pre>
 <p>校准图片应来自实际输入分布。100张只是这次跑通流程时的取值，不是固定标准；TPU-MLIR当前文档给出的常见范围是100至1000张，正式模型仍要根据数据复杂度和精度结果调整。</p>
 <p>使用校准表生成全INT8对称量化模型：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">model_deploy.py \</span><br><span class="line">  --mlir detector.mlir \</span><br><span class="line">  --quantize INT8 \</span><br><span class="line">  --calibration_table detector_cali_table \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --test_input detector_in_f32.npz \</span><br><span class="line">  --test_reference detector_top_outputs.npz \</span><br><span class="line">  --tolerance 0.85,0.45 \</span><br><span class="line">  --model detector_1684x_int8.bmodel</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">model_deploy.py</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --mlir</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector.mlir</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --quantize</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INT8</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --calibration_table</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_cali_table</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --processor</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bm1684x</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --test_input</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_in_f32.npz</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --test_reference</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_top_outputs.npz</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --tolerance</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 0.85,0.45</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --model</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_1684x_int8.bmodel</span></span></code></pre>
 <p><code>--tolerance</code>控制转换过程中的相似度检查门限，不代表最终检测精度。模型成功生成之后，仍要使用带标签的数据集进行评估。</p>
-<h2 id="全INT8不够时使用混合精度"><a href="#全INT8不够时使用混合精度" class="headerlink" title="全INT8不够时使用混合精度"></a>全INT8不够时使用混合精度</h2><p>TPU-MLIR用qtable记录哪些算子保留为F32、F16或BF16。当前版本能够为YOLO结构自动识别部分不适合INT8的后处理算子，也可以通过<code>search_qtable</code>继续搜索敏感层。</p>
+<h2 id="全int8不够时使用混合精度">全INT8不够时使用混合精度</h2>
+<p>TPU-MLIR用qtable记录哪些算子保留为F32、F16或BF16。当前版本能够为YOLO结构自动识别部分不适合INT8的后处理算子，也可以通过<code>search_qtable</code>继续搜索敏感层。</p>
 <p>搜索命令同时指定校准表和qtable的输出名称，避免后续部署时串错文件：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">run_calibration.py detector.mlir \</span><br><span class="line">  --dataset calibration \</span><br><span class="line">  --input_num 100 \</span><br><span class="line">  --inference_num 10 \</span><br><span class="line">  --search search_qtable \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --quantize_table detector_qtable \</span><br><span class="line">  --calibration_table detector_search_cali_table</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">run_calibration.py</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector.mlir</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --dataset</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> calibration</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --input_num</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 100</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --inference_num</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --search</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> search_qtable</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --processor</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bm1684x</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --quantize_table</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_qtable</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --calibration_table</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_search_cali_table</span></span></code></pre>
 <p>不同TPU-MLIR版本对搜索后更新校准表的文件名处理并不完全一致。有的版本会另外生成<code>new_cali_table.txt</code>，因此下一步不能凭文件名猜测：先查看搜索日志，确认最终qtable和更新后校准表的实际路径，再传给<code>model_deploy.py</code>。</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">SEARCH_CALI_TABLE=new_cali_table.txt</span><br><span class="line"></span><br><span class="line">model_deploy.py \</span><br><span class="line">  --mlir detector.mlir \</span><br><span class="line">  --quantize INT8 \</span><br><span class="line">  --processor bm1684x \</span><br><span class="line">  --calibration_table <span class="string">&quot;<span class="variable">$SEARCH_CALI_TABLE</span>&quot;</span> \</span><br><span class="line">  --quantize_table detector_qtable \</span><br><span class="line">  --test_input detector_in_f32.npz \</span><br><span class="line">  --test_reference detector_top_outputs.npz \</span><br><span class="line">  --tolerance 0.85,0.45 \</span><br><span class="line">  --model detector_1684x_mix.bmodel</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">SEARCH_CALI_TABLE</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#032F62;--shiki-dark:#9ECBFF">new_cali_table.txt</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">model_deploy.py</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --mlir</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector.mlir</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --quantize</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> INT8</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --processor</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bm1684x</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --calibration_table</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$SEARCH_CALI_TABLE</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --quantize_table</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_qtable</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --test_input</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_in_f32.npz</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --test_reference</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_top_outputs.npz</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --tolerance</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 0.85,0.45</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --model</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> detector_1684x_mix.bmodel</span></span></code></pre>
 <p>部署阶段如果引用了另一个临时qtable文件，命令仍可能成功，却不能证明模型使用的是刚完成搜索的配置。这里最好统一命名，并在编译前查看两个表的路径和内容。</p>
-<h2 id="这次的精度和耗时"><a href="#这次的精度和耗时" class="headerlink" title="这次的精度和耗时"></a>这次的精度和耗时</h2><p>同一检测模型的测试结果如下。数据集规模、TPU-MLIR版本和板卡运行状态没有完整记录，所以只比较这组测试内部的相对变化。</p>
-<table>
-<thead>
-<tr>
-<th>模型</th>
-<th align="right"><a href="mailto:&#x6d;&#65;&#x50;&#64;&#48;&#x2e;&#x35;">mAP@0.5</a></th>
-<th align="right"><a href="mailto:&#109;&#x41;&#80;&#x40;&#x30;&#46;&#x35;">mAP@0.5</a>:0.95</th>
-<th align="right">Precision</th>
-<th align="right">Recall</th>
-<th align="right">F1</th>
-<th align="right">推理(ms)</th>
-<th align="right">换算FPS</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>BModel FP32</td>
-<td align="right">0.9439</td>
-<td align="right">0.6620</td>
-<td align="right">0.9043</td>
-<td align="right">0.9699</td>
-<td align="right">0.9359</td>
-<td align="right">38.0</td>
-<td align="right">26.4</td>
-</tr>
-<tr>
-<td>BModel F16</td>
-<td align="right">0.9440</td>
-<td align="right">0.6620</td>
-<td align="right">0.9037</td>
-<td align="right">0.9699</td>
-<td align="right">0.9356</td>
-<td align="right">14.1</td>
-<td align="right">71.1</td>
-</tr>
-<tr>
-<td>BModel INT8方案A</td>
-<td align="right">0.9156</td>
-<td align="right">0.6128</td>
-<td align="right">0.8864</td>
-<td align="right">0.9706</td>
-<td align="right">0.9266</td>
-<td align="right">11.6</td>
-<td align="right">86.5</td>
-</tr>
-<tr>
-<td>BModel INT8方案B</td>
-<td align="right">0.9242</td>
-<td align="right">0.6250</td>
-<td align="right">0.9008</td>
-<td align="right">0.9671</td>
-<td align="right">0.9328</td>
-<td align="right">11.5</td>
-<td align="right">86.7</td>
-</tr>
-<tr>
-<td>BModel INT8自动pattern</td>
-<td align="right">0.9242</td>
-<td align="right">0.6250</td>
-<td align="right">0.9008</td>
-<td align="right">0.9671</td>
-<td align="right">0.9328</td>
-<td align="right">11.6</td>
-<td align="right">86.6</td>
-</tr>
-</tbody></table>
-<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的<a href="mailto:&#109;&#x41;&#80;&#64;&#x30;&#x2e;&#x35;">mAP@0.5</a>为0.9242，比F16低0.0198；F1只低0.0028。</p>
+<h2 id="这次的精度和耗时">这次的精度和耗时</h2>
+<p>同一检测模型的测试结果如下。数据集规模、TPU-MLIR版本和板卡运行状态没有完整记录，所以只比较这组测试内部的相对变化。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>模型</th><th align="right">mAP@0.5</th><th align="right">mAP@0.5:0.95</th><th align="right">Precision</th><th align="right">Recall</th><th align="right">F1</th><th align="right">推理(ms)</th><th align="right">换算FPS</th></tr></thead><tbody><tr><td>BModel FP32</td><td align="right">0.9439</td><td align="right">0.6620</td><td align="right">0.9043</td><td align="right">0.9699</td><td align="right">0.9359</td><td align="right">38.0</td><td align="right">26.4</td></tr><tr><td>BModel F16</td><td align="right">0.9440</td><td align="right">0.6620</td><td align="right">0.9037</td><td align="right">0.9699</td><td align="right">0.9356</td><td align="right">14.1</td><td align="right">71.1</td></tr><tr><td>BModel INT8方案A</td><td align="right">0.9156</td><td align="right">0.6128</td><td align="right">0.8864</td><td align="right">0.9706</td><td align="right">0.9266</td><td align="right">11.6</td><td align="right">86.5</td></tr><tr><td>BModel INT8方案B</td><td align="right">0.9242</td><td align="right">0.6250</td><td align="right">0.9008</td><td align="right">0.9671</td><td align="right">0.9328</td><td align="right">11.5</td><td align="right">86.7</td></tr><tr><td>BModel INT8自动pattern</td><td align="right">0.9242</td><td align="right">0.6250</td><td align="right">0.9008</td><td align="right">0.9671</td><td align="right">0.9328</td><td align="right">11.6</td><td align="right">86.6</td></tr></tbody></table>
+<p>F16相对FP32把推理耗时从38.0ms降到14.1ms，精度指标基本不变。三份INT8结果的耗时都在11.5ms左右，其中方案B和自动pattern的mAP@0.5为0.9242，比F16低0.0198；F1只低0.0028。</p>
 <p>方案A和方案B对应两次混精度调整，但当时没有把具体qtable差异记录下来，无法从结果反推出是哪几层带来了改善。自动pattern与方案B得到相同精度，说明在这个模型上没有必要仅为了“手工调过”而保留更复杂的配置。</p>
-<p>现有结果足以支持继续使用F16，并把INT8作为有条件的优化选项。真正上线INT8之前，还需要在目标板卡上用真实图片复查预处理、后处理和检测结果；这部分当时没有完成，不能把转换成功直接当成部署验证通过。</p>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202603/RTX2080Ti%E4%B8%8AONNX%E4%B8%8ETensorRT%E7%9A%84%E7%B2%BE%E5%BA%A6%E5%92%8C%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94/" rel="prev" title="RTX 2080 Ti上ONNX与TensorRT的精度和性能对比">
-                  <i class="fa fa-angle-left"></i> RTX 2080 Ti上ONNX与TensorRT的精度和性能对比
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202604/ComfyUI%E7%9A%84%E5%AE%89%E8%A3%85%E3%80%81%E8%BF%9C%E7%A8%8B%E8%AE%BF%E9%97%AE%E4%B8%8E%E6%A8%A1%E5%9E%8B%E7%AE%A1%E7%90%86/" rel="next" title="ComfyUI的安装、远程访问与模型管理">
-                  ComfyUI的安装、远程访问与模型管理 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<p>现有结果足以支持继续使用F16，并把INT8作为有条件的优化选项。真正上线INT8之前，还需要在目标板卡上用真实图片复查预处理、后处理和检测结果；这部分当时没有完成，不能把转换成功直接当成部署验证通过。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#参考">参考</a></li><li class="depth-2"><a href="#从onnx生成mlir">从ONNX生成MLIR</a></li><li class="depth-2"><a href="#先生成f16基线">先生成F16基线</a></li><li class="depth-2"><a href="#生成校准表和int8模型">生成校准表和INT8模型</a></li><li class="depth-2"><a href="#全int8不够时使用混合精度">全INT8不够时使用混合精度</a></li><li class="depth-2"><a href="#这次的精度和耗时">这次的精度和耗时</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

@@ -1,382 +1,231 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="简介Gradle是一种类似Maven的项目构建工具，它没有使用繁琐的XML，而是使用Groovy语言进行配置。作为后起之秀，Gradle继承了Maven的一些思想，并且 配置简洁 ，有更强的 灵活性 。   Android Studio从一定程度上也加快了Gradle的流行，目前有非常多的开源项目已经迁移到了Gradle。但现阶段Gradle还不能完全替代Maven，从目前GitHub上的趋势看来">
-<meta property="og:type" content="article">
-<meta property="og:title" content="使用Gradle构建Java项目">
-<meta property="og:url" content="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Gradle%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%A8%A1%E5%9D%97Java%E9%A1%B9%E7%9B%AE/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="简介Gradle是一种类似Maven的项目构建工具，它没有使用繁琐的XML，而是使用Groovy语言进行配置。作为后起之秀，Gradle继承了Maven的一些思想，并且 配置简洁 ，有更强的 灵活性 。   Android Studio从一定程度上也加快了Gradle的流行，目前有非常多的开源项目已经迁移到了Gradle。但现阶段Gradle还不能完全替代Maven，从目前GitHub上的趋势看来">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2018-11-06T07:45:41.000Z">
-<meta property="article:modified_time" content="2018-11-06T07:45:41.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Gradle%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%A8%A1%E5%9D%97Java%E9%A1%B9%E7%9B%AE/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Gradle%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%A8%A1%E5%9D%97Java%E9%A1%B9%E7%9B%AE/","path":"201704/使用Gradle构建多模块Java项目/","title":"使用Gradle构建Java项目"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>使用Gradle构建Java项目 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8EMaven%E7%AE%80%E5%8D%95%E5%AF%B9%E6%AF%94"><span class="nav-number">2.</span> <span class="nav-text">与Maven简单对比</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">3.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90"><span class="nav-number">4.</span> <span class="nav-text">学习资源</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E6%A8%A1%E5%9D%97%E9%A1%B9%E7%9B%AE%E6%9E%84%E5%BB%BA%E7%A4%BA%E4%BE%8B"><span class="nav-number">5.</span> <span class="nav-text">单模块项目构建示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E6%A8%A1%E5%9D%97%E9%A1%B9%E7%9B%AE%E6%9E%84%E5%BB%BA%E7%A4%BA%E4%BE%8B"><span class="nav-number">6.</span> <span class="nav-text">多模块项目构建示例</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Gradle%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%A8%A1%E5%9D%97Java%E9%A1%B9%E7%9B%AE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="使用Gradle构建Java项目 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          使用Gradle构建Java项目
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-11-06 15:45:41" itemprop="dateCreated datePublished" datetime="2018-11-06T15:45:41+08:00">2018-11-06</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Gradle是一种类似Maven的项目构建工具，它没有使用繁琐的XML，而是使用Groovy语言进行配置。<br>作为后起之秀，Gradle继承了Maven的一些思想，并且 <strong>配置简洁</strong> ，有更强的 <strong>灵活性</strong> 。  </p>
-<p>Android Studio从一定程度上也加快了Gradle的流行，目前有非常多的开源项目已经迁移到了Gradle。<br>但现阶段Gradle还不能完全替代Maven，从目前GitHub上的趋势看来，二者可能要并存一段时间了。  </p>
-<p>从去年开始在一些中小型项目上尝试引入Gradle，仅做简单的项目构建，没有太过深入研究，整体使用下来的体验还是很愉快的。<br>本文主要是作一些科普，抛砖引玉，并贴出两个可以直接拿来使用的示例，帮助大家快速上手。  </p>
-<h2 id="与Maven简单对比"><a href="#与Maven简单对比" class="headerlink" title="与Maven简单对比"></a>与Maven简单对比</h2><ol>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="简介 Gradle是一种类似Maven的项目构建工具，它没有使用繁琐的XML，而是使用Groovy语言进行配置。 作为后起之秀，Gradle继承了Maven的一些思想，并且 配置简洁 ，有更强的 灵活性 。 Android Studio从一定程度上也加快了Gradle的流行，目前有非常多的开源项目已经迁移到了…"><link rel="canonical" href="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Gradle%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%A8%A1%E5%9D%97Java%E9%A1%B9%E7%9B%AE/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="使用Gradle构建Java项目｜BlueXIII's Blog"><meta property="og:description" content="简介 Gradle是一种类似Maven的项目构建工具，它没有使用繁琐的XML，而是使用Groovy语言进行配置。 作为后起之秀，Gradle继承了Maven的一些思想，并且 配置简洁 ，有更强的 灵活性 。 Android Studio从一定程度上也加快了Gradle的流行，目前有非常多的开源项目已经迁移到了…"><meta property="og:url" content="https://www.bluexiii.com/201704/%E4%BD%BF%E7%94%A8Gradle%E6%9E%84%E5%BB%BA%E5%A4%9A%E6%A8%A1%E5%9D%97Java%E9%A1%B9%E7%9B%AE/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>使用Gradle构建Java项目｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>使用Gradle构建Java项目</h1><div class="article-meta"><time datetime="2018-11-06T07:45:41.000Z">发布于2018-11-06</time></div><div class="badges"><a class="badge" href="/tags/Java/">Java</a></div></header><div class="prose"><h2 id="简介">简介</h2>
+<p>Gradle是一种类似Maven的项目构建工具，它没有使用繁琐的XML，而是使用Groovy语言进行配置。<br>
+作为后起之秀，Gradle继承了Maven的一些思想，并且 <strong>配置简洁</strong> ，有更强的 <strong>灵活性</strong> 。</p>
+<p>Android Studio从一定程度上也加快了Gradle的流行，目前有非常多的开源项目已经迁移到了Gradle。<br>
+但现阶段Gradle还不能完全替代Maven，从目前GitHub上的趋势看来，二者可能要并存一段时间了。</p>
+<p>从去年开始在一些中小型项目上尝试引入Gradle，仅做简单的项目构建，没有太过深入研究，整体使用下来的体验还是很愉快的。<br>
+本文主要是作一些科普，抛砖引玉，并贴出两个可以直接拿来使用的示例，帮助大家快速上手。</p>
+<h2 id="与maven简单对比">与Maven简单对比</h2>
+<ol>
 <li>简洁的配置。现在有很多人都对XML深恶痛绝，在Maven中，添加一个依赖需要编写以下5行配置：</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;com.zaxxer&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;HikariCP&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;2.5.0&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-<p>而在Gradle中，只需要一行：  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">compile &#x27;com.zaxxer:HikariCP:2.5.0&#x27;</span><br></pre></td></tr></table></figure>
-<p>所以Gradle配置文件的整体长度大约是Maven的1&#x2F;4到1&#x2F;5左右，并且更加易读。</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>  &#x3C;dependency></span></span>
+<span class="line"><span>      &#x3C;groupId>com.zaxxer&#x3C;/groupId></span></span>
+<span class="line"><span>      &#x3C;artifactId>HikariCP&#x3C;/artifactId></span></span>
+<span class="line"><span>      &#x3C;version>2.5.0&#x3C;/version></span></span>
+<span class="line"><span>  &#x3C;/dependency></span></span></code></pre>
+<p>而在Gradle中，只需要一行：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>compile 'com.zaxxer:HikariCP:2.5.0'</span></span></code></pre>
+<p>所以Gradle配置文件的整体长度大约是Maven的1/4到1/5左右，并且更加易读。</p>
 <ol start="2">
 <li>灵活性。例如要执行一条shell命令，只需要3行。当然客观来说，灵活往往是复杂的同义词：</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">task dropDB(type: Exec) &#123;</span><br><span class="line"> commandLine ‘curl’,’-s’,’s’,’-x’,’DELETE’,&quot;http://$&#123;db.server&#125;:&#123;db.port&#125;/db_name&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>task dropDB(type: Exec) {</span></span>
+<span class="line"><span> commandLine ‘curl’,’-s’,’s’,’-x’,’DELETE’,"http://${db.server}:{db.port}/db_name"</span></span>
+<span class="line"><span>}</span></span></code></pre>
 <ol start="3">
 <li>约定优于配置。Gradle的Java Plugin，定义了与Maven完全一致的项目布局：</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">src/main/java</span><br><span class="line">src/main/resources</span><br><span class="line">src/test/java</span><br><span class="line">src/test/resources</span><br></pre></td></tr></table></figure>
-
-<p>更多的比较，可以参考 <a target="_blank" rel="noopener" href="https://gradle.org/maven-vs-gradle">https://gradle.org/maven-vs-gradle</a>  </p>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><ul>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>src/main/java</span></span>
+<span class="line"><span>src/main/resources</span></span>
+<span class="line"><span>src/test/java</span></span>
+<span class="line"><span>src/test/resources</span></span></code></pre>
+<p>更多的比较，可以参考 <a href="https://gradle.org/maven-vs-gradle">https://gradle.org/maven-vs-gradle</a></p>
+<h2 id="安装">安装</h2>
+<ul>
 <li>macOS下安装:</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install gradle</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>brew install gradle</span></span></code></pre>
 <ul>
 <li>Ubuntu下安装:</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install gradle</span><br></pre></td></tr></table></figure>
-
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>sudo apt install gradle</span></span></code></pre>
 <ul>
 <li>Windows下安装:</li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Step1: 在[https://gradle.org/releases](https://gradle.org/releases) 下载binary-only的zip包  </span><br><span class="line">Step2: 解压至某一目录，如C:/bin/gradle  </span><br><span class="line">Step3: 在系统属性-高级-环境变量中，新增GRADLE_HOME环境变量来指向安装路径，并在PATH环境变量的最后追加上GRADLE_HOME/bin  </span><br></pre></td></tr></table></figure>
-
-<h2 id="学习资源"><a href="#学习资源" class="headerlink" title="学习资源"></a>学习资源</h2><p>关于Gradle的学习，不再赘述，有大量的资源可供查阅  </p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>Step1: 在[https://gradle.org/releases](https://gradle.org/releases) 下载binary-only的zip包  </span></span>
+<span class="line"><span>Step2: 解压至某一目录，如C:/bin/gradle  </span></span>
+<span class="line"><span>Step3: 在系统属性-高级-环境变量中，新增GRADLE_HOME环境变量来指向安装路径，并在PATH环境变量的最后追加上GRADLE_HOME/bin  </span></span></code></pre>
+<h2 id="学习资源">学习资源</h2>
+<p>关于Gradle的学习，不再赘述，有大量的资源可供查阅</p>
 <ul>
-<li><a target="_blank" rel="noopener" href="https://gradle.org/">Gradle 官网</a>  </li>
-<li><a target="_blank" rel="noopener" href="https://docs.gradle.org/current/userguide/userguide.html">Gradle User Guide</a>  </li>
-<li><a target="_blank" rel="noopener" href="https://dongchuan.gitbooks.io/gradle-user-guide-/tutorials/">Gradle User Guide 中文版</a></li>
+<li><a href="https://gradle.org">Gradle 官网</a></li>
+<li><a href="https://docs.gradle.org/current/userguide/userguide.html">Gradle User Guide</a></li>
+<li><a href="https://dongchuan.gitbooks.io/gradle-user-guide-/tutorials/">Gradle User Guide 中文版</a></li>
 </ul>
-<h2 id="单模块项目构建示例"><a href="#单模块项目构建示例" class="headerlink" title="单模块项目构建示例"></a>单模块项目构建示例</h2><p>下面是一个单模块Spring Boot项目的示例，适合快速搭建小型项目  </p>
-<p><strong>&#x2F;build.gradle</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        flatDir &#123;</span><br><span class="line">            dirs &#x27;libs&#x27;</span><br><span class="line">        &#125;</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven &#123; url &quot;http://xxx.xxx.xxx.xxx:8081/nexus/content/groups/public&quot; &#125;</span><br><span class="line">        //  // mavenCentral()  //jcenter()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath(&quot;org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE&quot;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">apply plugin: &#x27;java&#x27;</span><br><span class="line">apply plugin: &quot;spring-boot&quot;</span><br><span class="line"></span><br><span class="line">jar &#123;</span><br><span class="line">    baseName = &#x27;project&#x27;</span><br><span class="line">    version = &#x27;1.0-SNAPSHOT&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">sourceCompatibility = 1.7</span><br><span class="line">targetCompatibility = 1.7</span><br><span class="line"></span><br><span class="line">repositories &#123;</span><br><span class="line">    mavenCentral()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter&#x27;</span><br><span class="line">    compile &#x27;org.apache.commons:commons-email:1.4&#x27;</span><br><span class="line">    compile files(&#x27;libs/jxl-2.6.12.jar&#x27;)</span><br><span class="line">    runtime &#x27;mysql:mysql-connector-java:5.1.36&#x27;</span><br><span class="line">    testCompile &#x27;org.springframework.boot:spring-boot-starter-test&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">test &#123;</span><br><span class="line">    exclude &#x27;com/foo/**&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">task listJars(description: &#x27;Display all compile jars.&#x27;) &lt;&lt; &#123;</span><br><span class="line">    configurations.compile.each &#123; File file -&gt; println file.name &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="多模块项目构建示例"><a href="#多模块项目构建示例" class="headerlink" title="多模块项目构建示例"></a>多模块项目构建示例</h2><p>下面是一个基于Spring Boot的多模块项目示例，可以裁剪后直接拿来做为脚手架使用，适合中型项目  </p>
-<p><strong>&#x2F;settings.gradle</strong>  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">include &#x27;common&#x27;</span><br><span class="line">include &#x27;repository&#x27;</span><br><span class="line">include &#x27;restapi&#x27;</span><br></pre></td></tr></table></figure>
-
-<p><strong>&#x2F;build.gradle</strong>  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven &#123; url &quot;http://xxx.xxx.xxx.xxx:8081/nexus/content/groups/public&quot; &#125;</span><br><span class="line">        //mavenCentral()</span><br><span class="line">        //jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath(&quot;org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE&quot;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">allprojects &#123;</span><br><span class="line">    apply plugin: &#x27;idea&#x27;</span><br><span class="line">    apply plugin: &#x27;eclipse&#x27;</span><br><span class="line"></span><br><span class="line">    group = &#x27;com.foo.bar&#x27;</span><br><span class="line">    version = &#x27;1.0-SNAPSHOT&#x27;</span><br><span class="line">    //archivesBaseName = &#x27;project&#x27;</span><br><span class="line"></span><br><span class="line">    repositories &#123;</span><br><span class="line">        mavenLocal()</span><br><span class="line">        maven &#123; url &quot;http://xxx.xxx.xxx.xxx:8081/nexus/content/groups/public&quot; &#125;</span><br><span class="line">        //mavenCentral()</span><br><span class="line">        //jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">subprojects &#123;</span><br><span class="line">    apply plugin: &#x27;java&#x27;</span><br><span class="line">    apply plugin: &quot;spring-boot&quot;</span><br><span class="line"></span><br><span class="line">    sourceCompatibility = 1.8</span><br><span class="line">    targetCompatibility = 1.8</span><br><span class="line"></span><br><span class="line">    dependencies &#123;</span><br><span class="line">        compile &#x27;org.springframework.boot:spring-boot-starter&#x27;</span><br><span class="line">        compile &#x27;org.springframework.boot:spring-boot-configuration-processor&#x27;</span><br><span class="line">        compile &#x27;org.springframework.boot:spring-boot-devtools&#x27;</span><br><span class="line">        testCompile &#x27;org.springframework.boot:spring-boot-starter-test&#x27;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    test &#123;</span><br><span class="line">        exclude &#x27;com/foo/bar/**&#x27;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    task listJars(description: &#x27;Display all compile jars.&#x27;) &lt;&lt; &#123;</span><br><span class="line">        configurations.compile.each &#123; File file -&gt; println file.name &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">task wrapper(type: Wrapper) &#123;</span><br><span class="line">    gradleVersion = &#x27;3.1&#x27;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>&#x2F;common&#x2F;build.gradle</strong>  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">bootRepackage.enabled = false</span><br><span class="line">jar.baseName &#x27;project-common&#x27;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile project(&#x27;:repository&#x27;)</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-web&#x27;</span><br><span class="line">    compile &#x27;commons-lang:commons-lang:2.6&#x27;</span><br><span class="line">    compile &#x27;org.apache.httpcomponents:httpclient:4.5.2&#x27;</span><br><span class="line">    compile &#x27;org.modelmapper:modelmapper:0.7.5&#x27;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>&#x2F;repository&#x2F;build.gradle</strong>  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">bootRepackage.enabled = false</span><br><span class="line">jar.baseName &#x27;project-repository&#x27;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    //spring boot</span><br><span class="line">    compile (&#x27;org.springframework.boot:spring-boot-starter-data-jpa&#x27;)</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-jdbc&#x27;</span><br><span class="line">    //jackson</span><br><span class="line">    compile &#x27;com.fasterxml.jackson.core:jackson-annotations:2.8.1&#x27;</span><br><span class="line">    //hibernate validator</span><br><span class="line">    compile &#x27;javax.validation:validation-api:1.1.0.Final&#x27;</span><br><span class="line">    compile &#x27;org.hibernate:hibernate-validator:5.2.4.Final&#x27;</span><br><span class="line">    compile &#x27;org.hibernate:hibernate-validator-cdi:5.2.4.Final&#x27;</span><br><span class="line">    compile &#x27;javax.el:javax.el-api:2.2.4&#x27;</span><br><span class="line">    compile &#x27;org.glassfish.web:javax.el:2.2.4&#x27;</span><br><span class="line">    //swagger</span><br><span class="line">    compile &#x27;io.springfox:springfox-swagger2:2.6.0&#x27;</span><br><span class="line">    compile &#x27;io.springfox:springfox-swagger-ui:2.6.0&#x27;</span><br><span class="line">    //jdbc driver</span><br><span class="line">    runtime &#x27;mysql:mysql-connector-java:5.1.36&#x27;</span><br><span class="line">    runtime &#x27;com.h2database:h2:1.4.192&#x27;</span><br><span class="line">    //test</span><br><span class="line">    testCompile &#x27;org.springframework.security:spring-security-core:4.1.1.RELEASE&#x27;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>&#x2F;restapi&#x2F;build.gradle</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">jar.baseName &#x27;project-rest-api&#x27;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile project(&#x27;:repository&#x27;)</span><br><span class="line">    compile project(&#x27;:common&#x27;)</span><br><span class="line">    //spring boot</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-thymeleaf&#x27;</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-cache&#x27;</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-security&#x27;</span><br><span class="line">    compile &#x27;org.springframework.boot:spring-boot-starter-actuator&#x27;</span><br><span class="line">    //oauth2</span><br><span class="line">    compile &#x27;org.springframework.security.oauth:spring-security-oauth2:2.0.11.RELEASE&#x27;</span><br><span class="line">    //cache</span><br><span class="line">    compile &#x27;net.sf.ehcache:ehcache:2.10.2.2.21&#x27;</span><br><span class="line">    //pool</span><br><span class="line">    compile &#x27;com.alibaba:druid:1.0.23&#x27;</span><br><span class="line">    compile &#x27;com.zaxxer:HikariCP:2.5.0&#x27;</span><br><span class="line">    //swagger-staticdocs</span><br><span class="line">    testCompile &#x27;io.springfox:springfox-staticdocs:2.6.0&#x27;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/201704/%E4%BD%BF%E7%94%A8Java%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95Socket%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%92%8C%E6%9C%8D%E5%8A%A1%E7%AB%AF/" rel="prev" title="使用Java编写简单Socket客户端和服务端">
-                  <i class="fa fa-angle-left"></i> 使用Java编写简单Socket客户端和服务端
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/201704/Ubuntu%E4%B8%8Bboot%E5%88%86%E5%8C%BA%E7%A9%BA%E9%97%B4%E5%B7%B2%E6%BB%A1%E9%97%AE%E9%A2%98%E5%A4%84%E7%90%86/" rel="next" title="Ubuntu下boot分区空间已满问题处理">
-                  Ubuntu下boot分区空间已满问题处理 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="单模块项目构建示例">单模块项目构建示例</h2>
+<p>下面是一个单模块Spring Boot项目的示例，适合快速搭建小型项目</p>
+<p><strong>/build.gradle</strong></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>buildscript {</span></span>
+<span class="line"><span>    repositories {</span></span>
+<span class="line"><span>        flatDir {</span></span>
+<span class="line"><span>            dirs 'libs'</span></span>
+<span class="line"><span>        }</span></span>
+<span class="line"><span>        mavenLocal()</span></span>
+<span class="line"><span>        maven { url "http://xxx.xxx.xxx.xxx:8081/nexus/content/groups/public" }</span></span>
+<span class="line"><span>        //  // mavenCentral()  //jcenter()</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    dependencies {</span></span>
+<span class="line"><span>        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>apply plugin: 'java'</span></span>
+<span class="line"><span>apply plugin: "spring-boot"</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>jar {</span></span>
+<span class="line"><span>    baseName = 'project'</span></span>
+<span class="line"><span>    version = '1.0-SNAPSHOT'</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>sourceCompatibility = 1.7</span></span>
+<span class="line"><span>targetCompatibility = 1.7</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>repositories {</span></span>
+<span class="line"><span>    mavenCentral()</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>dependencies {</span></span>
+<span class="line"><span>    compile 'org.springframework.boot:spring-boot-starter'</span></span>
+<span class="line"><span>    compile 'org.apache.commons:commons-email:1.4'</span></span>
+<span class="line"><span>    compile files('libs/jxl-2.6.12.jar')</span></span>
+<span class="line"><span>    runtime 'mysql:mysql-connector-java:5.1.36'</span></span>
+<span class="line"><span>    testCompile 'org.springframework.boot:spring-boot-starter-test'</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>test {</span></span>
+<span class="line"><span>    exclude 'com/foo/**'</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>task listJars(description: 'Display all compile jars.') &#x3C;&#x3C; {</span></span>
+<span class="line"><span>    configurations.compile.each { File file -> println file.name }</span></span>
+<span class="line"><span>}</span></span></code></pre>
+<h2 id="多模块项目构建示例">多模块项目构建示例</h2>
+<p>下面是一个基于Spring Boot的多模块项目示例，可以裁剪后直接拿来做为脚手架使用，适合中型项目</p>
+<p><strong>/settings.gradle</strong></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>include 'common'</span></span>
+<span class="line"><span>include 'repository'</span></span>
+<span class="line"><span>include 'restapi'</span></span></code></pre>
+<p><strong>/build.gradle</strong></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>buildscript {</span></span>
+<span class="line"><span>    repositories {</span></span>
+<span class="line"><span>        mavenLocal()</span></span>
+<span class="line"><span>        maven { url "http://xxx.xxx.xxx.xxx:8081/nexus/content/groups/public" }</span></span>
+<span class="line"><span>        //mavenCentral()</span></span>
+<span class="line"><span>        //jcenter()</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>    dependencies {</span></span>
+<span class="line"><span>        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.0.RELEASE")</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>allprojects {</span></span>
+<span class="line"><span>    apply plugin: 'idea'</span></span>
+<span class="line"><span>    apply plugin: 'eclipse'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    group = 'com.foo.bar'</span></span>
+<span class="line"><span>    version = '1.0-SNAPSHOT'</span></span>
+<span class="line"><span>    //archivesBaseName = 'project'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    repositories {</span></span>
+<span class="line"><span>        mavenLocal()</span></span>
+<span class="line"><span>        maven { url "http://xxx.xxx.xxx.xxx:8081/nexus/content/groups/public" }</span></span>
+<span class="line"><span>        //mavenCentral()</span></span>
+<span class="line"><span>        //jcenter()</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>subprojects {</span></span>
+<span class="line"><span>    apply plugin: 'java'</span></span>
+<span class="line"><span>    apply plugin: "spring-boot"</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    sourceCompatibility = 1.8</span></span>
+<span class="line"><span>    targetCompatibility = 1.8</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    dependencies {</span></span>
+<span class="line"><span>        compile 'org.springframework.boot:spring-boot-starter'</span></span>
+<span class="line"><span>        compile 'org.springframework.boot:spring-boot-configuration-processor'</span></span>
+<span class="line"><span>        compile 'org.springframework.boot:spring-boot-devtools'</span></span>
+<span class="line"><span>        testCompile 'org.springframework.boot:spring-boot-starter-test'</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    test {</span></span>
+<span class="line"><span>        exclude 'com/foo/bar/**'</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>    task listJars(description: 'Display all compile jars.') &#x3C;&#x3C; {</span></span>
+<span class="line"><span>        configurations.compile.each { File file -> println file.name }</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>task wrapper(type: Wrapper) {</span></span>
+<span class="line"><span>    gradleVersion = '3.1'</span></span>
+<span class="line"><span>}</span></span></code></pre>
+<p><strong>/common/build.gradle</strong></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>bootRepackage.enabled = false</span></span>
+<span class="line"><span>jar.baseName 'project-common'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>dependencies {</span></span>
+<span class="line"><span>    compile project(':repository')</span></span>
+<span class="line"><span>    compile 'org.springframework.boot:spring-boot-starter-web'</span></span>
+<span class="line"><span>    compile 'commons-lang:commons-lang:2.6'</span></span>
+<span class="line"><span>    compile 'org.apache.httpcomponents:httpclient:4.5.2'</span></span>
+<span class="line"><span>    compile 'org.modelmapper:modelmapper:0.7.5'</span></span>
+<span class="line"><span>}</span></span></code></pre>
+<p><strong>/repository/build.gradle</strong></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>bootRepackage.enabled = false</span></span>
+<span class="line"><span>jar.baseName 'project-repository'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>dependencies {</span></span>
+<span class="line"><span>    //spring boot</span></span>
+<span class="line"><span>    compile ('org.springframework.boot:spring-boot-starter-data-jpa')</span></span>
+<span class="line"><span>    compile 'org.springframework.boot:spring-boot-starter-jdbc'</span></span>
+<span class="line"><span>    //jackson</span></span>
+<span class="line"><span>    compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.1'</span></span>
+<span class="line"><span>    //hibernate validator</span></span>
+<span class="line"><span>    compile 'javax.validation:validation-api:1.1.0.Final'</span></span>
+<span class="line"><span>    compile 'org.hibernate:hibernate-validator:5.2.4.Final'</span></span>
+<span class="line"><span>    compile 'org.hibernate:hibernate-validator-cdi:5.2.4.Final'</span></span>
+<span class="line"><span>    compile 'javax.el:javax.el-api:2.2.4'</span></span>
+<span class="line"><span>    compile 'org.glassfish.web:javax.el:2.2.4'</span></span>
+<span class="line"><span>    //swagger</span></span>
+<span class="line"><span>    compile 'io.springfox:springfox-swagger2:2.6.0'</span></span>
+<span class="line"><span>    compile 'io.springfox:springfox-swagger-ui:2.6.0'</span></span>
+<span class="line"><span>    //jdbc driver</span></span>
+<span class="line"><span>    runtime 'mysql:mysql-connector-java:5.1.36'</span></span>
+<span class="line"><span>    runtime 'com.h2database:h2:1.4.192'</span></span>
+<span class="line"><span>    //test</span></span>
+<span class="line"><span>    testCompile 'org.springframework.security:spring-security-core:4.1.1.RELEASE'</span></span>
+<span class="line"><span>}</span></span></code></pre>
+<p><strong>/restapi/build.gradle</strong></p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>jar.baseName 'project-rest-api'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>dependencies {</span></span>
+<span class="line"><span>    compile project(':repository')</span></span>
+<span class="line"><span>    compile project(':common')</span></span>
+<span class="line"><span>    //spring boot</span></span>
+<span class="line"><span>    compile 'org.springframework.boot:spring-boot-starter-thymeleaf'</span></span>
+<span class="line"><span>    compile 'org.springframework.boot:spring-boot-starter-cache'</span></span>
+<span class="line"><span>    compile 'org.springframework.boot:spring-boot-starter-security'</span></span>
+<span class="line"><span>    compile 'org.springframework.boot:spring-boot-starter-actuator'</span></span>
+<span class="line"><span>    //oauth2</span></span>
+<span class="line"><span>    compile 'org.springframework.security.oauth:spring-security-oauth2:2.0.11.RELEASE'</span></span>
+<span class="line"><span>    //cache</span></span>
+<span class="line"><span>    compile 'net.sf.ehcache:ehcache:2.10.2.2.21'</span></span>
+<span class="line"><span>    //pool</span></span>
+<span class="line"><span>    compile 'com.alibaba:druid:1.0.23'</span></span>
+<span class="line"><span>    compile 'com.zaxxer:HikariCP:2.5.0'</span></span>
+<span class="line"><span>    //swagger-staticdocs</span></span>
+<span class="line"><span>    testCompile 'io.springfox:springfox-staticdocs:2.6.0'</span></span>
+<span class="line"><span>}</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#简介">简介</a></li><li class="depth-2"><a href="#与maven简单对比">与Maven简单对比</a></li><li class="depth-2"><a href="#安装">安装</a></li><li class="depth-2"><a href="#学习资源">学习资源</a></li><li class="depth-2"><a href="#单模块项目构建示例">单模块项目构建示例</a></li><li class="depth-2"><a href="#多模块项目构建示例">多模块项目构建示例</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>

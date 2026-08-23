@@ -1,335 +1,120 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.2">
-
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
-  <link rel="mask-icon" href="/images/logo.svg" color="#222">
-
-<link rel="stylesheet" href="/css/main.css">
-
-
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
-
-<script class="next-config" data-name="main" type="application/json">{"hostname":"www.bluexiii.com","root":"/","images":"/images","scheme":"Mist","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
-
-    <meta name="description" content="参考文档教程 https:&#x2F;&#x2F;shenyu.me&#x2F;2021&#x2F;02&#x2F;26&#x2F;x86-64-install-openwrt.html https:&#x2F;&#x2F;www.openos.org&#x2F;threads&#x2F;openwrt-emmc.3523&#x2F;  LEDE源码 https:&#x2F;&#x2F;github.com&#x2F;coolsnowwolf&#x2F;lede https:&#x2F;&#x2F;shimo.im&#x2F;docs&#x2F;gYjt9QVr8T9Vhv9X?fa">
-<meta property="og:type" content="article">
-<meta property="og:title" content="OpenWRT编译">
-<meta property="og:url" content="https://www.bluexiii.com/202302/OpenWRT%E7%BC%96%E8%AF%91/index.html">
-<meta property="og:site_name" content="BlueXIII&#39;s Blog">
-<meta property="og:description" content="参考文档教程 https:&#x2F;&#x2F;shenyu.me&#x2F;2021&#x2F;02&#x2F;26&#x2F;x86-64-install-openwrt.html https:&#x2F;&#x2F;www.openos.org&#x2F;threads&#x2F;openwrt-emmc.3523&#x2F;  LEDE源码 https:&#x2F;&#x2F;github.com&#x2F;coolsnowwolf&#x2F;lede https:&#x2F;&#x2F;shimo.im&#x2F;docs&#x2F;gYjt9QVr8T9Vhv9X?fa">
-<meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-03-24T01:54:36.000Z">
-<meta property="article:modified_time" content="2023-03-24T01:54:36.000Z">
-<meta property="article:author" content="BlueXIII">
-<meta name="twitter:card" content="summary">
-
-
-<link rel="canonical" href="https://www.bluexiii.com/202302/OpenWRT%E7%BC%96%E8%AF%91/">
-
-
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://www.bluexiii.com/202302/OpenWRT%E7%BC%96%E8%AF%91/","path":"202302/OpenWRT编译/","title":"OpenWRT编译"}</script>
-
-<script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>OpenWRT编译 | BlueXIII's Blog</title>
-  
-
-
-
-
-
-
-
-
-  
-<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
-
-  
-
-
-
-
-
-
-  
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-
-
-
-
-  <noscript>
-    <link rel="stylesheet" href="/css/noscript.css">
-  </noscript>
-</head>
-
-<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
-  <div class="headband"></div>
-
-  <main class="main">
-    <div class="column">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
-  <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Toggle navigation bar" role="button">
-    </div>
-  </div>
-
-  <div class="site-meta">
-
-    <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
-      <p class="site-title">BlueXIII's Blog</p>
-      <i class="logo-line"></i>
-    </a>
-      <p class="site-subtitle" itemprop="description">热爱技术,持续学习</p>
-  </div>
-
-  <div class="site-nav-right">
-    <div class="toggle popup-trigger" aria-label="Search" role="button">
-    </div>
-  </div>
-</div>
-
-
-
-
-
-
-
-</header>
-        
-  
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          Table of Contents
-        </li>
-        <li class="sidebar-nav-overview">
-          Overview
-        </li>
-      </ul>
-
-      <div class="sidebar-panel-container">
-        <!--noindex-->
-        <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="nav-number">1.</span> <span class="nav-text">参考文档</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%99%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">教程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LEDE%E6%BA%90%E7%A0%81"><span class="nav-number">1.2.</span> <span class="nav-text">LEDE源码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#openwrt-cc%E9%A1%B9%E7%9B%AE"><span class="nav-number">1.3.</span> <span class="nav-text">openwrt.cc项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%8C%85"><span class="nav-number">3.</span> <span class="nav-text">常用包</span></a></li></ol></div>
-        </div>
-        <!--/noindex-->
-
-        <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">BlueXIII</p>
-  <div class="site-description" itemprop="description">IT技术类文章、笔记分享</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/archives/">
-          <span class="site-state-item-count">307</span>
-          <span class="site-state-item-name">posts</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-categories">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">categories</span>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">3</span>
-        <span class="site-state-item-name">tags</span>
-      </div>
-  </nav>
-</div>
-  <div class="links-of-author animated">
-      <span class="links-of-author-item">
-        <a href="https://github.com/xiiiblue" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xiiiblue" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
-      </span>
-      <span class="links-of-author-item">
-        <a href="https://twitter.com/bluexiii" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;bluexiii" rel="noopener me" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
-      </span>
-  </div>
-
-        </div>
-      </div>
-    </div>
-
-    
-  </aside>
-
-
-    </div>
-
-    <div class="main-inner post posts-expand">
-
-
-  
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
-    <link itemprop="mainEntityOfPage" href="https://www.bluexiii.com/202302/OpenWRT%E7%BC%96%E8%AF%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="BlueXIII">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="BlueXIII's Blog">
-      <meta itemprop="description" content="IT技术类文章、笔记分享">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="OpenWRT编译 | BlueXIII's Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          OpenWRT编译
-        </h1>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2023-03-24 09:54:36" itemprop="dateCreated datePublished" datetime="2023-03-24T09:54:36+08:00">2023-03-24</time>
-    </span>
-
-  
-    <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv">
-      <span class="post-meta-item-icon">
-        <i class="far fa-eye"></i>
-      </span>
-      <span class="post-meta-item-text">Views: </span>
-      <span id="busuanzi_value_page_pv"></span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><h3 id="教程"><a href="#教程" class="headerlink" title="教程"></a>教程</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://shenyu.me/2021/02/26/x86-64-install-openwrt.html">https://shenyu.me/2021/02/26/x86-64-install-openwrt.html</a></li>
-<li><a target="_blank" rel="noopener" href="https://www.openos.org/threads/openwrt-emmc.3523/">https://www.openos.org/threads/openwrt-emmc.3523/</a></li>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="参考文档 教程 https://shenyu.me/2021/02/26/x86 64 install openwrt.html https://www.openos.org/threads/openwrt emmc.3523/ LEDE源码 https://github.com/coolsnowwolf/l…"><link rel="canonical" href="https://www.bluexiii.com/202302/OpenWRT%E7%BC%96%E8%AF%91/"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="alternate" type="application/rss+xml" title="BlueXIII's Blog" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="OpenWRT编译｜BlueXIII's Blog"><meta property="og:description" content="参考文档 教程 https://shenyu.me/2021/02/26/x86 64 install openwrt.html https://www.openos.org/threads/openwrt emmc.3523/ LEDE源码 https://github.com/coolsnowwolf/l…"><meta property="og:url" content="https://www.bluexiii.com/202302/OpenWRT%E7%BC%96%E8%AF%91/"><meta property="og:site_name" content="BlueXIII's Blog"><meta name="twitter:card" content="summary"><title>OpenWRT编译｜BlueXIII&#39;s Blog</title><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BfCp3YY0.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/rss.xml">RSS</a><a class="social-link" href="https://github.com/xiiiblue" rel="me external">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>OpenWRT编译</h1><div class="article-meta"><time datetime="2023-03-24T01:54:36.000Z">发布于2023-03-24</time></div><div class="badges"><a class="badge" href="/tags/%E7%BD%91%E7%BB%9C/">网络</a></div></header><div class="prose"><h2 id="参考文档">参考文档</h2>
+<h3 id="教程">教程</h3>
+<ul>
+<li><a href="https://shenyu.me/2021/02/26/x86-64-install-openwrt.html">https://shenyu.me/2021/02/26/x86-64-install-openwrt.html</a></li>
+<li><a href="https://www.openos.org/threads/openwrt-emmc.3523/">https://www.openos.org/threads/openwrt-emmc.3523/</a></li>
 </ul>
-<h3 id="LEDE源码"><a href="#LEDE源码" class="headerlink" title="LEDE源码"></a>LEDE源码</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/coolsnowwolf/lede">https://github.com/coolsnowwolf/lede</a></li>
-<li><a target="_blank" rel="noopener" href="https://shimo.im/docs/gYjt9QVr8T9Vhv9X?fallback=1">https://shimo.im/docs/gYjt9QVr8T9Vhv9X?fallback=1</a></li>
+<h3 id="lede源码">LEDE源码</h3>
+<ul>
+<li><a href="https://github.com/coolsnowwolf/lede">https://github.com/coolsnowwolf/lede</a></li>
+<li><a href="https://shimo.im/docs/gYjt9QVr8T9Vhv9X?fallback=1">https://shimo.im/docs/gYjt9QVr8T9Vhv9X?fallback=1</a></li>
 </ul>
-<h3 id="openwrt-cc项目"><a href="#openwrt-cc项目" class="headerlink" title="openwrt.cc项目"></a>openwrt.cc项目</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://openwrt.cc/releases/targets/x86/64/">https://openwrt.cc/releases/targets/x86/64/</a></li>
+<h3 id="openwrtcc项目">openwrt.cc项目</h3>
+<ul>
+<li><a href="https://openwrt.cc/releases/targets/x86/64/">https://openwrt.cc/releases/targets/x86/64/</a></li>
 </ul>
-<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 安装依赖</span></span><br><span class="line"><span class="built_in">sudo</span> apt update -y</span><br><span class="line"><span class="built_in">sudo</span> apt full-upgrade -y</span><br><span class="line"><span class="built_in">sudo</span> apt install -y ack antlr3 aria2 asciidoc autoconf automake autopoint binutils bison build-essential \</span><br><span class="line">bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib \</span><br><span class="line">git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev \</span><br><span class="line">libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz \</span><br><span class="line">mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 python3-pip libpython3-dev qemu-utils \</span><br><span class="line">rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载源代码</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/coolsnowwolf/lede</span><br><span class="line"><span class="built_in">cd</span> lede</span><br><span class="line"></span><br><span class="line"><span class="comment"># 缝合其他插件</span></span><br><span class="line">vi feeds.conf.default</span><br><span class="line">src-git kenzo https://github.com/kenzok8/openwrt-packages</span><br><span class="line">src-git small https://github.com/kenzok8/small</span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置</span></span><br><span class="line">./scripts/feeds update -a</span><br><span class="line">./scripts/feeds install -a</span><br><span class="line">make menuconfig</span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载并编译</span></span><br><span class="line">make download -j8 &amp;&amp; make V=s -j1</span><br><span class="line"></span><br><span class="line"><span class="comment"># 二次编译</span></span><br><span class="line"><span class="built_in">cd</span> lede</span><br><span class="line">git pull</span><br><span class="line">./scripts/feeds update -a</span><br><span class="line">./scripts/feeds install -a</span><br><span class="line">make defconfig</span><br><span class="line">make download -j8</span><br><span class="line">make V=s -j$(<span class="built_in">nproc</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新配置</span></span><br><span class="line"><span class="built_in">rm</span> -rf ./tmp &amp;&amp; <span class="built_in">rm</span> -rf .config</span><br><span class="line">make menuconfig</span><br><span class="line">make V=s -j$(<span class="built_in">nproc</span>)</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="常用包"><a href="#常用包" class="headerlink" title="常用包"></a>常用包</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">passwall ** </span><br><span class="line">全能推送</span><br><span class="line">OpenClash</span><br><span class="line">动态DNS luci-app-ddns</span><br><span class="line">迅雷快鸟 luci-app-xlnetacc</span><br><span class="line">Frpc luci-app-frpc</span><br><span class="line">Frps luci-app-frps</span><br><span class="line">Docker luci-app-dockerman</span><br><span class="line">OpenVPN服务器 luci-app-openvpn-server</span><br><span class="line">静态路由</span><br><span class="line">IP/MAC绑定</span><br><span class="line">Turbo ACC网络加速 luci-app-turboacc</span><br><span class="line">宽带监控</span><br><span class="line">UPnp</span><br><span class="line">ip限速  luci-app-eqos</span><br><span class="line">Qos流量控制 luci-app-sqm</span><br><span class="line">磁盘管理 luci-app-diskman</span><br><span class="line">USB打印机 luci-app-usb-printer</span><br><span class="line">网页命令行 luci-app-ttyd</span><br><span class="line">KMS服务器 luci-app-vlmcsd</span><br><span class="line">流量监控 luci-app-wrtbwmon</span><br><span class="line">释放内存 luci-app-ramfree</span><br><span class="line">负载均衡 luci-app-mwan3</span><br><span class="line">多播 luci-app-syncdial</span><br><span class="line">wireguard luci-app-wireguard</span><br><span class="line">网络唤醒 luci-app-wolplus</span><br><span class="line"></span><br><span class="line">## 虚拟机</span><br><span class="line">qemu-ga</span><br><span class="line">open-vm-tools</span><br><span class="line"></span><br><span class="line"># 其它</span><br><span class="line">luci-app-ddns</span><br><span class="line">luci-app-xlnetacc</span><br><span class="line">luci-app-frpc</span><br><span class="line">luci-app-frps</span><br><span class="line">luci-app-dockerman **</span><br><span class="line">luci-app-openvpn-server</span><br><span class="line">luci-app-turboacc</span><br><span class="line">luci-app-eqos</span><br><span class="line">luci-app-sqm</span><br><span class="line">luci-app-diskman</span><br><span class="line">luci-app-usb-printer</span><br><span class="line">luci-app-ttyd</span><br><span class="line">luci-app-vlmcsd</span><br><span class="line">luci-app-wrtbwmon</span><br><span class="line">luci-app-ramfree</span><br><span class="line">luci-app-mwan3</span><br><span class="line">luci-app-syncdial</span><br><span class="line">luci-app-wireguard</span><br><span class="line">luci-app-wolplus</span><br><span class="line">qemu-ga</span><br><span class="line">open-vm-tools</span><br></pre></td></tr></table></figure>
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-
-        
-
-          <div class="post-nav">
-            <div class="post-nav-item">
-                <a href="/202302/Linux%E8%99%9A%E6%8B%9F%E7%BD%91%E7%BB%9C%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="Linux虚拟网络学习笔记">
-                  <i class="fa fa-angle-left"></i> Linux虚拟网络学习笔记
-                </a>
-            </div>
-            <div class="post-nav-item">
-                <a href="/202303/%E5%B0%8F%E7%B1%B3%E8%B7%AF%E7%94%B1%E5%99%A8R1D%E6%8A%98%E8%85%BE/" rel="next" title="小米路由器R1D折腾">
-                  小米路由器R1D折腾 <i class="fa fa-angle-right"></i>
-                </a>
-            </div>
-          </div>
-    </footer>
-  </article>
-</div>
-
-
-
-
-
-
-</div>
-  </main>
-
-  <footer class="footer">
-    <div class="footer-inner">
-
-  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">鲁ICP备18050487号-1 </a>
-  </div>
-  <div class="copyright">
-    &copy; 
-    <span itemprop="copyrightYear">2026</span>
-    <span class="with-love">
-      <i class="fa fa-heart"></i>
-    </span>
-    <span class="author" itemprop="copyrightHolder">BlueXIII</span>
-  </div>
-<div class="busuanzi-count">
-    <span class="post-meta-item" id="busuanzi_container_site_uv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-user"></i>
-      </span>
-      <span class="site-uv" title="Total Visitors">
-        <span id="busuanzi_value_site_uv"></span>
-      </span>
-    </span>
-    <span class="post-meta-item" id="busuanzi_container_site_pv">
-      <span class="post-meta-item-icon">
-        <i class="fa fa-eye"></i>
-      </span>
-      <span class="site-pv" title="Total Views">
-        <span id="busuanzi_value_site_pv"></span>
-      </span>
-    </span>
-</div>
-  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a>
-  </div>
-
-    </div>
-  </footer>
-
-  
-  <div class="toggle sidebar-toggle" role="button">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
-  <div class="sidebar-dimmer"></div>
-  <div class="back-to-top" role="button" aria-label="Back to top">
-    <i class="fa fa-arrow-up fa-lg"></i>
-    <span>0%</span>
-  </div>
-
-<noscript>
-  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
-
-</body>
-</html>
+<h2 id="过程">过程</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="sh"><code><span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D">## 安装依赖</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> apt</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> update</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -y</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> apt</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> full-upgrade</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -y</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">sudo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> apt</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -y</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ack</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> antlr3</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> aria2</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> asciidoc</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> autoconf</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> automake</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> autopoint</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> binutils</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bison</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> build-essential</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">bzip2 </span><span style="color:#032F62;--shiki-dark:#9ECBFF">ccache</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cmake</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> cpio</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> curl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> device-tree-compiler</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> fastjar</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> flex</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gawk</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gettext</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> gcc-multilib</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> g++-multilib</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">git </span><span style="color:#032F62;--shiki-dark:#9ECBFF">gperf</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> haveged</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> help2man</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> intltool</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libc6-dev-i386</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libelf-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libglib2.0-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libgmp3-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libltdl-dev</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">libmpc-dev </span><span style="color:#032F62;--shiki-dark:#9ECBFF">libmpfr-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libncurses5-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libncursesw5-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libreadline-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libssl-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libtool</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> lrzsz</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">mkisofs </span><span style="color:#032F62;--shiki-dark:#9ECBFF">msmtp</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> nano</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ninja-build</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> p7zip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> p7zip-full</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> patch</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pkgconf</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> python2.7</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> python3</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> python3-pip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> libpython3-dev</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> qemu-utils</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">rsync </span><span style="color:#032F62;--shiki-dark:#9ECBFF">scons</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> squashfs-tools</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> subversion</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> swig</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> texinfo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> uglifyjs</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> upx-ucl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> unzip</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> vim</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> wget</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> xmlto</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> xxd</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> zlib1g-dev</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 下载源代码</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> clone</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://github.com/coolsnowwolf/lede</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">cd</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> lede</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 缝合其他插件</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">vi</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> feeds.conf.default</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">src-git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> kenzo</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://github.com/kenzok8/openwrt-packages</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">src-git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> small</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> https://github.com/kenzok8/small</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 配置</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./scripts/feeds</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> update</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./scripts/feeds</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> menuconfig</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 下载并编译</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> download</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j8</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;&#x26; </span><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> V=s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j1</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 二次编译</span></span>
+<span class="line"><span style="color:#005CC5;--shiki-dark:#79B8FF">cd</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> lede</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">git</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> pull</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./scripts/feeds</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> update</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">./scripts/feeds</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> install</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -a</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> defconfig</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> download</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j8</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> V=s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j$(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">nproc</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#6A737D;--shiki-dark:#6A737D"># 重新配置</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">rm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -rf</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ./tmp</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> &#x26;&#x26; </span><span style="color:#6F42C1;--shiki-dark:#B392F0">rm</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -rf</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> .config</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> menuconfig</span></span>
+<span class="line"><span style="color:#6F42C1;--shiki-dark:#B392F0">make</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> V=s</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -j$(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">nproc</span><span style="color:#005CC5;--shiki-dark:#79B8FF">)</span></span></code></pre>
+<h2 id="常用包">常用包</h2>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="plaintext"><code><span class="line"><span>passwall ** </span></span>
+<span class="line"><span>全能推送</span></span>
+<span class="line"><span>OpenClash</span></span>
+<span class="line"><span>动态DNS luci-app-ddns</span></span>
+<span class="line"><span>迅雷快鸟 luci-app-xlnetacc</span></span>
+<span class="line"><span>Frpc luci-app-frpc</span></span>
+<span class="line"><span>Frps luci-app-frps</span></span>
+<span class="line"><span>Docker luci-app-dockerman</span></span>
+<span class="line"><span>OpenVPN服务器 luci-app-openvpn-server</span></span>
+<span class="line"><span>静态路由</span></span>
+<span class="line"><span>IP/MAC绑定</span></span>
+<span class="line"><span>Turbo ACC网络加速 luci-app-turboacc</span></span>
+<span class="line"><span>宽带监控</span></span>
+<span class="line"><span>UPnp</span></span>
+<span class="line"><span>ip限速  luci-app-eqos</span></span>
+<span class="line"><span>Qos流量控制 luci-app-sqm</span></span>
+<span class="line"><span>磁盘管理 luci-app-diskman</span></span>
+<span class="line"><span>USB打印机 luci-app-usb-printer</span></span>
+<span class="line"><span>网页命令行 luci-app-ttyd</span></span>
+<span class="line"><span>KMS服务器 luci-app-vlmcsd</span></span>
+<span class="line"><span>流量监控 luci-app-wrtbwmon</span></span>
+<span class="line"><span>释放内存 luci-app-ramfree</span></span>
+<span class="line"><span>负载均衡 luci-app-mwan3</span></span>
+<span class="line"><span>多播 luci-app-syncdial</span></span>
+<span class="line"><span>wireguard luci-app-wireguard</span></span>
+<span class="line"><span>网络唤醒 luci-app-wolplus</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>## 虚拟机</span></span>
+<span class="line"><span>qemu-ga</span></span>
+<span class="line"><span>open-vm-tools</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span># 其它</span></span>
+<span class="line"><span>luci-app-ddns</span></span>
+<span class="line"><span>luci-app-xlnetacc</span></span>
+<span class="line"><span>luci-app-frpc</span></span>
+<span class="line"><span>luci-app-frps</span></span>
+<span class="line"><span>luci-app-dockerman **</span></span>
+<span class="line"><span>luci-app-openvpn-server</span></span>
+<span class="line"><span>luci-app-turboacc</span></span>
+<span class="line"><span>luci-app-eqos</span></span>
+<span class="line"><span>luci-app-sqm</span></span>
+<span class="line"><span>luci-app-diskman</span></span>
+<span class="line"><span>luci-app-usb-printer</span></span>
+<span class="line"><span>luci-app-ttyd</span></span>
+<span class="line"><span>luci-app-vlmcsd</span></span>
+<span class="line"><span>luci-app-wrtbwmon</span></span>
+<span class="line"><span>luci-app-ramfree</span></span>
+<span class="line"><span>luci-app-mwan3</span></span>
+<span class="line"><span>luci-app-syncdial</span></span>
+<span class="line"><span>luci-app-wireguard</span></span>
+<span class="line"><span>luci-app-wolplus</span></span>
+<span class="line"><span>qemu-ga</span></span>
+<span class="line"><span>open-vm-tools</span></span></code></pre></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#参考文档">参考文档</a></li><li class="depth-3"><a href="#教程">教程</a></li><li class="depth-3"><a href="#lede源码">LEDE源码</a></li><li class="depth-3"><a href="#openwrtcc项目">openwrt.cc项目</a></li><li class="depth-2"><a href="#过程">过程</a></li><li class="depth-2"><a href="#常用包">常用包</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p>© 2026 BlueXIII · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script></body></html>
