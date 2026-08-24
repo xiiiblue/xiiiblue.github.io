@@ -1,437 +1,76 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="让ChatGPT和Codex接力开发，最初不是为了设计一套新研发流程，而是Codex额度不够用。需求分析、阅读源码、修改代码、运行测试和处理环境问题全部放在本机Codex里，额度很快就会用完；此时普通ChatGPT对话仍然可用，只用来做零散问答又浪费了它的长上下文和GitHub连接能力。于是才有了这种做法：把…"><link rel="canonical" href="https://www.bluexiii.com/202608/%E7%94%A8GitHub%E8%AE%A9ChatGPT%E4%B8%8ECodex%E6%8E%A5%E5%8A%9B%E5%BC%80%E5%8F%91/"><link rel="icon" type="image/jpeg" href="/avatar.jpg"><link rel="apple-touch-icon" href="/avatar.jpg"><link rel="alternate" type="application/rss+xml" title="BlueXIII Lab" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="用GitHub让ChatGPT与Codex接力开发｜BlueXIII Lab"><meta property="og:description" content="让ChatGPT和Codex接力开发，最初不是为了设计一套新研发流程，而是Codex额度不够用。需求分析、阅读源码、修改代码、运行测试和处理环境问题全部放在本机Codex里，额度很快就会用完；此时普通ChatGPT对话仍然可用，只用来做零散问答又浪费了它的长上下文和GitHub连接能力。于是才有了这种做法：把…"><meta property="og:url" content="https://www.bluexiii.com/202608/%E7%94%A8GitHub%E8%AE%A9ChatGPT%E4%B8%8ECodex%E6%8E%A5%E5%8A%9B%E5%BC%80%E5%8F%91/"><meta property="og:site_name" content="BlueXIII Lab"><meta name="twitter:card" content="summary"><title>用GitHub让ChatGPT与Codex接力开发｜BlueXIII Lab</title><script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="最初想到让ChatGPT和Codex接力开发，原因其实很简单：Codex额度不够用。平时从需求分析、阅读源码到修改代码、运行测试，所有工作都放在本机Codex里，很快就会碰到额度限制。与此同时，ChatGPT的普通对话额度还有很多，只拿来问些零散问题实在有些浪费。 ChatGPT接入GitHub以后，事情就有…"><link rel="canonical" href="https://www.bluexiii.com/202608/%E7%94%A8GitHub%E8%AE%A9ChatGPT%E4%B8%8ECodex%E6%8E%A5%E5%8A%9B%E5%BC%80%E5%8F%91/"><link rel="icon" type="image/jpeg" href="/avatar.jpg"><link rel="apple-touch-icon" href="/avatar.jpg"><link rel="alternate" type="application/rss+xml" title="BlueXIII Lab" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="用GitHub让ChatGPT与Codex接力开发｜BlueXIII Lab"><meta property="og:description" content="最初想到让ChatGPT和Codex接力开发，原因其实很简单：Codex额度不够用。平时从需求分析、阅读源码到修改代码、运行测试，所有工作都放在本机Codex里，很快就会碰到额度限制。与此同时，ChatGPT的普通对话额度还有很多，只拿来问些零散问题实在有些浪费。 ChatGPT接入GitHub以后，事情就有…"><meta property="og:url" content="https://www.bluexiii.com/202608/%E7%94%A8GitHub%E8%AE%A9ChatGPT%E4%B8%8ECodex%E6%8E%A5%E5%8A%9B%E5%BC%80%E5%8F%91/"><meta property="og:site_name" content="BlueXIII Lab"><meta name="twitter:card" content="summary"><title>用GitHub让ChatGPT与Codex接力开发｜BlueXIII Lab</title><script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script>
       const stored = localStorage.getItem('theme');
       const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
       if (dark) document.documentElement.dataset.theme = 'dark';
-    </script><link rel="stylesheet" href="/_astro/BaseLayout.BhmeYUm6.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII Lab</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/projects/">项目</a><a href="/rss.xml" target="_blank" rel="noopener">RSS</a><a class="social-link" href="https://github.com/xiiiblue" target="_blank" rel="me external noopener">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>用GitHub让ChatGPT与Codex接力开发</h1><div class="article-meta"><time datetime="2026-08-22T09:31:10.000Z">发布于2026-08-22</time><time datetime="2026-08-24T02:32:12.000Z">更新于2026-08-24</time><span id="busuanzi_container_page_pv" class="post-counter">阅读 <strong id="busuanzi_value_page_pv"></strong></span><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ChatGPT/">ChatGPT</a><a class="badge" href="/tags/Codex/">Codex</a><a class="badge" href="/tags/GitHub/">GitHub</a></div></header><div class="prose"><p>让ChatGPT和Codex接力开发，最初不是为了设计一套新研发流程，而是Codex额度不够用。需求分析、阅读源码、修改代码、运行测试和处理环境问题全部放在本机Codex里，额度很快就会用完；此时普通ChatGPT对话仍然可用，只用来做零散问答又浪费了它的长上下文和GitHub连接能力。于是才有了这种做法：把不依赖本地环境的工作交给ChatGPT，尽量把Codex额度留给必须在本机完成的部分。</p>
-<p>这里的“ChatGPT额度”指普通对话用量。OpenAI当前将Codex、ChatGPT Work等Agent功能纳入共享的Agent用量池，普通ChatGPT对话则不计入这个用量池，因此不能笼统地说ChatGPT与Codex的所有额度完全独立。产品规则可能继续调整，实际可用额度仍以当时的账户用量页为准。</p>
-<p>额度是出发点，两种工具的能力差异则让接力开发变得可行。Codex能直接看到本机工作树、依赖、数据库、容器和未提交差异，可以反复执行“修改—测试—诊断—再修改”；ChatGPT通过GitHub读取项目后，更适合长时间讨论需求、比较方案和做独立审阅。比较自然的分工是：ChatGPT在上游定义问题、在下游检查结果，Codex完成中间那段需要本地反馈的工作。两者可以处理同一项任务，但不应该同时修改同一个工作区。</p>
-<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>ChatGPT：定义问题、形成需求、设计方案、独立审阅</span></span>
-<span class="line"><span>Codex：本地实施、测试迭代、环境操作、修复审阅问题</span></span>
-<span class="line"><span>负责人：确认产品取舍、接受风险、合并、发布</span></span>
-<span class="line"><span></span></span>
-<span class="line"><span>GitHub：保存分支、提交、PR、Issue和交接记录</span></span>
-<span class="line"><span>仓库文档：保存正式需求、设计、实施和版本事实</span></span></code></pre>
-<h2 id="chatgpt不是一台完整的云端开发机">ChatGPT不是一台完整的云端开发机</h2>
-<p>网页版ChatGPT可以执行Bash、Python和Node.js，但它提供的是临时隔离沙箱，不是一台可以长期保留状态的云主机。2026年8月对当时会话环境的实际检查结果是：</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>项目</th><th>实测结果</th></tr></thead><tbody><tr><td>CPU</td><td>可在5个逻辑CPU上调度，cgroup计算配额相当于4核</td></tr><tr><td>内存</td><td>cgroup硬限制4GiB，没有可见Swap</td></tr><tr><td>磁盘</td><td>64GB虚拟磁盘，当时约剩38GB</td></tr><tr><td>GPU</td><td>没有暴露GPU</td></tr><tr><td>公网</td><td>沙箱内无法解析GitHub和OpenAI域名，直连公网IP也失败</td></tr><tr><td>持久性</td><td>间隔一段时间后容器主机名发生变化，不能假定文件和依赖会长期保留</td></tr></tbody></table>
-<p>这些是对特定时间、特定会话的实测，不是OpenAI承诺的固定规格。它足以说明一个问题：这个沙箱可以处理文件和运行小型脚本，但不适合依赖大量内存、下载依赖、运行容器、连接数据库或保留长期工作树的实施任务。</p>
-<p>ChatGPT能访问私有仓库，依靠的是已授权的GitHub连接器，不是沙箱获得了一条通用网络出口。连接器可以读取文件、搜索代码、查看分支与PR，也可以在权限允许时修改远端内容，但它的凭据不会直接交给Bash。这次实测中，沙箱无法直接<code>git clone</code>私有仓库，只能通过GitHub连接器有限地读写远端仓库。这与本机Codex拥有完整<code>.git</code>、未提交差异和本地依赖是两种完全不同的开发条件。</p>
-<h2 id="pro模型的价值不在虚拟机配置">Pro模型的价值不在虚拟机配置</h2>
-<p>ChatGPT的优势不是运行环境，而是Pro档模型本身的推理能力。在这段时间的实际使用中，ChatGPT里的Pro档在处理长需求、跨文档设计、方案取舍和独立审阅时，表现比Codex里的Max档还要强。它更容易长时间保持问题主线，在多份REQ、设计、ADR和源码之间发现不一致，也更适合在实施前继续追问“为什么要这样改”。</p>
-<p>这是基于实际研发任务得到的使用判断，不是一项可以复现的模型基准测试。Pro与Max还位于不同产品界面，拥有不同的工具、上下文和执行环境，不能只把最终结果当成纯模型对比。OpenAI当前将<a href="https://learn.chatgpt.com/docs/models#recommended-models">GPT-5.6 Sol</a>定位为该家族的旗舰模型，主要面向复杂编码、计算机操作、研究和网络安全任务。这种长程推理能力与GitHub中已有的正式文档和固定提交结合起来，正好可以承担Codex最消耗额度、却不需要本地环境的那部分工作。</p>
-<p>模型能力当然重要，但在研发流程中，能不能访问真实环境同样重要。ChatGPT可以读懂一段迁移代码，却不能因此宣布数据库迁移已经成功；Codex可以在本机把测试跑通，也不代表它在经历完整个实现过程后仍能像陌生审阅者一样发现设计盲点。把这两种能力串起来，比让它们重复做同一件事更合适。</p>
-<h2 id="不需要再发明一套chatgpt流程">不需要再发明一套ChatGPT流程</h2>
-<p>如果仓库已经有需求、设计、实施和审阅记录，没有必要增加“ChatGPT任务”“Codex任务”之类的新流程对象。无论由谁完成，工作性质并没有改变：</p>
-<ul>
-<li>ChatGPT修改需求、设计、测试或代码，仍然是一轮正常的实施工作；</li>
-<li>ChatGPT针对固定提交做正式独立审阅，仍然是一轮工程审阅；</li>
-<li>负责人在真实界面和环境中使用产品，仍然属于真实使用验证，ChatGPT不能代替；</li>
-<li>普通PR里的一条Review意见，不需要为了显得正式而单独建立审阅流程；</li>
-<li>对话中确认的需求和设计，最后仍要写回REQ、设计文档或ADR，不能只留在聊天记录里。</li>
-</ul>
-<p>Agent只是当前工作的执行者。流程如果绑定了某个模型名称，换工具以后就要重写；把规则落在分支、提交、验证证据和正式文档上，即使以后换成其他Agent，也不影响协作方式。</p>
-<h2 id="github只是协作枢纽">GitHub只是协作枢纽</h2>
-<p>引入ChatGPT以后，很容易把Issue和PR当成新的事实源，最终形成两套互相矛盾的记录。正式事实仍应保存在仓库里，GitHub负责讨论、交接和合入。</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>对象</th><th>保存的内容</th></tr></thead><tbody><tr><td>REQ</td><td>为什么改变产品，希望得到什么结果</td></tr><tr><td>系统设计、能力设计和ADR</td><td>系统应该怎样工作，为什么作出这个选择</td></tr><tr><td>实施、使用和审阅记录</td><td>实际做过什么，得到什么结果</td></tr><tr><td>GitHub Issue</td><td>外部反馈、待办、讨论和跨会话提醒</td></tr><tr><td>GitHub PR</td><td>一组具体差异的讨论、审阅和合入过程</td></tr><tr><td>Git分支</td><td>一项工作的临时候选</td></tr><tr><td>Commit SHA</td><td>某次交接或审阅面对的准确版本</td></tr><tr><td>Git标签</td><td>已经冻结的正式版本</td></tr></tbody></table>
-<p>这种分层也不依赖GitHub。以后换成GitLab、Forgejo甚至只使用本地Git，REQ、设计和Commit SHA仍然成立，变化的只是协作界面。</p>
-<p>ChatGPT连接GitHub的具体能力可能随使用的App、插件和权限配置而不同，因此流程不能假定它一定能直接写仓库。连接具备写操作时，ChatGPT可以建立分支、提交候选和更新PR；只有读取能力时，它给出设计或Review结果，再由Codex写回仓库。无论使用哪种连接方式，交接对象都应该是正式文档、PR和固定SHA。</p>
-<h2 id="用两类pr把定义和实现分开">用两类PR把定义和实现分开</h2>
-<p>所有修改都塞进一个PR看起来省事，实际会让需求、设计和代码同时变化。ChatGPT审阅实现时，找不到已经确认的设计基线；Codex写到一半，也不知道对话里的新想法是不是正式范围。</p>
-<p>PR可以区分为Definition PR和Implementation PR。这里的名称只是说明用途，不需要增加复杂的GitHub类型或自动化。</p>
-<h3 id="definition-pr先确认改成什么样">Definition PR：先确认改成什么样</h3>
-<p>产品行为、业务规则、接口含义、权限、安全、数据或交付范围发生变化时，先准备Definition PR：</p>
-<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>原始想法</span></span>
-<span class="line"><span>  → 负责人和ChatGPT讨论范围</span></span>
-<span class="line"><span>  → ChatGPT检查已有REQ、设计、源码和历史决定</span></span>
-<span class="line"><span>  → 建立或修改REQ</span></span>
-<span class="line"><span>  → 修改受影响的系统设计和能力设计</span></span>
-<span class="line"><span>  → 必要时准备ADR</span></span>
-<span class="line"><span>  → 在Draft PR中讨论阻塞问题</span></span>
-<span class="line"><span>  → 负责人确认</span></span>
-<span class="line"><span>  → 合入主分支</span></span></code></pre>
-<p>通常可以把REQ和受影响的设计放进同一个Definition PR，不必为了流程机械拆分。只有改动很大、横跨多个领域，或者必须先单独确定产品方向时，才把需求和设计分成两个PR。</p>
-<p>未确认的设计不要和实现混在一起。Definition PR合入以后，Codex面对的是主分支上已经接受的设计，不需要从聊天记录中猜测哪个版本才算最终决定；ChatGPT后续审阅代码时，也有稳定的比较对象。</p>
-<h3 id="implementation-pr实现已经确认的设计">Implementation PR：实现已经确认的设计</h3>
-<p>Definition PR合入以后，Codex从新的主分支建立任务分支和本机worktree：</p>
-<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>已经接受的REQ和设计</span></span>
-<span class="line"><span>  → Codex建立任务分支与worktree</span></span>
-<span class="line"><span>  → 实现代码和测试</span></span>
-<span class="line"><span>  → 运行针对性检查</span></span>
-<span class="line"><span>  → 运行仓库规定的完整验证</span></span>
-<span class="line"><span>  → 推送分支并更新Draft PR</span></span>
-<span class="line"><span>  → 固定HEAD SHA</span></span>
-<span class="line"><span>  → 交给ChatGPT审阅</span></span></code></pre>
-<p>ChatGPT在Implementation PR里不必重新设计整个功能，主要检查这些问题：</p>
-<ul>
-<li>实现是否符合REQ和已经接受的设计；</li>
-<li>修改是否悄悄扩大了需求范围；</li>
-<li>失败场景、权限边界和恢复行为是否遗漏；</li>
-<li>测试有没有覆盖真正的风险；</li>
-<li>代码、实施记录和验证证据能否互相对应；</li>
-<li>是否为了一个局部需求引入了不必要的复杂结构。</li>
-</ul>
-<p>发现阻塞问题后，由Codex在本机修复并重新验证。负责人看到的不是一段“应该没问题”的回答，而是固定候选、Review意见和对应的验证结果。</p>
-<h2 id="不同工作交给谁">不同工作交给谁</h2>
-<p>ChatGPT并非不适合修改代码，真正缺少的通常是完整的本地反馈循环。它可以写出第一版代码，但数据库、并发、容器和部署类修改仍要在真实工作树中收口。</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>工作类型</th><th>默认主导者</th><th>处理方式</th></tr></thead><tbody><tr><td>原始需求讨论、范围收敛</td><td>ChatGPT</td><td>对话分析后形成REQ候选</td></tr><tr><td>产品设计、架构设计、ADR</td><td>ChatGPT</td><td>通过Definition PR确认</td></tr><tr><td>文档Review和重写</td><td>ChatGPT</td><td>修改候选或给出明确差异</td></tr><tr><td>小范围纯逻辑修改</td><td>ChatGPT或Codex</td><td>ChatGPT可以准备第一版，Codex本机验证</td></tr><tr><td>中等规模代码修改</td><td>Codex</td><td>ChatGPT先明确设计和实施边界</td></tr><tr><td>数据库、并发、事务和Runtime</td><td>Codex</td><td>本机实现，ChatGPT针对固定SHA审阅</td></tr><tr><td>Docker、部署、环境和Secret</td><td>Codex</td><td>ChatGPT分析方案，不替代环境操作</td></tr><tr><td>测试方案和遗漏分析</td><td>ChatGPT</td><td>Codex补充测试并实际运行</td></tr><tr><td>自动化验证</td><td>Codex</td><td>在本机或受控开发机执行</td></tr><tr><td>真实界面使用</td><td>负责人</td><td>记录真实使用中发现的问题</td></tr><tr><td>正式工程审阅</td><td>新的ChatGPT会话</td><td>固定提交，独立阅读</td></tr><tr><td>合并、标签和正式发布</td><td>负责人</td><td>Agent准备候选和证据</td></tr></tbody></table>
-<p>这张表不是硬性权限表。一个很小的文案错误没必要先开Definition PR，一个已经确定行为的局部修复也可以直接交给Codex。判断依据仍然是改动有没有改变正式设计，以及验证是否依赖本地环境。</p>
-<h2 id="一个分支同时只能有一个写入者">一个分支同时只能有一个写入者</h2>
-<p>ChatGPT和Codex可以共同处理同一项工作，但只能串行接棒，不能同时写同一个分支。否则很容易出现远端分支已经变化、本机仍然基于旧提交修改，或者一方为了整理提交而覆盖另一方历史的情况。</p>
-<p>协作时遵守这些规则：</p>
-<ol>
-<li>一项任务只保留一个主要分支。</li>
-<li>一个分支在任一时刻只有一个当前写入者。</li>
-<li>交接前，当前写入者提交并推送全部候选变化。</li>
-<li>交接记录写出完整HEAD SHA，不使用含糊的“最新提交”。</li>
-<li>接棒者开始前确认远端HEAD仍然等于交接SHA。</li>
-<li>共享分支不做force push，交接后不重写历史。</li>
-<li>试错提交需要整理时，在最终合入主分支时squash。</li>
-<li>两个Agent要尝试不同方案时，分别建立分支或PR，不在同一个分支里互相覆盖。</li>
-</ol>
-<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>一项任务</span></span>
-<span class="line"><span>  → 一轮实施工作</span></span>
-<span class="line"><span>    → 一个短期分支</span></span>
-<span class="line"><span>      → 一个隔离工作空间</span></span>
-<span class="line"><span>        → 一个当前写入者</span></span></code></pre>
-<p>对Codex来说，隔离工作空间通常是本机worktree；对通过GitHub工作的ChatGPT来说，隔离空间是远端分支和Draft PR。同一项任务可以在不同阶段更换写入者，换人之前必须先形成可以准确定位的提交。</p>
-<p>worktree只隔离代码目录，并不会自动隔离数据库、容器、端口、缓存和凭据。多个本机Agent并行工作时，这些资源仍要单独分配。相关约束在<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/">让多个Agent在不同worktree工作</a>中有更完整的记录。</p>
-<h2 id="尽早建立draft-pr">尽早建立Draft PR</h2>
-<p>ChatGPT和Codex共同参与的任务，可以在工作稳定之前就建立Draft PR。它不是“准备合并”的信号，而是两边共同使用的交接面。</p>
-<p>PR正文顶部只保留当前状态：</p>
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BhmeYUm6.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII Lab</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/projects/">项目</a><a href="/rss.xml" target="_blank" rel="noopener">RSS</a><a class="social-link" href="https://github.com/xiiiblue" target="_blank" rel="me external noopener">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>用GitHub让ChatGPT与Codex接力开发</h1><div class="article-meta"><time datetime="2026-08-22T09:31:10.000Z">发布于2026-08-22</time><time datetime="2026-08-24T06:18:27.000Z">更新于2026-08-24</time><span id="busuanzi_container_page_pv" class="post-counter">阅读 <strong id="busuanzi_value_page_pv"></strong></span><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ChatGPT/">ChatGPT</a><a class="badge" href="/tags/Codex/">Codex</a><a class="badge" href="/tags/GitHub/">GitHub</a></div></header><div class="prose"><p>最初想到让ChatGPT和Codex接力开发，原因其实很简单：Codex额度不够用。平时从需求分析、阅读源码到修改代码、运行测试，所有工作都放在本机Codex里，很快就会碰到额度限制。与此同时，ChatGPT的普通对话额度还有很多，只拿来问些零散问题实在有些浪费。</p>
+<p>ChatGPT接入GitHub以后，事情就有了变化。它虽然不能像本机Codex那样直接进入完整工作树，操作数据库、容器和真实环境，却可以读取仓库里的源码和文档，也能处理分支、提交、PR和Issue。这样一来，需求讨论、方案设计和代码Review可以先交给ChatGPT，真正依赖本地环境的实现与验证再由Codex完成。</p>
+<p>这不只是把剩余的ChatGPT额度利用起来。实际使用中，ChatGPT里的Pro模型在长需求分析、跨文档设计和独立审阅方面表现很强，很多时候甚至比Codex里的Max更好。Codex的优势则是身处本机，能够不断重复“修改—测试—诊断—再修改”。一个更擅长把问题想清楚，一个更擅长在真实环境里把事情做完，GitHub正好可以成为两者之间的交接点。</p>
+<p>OpenAI的产品和额度规则仍在变化。按当前规则，Codex与ChatGPT Work等Agent功能共用Agent额度，普通ChatGPT对话则不计入这个用量池。这里说的“利用ChatGPT额度”，指的就是这部分普通对话能力。</p>
+<h2 id="chatgpt的沙箱不是开发机">ChatGPT的沙箱不是开发机</h2>
+<p>ChatGPT网页版有一个能够运行Bash、Python和Node.js的Linux沙箱。刚发现它时，我曾经想过是否可以直接在里面克隆私有仓库，把ChatGPT当成另一台云端开发机。实际检查后，这条路并不可行。</p>
+<p>2026年8月检查到的那个沙箱可以在5个逻辑CPU上调度，但cgroup计算配额只相当于4核；内存硬限制是4GiB，没有可见Swap，也没有GPU。运行小型脚本没有问题，想在里面安装一大堆依赖、编译大型项目或运行多个容器，4GiB内存很快就会成为限制。</p>
+<p>更大的问题是网络和持久性。当时在沙箱中访问<code>github.com</code>、<code>api.github.com</code>和OpenAI域名都无法解析，直接连接公网IP也失败。间隔一段时间再检查，容器主机名已经发生变化。这意味着沙箱里的文件、依赖和运行状态都不值得长期依赖。</p>
+<p>ChatGPT之所以仍然能读写私有仓库，靠的是GitHub连接器的独立授权，不是这个Linux沙箱可以自由上网。连接器能够读取文件、搜索代码、查看分支和PR，在授权允许时也能修改文件和创建提交。但是它不会把GitHub凭据交给沙箱，所以沙箱不能直接<code>git clone</code>私有仓库，也没有本机Codex那样完整的<code>.git</code>、未提交差异和本地依赖。</p>
+<p>这些配置和网络结果只是对当时会话的实测，不代表ChatGPT永远会提供相同规格。但对开发流程来说，结论已经足够明确：ChatGPT可以做远程分析和有限的仓库操作，不能代替本机Codex的完整开发反馈循环。</p>
+<h2 id="pro强在把问题想清楚">Pro强在把问题想清楚</h2>
+<p>如果只看运行环境，ChatGPT明显落后于本机Codex。但开发不只是改代码和跑测试，还有大量工作发生在动手之前和完成之后。</p>
+<p>我在这段时间的使用感受是，ChatGPT里的Pro比Codex里的Max更强。这不是跑分结论，而是来自真实需求和设计任务的对比。面对几份相互关联的REQ、设计文档、ADR和源码时，Pro更容易保持主线，也更容易发现文档之间的冲突、隐藏前提和过度设计。</p>
+<p>这种优势很适合放在需求和设计阶段。一个模糊想法交给Codex，它很可能会快速读完源码并开始实现；交给ChatGPT Pro长时间讨论，它往往会继续追问这个需求解决什么问题、哪些行为真正需要改变、哪些只是实现者自己补出来的复杂度。</p>
+<p>实现完成后，它又很适合以一个新会话重新阅读已经确认的需求、设计和固定提交。Codex经历了完整实现过程，会自然带着之前的判断；ChatGPT从陌生审阅者的视角进入，更容易看到权限、事务、并发、迁移和恢复等边界上的遗漏。</p>
+<p>OpenAI当前也将<a href="https://learn.chatgpt.com/docs/models#recommended-models">GPT-5.6 Sol</a>定位为面向复杂编码、研究和计算机操作的旗舰模型。不过Pro和Max所在的产品界面、可用工具和上下文都不同，我不打算把这个使用感受写成严格的模型强弱结论。对现在的工作流程来说，知道它在哪些任务上更好用就足够了。</p>
+<h2 id="不用再发明一套chatgpt流程">不用再发明一套ChatGPT流程</h2>
+<p>既然项目里已经有需求、设计、实施和审阅记录，就没有必要再增加“ChatGPT任务”和“Codex任务”。Agent只是当前的执行者，需求还是需求，Review还是Review，不会因为换了一个模型就变成新的工作类型。</p>
+<p>我对两者的默认分工是：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>ChatGPT：讨论原始想法、收敛需求、设计方案、独立Review</span></span>
+<span class="line"><span>Codex：在本机worktree实现、运行测试、处理数据库和容器、修复Review问题</span></span>
+<span class="line"><span>负责人：确认产品取舍、接受风险、合并和发布</span></span></code></pre>
+<p>这不是硬性权限表。一个小范围的纯逻辑修改，ChatGPT完全可以先写出候选；一个已经确定行为的局部修复，也没必要先开一轮长时间设计。关键只有两个：这件事是否需要本地反馈，以及当前哪个Agent正在写这个分支。</p>
+<h2 id="github负责交接仓库保存结论">GitHub负责交接，仓库保存结论</h2>
+<p>ChatGPT和Codex没有共享同一段对话，也没有共享同一个运行环境。要让它们接力，交接内容就不能只写“我已经改完了，你接着做”。</p>
+<p>GitHub在这套方式里负责保存分支、提交、PR和讨论，仓库内的REQ、设计、ADR和实施记录仍然是正式事实。这样即使以后从GitHub换到GitLab或Forgejo，也不会丢掉项目真正的上下文。</p>
+<p>一项比较大的功能，可以分成两个PR。</p>
+<p>Definition PR先确认要改成什么样。ChatGPT与负责人讨论需求，阅读已有设计和源码，然后把结论写回REQ、设计或ADR。这个PR合入主分支后，对话里哪个方案才是最终结论就不再需要猜。</p>
+<p>Implementation PR再实现已经确认的设计。Codex从新的主分支建立任务分支和worktree，修改代码，运行测试，把本机验证结果写进PR。等候选固定下来，再把完整HEAD SHA交给新的ChatGPT会话Review。</p>
+<p>小修改不用机械地拆成两个PR。只有产品行为、业务规则、接口含义、权限、安全或数据设计真正发生变化时，才需要先把定义和实现分开。</p>
+<h2 id="一个分支同时只有一个写入者">一个分支同时只有一个写入者</h2>
+<p>ChatGPT和Codex可以处理同一项任务，但不能同时写同一个分支。最容易出问题的情况是ChatGPT已经在远程提交了新修改，本机Codex却还在基于旧提交继续工作。等到两边同时推送，要么产生冲突，要么有人为了整理历史而覆盖另一边的结果。</p>
+<p>我现在使用的规则很简单：</p>
+<p>1.交接前先提交并推送全部候选修改。
+2.在PR里写出完整HEAD SHA，不说含糊的“最新提交”。
+3.接棒者开始前先确认远程HEAD仍然等于交接SHA。
+4.交接后不在共享分支上force push，也不改写已经交接的历史。
+5.如果两个Agent要尝试不同方案，就分别建立分支，不在同一个分支上互相覆盖。</p>
+<p>对Codex来说，隔离空间通常是本机worktree；对通过GitHub工作的ChatGPT来说，隔离空间是远程分支和Draft PR。worktree只隔离代码目录，不会自动隔离数据库、容器、端口和缓存。多个本机Agent并行工作时，这些资源仍然要另外分配。这部分在<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B08-%E8%AE%A9%E5%A4%9A%E4%B8%AAAgent%E5%9C%A8%E4%B8%8D%E5%90%8Cworktree%E5%B7%A5%E4%BD%9C/">让多个Agent在不同worktree工作</a>里有更完整的记录。</p>
+<h2 id="用draft-pr作为交接面">用Draft PR作为交接面</h2>
+<p>一项需要ChatGPT和Codex共同参与的工作，可以尽早建立Draft PR。它不是“马上准备合并”的信号，而是两边都能读到的交接面。</p>
+<p>PR顶部只需要保留几个当前状态：</p>
 <pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="markdown"><code><span class="line"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## 协作状态</span></span>
 <span class="line"></span>
-<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">当前阶段：需求 / 设计 / 实现 / 验证 / 评审 / 待确认</span></span>
-<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">当前写入者：ChatGPT / Codex / 负责人</span></span>
-<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">当前候选：&#x3C;完整HEAD SHA></span></span>
-<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">下一接棒者：ChatGPT / Codex / 负责人</span></span>
-<span class="line"><span style="color:#24292E;--shiki-dark:#E1E4E8">下一步：一句话说明需要做什么</span></span></code></pre>
-<p>这些字段会随着任务推进而更新。每次正式交接再增加一条不可变的PR评论，保留当时的准确状态。</p>
-<p>ChatGPT把已经确认的定义交给Codex时，可以使用下面的格式：</p>
-<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="markdown"><code><span class="line"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">### 交接给Codex</span></span>
-<span class="line"></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 基线：main@&#x3C;SHA></span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 当前候选：&#x3C;HEAD SHA></span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 正式依据：REQ-000123、CAP-005、ADR-0012</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 本轮目标：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 明确不做：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 可以修改：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 已经完成：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 已运行验证：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 未验证和风险：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 下一步：在本机worktree实施并运行……</span></span></code></pre>
-<p>Codex完成本机工作后，再把固定候选交给ChatGPT：</p>
-<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="markdown"><code><span class="line"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">### 交接给ChatGPT审阅</span></span>
-<span class="line"></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 比较起点：main@&#x3C;SHA></span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 固定候选：&#x3C;HEAD SHA></span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 实际修改：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 本机验证：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 失败、跳过和警告：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 明确未验证：……</span></span>
-<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 重点审阅：……</span></span></code></pre>
-<p>PR原有的来源、范围、设计、验证和恢复内容可以继续保留，只需增加这段很短的协作状态，不必再造一份复杂清单。</p>
-<h2 id="token省在交接而不是省掉必要信息">Token省在交接，而不是省掉必要信息</h2>
-<p>让ChatGPT和Codex协作，如果每次都把仓库、全部文档和完整聊天记录重新发一遍，Token只会比原来更多。需要减少的是重复上下文，而不是把需求和验证记录删短。</p>
-<p>可以给不同阶段准备不同的上下文包：</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>阶段</th><th>应该提供</th><th>通常不需要提供</th></tr></thead><tbody><tr><td>需求与设计</td><td>原始问题、相关REQ、现有设计、历史决定、必要源码</td><td>本机缓存、完整测试日志、无关模块</td></tr><tr><td>本机实施</td><td>已接受的REQ和设计、验收条件、允许修改范围、相关代码</td><td>前期所有方案争论、已经否决的长篇讨论</td></tr><tr><td>独立审阅</td><td>比较起点、固定HEAD SHA、REQ、已接受设计、验证摘要</td><td>实现过程的完整聊天、Agent的思考过程</td></tr><tr><td>负责人确认</td><td>PR摘要、阻塞问题、验证结果、未解决风险</td><td>每次命令输出和全部中间尝试</td></tr></tbody></table>
-<p>这里有几个很实际的节省点。</p>
-<p>ChatGPT完成需求讨论后，不把整段对话交给Codex，而是写成REQ、设计和一条交接评论。Codex只读取实施所需的正式结论。需求为什么改变、哪些方案已经否决，如果将来仍有价值，就写进ADR；没有进入正式文档的闲聊不再反复传递。</p>
-<p>Codex完成实现后，也不把本机终端的全部输出塞给ChatGPT。PR记录执行了什么验证、结果如何、哪些检查失败或跳过，详细日志只在需要诊断时按链接或附件读取。</p>
-<p>独立审阅使用新的ChatGPT会话，只给固定SHA和相关事实源。它不需要恢复实施会话的全部历史，也不会因为读过每一步尝试而沿用实现者的判断。</p>
-<p>另外，不再让两个Agent各做一次全仓库调查。ChatGPT在Definition阶段确认受影响的能力和设计，Codex实施时围绕这部分代码工作；如果Codex发现实际依赖超出原范围，再把新的事实写回PR，而不是默默扩大任务。</p>
-<p>这套方法没有一个固定的Token节省比例。项目结构、文档质量和任务大小不同，差异会很大。可以确定的是，长对话不再成为唯一的记忆载体，每位接棒者也不必从项目起点重新建立上下文。</p>
-<h2 id="review发现的问题放在哪里">Review发现的问题放在哪里</h2>
-<p>ChatGPT审阅PR时，并不是每条意见都要建立Issue：</p>
-<ul>
-<li>当前PR内可以直接修复并验证的问题，留在PR评论中；</li>
-<li>修复会明显扩大当前范围的问题，建立待复核的GitHub Issue；</li>
-<li>需要长期追踪的问题，再登记到仓库内的正式问题台账；</li>
-<li>会改变产品行为的问题，从Issue转入REQ和设计流程；</li>
-<li>只有改进建议、还不能说明存在缺陷时，保留为建议，不机械建Issue。</li>
-</ul>
-<p>如果一个GitHub Issue已经关联仓库内的正式问题记录，PR合入不一定代表问题已经验证关闭。这时PR使用<code>Refs #123</code>更准确，等实施、验证和正式台账都收口以后再关闭Issue。只有没有进入正式台账、并且合入本PR就能真实结束的问题，才适合使用<code>Closes #123</code>。</p>
-<p>这样做会多一步状态确认，但能避免GitHub显示“已关闭”，仓库记录却仍然等待验证的矛盾。</p>
-<h2 id="普通review和独立review">普通Review和独立Review</h2>
-<p>ChatGPT参与过需求和设计，随后在同一段对话中检查代码是否符合自己的设计，这种Review效率很高，普通PR完全可以这样做。不过它仍然可能受之前方案影响，对权限、Secret、事务、并发、迁移、删除和恢复等高风险修改，应使用新的会话做独立Review：</p>
-<ol>
-<li>固定完整HEAD SHA；</li>
-<li>新建一个没有参与实施讨论的ChatGPT会话；</li>
-<li>只提供PR、REQ、已接受的设计、相关源码和审阅目标；</li>
-<li>不把原实现讨论全部复制过去；</li>
-<li>审阅期间不继续修改被审候选；</li>
-<li>结论需要长期保存时，写入正式审阅记录。</li>
-</ol>
-<p>固定SHA保证审阅者看到的内容不会在审阅途中变化。新会话减少了对原方案的锚定，也顺便缩小了上下文。OpenAI当前的Codex用例同样包含<a href="https://learn.chatgpt.com/use-cases/github-code-reviews">GitHub PR审阅</a>，它可以作为额外的代码审阅入口，但没有必要让ChatGPT和Codex对每一个普通PR重复给出相同Review。</p>
-<h2 id="验证责任仍然留在本机">验证责任仍然留在本机</h2>
-<p>ChatGPT可以阅读测试代码、判断覆盖是否充分、补充测试、查看GitHub Actions结果和分析失败日志。它也可以指出“这里应该补一组事务回滚测试”，但不能因为代码看起来合理，就把没有执行过的测试写成通过。</p>
-<p>本机Codex负责运行仓库规定的验证命令，并记录：</p>
-<ul>
-<li>验证对应的HEAD SHA和比较起点；</li>
-<li>当时的Git tree是否干净；</li>
-<li>运行过哪些命令；</li>
-<li>哪些检查通过、失败或跳过；</li>
-<li>是否使用数据库、容器、浏览器或其他外部环境；</li>
-<li>哪些风险仍然没有验证。</li>
-</ul>
-<p>本机测试、远端CI、数据库检查、容器运行和负责人真实使用解决的是不同问题，不能互相替代。ChatGPT给出的代码候选，也要先由Codex拉到本机worktree中验证，再进入合并判断。</p>
-<h2 id="权限从最小范围开始">权限从最小范围开始</h2>
-<p>ChatGPT的GitHub连接先只开放需要协作的仓库。读取源码、文档、Issue、PR和CI结果可以作为日常能力；任何写操作都只进入自己的短期分支，不直接推送主分支。</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>操作</th><th>建议边界</th></tr></thead><tbody><tr><td>读取源码、文档、Issue、PR和CI结果</td><td>允许</td></tr><tr><td>建立短期分支、更新Draft PR</td><td>连接支持时允许</td></tr><tr><td>向任务分支提交</td><td>写入前确认</td></tr><tr><td>添加Review意见或待登记Issue</td><td>允许</td></tr><tr><td>直接推送主分支</td><td>禁止</td></tr><tr><td>合并PR、创建标签、正式Release</td><td>负责人确认</td></tr><tr><td>修改Secret或真实环境</td><td>交给本机Codex，另行确认</td></tr><tr><td>修改Workflow权限</td><td>独立任务处理</td></tr><tr><td>删除分支、Issue或历史证据</td><td>负责人确认</td></tr></tbody></table>
-<p>这里约束的是动作风险，不是对某个模型的信任程度。即使以后连接能力更强，也没有必要让远端Agent绕过PR直接修改主分支。</p>
-<h2 id="落到仓库只需要几处小改动">落到仓库只需要几处小改动</h2>
-<p>这套协作不需要马上增加新的CI门禁或GitHub自动化。先修改四个位置就够了：</p>
-<ul>
-<li>根<code>AGENTS.md</code>继续保持工具无关，只写产品取舍、合并和发布等通用权限边界，不塞入某个模型的操作说明；</li>
-<li>Git协作规范增加“一个分支一个当前写入者、固定SHA交接、共享分支不强推”几条规则；</li>
-<li>PR模板增加当前阶段、当前写入者、当前候选、下一接棒者和下一步；</li>
-<li>研发手册补充本地worktree、远端分支、普通Review和固定SHA独立Review的关系。</li>
-</ul>
-<p>最终形成的链路是：</p>
-<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>原始想法</span></span>
-<span class="line"><span>  ↓</span></span>
-<span class="line"><span>负责人和ChatGPT分析需求</span></span>
-<span class="line"><span>  ↓</span></span>
-<span class="line"><span>Definition Draft PR</span></span>
-<span class="line"><span>  ├─REQ</span></span>
-<span class="line"><span>  ├─受影响的设计</span></span>
-<span class="line"><span>  └─必要的ADR</span></span>
-<span class="line"><span>  ↓</span></span>
-<span class="line"><span>负责人确认并合入主分支</span></span>
-<span class="line"><span>  ↓</span></span>
-<span class="line"><span>Codex建立任务分支和本机worktree</span></span>
-<span class="line"><span>  ↓</span></span>
-<span class="line"><span>实现、针对性测试、完整验证</span></span>
-<span class="line"><span>  ↓</span></span>
-<span class="line"><span>Implementation Draft PR并固定HEAD</span></span>
-<span class="line"><span>  ↓</span></span>
-<span class="line"><span>新的ChatGPT会话Review</span></span>
-<span class="line"><span>  ├─阻塞问题：Codex修复并重新验证</span></span>
-<span class="line"><span>  ├─后续问题：建立待复核Issue</span></span>
-<span class="line"><span>  └─普通建议：明确记录去向</span></span>
-<span class="line"><span>  ↓</span></span>
-<span class="line"><span>负责人确认并合并</span></span>
-<span class="line"><span>  ↓</span></span>
-<span class="line"><span>记录实际合入提交、同步问题与版本关系</span></span></code></pre>
-<p>这样安排以后，ChatGPT不必复制Codex的本机开发过程，Codex也不必重新经历ChatGPT的全部需求讨论。GitHub保存两边交接时的准确状态，仓库文档保存最终结论，长对话只负责帮助形成判断，不再负责充当项目记忆。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#chatgpt不是一台完整的云端开发机">ChatGPT不是一台完整的云端开发机</a></li><li class="depth-2"><a href="#pro模型的价值不在虚拟机配置">Pro模型的价值不在虚拟机配置</a></li><li class="depth-2"><a href="#不需要再发明一套chatgpt流程">不需要再发明一套ChatGPT流程</a></li><li class="depth-2"><a href="#github只是协作枢纽">GitHub只是协作枢纽</a></li><li class="depth-2"><a href="#用两类pr把定义和实现分开">用两类PR把定义和实现分开</a></li><li class="depth-3"><a href="#definition-pr先确认改成什么样">Definition PR：先确认改成什么样</a></li><li class="depth-3"><a href="#implementation-pr实现已经确认的设计">Implementation PR：实现已经确认的设计</a></li><li class="depth-2"><a href="#不同工作交给谁">不同工作交给谁</a></li><li class="depth-2"><a href="#一个分支同时只能有一个写入者">一个分支同时只能有一个写入者</a></li><li class="depth-2"><a href="#尽早建立draft-pr">尽早建立Draft PR</a></li><li class="depth-2"><a href="#token省在交接而不是省掉必要信息">Token省在交接，而不是省掉必要信息</a></li><li class="depth-2"><a href="#review发现的问题放在哪里">Review发现的问题放在哪里</a></li><li class="depth-2"><a href="#普通review和独立review">普通Review和独立Review</a></li><li class="depth-2"><a href="#验证责任仍然留在本机">验证责任仍然留在本机</a></li><li class="depth-2"><a href="#权限从最小范围开始">权限从最小范围开始</a></li><li class="depth-2"><a href="#落到仓库只需要几处小改动">落到仓库只需要几处小改动</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p class="footer-copy"><span>© 2026 BlueXIII</span><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p class="footer-meta"><span class="site-counter" aria-label="站点访问统计"><span id="busuanzi_container_site_uv">访客 <strong id="busuanzi_value_site_uv"></strong></span><span id="busuanzi_container_site_pv">浏览 <strong id="busuanzi_value_site_pv"></strong></span></span><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 当前阶段：需求 / 设计 / 实现 / 验证 / 评审 / 待确认</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 当前写入者：ChatGPT / Codex / 负责人</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 当前候选：&#x3C;完整HEAD SHA></span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 下一接棒者：ChatGPT / Codex / 负责人</span></span>
+<span class="line"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 下一步：一句话说明要做什么</span></span></code></pre>
+<p>每次正式交接再增加一条PR评论，把当时的状态固定下来。ChatGPT交给Codex时，说清基线、正式依据、本轮目标、明确不做和下一步验证；Codex交给ChatGPT Review时，说清比较起点、固定候选、实际修改、已运行验证和明确未验证的风险。</p>
+<p>这些内容不需要写成一份复杂清单。交接的目的只是让新会话能够回答三个问题：要做什么，现在代码在哪个提交，接下来要验证什么。</p>
+<h2 id="token要省在重复上下文上">Token要省在重复上下文上</h2>
+<p>把ChatGPT引入开发流程后，如果每次交接都重新发送整个仓库、全部文档和完整对话，Token只会比以前消耗得更快。真正要省的是重复上下文，不是把需求和验证结果写得模糊。</p>
+<p>ChatGPT完成需求讨论后，把结论写进REQ、设计和一条交接评论，不需要把整段对话交给Codex。前期否决过的方案，未来仍然有价值就写进ADR，没有进入正式文档的闲聊不再反复传递。</p>
+<p>Codex完成实现后，也不需要把终端里的所有输出复制给ChatGPT。PR写清运行了哪些验证、结果如何、哪些失败或跳过就够了，详细日志只在需要诊断时再读。</p>
+<p>独立Review则反过来：新会话只读固定SHA、需求、已确认设计和验证摘要，不读实现过程的全部讨论。这样既减少上下文，也避免审阅者沿用实现者的判断。</p>
+<h2 id="测试结果仍然要从本机产生">测试结果仍然要从本机产生</h2>
+<p>ChatGPT可以读测试代码，判断覆盖是否充分，也可以分析GitHub Actions的失败日志。但它不能因为代码看起来合理，就宣布数据库迁移、容器启动或真实页面已经验证通过。</p>
+<p>Codex接棒后运行仓库规定的验证命令，并在PR中记录验证对应的HEAD SHA、运行过的命令、通过、失败或跳过的结果，以及还没有覆盖的风险。本机测试、远端CI、数据库检查、容器运行和负责人真实使用解决的是不同问题，不能互相代替。</p>
+<p>ChatGPT的GitHub连接也只需要开放真正参与协作的仓库。日常可以读取源码、文档、Issue、PR和CI结果；需要写入时只修改自己的短期分支，不直接推送主分支，不合并PR，也不接触Secret和真实环境。</p>
+<p>最后形成的开发路径并不复杂：</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;" tabindex="0" data-language="text"><code><span class="line"><span>我和ChatGPT讨论需求与设计</span></span>
+<span class="line"><span>  →将确认结论合入主分支</span></span>
+<span class="line"><span>  →Codex在本机worktree实现和测试</span></span>
+<span class="line"><span>  →推送Implementation Draft PR并固定HEAD</span></span>
+<span class="line"><span>  →新的ChatGPT会话独立Review</span></span>
+<span class="line"><span>  →Codex修复问题并重新验证</span></span>
+<span class="line"><span>  →我确认、合并和发布</span></span></code></pre>
+<p>ChatGPT不需要复制Codex的本机开发过程，Codex也不需要重新经历ChatGPT里的全部需求讨论。GitHub保存交接时的准确状态，仓库文档保存最终结论，两边的额度也用在了它们真正擅长的地方。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#chatgpt的沙箱不是开发机">ChatGPT的沙箱不是开发机</a></li><li class="depth-2"><a href="#pro强在把问题想清楚">Pro强在把问题想清楚</a></li><li class="depth-2"><a href="#不用再发明一套chatgpt流程">不用再发明一套ChatGPT流程</a></li><li class="depth-2"><a href="#github负责交接仓库保存结论">GitHub负责交接，仓库保存结论</a></li><li class="depth-2"><a href="#一个分支同时只有一个写入者">一个分支同时只有一个写入者</a></li><li class="depth-2"><a href="#用draft-pr作为交接面">用Draft PR作为交接面</a></li><li class="depth-2"><a href="#token要省在重复上下文上">Token要省在重复上下文上</a></li><li class="depth-2"><a href="#测试结果仍然要从本机产生">测试结果仍然要从本机产生</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p class="footer-copy"><span>© 2026 BlueXIII</span><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p class="footer-meta"><span class="site-counter" aria-label="站点访问统计"><span id="busuanzi_container_site_uv">访客 <strong id="busuanzi_value_site_uv"></strong></span><span id="busuanzi_container_site_pv">浏览 <strong id="busuanzi_value_site_pv"></strong></span></span><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
       document.querySelector('.theme-toggle')?.addEventListener('click', () => {
         const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
         document.documentElement.dataset.theme = next;
