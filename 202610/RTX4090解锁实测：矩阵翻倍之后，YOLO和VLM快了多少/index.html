@@ -1,0 +1,183 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="referrer" content="no-referrer-when-downgrade"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="在保留原驱动、CUDA和PyTorch的RTX4090上测试gpu-unlock-ada，从矩阵吞吐到YOLO训练和VLM推理，追查接近两倍的指令性能为什么没有变成两倍的应用速度。"><link rel="canonical" href="https://www.bluexiii.com/202610/RTX4090%E8%A7%A3%E9%94%81%E5%AE%9E%E6%B5%8B%EF%BC%9A%E7%9F%A9%E9%98%B5%E7%BF%BB%E5%80%8D%E4%B9%8B%E5%90%8E%EF%BC%8CYOLO%E5%92%8CVLM%E5%BF%AB%E4%BA%86%E5%A4%9A%E5%B0%91/"><link rel="icon" type="image/jpeg" href="/avatar.jpg"><link rel="apple-touch-icon" href="/avatar.jpg"><link rel="alternate" type="application/rss+xml" title="BlueXIII Lab" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="RTX4090解锁实测：矩阵翻倍之后，YOLO和VLM快了多少｜BlueXIII Lab"><meta property="og:description" content="在保留原驱动、CUDA和PyTorch的RTX4090上测试gpu-unlock-ada，从矩阵吞吐到YOLO训练和VLM推理，追查接近两倍的指令性能为什么没有变成两倍的应用速度。"><meta property="og:url" content="https://www.bluexiii.com/202610/RTX4090%E8%A7%A3%E9%94%81%E5%AE%9E%E6%B5%8B%EF%BC%9A%E7%9F%A9%E9%98%B5%E7%BF%BB%E5%80%8D%E4%B9%8B%E5%90%8E%EF%BC%8CYOLO%E5%92%8CVLM%E5%BF%AB%E4%BA%86%E5%A4%9A%E5%B0%91/"><meta property="og:site_name" content="BlueXIII Lab"><meta name="twitter:card" content="summary"><title>RTX4090解锁实测：矩阵翻倍之后，YOLO和VLM快了多少｜BlueXIII Lab</title><script defer referrerpolicy="no-referrer-when-downgrade" src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BhmeYUm6.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII Lab</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/projects/">项目</a><a href="/rss.xml" target="_blank" rel="noopener">RSS</a><a class="social-link" href="https://github.com/xiiiblue" target="_blank" rel="me external noopener">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>RTX4090解锁实测：矩阵翻倍之后，YOLO和VLM快了多少</h1><div class="article-meta"><time datetime="2026-10-27T08:03:21.000Z">发布于2026-10-27</time><span id="busuanzi_container_page_pv" class="post-counter">阅读 <strong id="busuanzi_value_page_pv"></strong></span><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/NVIDIA/">NVIDIA</a><a class="badge" href="/tags/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">性能优化</a></div></header><div class="prose"><p>最近看到一个给消费级NVIDIA显卡解除部分计算限速的开源项目。最吸引人的结果是：RTX4090的某些矩阵指令吞吐可以接近翻倍。问题也随之而来——如果服务器上实际跑的是YOLO训练和视觉语言模型，这个“两倍”能兑现多少？</p>
+<p>2026年10月27日，在一台共享RTX4090服务器上做了一轮测试。矩阵指令确实接近翻倍，但最初的小模型训练和单请求推理几乎没有收益。随后用Profiler排查瓶颈，调整模型和batch，再切换解锁状态做同配置对比，才测到较大YOLO模型约10%～12%的训练吞吐提升。VLM则没有得到稳定的加速结果。</p>
+<p>这几轮结果放在一起，比单独看一张翻倍的跑分图更有意思。</p>
+<h2 id="从20系测试转向4090">从20系测试转向4090</h2>
+<p>最初的打算是直接测试4090，随后先改用2080Ti验证。这里涉及两个不同项目：<a href="https://github.com/nlzy/turing-unlock">nlzy/turing-unlock</a>用于Turing架构，<a href="https://github.com/JustAResearcher/gpu-unlock-ada">JustAResearcher/gpu-unlock-ada</a>则是这次4090使用的Ada实现。不能把一个项目直接换个设备ID，就当成另一张卡的适配版本。</p>
+<p>2080Ti的经历也让后面的操作更谨慎：原驱动下，解锁模块报告成功，NVIDIA驱动却无法正常初始化显卡；换到该项目验证过的驱动后才通过。它说明“模块打印成功”与“显卡能正常工作”之间还有一段距离。</p>
+<p>4090服务器还有其他人用于训练，已有CUDA、PyTorch和模型环境不能随意改动。因此，4090测试首先要回答的是：能不能在原驱动下工作，而不是先把软件栈升级到项目演示所用的版本。</p>
+<p>本次固定使用gpu-unlock-ada的1.1.1版本，提交为<a href="https://github.com/JustAResearcher/gpu-unlock-ada/tree/d28c485418c3d9d034cd4bac19200bc33dd3453b"><code>d28c485</code></a>。按该版本说明，它把公开的固件载荷接入Linux内核模块和开机流程，在原厂NVIDIA驱动启动前完成设置。上游已有4090验证记录，但那些数字只是开展测试的参考，下面的结果都来自这台机器。</p>
+<h2 id="它究竟解锁了什么">它究竟解锁了什么</h2>
+<p>可以把显卡想成一座工厂。普通计算有自己的工位，大批矩阵乘法则有专门的流水线，也就是Tensor Core。模型训练和推理会经过这条流水线，也会花时间搬运数据、做其它运算以及等待下一项任务。</p>
+<p>这次工具修改显卡内部的“速率选择”设置，让部分Tensor计算路径解除原来的吞吐限制。本次最明确的变化是<strong>FP16/BF16输入、FP32累加</strong>：乘法用较低精度的数据，许多乘积相加时，用精度更高的FP32保存累计结果。这里的FP32累加，不等于显卡上所有FP32计算都会加速。</p>
+<p>它没有增加核心数量、显存容量或显存带宽，也不是超频。本次没有刷写VBIOS，450W功率上限保持原样。</p>
+<p>实现时，需要在NVIDIA驱动接管显卡之前运行解锁模块。模块放在initramfs这个开机早期使用的准备包里，先运行固件载荷、写入并检查速率设置，再完成PCIe功能级复位和复查，最后交给原厂驱动。之后CUDA和PyTorch继续使用原来的环境。</p>
+<p>所以它不是训练已经开始后，可以随手执行一下的Python加速插件。“开机默认解锁”也只是每次启动重新执行这个流程，并非永久刷入硬件。实现细节以<a href="https://github.com/JustAResearcher/gpu-unlock-ada/blob/d28c485418c3d9d034cd4bac19200bc33dd3453b/README.md">本次固定版本的说明</a>为准。</p>
+<h2 id="保留原环境先确认真的生效">保留原环境，先确认真的生效</h2>
+<p>测试卡为24GB的RTX4090，AD102。Linux内核为6.14.0-27，NVIDIA闭源驱动为550.163.01，CUDA Toolkit为12.4.131。既有两套YOLO环境分别使用PyTorch2.5.0+cu124和2.5.1/CUDA12.4；VLM为Qwen3-VL-4B，采用NF4四比特量化、FP16计算、SDPA和双重量化。</p>
+<p>这次4090在原550.163.01驱动下成功，没有升级CUDA或PyTorch。驱动接管之后，还检查了速率读回、实际计算和输出，而不是只看解锁日志。本机RM接口的<code>fmla32</code>读数从1变为0，对应本次未解锁和满速状态；它只是其中一项证据。</p>
+<p>矩阵指令测试的变化很干净：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>计算路径</th><th align="right">未解锁</th><th align="right">解锁</th><th align="right">倍率</th></tr></thead><tbody><tr><td>FP16输入、FP32累加</td><td align="right">167.3TFLOPS</td><td align="right">334.3TFLOPS</td><td align="right">1.998×</td></tr><tr><td>BF16输入、FP32累加</td><td align="right">167.2TFLOPS</td><td align="right">334.0TFLOPS</td><td align="right">1.998×</td></tr><tr><td>FP16输入、FP16累加</td><td align="right">336.1TFLOPS</td><td align="right">335.2TFLOPS</td><td align="right">0.997×</td></tr><tr><td>INT8/INT32</td><td align="right">668.4TOPS</td><td align="right">668.3TOPS</td><td align="right">1.000×</td></tr><tr><td>标量FP32</td><td align="right">80.0TFLOPS</td><td align="right">80.0TFLOPS</td><td align="right">1.000×</td></tr></tbody></table>
+<p>指令测试每轮测5次取最佳值，再取3轮中位数。相同驱动和功率策略下，两条目标路径接近两倍，其它对照基本不动，符合这次解锁的预期。</p>
+<p>但换成cuBLAS矩阵乘法，提升已经不再整齐。FP16输入、FP32累加时，方阵边长1024、4096、8192的吞吐提升分别为17.0%、41.4%、9.8%。即使同样是矩阵乘法，换个尺寸和实际执行内核，也不会自动兑现两倍；矩阵越大，也不保证收益越大。</p>
+<p>两种状态下的大矩阵输出和独立数值检查均通过，独立检查最大绝对差为0。</p>
+<h2 id="第一次跑真实模型几乎没快">第一次跑真实模型，几乎没快</h2>
+<p>首轮使用YOLOv8s、batch16、imgsz640，以及70张训练图片和20张验证图片，保留实际训练流程。AMP开启和关闭分别测试，两种状态各跑3个独立进程。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>配置</th><th align="right">未解锁→解锁</th><th align="right">变化</th></tr></thead><tbody><tr><td>YOLOv8s，AMP开启</td><td align="right">149.37→141.94张/秒</td><td align="right">-4.98%</td></tr><tr><td>YOLOv8s，AMP关闭</td><td align="right">144.42→150.23张/秒</td><td align="right">+4.02%</td></tr><tr><td>VLM单请求</td><td align="right">4.238→4.351秒</td><td align="right">延迟增加2.67%</td></tr></tbody></table>
+<p>单请求VLM使用固定的4张图片和提示，表中是各图片服务端延迟中位数的平均值。这里没有得到模型明显加速的证据，也不能据此认定补丁一定让训练变慢。</p>
+<p>AMP是PyTorch的混合精度开关，与补丁是否启用是两件事。比较补丁收益，必须保持AMP等配置一致，不能拿“未解锁、AMP关闭”和“解锁、AMP开启”作对照。</p>
+<p>矩阵指令已经证明目标计算路径加速了，实际模型却没反应，接下来要找的是：模型到底把时间花在哪里？</p>
+<h2 id="profiler找到了两种不同的瓶颈">Profiler找到了两种不同的瓶颈</h2>
+<p>这一阶段一直保持解锁状态，只调整执行配置。它用来诊断瓶颈，其中的提升不能算到补丁头上。</p>
+<p>YOLO首先遇到了供数问题。YOLOv8s把batch增到64、workers仍为4时，吞吐只有167.29张/秒，DataLoader等待占比达到42.13%。将workers增到8，吞吐变为271.57张/秒，等待占比降至0.32%。</p>
+<p>只改数据加载进程数，吞吐就增加了约62%。显卡在等下一批数据时，矩阵流水线再快也帮不上忙。</p>
+<p>较大的m、l模型则不同。把输入常驻GPU、绕过增强和搬运后，YOLOv8l、batch16从99.86提高到102.21张/秒，差距已经很小。这个对照还改变了输入准备方式，不能单独算出搬运成本，但足以说明：继续只盯着DataLoader，收益可能有限。</p>
+<p>GPU侧也不全是矩阵乘法。按内核名称分组，BatchNorm和布局转换合计约占所采集GPU内核累计时间的三分之一。这个比例不是整个训练的墙钟时间占比，但能解释为什么Tensor计算翻倍，训练仍有大量工作保持原速。</p>
+<p>VLM的情况更偏向逐token解码和大量短小计算。固定生成64个新token的单请求约需5.19秒，首轮前向约0.168秒，后续63轮解码前向合计约4.98秒。一次任务约发起17万次GPU内核调用。</p>
+<p>Profiler本身会拖慢请求，不能把采集窗口里的活跃时间直接当成正常GPU利用率。不过，大量短内核、调用间隙以及后面的合批结果，都支持一个判断：主机串行调度和量化路径的碎片化，是这套VLM的重要限制。</p>
+<p>同一解锁状态下，batch从1增加到8，总生成吞吐从12.49提高到67.09token/秒，约为5.4倍。这衡量的是一次服务更多序列时的总吞吐，不能理解成每个请求都快了5.4倍。原接口还有串行锁，直接增加HTTP并发也不会自动变成GPU合批。</p>
+<p>独立实例里关闭双重量化，单请求又降到约3.96秒，内核数也减少了。不过这改变了量化配置，尚未完成业务精度验收，没有应用到原服务，也没有计入补丁收益。</p>
+<h2 id="用更合适的配置重新比较补丁">用更合适的配置，重新比较补丁</h2>
+<p>有了前面的诊断，再做一轮相同配置的未解锁/解锁对比。这次保留较大的m、l模型，并给s模型足够的workers；VLM则测试batch4和batch8。</p>
+<p>两种状态分别启动后测量，使用相同软件包、权重、数据和脚本，不带Profiler，也不与其它CUDA计算混跑。每个配置跑3个独立进程，先取进程内中位数，再取3个进程中位数。</p>
+<p>YOLO每个进程先预热32个完整batch，再测3组、每组10步，要求AMP的缩放系数在计时期间保持稳定。VLM固定1379个输入token和64个新token，预热2批后测3批，保留NF4、FP16、SDPA和双重量化。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>训练配置</th><th align="right">未解锁张/秒</th><th align="right">解锁张/秒</th><th align="right">吞吐变化</th></tr></thead><tbody><tr><td>YOLOv8m，batch32、workers4</td><td align="right">139.80</td><td align="right">153.81</td><td align="right">+10.02%</td></tr><tr><td>YOLOv8l，batch16、workers4</td><td align="right">85.51</td><td align="right">96.03</td><td align="right">+12.30%</td></tr><tr><td>YOLOv8s，batch64、workers8</td><td align="right">268.09</td><td align="right">278.32</td><td align="right">+3.82%</td></tr></tbody></table>
+<p>m和l模型终于表现出了比较明确的收益。三次独立进程的吞吐范围也没有交叠：m模型未解锁为139.55～139.88张/秒，解锁为152.14～155.14张/秒；l模型分别为83.01～87.13和95.49～96.57张/秒。</p>
+<p>VLM仍然没有同样清晰的变化：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>VLM配置</th><th align="right">未解锁总生成token/秒</th><th align="right">解锁总生成token/秒</th><th align="right">变化</th></tr></thead><tbody><tr><td>batch4</td><td align="right">36.54</td><td align="right">36.32</td><td align="right">-0.59%</td></tr><tr><td>batch8</td><td align="right">65.73</td><td align="right">68.76</td><td align="right">+4.60%</td></tr></tbody></table>
+<p>batch8看起来快了4.6%，但未解锁的三进程范围为57.16～67.25token/秒，解锁为57.94～69.40token/秒，波动明显重叠。这个结果不足以宣称稳定加速。表中的总生成吞吐包含预填充开销，也不是只计解码阶段的速度。</p>
+<p>这一轮30个正式案例全部完成。9对训练最终模型状态摘要相同，loss项最大差值为0，VLM对应的生成token摘要也一致。没有观察到GPU错误，但这仍是固定步数和固定生成量的短测，不是完整长训或长期稳定性验收。</p>
+<h2 id="两倍的局部能力如何变成一成的收益">两倍的局部能力，如何变成一成的收益</h2>
+<p>假设一个任务原来需要100秒，其中20秒能够被补丁加速。如果这20秒缩短到10秒，剩下80秒不动，总耗时就是90秒，吞吐提升约11%。这只是说明原理的例子，20%不是本次Profiler测出的占比。</p>
+<p>这次YOLO的结果与这个道理一致：较大模型把更多工作压到了GPU侧，补丁收益更容易显现，但归一化、布局转换、优化器、数据准备和调度仍占时间。VLM受大量短内核和串行解码限制，提高部分矩阵指令的峰值吞吐，未必能缩短主要等待。</p>
+<p>因此，“是不是模型或batch太小”是值得验证的方向，却不是完整答案。batch增大以后还得有足够的数据供给，实际内核也得用到受影响的计算路径。更大的模型、更满的显存，都不能单独证明补丁会更有效。</p>
+<p>这次没有锁定CPU/GPU时钟，每轮前后对比只有一次启动状态配对，3次进程重复也不等于3次独立启动。YOLO测到的约10%～12%应理解为本机这些配置下的训练吞吐收益，不能直接换算成所有完整训练任务都会节省相同比例的时间。</p>
+<p>最后还有一个比跑分快慢更实际的问题：它运行在驱动接管前的内核和固件路径上，出错可能让GPU甚至远程维护暂时不可用。首次尝试按项目要求安排了现场配合，之后普通远程重启也成功，但这不代表异常总能靠SSH恢复。原启动项和回退镜像因此一直保留着。</p>
+<p>对这台4090而言，结论已经足够具体：特定矩阵指令接近翻倍，较大YOLO训练得到了一成左右的吞吐提升，现有量化VLM没有稳定收益。真正值得优先处理的瓶颈，有时是补丁能改变的速率限制，有时只是喂不饱显卡的DataLoader，或一次请求里十几万次细碎的调用。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#从20系测试转向4090">从20系测试转向4090</a></li><li class="depth-2"><a href="#它究竟解锁了什么">它究竟解锁了什么</a></li><li class="depth-2"><a href="#保留原环境先确认真的生效">保留原环境，先确认真的生效</a></li><li class="depth-2"><a href="#第一次跑真实模型几乎没快">第一次跑真实模型，几乎没快</a></li><li class="depth-2"><a href="#profiler找到了两种不同的瓶颈">Profiler找到了两种不同的瓶颈</a></li><li class="depth-2"><a href="#用更合适的配置重新比较补丁">用更合适的配置，重新比较补丁</a></li><li class="depth-2"><a href="#两倍的局部能力如何变成一成的收益">两倍的局部能力，如何变成一成的收益</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p class="footer-copy"><span>© 2026 BlueXIII</span><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p class="footer-meta"><span class="site-counter" aria-label="站点访问统计"><span id="busuanzi_container_site_uv">访客 <strong id="busuanzi_value_site_uv"></strong></span><span id="busuanzi_container_site_pv">浏览 <strong id="busuanzi_value_site_pv"></strong></span></span><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;:&quot;c1eb9e467bf94854a861cd5b98f19230&quot;}"></script></body></html>
