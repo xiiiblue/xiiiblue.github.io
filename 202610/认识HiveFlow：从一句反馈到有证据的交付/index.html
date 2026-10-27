@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="referrer" content="no-referrer-when-downgrade"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="HiveFlow把用户反馈、负责人决定、Agent研发和结果通知接起来，说明一项工作怎样开始、做到哪里，以及中断之后怎样继续。"><link rel="canonical" href="https://www.bluexiii.com/202610/%E8%AE%A4%E8%AF%86HiveFlow%EF%BC%9A%E4%BB%8E%E4%B8%80%E5%8F%A5%E5%8F%8D%E9%A6%88%E5%88%B0%E6%9C%89%E8%AF%81%E6%8D%AE%E7%9A%84%E4%BA%A4%E4%BB%98/"><link rel="icon" type="image/jpeg" href="/avatar.jpg"><link rel="apple-touch-icon" href="/avatar.jpg"><link rel="alternate" type="application/rss+xml" title="BlueXIII Lab" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="认识HiveFlow：从一句反馈到有证据的交付｜BlueXIII Lab"><meta property="og:description" content="HiveFlow把用户反馈、负责人决定、Agent研发和结果通知接起来，说明一项工作怎样开始、做到哪里，以及中断之后怎样继续。"><meta property="og:url" content="https://www.bluexiii.com/202610/%E8%AE%A4%E8%AF%86HiveFlow%EF%BC%9A%E4%BB%8E%E4%B8%80%E5%8F%A5%E5%8F%8D%E9%A6%88%E5%88%B0%E6%9C%89%E8%AF%81%E6%8D%AE%E7%9A%84%E4%BA%A4%E4%BB%98/"><meta property="og:site_name" content="BlueXIII Lab"><meta name="twitter:card" content="summary"><title>认识HiveFlow：从一句反馈到有证据的交付｜BlueXIII Lab</title><script defer referrerpolicy="no-referrer-when-downgrade" src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BhmeYUm6.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII Lab</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/projects/">项目</a><a href="/rss.xml" target="_blank" rel="noopener">RSS</a><a class="social-link" href="https://github.com/xiiiblue" target="_blank" rel="me external noopener">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>认识HiveFlow：从一句反馈到有证据的交付</h1><div class="article-meta"><time datetime="2026-10-27T08:13:28.000Z">发布于2026-10-27</time><span id="busuanzi_container_page_pv" class="post-counter">阅读 <strong id="busuanzi_value_page_pv"></strong></span><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/HiveFlow/">HiveFlow</a><a class="badge" href="/tags/ACDL/">ACDL</a><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B/">研发流程</a></div></header><div class="prose"><p>让Agent修改一段代码，已经是很常见的用法。更麻烦的事情往往发生在代码之外：用户在群里说了一句“导出的数据不全”，有人调查，有人建了Issue，负责人回复“这个要修”，开发工具又在另一段对话里开始工作。几天以后，代码可能已经合并，最初反馈的人却还不知道问题有没有解决。</p>
+<p>这些环节单独看都不复杂，接起来却很容易丢东西。调查结论留在聊天里，开工范围没有说清，部署状态跟不上代码，换一个Agent以后又要从头解释。</p>
+<p>HiveFlow就是从蜂巢的这类协作问题中形成的。它把反馈、决定、研发和结果通知连起来，让后一个参与者能查到前面发生了什么，也让负责人知道一件事究竟完成到了哪里。</p>
+<h2 id="从开发会话走到用户反馈">从开发会话走到用户反馈</h2>
+<p>之前的<a href="/202608/%E7%94%A8GitHub%E8%AE%A9ChatGPT%E4%B8%8ECodex%E6%8E%A5%E5%8A%9B%E5%BC%80%E5%8F%91/">用GitHub让ChatGPT与Codex接力开发</a>讨论过，怎样把分析、实现和审阅交给不同工具，再通过仓库交接。HiveFlow把视线往前后各移了一步：开发任务从哪里来，做完以后又回到哪里？</p>
+<p>用户通常不会直接给出一个合格的开发任务。他会描述遇到的现象，可能缺少操作步骤，也可能把产品原有行为当成了缺陷。反馈需要先调查，值得修改时再登记，负责人确认方向以后才进入研发。交付以后，还要把结果带回最初的反馈者。</p>
+<p>在蜂巢的来源实例中，云端协调助手dots负责调查和登记，GitHub Issue负责交接，本地Codex承接研发。负责人在文档中称为Director，负责产品取舍、授权和最终结果。它们之间需要传递的是准确事项、已知事实和下一步范围，不能只留一句“你接着做”。</p>
+<p>HiveFlow复用这些现有工具，提供协作规则、介绍手册和离线参考工具。项目材料可以在<a href="https://github.com/xiiiblue/hive-flow">公开仓库</a>中阅读。</p>
+<h2 id="值得做和现在可以做分开回答">“值得做”和“现在可以做”分开回答</h2>
+<p>假设用户报告“导出只有第一页”。这是一个说明流程的例子，不对应真实故障。</p>
+<p>协调方先确认用户用了哪个入口、预期导出多少数据、实际得到多少，再查看相关说明和代码。如果这个入口原本只导出当前页，解释清楚可能就结束了；如果产品承诺导出全部结果，调查才有了继续查缺陷的方向。</p>
+<p>证据足够后，可以在已有权限内查重、登记Issue，保留原反馈来源。负责人再决定是否采纳。到了这里，回答的是“这个问题值得处理吗”，还需要明确由谁实施、改到什么程度、在哪个环境验收。</p>
+<p>同一句“这个要修”，可能表示列入计划，也可能表示现在开始。把这两层意思混在一起，Agent就容易把优先级判断理解成所有后续操作都已经获准。</p>
+<p>HiveFlow要求实施授权能够核验。负责人可以直接发起一项具体任务，也可以预先批准有范围和停止条件的自动化配置。Issue已经创建、标签变成已采纳，都不能单独代替这份授权。</p>
+<p>范围说清以后，开发、检查和修正就应连续推进，不必每做一步都回来问一次。只有遇到新的重要取舍或超出授权的操作，才需要负责人再次判断。</p>
+<h2 id="怎样启动与做到哪里是两次选择">怎样启动，与做到哪里，是两次选择</h2>
+<p>HiveFlow把研发的启动方式和交付终点分开。手动发起可以要求完整交付，定时任务也可以只做到PR待审。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>启动方式</th><th>PR待审</th><th>完整交付</th></tr></thead><tbody><tr><td>手动发起</td><td>负责人指定事项，Agent开发、检查并提交PR，等待后续决定</td><td>负责人明确目标和范围后，Agent推进到约定交付</td></tr><tr><td>原生定时任务</td><td>在有效配置中选单，完成PR后仍然等待审阅与后续处理</td><td>在有效配置中选单，按授权完成必要审阅、合并、部署和验收</td></tr></tbody></table>
+<p>PR是供审阅和合并的变更请求。选择PR待审，就表示把可检查的修改交出来；选择完整交付，则要完成约定环境中的实际交付。后者仍然需要规定的评审和验收，只是已有授权覆盖的正常步骤可以连续执行。</p>
+<p>定时任务也需要先说清允许处理哪个仓库、哪些事项、有效时间、数量和停止条件。配置保存成功，只能说明配置存在；能不能开始，还要核验授权、实际启用状态和事项是否符合条件。</p>
+<p>这也给逐步采用留了余地：可以先手动处理一项明确问题，把交接和验收走通，再考虑减少重复发起任务的工作。</p>
+<h2 id="最容易漏掉的是最后一段">最容易漏掉的是最后一段</h2>
+<p>回到导出的例子。修复完成后，测试通过说明检查覆盖的行为符合预期，PR合并说明修改进入了代码分支，部署成功说明某个环境使用了相应版本。用户真正关心的还是：原来的导出操作，现在能得到全部结果了吗？</p>
+<p>这些事实要分别留下。只报告“已合并”，用户仍然不知道哪个环境可以使用；只报告“部署成功”，也没有回答原问题是否得到验证。</p>
+<p>验收之后，还要沿可靠的来源关联回传结果，让最初反馈的人知道改了什么、在哪里可用、还有哪些限制。反馈在群里提出，最终结果就不能只停留在开发会话中。</p>
+<p>但通知状态也要单独判断。代码已经交付，群消息没有发成功，应该继续处理通知。不能因为通知失败，就把同一个开发任务再做一遍。平台已经受理消息，也不能直接写成用户已经读到。</p>
+<h2 id="中断之后先查已经发生了什么">中断之后，先查已经发生了什么</h2>
+<p>长任务难免遇到断线、工具超时或者会话切换。请求没有返回，并不能说明动作没有发生。Issue可能已经创建，PR可能已经合并，消息也可能已经发出。</p>
+<p>HiveFlow强调先核实原动作，再决定下一步。接棒时需要知道准确事项、当前候选提交、已经做过的检查、已有外部结果，以及仍然有效的授权。已完成的部分继续复用，未知的部分先调查。</p>
+<p>例如，部署请求超时后，应先查目标环境实际运行的版本；收到重复的完成事件时，应先查这次交付是否已有通知记录。这样才能从中断处继续，而不是换一个会话重新执行。</p>
+<p>规范、合成演练和真实运行分别能证明不同的事情。离线检查通过，可以说明所覆盖的格式和状态处理符合预期；真实账号能否操作、消息能否送达、重启以后能否恢复，仍然需要对应环境的证据。</p>
+<h2 id="和acdl怎样配合">和ACDL怎样配合</h2>
+<p><a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B01-%E8%AE%A4%E8%AF%86ACDL/">ACDL</a>关注人和Agent怎样共同完成软件研发：需求为什么要改、设计怎样确认、实现怎样验证，以及怎样形成版本。HiveFlow关注反馈怎样进入研发，决定怎样传递，交付结果怎样回到原来源。</p>
+<p>同一个导出缺陷，HiveFlow负责调查、登记、关联采纳与授权、交接研发和回传结果；进入实现以后，需求、设计、测试、独立评审和环境操作仍然遵守项目自身的工程规则。</p>
+<p>小问题也可以有很短的路径。咨询解释清楚就结束，文案修改按实际风险检查，不需要为了一张完整流程图给每件事补齐所有文档。需要长期保存的是后面继续工作仍然用得上的事实。</p>
+<p>想继续了解，可以从<a href="https://www.bluexiii.com/flow/">HiveFlow官网与介绍手册</a>开始，再到公开仓库查看规则和离线工具。公开材料提供采用方法；具体项目是否已经启用自动执行、哪些路径经过真实验证，需要查该项目有日期的配置和运行记录。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#从开发会话走到用户反馈">从开发会话走到用户反馈</a></li><li class="depth-2"><a href="#值得做和现在可以做分开回答">“值得做”和“现在可以做”分开回答</a></li><li class="depth-2"><a href="#怎样启动与做到哪里是两次选择">怎样启动，与做到哪里，是两次选择</a></li><li class="depth-2"><a href="#最容易漏掉的是最后一段">最容易漏掉的是最后一段</a></li><li class="depth-2"><a href="#中断之后先查已经发生了什么">中断之后，先查已经发生了什么</a></li><li class="depth-2"><a href="#和acdl怎样配合">和ACDL怎样配合</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p class="footer-copy"><span>© 2026 BlueXIII</span><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p class="footer-meta"><span class="site-counter" aria-label="站点访问统计"><span id="busuanzi_container_site_uv">访客 <strong id="busuanzi_value_site_uv"></strong></span><span id="busuanzi_container_site_pv">浏览 <strong id="busuanzi_value_site_pv"></strong></span></span><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;:&quot;c1eb9e467bf94854a861cd5b98f19230&quot;}"></script></body></html>
