@@ -1,0 +1,82 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><meta name="referrer" content="no-referrer-when-downgrade"><meta name="generator" content="Astro v7.2.4"><meta name="description" content="ACDL把需求、设计、实现、验证和版本连接起来，让人和Agent在长期项目中保持清楚的目标、决定和交付结果。"><link rel="canonical" href="https://www.bluexiii.com/202610/%E8%AE%A4%E8%AF%86ACDL%EF%BC%9AAgent%E5%86%99%E5%BE%97%E5%BF%AB%EF%BC%8C%E9%A1%B9%E7%9B%AE%E6%80%8E%E6%A0%B7%E6%8E%A5%E5%BE%97%E4%BD%8F/"><link rel="icon" type="image/jpeg" href="/avatar.jpg"><link rel="apple-touch-icon" href="/avatar.jpg"><link rel="alternate" type="application/rss+xml" title="BlueXIII Lab" href="/rss.xml"><link rel="sitemap" href="/sitemap-index.xml"><meta property="og:type" content="article"><meta property="og:title" content="认识ACDL：Agent写得快，项目怎样接得住｜BlueXIII Lab"><meta property="og:description" content="ACDL把需求、设计、实现、验证和版本连接起来，让人和Agent在长期项目中保持清楚的目标、决定和交付结果。"><meta property="og:url" content="https://www.bluexiii.com/202610/%E8%AE%A4%E8%AF%86ACDL%EF%BC%9AAgent%E5%86%99%E5%BE%97%E5%BF%AB%EF%BC%8C%E9%A1%B9%E7%9B%AE%E6%80%8E%E6%A0%B7%E6%8E%A5%E5%BE%97%E4%BD%8F/"><meta property="og:site_name" content="BlueXIII Lab"><meta name="twitter:card" content="summary"><title>认识ACDL：Agent写得快，项目怎样接得住｜BlueXIII Lab</title><script defer referrerpolicy="no-referrer-when-downgrade" src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><script>
+      const stored = localStorage.getItem('theme');
+      const dark = stored === 'dark' || (!stored && matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.BhmeYUm6.css"></head><body><a class="skip-link" href="#content">跳到正文</a><header class="site-header"><div class="container header-inner"><a class="brand" href="/" aria-label="返回首页"><img class="brand-mark" src="/avatar.jpg" width="36" height="36" alt=""><span class="brand-text">BlueXIII Lab</span></a><nav class="site-nav" aria-label="主导航"><a href="/">文章</a><a href="/archives/">归档</a><a href="/tags/">标签</a><a href="/projects/">项目</a><a href="/rss.xml" target="_blank" rel="noopener">RSS</a><a class="social-link" href="https://github.com/xiiiblue" target="_blank" rel="me external noopener">GitHub</a><button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">◐</button></nav></div></header><main id="content" class="site-main"><div class="container article-shell"><article><header class="article-header"><p class="eyebrow">Technical note</p><h1>认识ACDL：Agent写得快，项目怎样接得住</h1><div class="article-meta"><time datetime="2026-10-27T08:20:12.000Z">发布于2026-10-27</time><span id="busuanzi_container_page_pv" class="post-counter">阅读 <strong id="busuanzi_value_page_pv"></strong></span><span class="ai-notice">本文由AI辅助编写</span></div><div class="badges"><a class="badge" href="/tags/ACDL/">ACDL</a><a class="badge" href="/tags/AI/">AI</a><a class="badge" href="/tags/%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B/">研发流程</a></div></header><div class="prose"><p>Agent连续改完几个模块，测试也通过了，项目却不一定更容易维护。隔几天换一个会话，新的Agent可能不知道某个限制为什么存在，把已经否决的方案重新实现一遍。负责人看着越来越多的提交，也未必说得清哪些功能已经可用，哪些只是在代码里写完。</p>
+<p>实现速度提高以后，这些问题会更快地积累起来。原来需要几个人讨论、交接的工作，一个Agent就能连续做完；如果起点有误，它也可能很快做出一套完整但方向不对的实现。</p>
+<p>ACDL来自蜂巢在这类长期研发中的实践。全称是Agent Collaborative Development Lifecycle，中文称为“Agent协同研发体系”，用来组织人和智能体从发现问题、设计、实现、验证到正式版本的协作。它把每次修改放回项目长期维护的背景中：为什么改，依据什么改，结果怎样证明，以后的人从哪里继续。</p>
+<h2 id="负责人决定方向agent把事情做完">负责人决定方向，Agent把事情做完</h2>
+<p>ACDL把对方向、重要取舍、授权和最终结果负责的人称为Director。这个称呼说明的是责任，同一个人可以讨论需求、判断设计、使用产品，也可以亲自写代码。</p>
+<p>Agent则是参与调查、设计、实施、验证和评审的智能体。分配工作时，要看它实际具备的上下文、工具和权限。例如，需要数据库和运行环境的验证，应该交给能够访问这些条件的参与者；需要独立审查的候选，则交给没有参与实现的人或Agent。</p>
+<p>这种分工可以让负责人少盯执行步骤。目标和范围已经明确时，Agent应该连续完成调查、修改、检查和必要修正，把真实结果带回来。涉及新的重要产品取舍、权限扩大或高风险操作时，再把具体候选和影响交给负责人判断。</p>
+<p>负责人需要关注的是产品要得到什么、哪些风险可以接受；具体实现可以在这些边界内自主推进。如果每次运行测试、修正检查发现的问题都要重新批准，协作很快又会退回逐条指挥命令。</p>
+<h2 id="项目的记忆放在仓库里">项目的记忆放在仓库里</h2>
+<p>代码能说明系统现在怎样实现，却未必能说明当时为什么这样决定。某个限制可能是产品要求，也可能只是临时实现；某个测试通过，也不能说明开发环境已经更新。</p>
+<p>ACDL把这些信息分别放到负责它的位置：</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>需要回答的问题</th><th>主要依据</th></tr></thead><tbody><tr><td>为什么改变产品，期待什么结果</td><td>需求</td></tr><tr><td>系统应该怎样工作，有哪些长期约定</td><td>已确认的设计</td></tr><tr><td>这次实际改了什么，检查到了什么</td><td>提交、PR或必要的实施记录</td></tr><tr><td>某个环境运行哪个版本，怎样恢复</td><td>环境记录</td></tr><tr><td>一次正式交付包含什么</td><td>版本验收和发布说明</td></tr></tbody></table>
+<p>这里有一个很有用的说法：文档是代码的“源码”。需求和设计给实现提供依据，环境与版本记录保存代码之外的事实。新Agent进入项目时，先找当前任务真正需要的这些依据，再读取相关代码和测试，就不用从长对话里猜哪个结论仍然有效。</p>
+<p>这也要求文档各自负责自己的事情。设计写预期行为，实施记录写实际结果。不能因为代码已经这样写了，就把实施说明当作新的设计；发现两者冲突时，先判断是实现有误，还是原来的约定确实需要调整。</p>
+<p>普通维护的目标和验证结果可以留在提交、PR或已有任务记录里。需要长期保存的重要决定再进入设计或决策记录；其他地方引用它，避免出现几份都像最终答案的正文。</p>
+<h2 id="用一项收藏功能看它怎样工作">用一项收藏功能看它怎样工作</h2>
+<p>假设准备给会话列表增加收藏能力。这个例子只用来说明方法。</p>
+<p>第一步先说清问题：用户是找不到重要会话，还是列表排序不方便？如果目标是重新登录后仍然能快速找到某些会话，就要把这个使用场景写进需求，作为后面验收的依据。</p>
+<p>接下来需要确定行为。收藏属于哪个用户，是否跨设备保存，会话删除以后怎样处理，用户失去访问权限以后还能不能看见收藏内容？这些问题影响对象、数据和权限，需要在实现前得到明确答案。</p>
+<p>设计确认以后，再实现接口、存储和页面，补充相应检查。不能只看“点一下收藏，接口返回成功”，还需要验证重新登录后的状态、重复操作，以及不同用户之间的数据隔离。需要更新环境时，也要记录实际部署了哪个候选。</p>
+<p>如果随后发现刷新以后收藏丢失，而设计明确要求保存，这是实现没有兑现约定，修复实现即可。如果使用者又提出给收藏增加文件夹，就涉及新对象和新行为，需要重新讨论需求。两种情况都可能被叫作“优化收藏”，但它们需要作出的决定不同。</p>
+<p>反过来，如果只是在已有列表里调整滚动区域，目标明确、容易恢复，也不改变数据和长期规则，就写清哪些内容应该保持可见，在相应窗口尺寸下检查，完成后报告。没有必要沿着新增收藏能力的路线建立整套记录。</p>
+<h2 id="三种loop分别寻找不同问题">三种Loop分别寻找不同问题</h2>
+<p>当一项工作需要持续协调或长期保留重要证据时，ACDL用Loop记录一轮有明确范围和结束条件的工作。最常见的三种分别是：</p>
+<ul>
+<li>ACL，Agentic Coding Loop：实施和自动化验证，回答修改是否完成、检查结果怎样。</li>
+<li>DFL，Developer Feedback Loop：由负责人在明确版本和环境中完成真实任务，观察产品是否好用。</li>
+<li>ERL，Engineering Review Loop：由未参与被评内容实现的评审者检查固定候选，寻找工程遗漏。</li>
+</ul>
+<p>它们提供的视角不同。收藏接口的测试全部通过，使用者仍可能找不到按钮；实现和测试也可能共同漏掉同一个权限条件。真实使用和独立评审，就是为了发现这种从实现者视角不容易看见的问题。</p>
+<p>三种Loop可以独立开展，不是每个任务都要依次经过的关卡。普通试用或一次定点审查可以直接留下结果，需要持续跟踪和重要证据时再登记。小范围文案修改通常也用不到这些对象。</p>
+<p>评审时还需要固定被检查的提交。发现问题以后，在后续修改里修复，再对新提交复核。原记录继续说明当时检查了什么、发现了什么，这样后面才能把修复结果和原始发现对应起来。</p>
+<h2 id="并行开发先拆结果再分agent">并行开发先拆结果，再分Agent</h2>
+<p>一个功能可以分成前端、后端和测试，但这样拆完，几个参与者往往仍在互相等待。接口没定，页面无法验证；数据行为在变，测试也没有稳定依据。</p>
+<p>ACDL更关注任务能否独立完成和验证。适合并行的工作，需要有明确起点、修改范围、依赖和验证方式，最后再按依赖关系接收结果。共享部分仍然需要约定谁负责写入，不能因为开了几个Agent就假设冲突已经解决。</p>
+<p>分支和worktree可以帮助隔离文件修改。worktree是Git提供的独立工作目录，但数据库、容器、端口和外部服务仍可能共享，需要另外分配和核对。文件隔离与运行环境隔离是两件事。</p>
+<p>是否并行、开多少工作目录，取决于任务本身。能在一个会话里清楚完成的小修改，直接做完更合适。</p>
+<h2 id="完成要说明完成到哪里">“完成”要说明完成到哪里</h2>
+<p>一项修改可以已经写完、测试通过，但还没部署；也可以已经进入开发环境，正在等待真实使用反馈。独立评审结束，表示约定范围已经检查并留下结论，也可能仍有问题等待后续处理。</p>
+<p>正式版本再回答另一个问题：这次向使用者交付哪些内容，依据哪些检查和验收，还保留什么限制。完成验收后，用真实Git标签固定版本，才能让发布说明对应到明确代码。</p>
+<p>多数日常维护可以在相关检查通过、结果记录清楚以后结束。准备正式交付时，再组织版本范围和验收。这样既能保留必要证据，也不会让每次修改都变成一次发布工程。</p>
+<p>前一篇<a href="/202610/%E8%AE%A4%E8%AF%86HiveFlow%EF%BC%9A%E4%BB%8E%E4%B8%80%E5%8F%A5%E5%8F%8D%E9%A6%88%E5%88%B0%E6%9C%89%E8%AF%81%E6%8D%AE%E7%9A%84%E4%BA%A4%E4%BB%98/">HiveFlow介绍</a>关注反馈怎样进入研发、授权怎样交接，以及结果怎样回到原反馈者。ACDL负责研发过程中的需求、设计、实现、验证和版本，两者在同一项工作中配合。</p>
+<p>想继续阅读，可以从<a href="https://www.bluexiii.com/acdl/">ACDL官网与手册</a>进入；<a href="https://github.com/xiiiblue/hive-acdl">公开的hive-acdl仓库</a>提供通用规范、模板和本地示例。博客已有的<a href="/202608/ACDL%E7%A0%94%E5%8F%91%E6%B5%81%E7%A8%8B01-%E8%AE%A4%E8%AF%86ACDL/">ACDL研发流程系列</a>则保留了更细的分章说明。借用到其他项目时，先把目标、当前约定、验证结果和后续去向说清楚，再按实际风险增加需要的记录。</p></div></article><nav class="toc" aria-label="文章目录"><strong>本页目录</strong><ol><li class="depth-2"><a href="#负责人决定方向agent把事情做完">负责人决定方向，Agent把事情做完</a></li><li class="depth-2"><a href="#项目的记忆放在仓库里">项目的记忆放在仓库里</a></li><li class="depth-2"><a href="#用一项收藏功能看它怎样工作">用一项收藏功能看它怎样工作</a></li><li class="depth-2"><a href="#三种loop分别寻找不同问题">三种Loop分别寻找不同问题</a></li><li class="depth-2"><a href="#并行开发先拆结果再分agent">并行开发先拆结果，再分Agent</a></li><li class="depth-2"><a href="#完成要说明完成到哪里">“完成”要说明完成到哪里</a></li></ol></nav></div></main><footer class="site-footer"><div class="container footer-inner"><p class="footer-copy"><span>© 2026 BlueXIII</span><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a></p><p class="footer-meta"><span class="site-counter" aria-label="站点访问统计"><span id="busuanzi_container_site_uv">访客 <strong id="busuanzi_value_site_uv"></strong></span><span id="busuanzi_container_site_pv">浏览 <strong id="busuanzi_value_site_pv"></strong></span></span><a href="https://beian.miit.gov.cn/">鲁ICP备18050487号-1</a></p></div></footer><script>
+      document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('theme', next);
+      });
+    </script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;:&quot;c1eb9e467bf94854a861cd5b98f19230&quot;}"></script></body></html>
